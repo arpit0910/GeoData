@@ -41,6 +41,18 @@
                         <i class="fas fa-users mr-3 w-5"></i>
                         User Management
                     </a>
+                    <a href="{{ route('countries.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('countries.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-globe mr-3 w-5"></i>
+                        Country Management
+                    </a>
+                    <a href="{{ route('regions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('regions.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-map-marked-alt mr-3 w-5"></i>
+                        Region Management
+                    </a>
+                    <a href="{{ route('subregions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('subregions.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-map-pin mr-3 w-5"></i>
+                        Sub Region Management
+                    </a>
                     <!-- Add more navigation items here -->
                 </div>
             </nav>

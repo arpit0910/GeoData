@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class CountryController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        $countries = \App\Models\Country::with(['Region', 'SubRegion'])->paginate(50);
+        return view('countries.index', compact('countries'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        $regions = \App\Models\Region::all();
+        $subRegions = \App\Models\SubRegion::all();
+        return view('countries.create', compact('regions', 'subRegions'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'iso3' => 'nullable|string|max:3',
+            'iso2' => 'nullable|string|max:2',
+            'numeric_code' => 'nullable|string|max:3',
+            'phonecode' => 'nullable|string|max:255',
+            'capital' => 'nullable|string|max:255',
+            'currency' => 'nullable|string|max:255',
+            'currency_name' => 'nullable|string|max:255',
+            'currency_symbol' => 'nullable|string|max:255',
+            'tld' => 'nullable|string|max:255',
+            'native' => 'nullable|string|max:255',
+            'region_id' => 'nullable|exists:regions,id',
+            'subregion_id' => 'nullable|exists:sub_regions,id',
+            'nationality' => 'nullable|string|max:255',
+            'area_sq_km' => 'nullable|numeric',
+            'postal_code_format' => 'nullable|string|max:255',
+            'postal_code_regex' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'emoji' => 'nullable|string|max:255',
+            'emojiU' => 'nullable|string|max:255',
+            'wiki_data_id' => 'nullable|string|max:255',
+        ]);
+
+        \App\Models\Country::create($validatedData);
+
+        return redirect()->route('countries.index')->with('success', 'Country created successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        // Not used right now
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $country = \App\Models\Country::findOrFail($id);
+        $regions = \App\Models\Region::all();
+        $subRegions = \App\Models\SubRegion::all();
+        return view('countries.edit', compact('country', 'regions', 'subRegions'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $country = \App\Models\Country::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'iso3' => 'nullable|string|max:3',
+            'iso2' => 'nullable|string|max:2',
+            'numeric_code' => 'nullable|string|max:3',
+            'phonecode' => 'nullable|string|max:255',
+            'capital' => 'nullable|string|max:255',
+            'currency' => 'nullable|string|max:255',
+            'currency_name' => 'nullable|string|max:255',
+            'currency_symbol' => 'nullable|string|max:255',
+            'tld' => 'nullable|string|max:255',
+            'native' => 'nullable|string|max:255',
+            'region_id' => 'nullable|integer',
+            'subregion_id' => 'nullable|integer',
+            'nationality' => 'nullable|string|max:255',
+            'area_sq_km' => 'nullable|numeric',
+            'postal_code_format' => 'nullable|string|max:255',
+            'postal_code_regex' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'emoji' => 'nullable|string|max:255',
+            'emojiU' => 'nullable|string|max:255',
+            'wiki_data_id' => 'nullable|string|max:255',
+        ]);
+
+        $country->update($validatedData);
+
+        return redirect()->route('countries.index')->with('success', 'Country updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $country = \App\Models\Country::findOrFail($id);
+        $country->delete();
+        return redirect()->route('countries.index')->with('success', 'Country deleted successfully.');
+    }
+}
