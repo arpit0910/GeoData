@@ -49,3 +49,7 @@ Route::prefix('subregions')->name('subregions.')->group(function () {
     Route::put('/{subregion}', [SubRegionController::class, 'update'])->name('update');
     Route::delete('/{subregion}', [SubRegionController::class, 'destroy'])->name('destroy');
 });
+
+use App\Http\Controllers\TimezoneController;
+
+Route::resource('timezones', TimezoneController::class);

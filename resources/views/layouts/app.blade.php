@@ -53,6 +53,10 @@
                         <i class="fas fa-map-pin mr-3 w-5"></i>
                         Sub Region Management
                     </a>
+                    <a href="{{ route('timezones.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('timezones.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-clock mr-3 w-5"></i>
+                        Timezone Management
+                    </a>
                     <!-- Add more navigation items here -->
                 </div>
             </nav>

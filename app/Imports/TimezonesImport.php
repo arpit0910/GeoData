@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Imports;
+
+use App\Models\Timezone;
+use App\Models\Country;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+
+class TimezonesImport implements ToCollection, WithHeadingRow, WithChunkReading
+{
+    /**
+    * @param Collection $rows
+    */
+    public function collection(Collection $rows)
+    {
+        $insertData = [];
+        $now = now();
+
+        foreach ($rows as $row) {
+            $countryName = trim($row['name'] ?? '');
+            $timezonesString = trim($row['timezones'] ?? '');
+
+            if (empty($countryName) || empty($timezonesString)) {
+                continue;
+            }
+
+            // Find the corresponding Country
+            $country = Country::where('name', $countryName)->first();
+
+            if (!$country) {
+                continue;
+            }
+
+            // Clean the timezones string to make it valid JSON
+            // 1. Add double quotes around keys (e.g., zoneName: -> "zoneName":)
+            $cleanedString = preg_replace('/([{,])\s*([a-zA-Z0-9_]+)\s*:/', '$1"$2":', $timezonesString);
+            
+            // 2. Replace single quotes used for string values with double quotes
+            $cleanedString = str_replace("'", '"', $cleanedString);
+
+            // Now decode the JSON
+            $timezonesArray = json_decode($cleanedString, true);
+
+            if (is_array($timezonesArray)) {
+                foreach ($timezonesArray as $tz) {
+                    $insertData[] = [
+                        'country_id'      => $country->id,
+                        'zone_name'       => $tz['zoneName'] ?? null,
+                        'gmt_offset'      => $tz['gmtOffset'] ?? null,
+                        'gmt_offset_name' => $tz['gmtOffsetName'] ?? null,
+                        'abbreviation'    => $tz['abbreviation'] ?? null,
+                        'tz_name'         => $tz['tzName'] ?? null,
+                        'created_at'      => $now,
+                        'updated_at'      => $now,
+                    ];
+                }
+            }
+        }
+
+        if (!empty($insertData)) {
+            // Chunk inserts based on your database limits.
+            $chunks = array_chunk($insertData, 1000);
+            foreach ($chunks as $chunk) {
+                Timezone::insert($chunk);
+            }
+        }
+    }
+
+    public function chunkSize(): int
+    {
+        return 500;
+    }
+}
