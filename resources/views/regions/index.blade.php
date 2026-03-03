@@ -51,13 +51,6 @@
                         <a href="{{ route('regions.edit', $region->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <form action="{{ route('regions.destroy', $region->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this region?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
                     </td>
                 </tr>
                 @endforeach

@@ -55,13 +55,6 @@
                         <a href="{{ route('subregions.edit', $subRegion->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <form action="{{ route('subregions.destroy', $subRegion->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this sub region?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
                     </td>
                 </tr>
                 @endforeach
