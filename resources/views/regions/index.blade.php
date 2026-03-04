@@ -55,7 +55,7 @@
             columns: [
                 { data: 'id', name: 'id' },
                 { data: 'name', name: 'name' },
-                { data: 'wikiDataId', name: 'wikiDataId' },
+                { data: 'wiki_data_id', name: 'wiki_data_id' },
                 { 
                     data: 'id', 
                     name: 'action', 

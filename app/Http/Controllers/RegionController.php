@@ -61,7 +61,7 @@ class RegionController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'wikiDataId' => 'nullable|string|max:255',
+            'wiki_data_id' => 'nullable|string|max:255',
         ]);
 
         \App\Models\Region::create($validatedData);
@@ -105,7 +105,7 @@ class RegionController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'wikiDataId' => 'nullable|string|max:255',
+            'wiki_data_id' => 'nullable|string|max:255',
         ]);
 
         $region->update($validatedData);

@@ -20,7 +20,7 @@ class SubRegionsImport implements ToModel, WithHeadingRow, WithChunkReading, Wit
         return new SubRegion([
             'name' => $row['name'] ?? null,
             'region_id' => $row['region_id'] ?? null,
-            'wikiDataId' => $row['wikidataid'] ?? null,
+            'wiki_data_id' => $row['wikidataid'] ?? null,
         ]);
     }
 

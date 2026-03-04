@@ -12,7 +12,7 @@ class SubRegion extends Model
     protected $fillable = [
         'name',
         'region_id',
-        'wikiDataId',
+        'wiki_data_id',
     ];
 
     public function region()

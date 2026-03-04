@@ -19,7 +19,7 @@ class RegionsImport implements ToModel, WithHeadingRow, WithChunkReading, WithBa
     {
         return new Region([
             'name' => $row['name'] ?? null,
-            'wikiDataId' => $row['wikidataid'] ?? null,
+            'wiki_data_id' => $row['wikidataid'] ?? null,
         ]);
     }
 

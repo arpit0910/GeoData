@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->foreignId('region_id')->references('id')->on('regions')->nullable()->index();
-            $table->string('wikiDataId')->nullable();
+            $table->string('wiki_data_id')->nullable();
             $table->timestamps();
         });
     }

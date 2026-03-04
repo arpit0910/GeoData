@@ -65,7 +65,7 @@
                         return row.region ? row.region.name : '';
                     } 
                 },
-                { data: 'wikiDataId', name: 'wikiDataId' },
+                { data: 'wiki_data_id', name: 'wiki_data_id' },
                 { 
                     data: 'id', 
                     name: 'action', 

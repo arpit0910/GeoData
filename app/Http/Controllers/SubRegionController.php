@@ -63,7 +63,7 @@ class SubRegionController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'region_id' => 'nullable|exists:regions,id',
-            'wikiDataId' => 'nullable|string|max:255',
+            'wiki_data_id' => 'nullable|string|max:255',
         ]);
 
         \App\Models\SubRegion::create($validatedData);
@@ -109,7 +109,7 @@ class SubRegionController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'region_id' => 'nullable|exists:regions,id',
-            'wikiDataId' => 'nullable|string|max:255',
+            'wiki_data_id' => 'nullable|string|max:255',
         ]);
 
         $subRegion->update($validatedData);

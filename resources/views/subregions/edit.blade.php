@@ -42,9 +42,9 @@
 
                 <!-- WikiData ID -->
                 <div class="col-span-1 md:col-span-2">
-                    <label for="wikiDataId" class="block text-sm font-medium text-gray-700">WikiData ID</label>
-                    <input type="text" name="wikiDataId" id="wikiDataId" value="{{ old('wikiDataId', $subRegion->wikiDataId) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
-                    @error('wikiDataId')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                    <label for="wiki_data_id" class="block text-sm font-medium text-gray-700">WikiData ID</label>
+                    <input type="text" name="wiki_data_id" id="wiki_data_id" value="{{ old('wiki_data_id', $subRegion->wiki_data_id) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
+                    @error('wiki_data_id')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
             </div>
 

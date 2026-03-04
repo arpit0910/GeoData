@@ -31,7 +31,7 @@ class Country extends Model
         'longitude',
         'emoji',
         'emojiU',
-        'wikiDataId',
+        'wiki_data_id',
     ];
 
      public function Region()
