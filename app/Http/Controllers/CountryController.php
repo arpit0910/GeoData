@@ -11,10 +11,36 @@ class CountryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $countries = \App\Models\Country::with(['Region', 'SubRegion'])->paginate(50);
-        return view('countries.index', compact('countries'));
+        if ($request->wantsJson() || $request->ajax()) {
+            $query = \App\Models\Country::with(['Region', 'SubRegion']);
+
+            if ($request->has('search') && !empty($request->search['value'])) {
+                $search = $request->search['value'];
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('iso2', 'like', "%{$search}%")
+                      ->orWhere('capital', 'like', "%{$search}%");
+                });
+            }
+
+            $total = $query->count();
+            
+            $limit = $request->length ?? 100;
+            $start = $request->start ?? 0;
+            
+            $countries = $query->skip($start)->take($limit)->get();
+
+            return response()->json([
+                'draw' => $request->draw,
+                'recordsTotal' => \App\Models\Country::count(),
+                'recordsFiltered' => $total,
+                'data' => $countries
+            ]);
+        }
+
+        return view('countries.index');
     }
 
     /**

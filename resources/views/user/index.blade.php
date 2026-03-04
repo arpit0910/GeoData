@@ -1,7 +1,5 @@
 @extends('layouts.app')
 
-@section('header', 'User Management')
-
 @section('content')
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
     <div class="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
@@ -46,6 +44,7 @@ $(document).ready(function() {
     var table = $('#usersTable').DataTable({
         processing: true,
         serverSide: true,
+        pageLength: 100,
         ajax: "{{ route('user.list') }}",
         dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col sm:flex-row justify-between items-center mt-4"ip>',
         columns: [

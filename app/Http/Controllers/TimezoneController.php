@@ -12,10 +12,36 @@ class TimezoneController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $timezones = Timezone::with('country')->paginate(15);
-        return view('timezones.index', compact('timezones'));
+        if ($request->wantsJson() || $request->ajax()) {
+            $query = Timezone::with('country');
+
+            if ($request->has('search') && !empty($request->search['value'])) {
+                $search = $request->search['value'];
+                $query->where(function($q) use ($search) {
+                    $q->where('zone_name', 'like', "%{$search}%")
+                      ->orWhere('tz_name', 'like', "%{$search}%")
+                      ->orWhere('abbreviation', 'like', "%{$search}%");
+                });
+            }
+
+            $total = $query->count();
+            
+            $limit = $request->length ?? 100;
+            $start = $request->start ?? 0;
+            
+            $timezones = $query->skip($start)->take($limit)->get();
+
+            return response()->json([
+                'draw' => $request->draw,
+                'recordsTotal' => Timezone::count(),
+                'recordsFiltered' => $total,
+                'data' => $timezones
+            ]);
+        }
+
+        return view('timezones.index');
     }
 
     /**

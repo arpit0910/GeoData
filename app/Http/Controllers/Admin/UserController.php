@@ -44,7 +44,7 @@ class UserController extends Controller
             ]);
         }
 
-        return view('admin.user.index');
+        return view('user.index');
     }
 
     /**
@@ -54,7 +54,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin.user.create');
+        return view('user.create');
     }
 
     /**
@@ -97,7 +97,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return view('admin.user.show', compact('user'));
+        return view('user.show', compact('user'));
     }
 
     /**
@@ -108,7 +108,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('admin.user.edit', compact('user'));
+        return view('user.edit', compact('user'));
     }
 
     /**

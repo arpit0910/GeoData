@@ -11,10 +11,34 @@ class RegionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $regions = \App\Models\Region::paginate(50);
-        return view('regions.index', compact('regions'));
+        if ($request->wantsJson() || $request->ajax()) {
+            $query = \App\Models\Region::query();
+
+            if ($request->has('search') && !empty($request->search['value'])) {
+                $search = $request->search['value'];
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            }
+
+            $total = $query->count();
+            
+            $limit = $request->length ?? 100;
+            $start = $request->start ?? 0;
+            
+            $regions = $query->skip($start)->take($limit)->get();
+
+            return response()->json([
+                'draw' => $request->draw,
+                'recordsTotal' => \App\Models\Region::count(),
+                'recordsFiltered' => $total,
+                'data' => $regions
+            ]);
+        }
+
+        return view('regions.index');
     }
 
     /**

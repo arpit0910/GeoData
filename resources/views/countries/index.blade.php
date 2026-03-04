@@ -1,9 +1,4 @@
 @extends('layouts.app')
-
-@section('header')
-    Countries
-@endsection
-
 @section('content')
 <div class="mb-6 flex justify-between items-center">
     <div>
@@ -31,11 +26,10 @@
 @endif
 
 <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="p-6 bg-white border-b border-gray-200">
-        <table id="countriesTable" class="min-w-full divide-y divide-gray-200 dataTable no-footer">
+    <div class="p-6 bg-white border-b border-gray-200 overflow-x-auto">
+        <table id="countriesTable" class="w-full text-left border-collapse">
             <thead>
                 <tr>
-                    <th>#</th>
                     <th>Name</th>
                     <th>Native</th>
                     <th>ISO2</th>
@@ -45,39 +39,9 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
-                @php $sno = 1; @endphp
-                @foreach($countries as $country)
-                <tr>
-                    <td>{{ $sno++ }}</td>
-                    <td>
-                        {{ $country->name }}
-                    </td>
-                    <td>
-                        {{ $country->native ?? 'N/A' }}
-                    </td>
-                    <td>{{ $country->iso2 }}</td>
-                    <td>{{ $country->capital }}</td>
-                    <td>{{ $country->currency }} ({{ $country->currency_symbol }})</td>
-                    <td>
-                        {{ $country->Region?$country->Region->name : 'N/A' }}
-                        @if($country->SubRegion)
-                            <div class="text-xs text-gray-500">{{ $country->SubRegion->name }}</div>
-                        @endif
-                    </td>
-                    <td class="text-right text-sm font-medium whitespace-nowrap">
-                        <a href="{{ route('countries.edit', $country->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                    </td>
-                </tr>
-                @endforeach
+            <tbody class="divide-y divide-gray-100">
             </tbody>
         </table>
-        
-        <div class="mt-4">
-            {{ $countries->links() }}
-        </div>
     </div>
 </div>
 @endsection
@@ -86,13 +50,46 @@
 <script>
     $(document).ready(function() {
         $('#countriesTable').DataTable({
-            "paging": false, // We use Laravel's pagination for now
-            "info": false,
-            "searching": true,
-            "order": [[1, "asc"]], // Sort by name ascending
-            "columnDefs": [
-                { "orderable": false, "targets": 6 } // Disable sorting on actions column
-            ]
+            processing: true,
+            serverSide: true,
+            pageLength: 100,
+            ajax: "{{ route('countries.index') }}",
+            columns: [
+                { data: 'name', name: 'name' },
+                { data: 'native', name: 'native', render: function(data) { return data ? data : 'N/A'; } },
+                { data: 'iso2', name: 'iso2' },
+                { data: 'capital', name: 'capital' },
+                { 
+                    data: 'currency', 
+                    name: 'currency',
+                    render: function(data, type, row) {
+                        return `${data} (${row.currency_symbol})`;
+                    }
+                },
+                { 
+                    data: 'region', 
+                    name: 'region',
+                    orderable: false,
+                    searchable: false,
+                    render: function(data, type, row) {
+                        let regionValue = row.region ? row.region.name : 'N/A';
+                        let subRegionHTML = row.sub_region ? `<div class="text-xs text-gray-500">${row.sub_region.name}</div>` : '';
+                        return `${regionValue}${subRegionHTML}`;
+                    }
+                },
+                { 
+                    data: 'id', 
+                    name: 'action', 
+                    orderable: false, 
+                    searchable: false,
+                    className: 'text-right',
+                    render: function(data) {
+                        let editUrl = `/countries/${data}/edit`;
+                        return `<a href="${editUrl}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit"><i class="fas fa-edit"></i></a>`;
+                    }
+                }
+            ],
+            dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col sm:flex-row justify-between items-center mt-4"ip>',
         });
     });
 </script>

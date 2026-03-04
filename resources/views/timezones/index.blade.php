@@ -1,9 +1,4 @@
 @extends('layouts.app')
-
-@section('header')
-    Timezones
-@endsection
-
 @section('content')
 <div class="mb-6 flex justify-between items-center">
     <div>
@@ -31,11 +26,11 @@
 @endif
 
 <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="p-6 bg-white border-b border-gray-200">
-        <table class="min-w-full divide-y divide-gray-200 dataTable no-footer">
+    <div class="p-6 bg-white border-b border-gray-200 overflow-x-auto">
+        <table id="timezonesTable" class="w-full text-left border-collapse">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>ID</th>
                     <th>Zone Name</th>
                     <th>Country</th>
                     <th>GMT Offset</th>
@@ -43,27 +38,50 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach($timezones as $timezone)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $timezone->zone_name }}</td>
-                    <td>{{ $timezone->country ? $timezone->country->name : 'N/A' }}</td>
-                    <td>{{ $timezone->gmt_offset_name }}</td>
-                    <td>{{ $timezone->abbreviation }}</td>
-                    <td class="text-right text-sm font-medium whitespace-nowrap">
-                        <a href="{{ route('timezones.edit', $timezone->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                    </td>
-                </tr>
-                @endforeach
+            <tbody class="divide-y divide-gray-100">
             </tbody>
         </table>
-        
-        <div class="mt-4">
-            {{ $timezones->links() }}
-        </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('#timezonesTable').DataTable({
+            processing: true,
+            serverSide: true,
+            pageLength: 100,
+            ajax: "{{ route('timezones.index') }}",
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'zone_name', name: 'zone_name' },
+                { 
+                    data: 'country', 
+                    name: 'country.name',
+                    orderable: false,
+                    searchable: false,
+                    render: function(data, type, row) {
+                        return row.country ? row.country.name : 'N/A';
+                    } 
+                },
+                { data: 'gmt_offset_name', name: 'gmt_offset_name' },
+                { data: 'abbreviation', name: 'abbreviation' },
+                { 
+                    data: 'id', 
+                    name: 'action', 
+                    orderable: false, 
+                    searchable: false,
+                    className: 'text-right',
+                    render: function(data) {
+                        let editUrl = `/timezones/${data}/edit`;
+                        return `<a href="${editUrl}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit"><i class="fas fa-edit"></i></a>`;
+                    }
+                }
+            ],
+            order: [[0, "asc"]],
+            dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col sm:flex-row justify-between items-center mt-4"ip>',
+        });
+    });
+</script>
+@endpush

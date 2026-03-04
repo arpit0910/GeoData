@@ -1,9 +1,5 @@
 @extends('layouts.app')
 
-@section('header')
-    Regions
-@endsection
-
 @section('content')
 <div class="mb-6 flex justify-between items-center">
     <div>
@@ -31,8 +27,8 @@
 @endif
 
 <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="p-6 bg-white border-b border-gray-200">
-        <table id="regionsTable" class="min-w-full divide-y divide-gray-200 dataTable no-footer">
+    <div class="p-6 bg-white border-b border-gray-200 overflow-x-auto">
+        <table id="regionsTable" class="w-full text-left border-collapse">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -41,25 +37,9 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach($regions as $region)
-                <tr>
-                    <td>{{ $region->id }}</td>
-                    <td>{{ $region->name }}</td>
-                    <td>{{ $region->wikiDataId }}</td>
-                    <td class="text-right text-sm font-medium whitespace-nowrap">
-                        <a href="{{ route('regions.edit', $region->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                    </td>
-                </tr>
-                @endforeach
+            <tbody class="divide-y divide-gray-100">
             </tbody>
         </table>
-        
-        <div class="mt-4">
-            {{ $regions->links() }}
-        </div>
     </div>
 </div>
 @endsection
@@ -68,13 +48,28 @@
 <script>
     $(document).ready(function() {
         $('#regionsTable').DataTable({
-            "paging": false,
-            "info": false,
-            "searching": true,
-            "order": [[1, "asc"]],
-            "columnDefs": [
-                { "orderable": false, "targets": 3 }
-            ]
+            processing: true,
+            serverSide: true,
+            pageLength: 100,
+            ajax: "{{ route('regions.index') }}",
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'name', name: 'name' },
+                { data: 'wikiDataId', name: 'wikiDataId' },
+                { 
+                    data: 'id', 
+                    name: 'action', 
+                    orderable: false, 
+                    searchable: false,
+                    className: 'text-right',
+                    render: function(data) {
+                        let editUrl = `/regions/${data}/edit`;
+                        return `<a href="${editUrl}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit"><i class="fas fa-edit"></i></a>`;
+                    }
+                }
+            ],
+            order: [[0, "asc"]],
+            dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col sm:flex-row justify-between items-center mt-4"ip>',
         });
     });
 </script>

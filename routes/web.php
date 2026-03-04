@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CountryController;
 
 Route::get('/', function () {
-    return view('admin.dashboard');
+    return view('dashboard');
 });
 
 Route::prefix('user')->name('user.')->group(function () {

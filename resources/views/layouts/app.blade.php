@@ -39,23 +39,23 @@
                 <div class="mt-4 px-4 space-y-1">
                     <a href="{{ route('user.list') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('user.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors">
                         <i class="fas fa-users mr-3 w-5"></i>
-                        User Management
+                        Users
                     </a>
                     <a href="{{ route('countries.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('countries.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
                         <i class="fas fa-globe mr-3 w-5"></i>
-                        Country Management
+                        Countries
                     </a>
                     <a href="{{ route('regions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('regions.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
                         <i class="fas fa-map-marked-alt mr-3 w-5"></i>
-                        Region Management
+                        Regions
                     </a>
                     <a href="{{ route('subregions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('subregions.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
                         <i class="fas fa-map-pin mr-3 w-5"></i>
-                        Sub Region Management
+                        Sub Regions
                     </a>
                     <a href="{{ route('timezones.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('timezones.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
                         <i class="fas fa-clock mr-3 w-5"></i>
-                        Timezone Management
+                        Timezones
                     </a>
                     <!-- Add more navigation items here -->
                 </div>
@@ -70,7 +70,7 @@
                             <i class="fas fa-bars text-xl"></i>
                         </button>
                         <h2 class="text-lg font-semibold text-gray-800">
-                            @yield('header', 'Dashboard')
+                            @yield('header')
                         </h2>
                     </div>
                     <div class="flex items-center space-x-4">

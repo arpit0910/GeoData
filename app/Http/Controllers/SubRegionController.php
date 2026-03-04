@@ -11,10 +11,34 @@ class SubRegionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $subRegions = \App\Models\SubRegion::with('region')->paginate(50);
-        return view('subregions.index', compact('subRegions'));
+        if ($request->wantsJson() || $request->ajax()) {
+            $query = \App\Models\SubRegion::with('region');
+
+            if ($request->has('search') && !empty($request->search['value'])) {
+                $search = $request->search['value'];
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            }
+
+            $total = $query->count();
+            
+            $limit = $request->length ?? 100;
+            $start = $request->start ?? 0;
+            
+            $subRegions = $query->skip($start)->take($limit)->get();
+
+            return response()->json([
+                'draw' => $request->draw,
+                'recordsTotal' => \App\Models\SubRegion::count(),
+                'recordsFiltered' => $total,
+                'data' => $subRegions
+            ]);
+        }
+        
+        return view('subregions.index');
     }
 
     /**
