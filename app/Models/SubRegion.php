@@ -15,7 +15,7 @@ class SubRegion extends Model
         'wiki_data_id',
     ];
 
-    public function region()
+    public function Region()
     {
         return $this->belongsTo(Region::class);
     }

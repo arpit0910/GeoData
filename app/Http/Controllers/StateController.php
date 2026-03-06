@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\State;
+use App\Models\Country;
 
 class StateController extends Controller
 {
     public function index(Request $request)
     {
         if ($request->wantsJson() || $request->ajax()) {
-            $query = \App\Models\State::with('country');
-
+            $query = State::with('Country','Timezone');
             if ($request->has('search') && !empty($request->search['value'])) {
                 $search = $request->search['value'];
                 $query->where(function($q) use ($search) {
@@ -32,7 +33,7 @@ class StateController extends Controller
 
             return response()->json([
                 'draw' => $request->draw,
-                'recordsTotal' => \App\Models\State::count(),
+                'recordsTotal' => State::count(),
                 'recordsFiltered' => $total,
                 'data' => $states
             ]);
@@ -43,7 +44,7 @@ class StateController extends Controller
 
     public function create()
     {
-        $countries = \App\Models\Country::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get();
         return view('states.create', compact('countries'));
     }
 
@@ -62,18 +63,18 @@ class StateController extends Controller
             'wiki_data_id' => 'nullable|string|max:255',
         ]);
 
-        \App\Models\State::create($request->all());
+        State::create($request->all());
 
         return redirect()->route('states.index')->with('success', 'State created successfully.');
     }
 
-    public function edit(\App\Models\State $state)
+    public function edit(State $state)
     {
-        $countries = \App\Models\Country::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get();
         return view('states.edit', compact('state', 'countries'));
     }
 
-    public function update(Request $request, \App\Models\State $state)
+    public function update(Request $request, State $state)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -93,7 +94,7 @@ class StateController extends Controller
         return redirect()->route('states.index')->with('success', 'State updated successfully.');
     }
 
-    public function destroy(\App\Models\State $state)
+    public function destroy(State $state)
     {
         $state->delete();
         return redirect()->route('states.index')->with('success', 'State deleted successfully.');

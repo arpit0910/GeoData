@@ -48,11 +48,11 @@ class TimezonesImport implements ToCollection, WithHeadingRow, WithChunkReading
                 foreach ($timezonesArray as $tz) {
                     $insertData[] = [
                         'country_id'      => $country->id,
-                        'zone_name'       => $tz['zoneName'] ?? null,
-                        'gmt_offset'      => $tz['gmtOffset'] ?? null,
-                        'gmt_offset_name' => $tz['gmtOffsetName'] ?? null,
-                        'abbreviation'    => $tz['abbreviation'] ?? null,
-                        'tz_name'         => $tz['tzName'] ?? null,
+                        'zone_name'       => isset($tz['zoneName']) ? trim($tz['zoneName']) : null,
+                        'gmt_offset'      => isset($tz['gmtOffset']) ? trim((string)$tz['gmtOffset']) : null,
+                        'gmt_offset_name' => isset($tz['gmtOffsetName']) ? trim($tz['gmtOffsetName']) : null,
+                        'abbreviation'    => isset($tz['abbreviation']) ? trim($tz['abbreviation']) : null,
+                        'tz_name'         => isset($tz['tzName']) ? trim($tz['tzName']) : null,
                         'created_at'      => $now,
                         'updated_at'      => $now,
                     ];

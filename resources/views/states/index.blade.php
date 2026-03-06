@@ -35,6 +35,7 @@
                     <th>Name</th>
                     <th>Type</th>
                     <th>ISO2</th>
+                    <th>Timezone</th>
                     <th>Country</th>
                     <th>Action</th>
                 </tr>
@@ -57,8 +58,9 @@
             columns: [
                 { data: 'id', name: 'id' },
                 { data: 'name', name: 'name' },
-                { data: 'type', name: 'type', render: function(data) { return data ? data : 'N/A'; } },
+                { data: 'type', name: 'type', render: function(data) { return data ? data.charAt(0).toUpperCase() + data.slice(1) : 'N/A'; } },
                 { data: 'iso2', name: 'iso2', render: function(data) { return data ? data : 'N/A'; } },
+                { data: 'timezone.zone_name', name: 'timezone.zone_name', render: function(data) { return data ? data : 'N/A'; } },
                 { 
                     data: 'country', 
                     name: 'country.name',

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Country;
+use App\Models\Region;
+use App\Models\SubRegion;
 
 class CountryController extends Controller
 {
@@ -14,7 +17,7 @@ class CountryController extends Controller
     public function index(Request $request)
     {
         if ($request->wantsJson() || $request->ajax()) {
-            $query = \App\Models\Country::with(['Region', 'SubRegion']);
+            $query = Country::with(['Region', 'SubRegion']);
 
             if ($request->has('search') && !empty($request->search['value'])) {
                 $search = $request->search['value'];
@@ -34,7 +37,7 @@ class CountryController extends Controller
 
             return response()->json([
                 'draw' => $request->draw,
-                'recordsTotal' => \App\Models\Country::count(),
+                'recordsTotal' => Country::count(),
                 'recordsFiltered' => $total,
                 'data' => $countries
             ]);
@@ -50,8 +53,8 @@ class CountryController extends Controller
      */
     public function create()
     {
-        $regions = \App\Models\Region::all();
-        $subRegions = \App\Models\SubRegion::all();
+        $regions = Region::all();
+        $subRegions = SubRegion::all();
         return view('countries.create', compact('regions', 'subRegions'));
     }
 
@@ -88,7 +91,7 @@ class CountryController extends Controller
             'wiki_data_id' => 'nullable|string|max:255',
         ]);
 
-        \App\Models\Country::create($validatedData);
+        Country::create($validatedData);
 
         return redirect()->route('countries.index')->with('success', 'Country created successfully.');
     }
@@ -112,9 +115,9 @@ class CountryController extends Controller
      */
     public function edit($id)
     {
-        $country = \App\Models\Country::findOrFail($id);
-        $regions = \App\Models\Region::all();
-        $subRegions = \App\Models\SubRegion::all();
+        $country = Country::findOrFail($id);
+        $regions = Region::all();
+        $subRegions = SubRegion::all();
         return view('countries.edit', compact('country', 'regions', 'subRegions'));
     }
 
@@ -127,7 +130,7 @@ class CountryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $country = \App\Models\Country::findOrFail($id);
+        $country = Country::findOrFail($id);
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
@@ -167,7 +170,7 @@ class CountryController extends Controller
      */
     public function destroy($id)
     {
-        $country = \App\Models\Country::findOrFail($id);
+        $country = Country::findOrFail($id);
         $country->delete();
         return redirect()->route('countries.index')->with('success', 'Country deleted successfully.');
     }

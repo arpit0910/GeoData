@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Imports\SubRegionsImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SubRegionSeeder extends Seeder
 {
@@ -18,7 +20,7 @@ class SubRegionSeeder extends Seeder
         
         if (file_exists($filePath)) {
             $this->command->info('Importing sub regions from subregions.csv...');
-            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\SubRegionsImport, 'public/subregions.csv');
+            Excel::import(new SubRegionsImport, 'public/subregions.csv');
             $this->command->info('Sub Regions imported successfully.');
         } else {
             $this->command->error('subregions.csv not found inside storage/app/public. Skipping seeder.');

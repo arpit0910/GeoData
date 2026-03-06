@@ -6,6 +6,8 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\State;
 use App\Models\Country;
+use App\Imports\StatesImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StateSeeder extends Seeder
 {
@@ -20,7 +22,7 @@ class StateSeeder extends Seeder
         
         if (file_exists($filePath)) {
             $this->command->info('Importing states from states.csv...');
-            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\StatesImport, 'public/states.csv');
+            Excel::import(new StatesImport, 'public/states.csv');
             $this->command->info('States imported successfully.');
         } else {
             $this->command->error('states.csv not found inside storage/app/public. Skipping seeder.');

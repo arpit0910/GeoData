@@ -17,6 +17,10 @@ class SubRegionsImport implements ToModel, WithHeadingRow, WithChunkReading, Wit
     */
     public function model(array $row)
     {
+        $row = array_map(function($value) {
+            return is_string($value) ? trim($value) : $value;
+        }, $row);
+
         return new SubRegion([
             'name' => $row['name'] ?? null,
             'region_id' => $row['region_id'] ?? null,

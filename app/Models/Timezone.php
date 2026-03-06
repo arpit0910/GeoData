@@ -18,7 +18,7 @@ class Timezone extends Model
         'tz_name',
     ];
 
-    public function country()
+    public function Country()
     {
         return $this->belongsTo(Country::class);
     }

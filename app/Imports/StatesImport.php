@@ -35,6 +35,10 @@ class StatesImport implements ToModel, WithHeadingRow, WithChunkReading, WithBat
     */
     public function model(array $row)
     {
+        $row = array_map(function($value) {
+            return is_string($value) ? trim($value) : $value;
+        }, $row);
+
         $countryName = $row['country_name'] ?? null;
         $countryId = $this->countries[$countryName] ?? null;
         

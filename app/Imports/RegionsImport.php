@@ -17,6 +17,10 @@ class RegionsImport implements ToModel, WithHeadingRow, WithChunkReading, WithBa
     */
     public function model(array $row)
     {
+        $row = array_map(function($value) {
+            return is_string($value) ? trim($value) : $value;
+        }, $row);
+
         return new Region([
             'name' => $row['name'] ?? null,
             'wiki_data_id' => $row['wikidataid'] ?? null,

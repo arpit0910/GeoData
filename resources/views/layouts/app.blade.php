@@ -106,5 +106,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     @stack('scripts')
+    <script>
+        $(document).ready(function() {
+            $(document).on('page.dt', '.dataTable', function() {
+                $('html, body').animate({
+                    scrollTop: 0
+                }, 800);
+            });
+        });
+    </script>
 </body>
 </html>

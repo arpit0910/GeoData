@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Timezone;
+use App\Models\Country;
 use Illuminate\Http\Request;
 
 class TimezoneController extends Controller
@@ -51,7 +52,7 @@ class TimezoneController extends Controller
      */
     public function create()
     {
-        $countries = \App\Models\Country::all();
+        $countries = Country::all();
         return view('timezones.create', compact('countries'));
     }
 
@@ -96,7 +97,7 @@ class TimezoneController extends Controller
      */
     public function edit(Timezone $timezone)
     {
-        $countries = \App\Models\Country::all();
+        $countries = Country::all();
         return view('timezones.edit', compact('timezone', 'countries'));
     }
 

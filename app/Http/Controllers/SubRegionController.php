@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\SubRegion;
+use App\Models\Region;
 
 class SubRegionController extends Controller
 {
@@ -14,7 +16,7 @@ class SubRegionController extends Controller
     public function index(Request $request)
     {
         if ($request->wantsJson() || $request->ajax()) {
-            $query = \App\Models\SubRegion::with('region');
+            $query = SubRegion::with('Region');
 
             if ($request->has('search') && !empty($request->search['value'])) {
                 $search = $request->search['value'];
@@ -32,7 +34,7 @@ class SubRegionController extends Controller
 
             return response()->json([
                 'draw' => $request->draw,
-                'recordsTotal' => \App\Models\SubRegion::count(),
+                'recordsTotal' => SubRegion::count(),
                 'recordsFiltered' => $total,
                 'data' => $subRegions
             ]);
@@ -48,7 +50,7 @@ class SubRegionController extends Controller
      */
     public function create()
     {
-        $regions = \App\Models\Region::all();
+        $regions = Region::all();
         return view('subregions.create', compact('regions'));
     }
 
@@ -66,7 +68,7 @@ class SubRegionController extends Controller
             'wiki_data_id' => 'nullable|string|max:255',
         ]);
 
-        \App\Models\SubRegion::create($validatedData);
+        SubRegion::create($validatedData);
 
         return redirect()->route('subregions.index')->with('success', 'SubRegion created successfully.');
     }
@@ -90,8 +92,8 @@ class SubRegionController extends Controller
      */
     public function edit($id)
     {
-        $subRegion = \App\Models\SubRegion::findOrFail($id);
-        $regions = \App\Models\Region::all();
+        $subRegion = SubRegion::findOrFail($id);
+        $regions = Region::all();
         return view('subregions.edit', compact('subRegion', 'regions'));
     }
 
@@ -104,7 +106,7 @@ class SubRegionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $subRegion = \App\Models\SubRegion::findOrFail($id);
+        $subRegion = SubRegion::findOrFail($id);
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
@@ -125,7 +127,7 @@ class SubRegionController extends Controller
      */
     public function destroy($id)
     {
-        $subRegion = \App\Models\SubRegion::findOrFail($id);
+        $subRegion = SubRegion::findOrFail($id);
         $subRegion->delete();
         return redirect()->route('subregions.index')->with('success', 'SubRegion deleted successfully.');
     }

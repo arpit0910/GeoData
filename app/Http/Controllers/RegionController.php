@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Region;
 
 class RegionController extends Controller
 {
@@ -14,7 +15,7 @@ class RegionController extends Controller
     public function index(Request $request)
     {
         if ($request->wantsJson() || $request->ajax()) {
-            $query = \App\Models\Region::query();
+            $query = Region::query();
 
             if ($request->has('search') && !empty($request->search['value'])) {
                 $search = $request->search['value'];
@@ -32,7 +33,7 @@ class RegionController extends Controller
 
             return response()->json([
                 'draw' => $request->draw,
-                'recordsTotal' => \App\Models\Region::count(),
+                'recordsTotal' => Region::count(),
                 'recordsFiltered' => $total,
                 'data' => $regions
             ]);
@@ -64,7 +65,7 @@ class RegionController extends Controller
             'wiki_data_id' => 'nullable|string|max:255',
         ]);
 
-        \App\Models\Region::create($validatedData);
+        Region::create($validatedData);
 
         return redirect()->route('regions.index')->with('success', 'Region created successfully.');
     }
@@ -88,7 +89,7 @@ class RegionController extends Controller
      */
     public function edit($id)
     {
-        $region = \App\Models\Region::findOrFail($id);
+        $region = Region::findOrFail($id);
         return view('regions.edit', compact('region'));
     }
 
@@ -101,7 +102,7 @@ class RegionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $region = \App\Models\Region::findOrFail($id);
+        $region = Region::findOrFail($id);
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
@@ -121,7 +122,7 @@ class RegionController extends Controller
      */
     public function destroy($id)
     {
-        $region = \App\Models\Region::findOrFail($id);
+        $region = Region::findOrFail($id);
         $region->delete();
         return redirect()->route('regions.index')->with('success', 'Region deleted successfully.');
     }

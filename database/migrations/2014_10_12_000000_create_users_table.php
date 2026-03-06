@@ -19,6 +19,14 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('company_name')->nullable();
+            $table->string('company_website')->nullable();
+            $table->string('gst_number')->nullable();
+            $table->string('account_type')->default('client');
+            $table->string('client_key')->unique()->nullable();
+            $table->string('client_secret')->nullable();
+            $table->string('active_access_token')->nullable()->index();
+            $table->timestamp('token_expires_at')->nullable();
             $table->boolean('is_admin')->default(false);
             $table->boolean('status')->default(true);
             $table->rememberToken();

@@ -19,15 +19,16 @@ class State extends Model
         'latitude',
         'longitude',
         'timezone_id',
+        'state_code',
         'wiki_data_id',
     ];
 
-    public function country()
+    public function Country()
     {
         return $this->belongsTo(Country::class);
     }
 
-    public function timezone()
+    public function Timezone()
     {
         return $this->belongsTo(Timezone::class);
     }

@@ -19,6 +19,10 @@ class CountriesImport implements ToModel, WithHeadingRow, WithChunkReading, With
     */
     public function model(array $row)
     {
+        $row = array_map(function($value) {
+            return is_string($value) ? trim($value) : $value;
+        }, $row);
+
         return new Country([
             'name' => $row['name'] ?? null,
             'iso3' => $row['iso3'] ?? null,
