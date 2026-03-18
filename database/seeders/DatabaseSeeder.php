@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             CountrySeeder::class,
             TimezoneSeeder::class,
             StateSeeder::class,
+            CitySeeder::class,
         ]);
     }
 }

@@ -49,6 +49,10 @@
                         <i class="fas fa-layer-group mr-3 w-5"></i>
                         States
                     </a>
+                    <a href="{{ route('cities.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('cities.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-building mr-3 w-5"></i>
+                        Cities
+                    </a>
                     <a href="{{ route('regions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('regions.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
                         <i class="fas fa-map-marked-alt mr-3 w-5"></i>
                         Regions

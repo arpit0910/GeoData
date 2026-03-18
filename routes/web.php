@@ -52,6 +52,8 @@ Route::prefix('subregions')->name('subregions.')->group(function () {
 
 use App\Http\Controllers\TimezoneController;
 use App\Http\Controllers\StateController;
+use App\Http\Controllers\CityController;
 
 Route::resource('timezones', TimezoneController::class);
 Route::resource('states', StateController::class);
+Route::resource('cities', CityController::class);
