@@ -66,3 +66,6 @@ Route::resource('states', StateController::class);
 Route::post('cities/import', [CityController::class, 'import'])->name('cities.import');
 Route::resource('cities', CityController::class);
 
+use App\Http\Controllers\PincodeController;
+Route::post('pincodes/upload-chunk', [PincodeController::class, 'uploadChunk'])->name('pincodes.uploadChunk');
+Route::resource('pincodes', PincodeController::class);
