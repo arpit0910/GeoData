@@ -69,6 +69,10 @@
                         <i class="fas fa-location-dot mr-3 w-5"></i>
                         Pincodes
                     </a>
+                    <a href="{{ route('plans.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('plans.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-credit-card mr-3 w-5"></i>
+                        Plans
+                    </a>
                     <!-- Add more navigation items here -->
                 </div>
             </nav>

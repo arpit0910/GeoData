@@ -69,3 +69,14 @@ Route::resource('cities', CityController::class);
 use App\Http\Controllers\PincodeController;
 Route::post('pincodes/upload-chunk', [PincodeController::class, 'uploadChunk'])->name('pincodes.uploadChunk');
 Route::resource('pincodes', PincodeController::class);
+
+use App\Http\Controllers\PlanController;
+Route::prefix('plans')->name('plans.')->group(function () {
+    Route::get('/', [PlanController::class, 'index'])->name('index');
+    Route::get('/create', [PlanController::class, 'create'])->name('create');
+    Route::post('/', [PlanController::class, 'store'])->name('store');
+    Route::get('/{plan}/edit', [PlanController::class, 'edit'])->name('edit');
+    Route::put('/{plan}', [PlanController::class, 'update'])->name('update');
+    Route::delete('/{plan}', [PlanController::class, 'destroy'])->name('destroy');
+    Route::post('/{plan}/toggle-status', [PlanController::class, 'toggleStatus'])->name('toggle-status');
+});
