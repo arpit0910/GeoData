@@ -136,4 +136,15 @@ class TimezoneController extends Controller
 
         return redirect()->route('timezones.index')->with('success', 'Timezone deleted successfully.');
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt,xls,xlsx'
+        ]);
+
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\WebTimezonesImport, $request->file('import_file'));
+
+        return redirect()->back()->with('success', 'Timezones imported successfully.');
+    }
 }

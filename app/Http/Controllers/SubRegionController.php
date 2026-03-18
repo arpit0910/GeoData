@@ -131,4 +131,15 @@ class SubRegionController extends Controller
         $subRegion->delete();
         return redirect()->route('subregions.index')->with('success', 'SubRegion deleted successfully.');
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt,xls,xlsx'
+        ]);
+
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\WebSubRegionsImport, $request->file('import_file'));
+
+        return redirect()->back()->with('success', 'SubRegions imported successfully.');
+    }
 }

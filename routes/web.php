@@ -21,6 +21,7 @@ Route::prefix('user')->name('user.')->group(function () {
 
 Route::prefix('countries')->name('countries.')->group(function () {
     Route::get('/', [CountryController::class, 'index'])->name('index');
+    Route::post('/import', [CountryController::class, 'import'])->name('import');
     Route::get('/create', [CountryController::class, 'create'])->name('create');
     Route::post('/', [CountryController::class, 'store'])->name('store');
     Route::get('/{country}/edit', [CountryController::class, 'edit'])->name('edit');
@@ -32,6 +33,7 @@ use App\Http\Controllers\RegionController;
 
 Route::prefix('regions')->name('regions.')->group(function () {
     Route::get('/', [RegionController::class, 'index'])->name('index');
+    Route::post('/import', [RegionController::class, 'import'])->name('import');
     Route::get('/create', [RegionController::class, 'create'])->name('create');
     Route::post('/', [RegionController::class, 'store'])->name('store');
     Route::get('/{region}/edit', [RegionController::class, 'edit'])->name('edit');
@@ -43,6 +45,7 @@ use App\Http\Controllers\SubRegionController;
 
 Route::prefix('subregions')->name('subregions.')->group(function () {
     Route::get('/', [SubRegionController::class, 'index'])->name('index');
+    Route::post('/import', [SubRegionController::class, 'import'])->name('import');
     Route::get('/create', [SubRegionController::class, 'create'])->name('create');
     Route::post('/', [SubRegionController::class, 'store'])->name('store');
     Route::get('/{subregion}/edit', [SubRegionController::class, 'edit'])->name('edit');
@@ -54,6 +57,12 @@ use App\Http\Controllers\TimezoneController;
 use App\Http\Controllers\StateController;
 use App\Http\Controllers\CityController;
 
+Route::post('timezones/import', [TimezoneController::class, 'import'])->name('timezones.import');
 Route::resource('timezones', TimezoneController::class);
+
+Route::post('states/import', [StateController::class, 'import'])->name('states.import');
 Route::resource('states', StateController::class);
+
+Route::post('cities/import', [CityController::class, 'import'])->name('cities.import');
 Route::resource('cities', CityController::class);
+

@@ -126,4 +126,21 @@ class RegionController extends Controller
         $region->delete();
         return redirect()->route('regions.index')->with('success', 'Region deleted successfully.');
     }
+
+    /**
+     * Import a newly uploaded file.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt,xls,xlsx'
+        ]);
+
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\WebRegionsImport, $request->file('import_file'));
+
+        return redirect()->back()->with('success', 'Regions imported successfully.');
+    }
 }

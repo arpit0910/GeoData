@@ -107,4 +107,15 @@ class CityController extends Controller
         $city->delete();
         return redirect()->route('cities.index')->with('success', 'City deleted successfully.');
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt,xls,xlsx'
+        ]);
+
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\WebCitiesImport, $request->file('import_file'));
+
+        return redirect()->back()->with('success', 'Cities imported successfully.');
+    }
 }

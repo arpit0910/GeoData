@@ -99,4 +99,15 @@ class StateController extends Controller
         $state->delete();
         return redirect()->route('states.index')->with('success', 'State deleted successfully.');
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt,xls,xlsx'
+        ]);
+
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\WebStatesImport, $request->file('import_file'));
+
+        return redirect()->back()->with('success', 'States imported successfully.');
+    }
 }
