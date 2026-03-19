@@ -21,10 +21,17 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Name -->
-                <div class="col-span-1 lg:col-span-2">
+                <div class="col-span-1 lg:col-span-1">
                     <label for="name" class="block text-sm font-medium text-gray-700">Plan Name <span class="text-red-500">*</span></label>
                     <input type="text" name="name" id="name" value="{{ old('name') }}" required class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. Basic, Pro">
                     @error('name')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <!-- Gateway Product ID -->
+                <div class="col-span-1 lg:col-span-1">
+                    <label for="gateway_product_id" class="block text-sm font-medium text-gray-700">Gateway Product ID</label>
+                    <input type="text" name="gateway_product_id" id="gateway_product_id" value="{{ old('gateway_product_id') }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. prod_xyz123">
+                    @error('gateway_product_id')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <!-- Billing Cycle -->

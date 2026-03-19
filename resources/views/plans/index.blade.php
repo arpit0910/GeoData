@@ -35,6 +35,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
+                    <th>Billing Cycle</th>
                     <th>API Limit</th>
                     <th>Amount</th>
                     <th>Discount</th>
@@ -57,6 +58,10 @@
             serverSide: true,
             pageLength: 25,
             ajax: "{{ route('plans.index') }}",
+            language: {
+                emptyTable: "No records found",
+                zeroRecords: "No records found"
+            },
             columns: [
                 { data: 'id', name: 'id' },
                 { data: 'name', name: 'name' },
@@ -78,14 +83,14 @@
                     data: 'amount', 
                     name: 'amount',
                     render: function(data) {
-                        return '$' + parseFloat(data).toFixed(2);
+                        return '₹' + parseFloat(data).toFixed(2);
                     }
                 },
                 { 
                     data: 'discount_amount', 
                     name: 'discount_amount',
                     render: function(data) {
-                        return data ? '$' + parseFloat(data).toFixed(2) : '-';
+                        return data ? '₹' + parseFloat(data).toFixed(2) : '-';
                     }
                 },
                 { 
@@ -103,10 +108,6 @@
                         `;
                     }
                 },
-                { 
-                    data: 'id', 
-                    name: 'action', 
-                    orderable: false, 
                 {
                     data: 'id',
                     name: 'action',

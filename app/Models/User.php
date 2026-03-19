@@ -29,19 +29,26 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
-        'is_admin',
-        'company_name',
+        'phone',
+        'address',
+        'role',
+        'status',
         'company_website',
         'gst_number',
+        'name',
+        'is_admin',
+        'company_name',
         'account_type',
         'client_key',
         'client_secret',
         'active_access_token',
         'token_expires_at',
-        'status',
+        'plan_id',
+        'available_credits'
     ];
 
     /**
@@ -65,6 +72,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'token_expires_at' => 'datetime',
     ];
+
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
 
     protected static function booted()
     {

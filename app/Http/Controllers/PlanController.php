@@ -51,6 +51,7 @@ class PlanController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'gateway_product_id' => 'nullable|string|max:255',
             'api_hits_limit' => 'nullable|integer|min:0',
             'amount' => 'required|numeric|min:0',
             'discount_amount' => 'nullable|numeric|min:0',
@@ -81,6 +82,7 @@ class PlanController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'gateway_product_id' => 'nullable|string|max:255',
             'api_hits_limit' => 'nullable|integer|min:0',
             'amount' => 'required|numeric|min:0',
             'discount_amount' => 'nullable|numeric|min:0',

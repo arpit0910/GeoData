@@ -80,3 +80,15 @@ Route::prefix('plans')->name('plans.')->group(function () {
     Route::delete('/{plan}', [PlanController::class, 'destroy'])->name('destroy');
     Route::post('/{plan}/toggle-status', [PlanController::class, 'toggleStatus'])->name('toggle-status');
 });
+
+use App\Http\Controllers\SubscriptionAdminController;
+Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
+    Route::get('/', [SubscriptionAdminController::class, 'index'])->name('index');
+    Route::get('/{subscription}', [SubscriptionAdminController::class, 'show'])->name('show');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/pricing', [\App\Http\Controllers\SubscriptionController::class, 'pricing'])->name('pricing');
+    Route::post('/pricing/{plan}/order', [\App\Http\Controllers\SubscriptionController::class, 'createOrder'])->name('pricing.order');
+    Route::post('/pricing/verify', [\App\Http\Controllers\SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
+});
