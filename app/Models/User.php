@@ -35,6 +35,12 @@ class User extends Authenticatable
         'password',
         'phone',
         'address',
+        'address_line_1',
+        'address_line_2',
+        'country_id',
+        'state_id',
+        'city_id',
+        'pincode',
         'role',
         'status',
         'company_website',
@@ -81,6 +87,21 @@ class User extends Authenticatable
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 
     protected static function booted()

@@ -34,9 +34,28 @@
             <!-- Navigation -->
             <nav class="w-64 bg-amber-600 text-white flex-shrink-0 hidden md:block">
                 <div class="p-6">
-                    <h1 class="text-2xl font-bold tracking-tight">GeoData Admin</h1>
+                    <h1 class="text-2xl font-bold tracking-tight">GeoData</h1>
                 </div>
                 <div class="mt-4 px-4 space-y-1">
+                    <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('dashboard') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors">
+                        <i class="fas fa-home mr-3 w-5"></i>
+                        Dashboard
+                    </a>
+                    
+                    <a href="{{ route('profile.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('profile.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-user-circle mr-3 w-5"></i>
+                        Profile
+                    </a>
+                    
+                    <a href="{{ route('api-keys.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('api-keys.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-key mr-3 w-5"></i>
+                        API Keys
+                    </a>
+                    
+                    @if(auth()->check() && auth()->user()->is_admin)
+                    <div class="pt-4 pb-2">
+                        <p class="px-4 text-xs font-semibold text-amber-200 uppercase tracking-wider">System Administration</p>
+                    </div>
                     <a href="{{ route('user.list') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('user.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors">
                         <i class="fas fa-users mr-3 w-5"></i>
                         Users
@@ -78,6 +97,7 @@
                         Subscriptions
                     </a>
                     <!-- Add more navigation items here -->
+                    @endif
                 </div>
             </nav>
 
@@ -101,10 +121,12 @@
                             </button>
                             <!-- Dropdown -->
                             <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                                <a href="{{ route('profile.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
                                 <hr class="my-1 border-gray-100">
-                                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</a>
+                                <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</a>
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                    @csrf
+                                </form>
                             </div>
                         </div>
                     </div>

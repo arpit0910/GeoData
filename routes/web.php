@@ -1,14 +1,47 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SubRegionController;
+use App\Http\Controllers\TimezoneController;
+use App\Http\Controllers\StateController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\PincodeController;
+use App\Http\Controllers\PlanController;
+use App\Http\Controllers\SubscriptionAdminController;
+use App\Http\Controllers\SubscriptionController;
 
-Route::get('/', function () {
-    return view('dashboard');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/about', [HomeController::class, 'about'])->name('about');
+Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.post');
+Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
+
+Route::get('/docs', [HomeController::class, 'docs'])->name('docs');
+Route::get('/status', [HomeController::class, 'status'])->name('status');
+Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
+
+Route::middleware('guest')->group(function() {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 });
 
-Route::prefix('user')->name('user.')->group(function () {
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'profile.complete.check'])->name('dashboard');
+
+Route::middleware(['auth', 'admin'])->group(function () {
+
+    Route::prefix('user')->name('user.')->group(function () {
         Route::get('/list', [UserController::class, 'index'])->name('list');
         Route::get('/create', [UserController::class, 'create'])->name('create');
         Route::post('/store', [UserController::class, 'store'])->name('store');
@@ -17,78 +50,78 @@ Route::prefix('user')->name('user.')->group(function () {
         Route::put('/update/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/delete/{user}', [UserController::class, 'destroy'])->name('destroy');
         Route::post('/toggle-status/{user}', [UserController::class, 'toggleStatus'])->name('toggle-status');
-});
+    });
 
-Route::prefix('countries')->name('countries.')->group(function () {
-    Route::get('/', [CountryController::class, 'index'])->name('index');
-    Route::post('/import', [CountryController::class, 'import'])->name('import');
-    Route::get('/create', [CountryController::class, 'create'])->name('create');
-    Route::post('/', [CountryController::class, 'store'])->name('store');
-    Route::get('/{country}/edit', [CountryController::class, 'edit'])->name('edit');
-    Route::put('/{country}', [CountryController::class, 'update'])->name('update');
-    Route::delete('/{country}', [CountryController::class, 'destroy'])->name('destroy');
-});
+    Route::prefix('countries')->name('countries.')->group(function () {
+        Route::get('/', [CountryController::class, 'index'])->name('index');
+        Route::post('/import', [CountryController::class, 'import'])->name('import');
+        Route::get('/create', [CountryController::class, 'create'])->name('create');
+        Route::post('/', [CountryController::class, 'store'])->name('store');
+        Route::get('/{country}/edit', [CountryController::class, 'edit'])->name('edit');
+        Route::put('/{country}', [CountryController::class, 'update'])->name('update');
+        Route::delete('/{country}', [CountryController::class, 'destroy'])->name('destroy');
+    });
 
-use App\Http\Controllers\RegionController;
+    Route::prefix('regions')->name('regions.')->group(function () {
+        Route::get('/', [RegionController::class, 'index'])->name('index');
+        Route::post('/import', [RegionController::class, 'import'])->name('import');
+        Route::get('/create', [RegionController::class, 'create'])->name('create');
+        Route::post('/', [RegionController::class, 'store'])->name('store');
+        Route::get('/{region}/edit', [RegionController::class, 'edit'])->name('edit');
+        Route::put('/{region}', [RegionController::class, 'update'])->name('update');
+        Route::delete('/{region}', [RegionController::class, 'destroy'])->name('destroy');
+    });
 
-Route::prefix('regions')->name('regions.')->group(function () {
-    Route::get('/', [RegionController::class, 'index'])->name('index');
-    Route::post('/import', [RegionController::class, 'import'])->name('import');
-    Route::get('/create', [RegionController::class, 'create'])->name('create');
-    Route::post('/', [RegionController::class, 'store'])->name('store');
-    Route::get('/{region}/edit', [RegionController::class, 'edit'])->name('edit');
-    Route::put('/{region}', [RegionController::class, 'update'])->name('update');
-    Route::delete('/{region}', [RegionController::class, 'destroy'])->name('destroy');
-});
+    Route::prefix('subregions')->name('subregions.')->group(function () {
+        Route::get('/', [SubRegionController::class, 'index'])->name('index');
+        Route::post('/import', [SubRegionController::class, 'import'])->name('import');
+        Route::get('/create', [SubRegionController::class, 'create'])->name('create');
+        Route::post('/', [SubRegionController::class, 'store'])->name('store');
+        Route::get('/{subregion}/edit', [SubRegionController::class, 'edit'])->name('edit');
+        Route::put('/{subregion}', [SubRegionController::class, 'update'])->name('update');
+        Route::delete('/{subregion}', [SubRegionController::class, 'destroy'])->name('destroy');
+    });
 
-use App\Http\Controllers\SubRegionController;
+    Route::post('timezones/import', [TimezoneController::class, 'import'])->name('timezones.import');
+    Route::resource('timezones', TimezoneController::class);
 
-Route::prefix('subregions')->name('subregions.')->group(function () {
-    Route::get('/', [SubRegionController::class, 'index'])->name('index');
-    Route::post('/import', [SubRegionController::class, 'import'])->name('import');
-    Route::get('/create', [SubRegionController::class, 'create'])->name('create');
-    Route::post('/', [SubRegionController::class, 'store'])->name('store');
-    Route::get('/{subregion}/edit', [SubRegionController::class, 'edit'])->name('edit');
-    Route::put('/{subregion}', [SubRegionController::class, 'update'])->name('update');
-    Route::delete('/{subregion}', [SubRegionController::class, 'destroy'])->name('destroy');
-});
+    Route::post('states/import', [StateController::class, 'import'])->name('states.import');
+    Route::resource('states', StateController::class);
 
-use App\Http\Controllers\TimezoneController;
-use App\Http\Controllers\StateController;
-use App\Http\Controllers\CityController;
+    Route::post('cities/import', [CityController::class, 'import'])->name('cities.import');
+    Route::resource('cities', CityController::class);
 
-Route::post('timezones/import', [TimezoneController::class, 'import'])->name('timezones.import');
-Route::resource('timezones', TimezoneController::class);
+    Route::post('pincodes/upload-chunk', [PincodeController::class, 'uploadChunk'])->name('pincodes.uploadChunk');
+    Route::resource('pincodes', PincodeController::class);
 
-Route::post('states/import', [StateController::class, 'import'])->name('states.import');
-Route::resource('states', StateController::class);
+    Route::prefix('plans')->name('plans.')->group(function () {
+        Route::get('/', [PlanController::class, 'index'])->name('index');
+        Route::get('/create', [PlanController::class, 'create'])->name('create');
+        Route::post('/', [PlanController::class, 'store'])->name('store');
+        Route::get('/{plan}/edit', [PlanController::class, 'edit'])->name('edit');
+        Route::put('/{plan}', [PlanController::class, 'update'])->name('update');
+        Route::delete('/{plan}', [PlanController::class, 'destroy'])->name('destroy');
+        Route::post('/{plan}/toggle-status', [PlanController::class, 'toggleStatus'])->name('toggle-status');
+    });
 
-Route::post('cities/import', [CityController::class, 'import'])->name('cities.import');
-Route::resource('cities', CityController::class);
+    Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
+        Route::get('/', [SubscriptionAdminController::class, 'index'])->name('index');
+        Route::get('/{subscription}', [SubscriptionAdminController::class, 'show'])->name('show');
+    });
 
-use App\Http\Controllers\PincodeController;
-Route::post('pincodes/upload-chunk', [PincodeController::class, 'uploadChunk'])->name('pincodes.uploadChunk');
-Route::resource('pincodes', PincodeController::class);
-
-use App\Http\Controllers\PlanController;
-Route::prefix('plans')->name('plans.')->group(function () {
-    Route::get('/', [PlanController::class, 'index'])->name('index');
-    Route::get('/create', [PlanController::class, 'create'])->name('create');
-    Route::post('/', [PlanController::class, 'store'])->name('store');
-    Route::get('/{plan}/edit', [PlanController::class, 'edit'])->name('edit');
-    Route::put('/{plan}', [PlanController::class, 'update'])->name('update');
-    Route::delete('/{plan}', [PlanController::class, 'destroy'])->name('destroy');
-    Route::post('/{plan}/toggle-status', [PlanController::class, 'toggleStatus'])->name('toggle-status');
-});
-
-use App\Http\Controllers\SubscriptionAdminController;
-Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
-    Route::get('/', [SubscriptionAdminController::class, 'index'])->name('index');
-    Route::get('/{subscription}', [SubscriptionAdminController::class, 'show'])->name('show');
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/pricing', [\App\Http\Controllers\SubscriptionController::class, 'pricing'])->name('pricing');
+    Route::get('/complete-profile', [AuthController::class, 'completeProfile'])->name('profile.complete');
+    Route::post('/complete-profile', [AuthController::class, 'saveProfile'])->name('profile.complete.post');
+
     Route::post('/pricing/{plan}/order', [\App\Http\Controllers\SubscriptionController::class, 'createOrder'])->name('pricing.order');
     Route::post('/pricing/verify', [\App\Http\Controllers\SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
+
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::get('/api-keys', [\App\Http\Controllers\ProfileController::class, 'apiKeys'])->name('api-keys.index');
+
+    Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
 });

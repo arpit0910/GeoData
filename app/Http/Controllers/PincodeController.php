@@ -241,4 +241,50 @@ class PincodeController extends Controller
         fclose($handle);
         return $recordsProcessed;
     }
+
+    public function lookup($postal_code)
+    {
+        $pincodes = Pincode::with(['country', 'state', 'city'])
+            ->where('postal_code', $postal_code)
+            ->get();
+
+        if ($pincodes->isNotEmpty()) {
+            $pincode = $pincodes->firstWhere('city_id', '!=', null) ?? $pincodes->first();
+            
+            if (!$pincode->state_id) {
+                $pincodeState = $pincodes->firstWhere('state_id', '!=', null);
+                if ($pincodeState) {
+                    $pincode->state_id = $pincodeState->state_id;
+                    $pincode->state = $pincodeState->state;
+                }
+            }
+
+            if (!$pincode->city_id && ($pincode->county || $pincode->community)) {
+                $cityName = $pincode->county ?: $pincode->community;
+                $cityQuery = \App\Models\City::where('name', 'like', "%{$cityName}%");
+                if ($pincode->state_id) {
+                    $cityQuery->where('state_id', $pincode->state_id);
+                }
+                $cityFallback = $cityQuery->first();
+                if ($cityFallback) {
+                    $pincode->city_id = $cityFallback->id;
+                    // Mock the relation object for the response array below
+                    $pincode->setRelation('city', $cityFallback);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'country_id' => $pincode->country_id,
+                    'state_id' => $pincode->state_id,
+                    'state_name' => $pincode->state ? $pincode->state->name : null,
+                    'city_id' => $pincode->city_id,
+                    'city_name' => $pincode->city ? $pincode->city->name : null,
+                ]
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Pincode not found'], 404);
+    }
 }
