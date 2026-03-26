@@ -11,14 +11,31 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #000000; color: #ffffff; }
+        /* Auto Dark Mode Overrides for Inputs */
+        input, select, textarea { background-color: rgba(255,255,255,0.05) !important; color: white !important; border-color: rgba(255,255,255,0.1) !important; }
+        input:focus, select:focus, textarea:focus { background-color: rgba(0,0,0,0.5) !important; border-color: #f59e0b !important; }
+        input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #0a0a0a inset !important;
+            -webkit-text-fill-color: white !important;
+        }
+        label, .text-gray-700 { color: rgba(255,255,255,0.8) !important; }
+        .text-gray-500, .text-gray-600 { color: rgba(255,255,255,0.5) !important; }
+        .bg-white { background-color: rgba(10,10,10,0.8) !important; backdrop-filter: blur(16px); border-color: rgba(255,255,255,0.1) !important; }
+        .bg-gray-50 { background-color: rgba(255,255,255,0.02) !important; border-color: rgba(255,255,255,0.05) !important; } /* For readonly inputs */
+        .bg-red-50 { background-color: rgba(239,68,68,0.1) !important; border-color: rgba(239,68,68,0.5) !important; }
+        .text-red-700 { color: rgba(252,165,165,1) !important; }
     </style>
 </head>
-<body class="bg-gray-50 flex items-center justify-center min-h-screen py-12 selection:bg-amber-500 selection:text-white">
+<body class="bg-[#000000] flex items-center justify-center min-h-screen py-12 selection:bg-amber-500 selection:text-white relative overflow-hidden">
 
-    <div class="w-full max-w-lg bg-white rounded-xl shadow-xl shadow-amber-900/5 p-8 md:p-10 border border-gray-100">
+    <!-- GeoData Background Elements -->
+    <div class="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[600px] h-[600px] rounded-full bg-amber-500 opacity-10 blur-[150px] pointer-events-none"></div>
+    
+    <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 md:p-10 border border-white/10 relative z-10">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold tracking-tight text-gray-900">Complete your profile</h1>
+            <h1 class="text-3xl font-bold tracking-tight text-amber-500">Complete your profile</h1>
             <p class="text-gray-500 mt-2 text-sm max-w-sm mx-auto">Just a few more details so we can tailor the GeoData dashboard perfectly to your needs.</p>
         </div>
 

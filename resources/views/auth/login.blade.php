@@ -13,14 +13,30 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #000000; color: #ffffff; }
+        /* Auto Dark Mode Overrides for Inputs */
+        input, select, textarea { background-color: rgba(255,255,255,0.05) !important; color: white !important; border-color: rgba(255,255,255,0.1) !important; }
+        input:focus, select:focus, textarea:focus { background-color: rgba(0,0,0,0.5) !important; border-color: #f59e0b !important; }
+        input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #0a0a0a inset !important;
+            -webkit-text-fill-color: white !important;
+        }
+        label, .text-gray-700 { color: rgba(255,255,255,0.8) !important; }
+        .text-gray-500, .text-gray-600 { color: rgba(255,255,255,0.5) !important; }
+        .bg-white { background-color: rgba(10,10,10,0.8) !important; backdrop-filter: blur(16px); border-color: rgba(255,255,255,0.1) !important; }
+        .bg-red-50 { background-color: rgba(239,68,68,0.1) !important; border-color: rgba(239,68,68,0.5) !important; }
+        .text-red-700 { color: rgba(252,165,165,1) !important; }
     </style>
 </head>
-<body class="bg-gray-50 flex items-center justify-center min-h-screen selection:bg-amber-500 selection:text-white">
-
-    <div class="w-full max-w-md bg-white rounded-xl shadow-xl shadow-amber-900/5 p-8 border border-gray-100">
+<body class="bg-[#000000] flex items-center justify-center min-h-screen selection:bg-amber-500 selection:text-white relative overflow-hidden">
+    
+    <!-- GeoData Background Elements -->
+    <div class="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+    <div class="absolute left-0 top-0 -z-10 w-[500px] h-[500px] rounded-full bg-amber-500 opacity-10 blur-[120px] pointer-events-none"></div>
+    
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 border border-white/10 relative z-10">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold tracking-tight text-amber-600">GeoData</h1>
+            <h1 class="text-3xl font-bold tracking-tight text-amber-500">GeoData</h1>
             <p class="text-gray-500 mt-2 text-sm">Welcome back! Please login to your account.</p>
         </div>
 

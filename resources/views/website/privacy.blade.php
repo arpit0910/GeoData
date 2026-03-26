@@ -2,11 +2,11 @@
 @section('title', 'Privacy Policy - GeoData API')
 
 @section('content')
-<div class="bg-gray-50 py-16 sm:py-24">
+<div class="bg-transparent py-16 sm:py-24">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 text-left">
-            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-8">Privacy Policy</h1>
-            <div class="prose prose-amber max-w-none text-gray-600 font-medium leading-relaxed">
+        <div class="glass-card rounded-3xl shadow-sm p-8 md:p-12 text-left">
+            <h1 class="text-4xl font-extrabold text-white tracking-tight mb-8">Privacy Policy</h1>
+            <div class="prose prose-invert prose-amber max-w-none text-gray-400 font-medium leading-relaxed">
                 <p>Last updated: {{ date('F d, Y') }}</p>
 
                 <h3 class="text-2xl font-bold text-gray-900 mt-10 mb-4">1. Introduction</h3>

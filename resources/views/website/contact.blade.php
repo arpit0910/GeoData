@@ -2,9 +2,9 @@
 @section('title', 'Contact Us - GeoData API')
 
 @section('content')
-<div class="relative bg-gray-50 py-24 sm:py-32 overflow-hidden">
+<div class="relative bg-transparent py-24 sm:py-32 overflow-hidden">
     <!-- Background element -->
-    <div class="absolute top-0 center w-full h-80 bg-gradient-to-b from-amber-600 to-amber-800"></div>
+    <div class="absolute top-0 center w-full h-80 bg-gradient-to-b from-amber-600/20 to-transparent"></div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
         <div class="max-w-3xl mx-auto text-center mb-16">
@@ -26,31 +26,31 @@
             </div>
         @endif
 
-        <div class="bg-white rounded-[2rem] shadow-2xl p-8 md:p-14 max-w-4xl mx-auto border border-gray-100">
+        <div class="glass-card rounded-[2rem] shadow-2xl p-8 md:p-14 max-w-4xl mx-auto">
             <form action="{{ route('contact.post') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-8">
                 @csrf
                 <div>
                     <label for="first-name" class="block text-sm font-bold text-gray-900">First name</label>
                     <div class="mt-2">
-                        <input type="text" name="first-name" id="first-name" autocomplete="given-name" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium">
+                        <input type="text" name="first-name" id="first-name" autocomplete="given-name" placeholder="John" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium">
                     </div>
                 </div>
                 <div>
                     <label for="last-name" class="block text-sm font-bold text-gray-900">Last name</label>
                     <div class="mt-2">
-                        <input type="text" name="last-name" id="last-name" autocomplete="family-name" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium">
+                        <input type="text" name="last-name" id="last-name" autocomplete="family-name" placeholder="Doe" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium">
                     </div>
                 </div>
                 <div class="md:col-span-2">
                     <label for="email" class="block text-sm font-bold text-gray-900">Email address</label>
                     <div class="mt-2">
-                        <input id="email" name="email" type="email" autocomplete="email" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium">
+                        <input id="email" name="email" type="email" autocomplete="email" placeholder="john.doe@company.com" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium">
                     </div>
                 </div>
                 <div class="md:col-span-2">
                     <label for="message" class="block text-sm font-bold text-gray-900">How can we help you?</label>
                     <div class="mt-2">
-                        <textarea id="message" name="message" rows="5" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium"></textarea>
+                        <textarea id="message" name="message" rows="5" placeholder="Tell us about your project, integration questions, or support needs..." class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium"></textarea>
                     </div>
                 </div>
                 <div class="md:col-span-2 pt-2">
