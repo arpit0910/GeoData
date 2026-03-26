@@ -58,6 +58,9 @@
                         <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
                             Contact
                         </a>
+                        <a href="{{ route('docs') }}" class="{{ request()->routeIs('docs') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
+                            Docs
+                        </a>
                     </div>
                 </div>
                 
@@ -99,6 +102,7 @@
                 <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">About</a>
                 <a href="{{ route('pricing') }}" class="{{ request()->routeIs('pricing') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Pricing</a>
                 <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Contact</a>
+                <a href="{{ route('docs') }}" class="{{ request()->routeIs('docs') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Docs</a>
             </div>
             <div class="pt-4 pb-4 border-t border-white/10 px-4 space-y-3">
                 @auth
