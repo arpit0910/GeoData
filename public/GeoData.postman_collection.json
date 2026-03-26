@@ -1,0 +1,347 @@
+{
+	"info": {
+		"_postman_id": "8b9cad0e-1f20-4192-bff0-e1e043ce143d",
+		"name": "GeoData API - Full Portfolio",
+		"description": "Exhaustive, import-ready Postman collection for all 10 GeoData endpoints. Automates token extraction for seamless testing.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01. Authentication",
+			"item": [
+				{
+					"name": "Generate Bearer Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"token\", jsonData.data.token);",
+									"    console.log(\"Token auto-updated successfully!\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "client_key",
+									"value": "{{client_key}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02. Geographic Infrastructure",
+			"item": [
+				{
+					"name": "List Regions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/region/list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"region",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Sub-Regions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/subregion/list?region_id=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subregion",
+								"list"
+							],
+							"query": [
+								{
+									"key": "region_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Timezones",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/timezone/list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timezone",
+								"list"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. Countries & States",
+			"item": [
+				{
+					"name": "List Countries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/country/list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"country",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List States",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/state/list?country_id=101",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"state",
+								"list"
+							],
+							"query": [
+								{
+									"key": "country_id",
+									"value": "101"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04. Cities & Pincodes",
+			"item": [
+				{
+					"name": "List Cities",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/city/list?state_id=51",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"city",
+								"list"
+							],
+							"query": [
+								{
+									"key": "state_id",
+									"value": "51"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Pincodes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/pincode/list?city_id=1024",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pincode",
+								"list"
+							],
+							"query": [
+								{
+									"key": "city_id",
+									"value": "1024"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Pincode (Detailed)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/pincode/search?code=110001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pincode",
+								"search"
+							],
+							"query": [
+								{
+									"key": "code",
+									"value": "110001"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05. Account & Usage",
+			"item": [
+				{
+					"name": "Usage Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user/usage",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"usage"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost/api/v1"
+		},
+		{
+			"key": "client_key",
+			"value": "YOUR_PUBLIC_KEY"
+		},
+		{
+			"key": "client_secret",
+			"value": "YOUR_SECRET_KEY"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_BEARER_TOKEN"
+		}
+	]
+}

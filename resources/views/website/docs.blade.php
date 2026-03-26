@@ -5,9 +5,17 @@
 <div class="min-h-screen bg-[#020617] text-gray-300 antialiased font-inter">
     <!-- Hero Section -->
     <div class="border-b border-gray-800/50 bg-[#020617]">
-        <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-            <h1 class="text-4xl font-extrabold text-white tracking-tight sm:text-5xl">API Documentation</h1>
-            <p class="mt-4 text-xl text-gray-400 max-w-3xl">Comprehensive guide for integrating GeoData's geographic intelligence into your applications.</p>
+        <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+                <h1 class="text-4xl font-extrabold text-white tracking-tight sm:text-5xl">API Documentation</h1>
+                <p class="mt-4 text-xl text-gray-400 max-w-2xl">Comprehensive guide for integrating GeoData's geographic intelligence into your applications.</p>
+            </div>
+            <div class="mt-8 md:mt-0">
+                <a href="{{ asset('GeoData.postman_collection.json') }}" download class="inline-flex items-center px-6 py-3 border border-amber-600/30 text-base font-bold rounded-xl text-white bg-amber-600/10 hover:bg-amber-600 hover:border-amber-600 transition-all shadow-lg group">
+                    <i class="fas fa-rocket mr-3 text-amber-500 group-hover:text-white"></i>
+                    Postman Collection
+                </a>
+            </div>
         </div>
     </div>
 
