@@ -19,25 +19,24 @@ class AuthController extends Controller
 
         $user = User::where('client_key', $request->client_key)->first();
 
-        if (! $user || ! Hash::check($request->client_secret, $user->client_secret)) {
-            return sendResponse(null, 'Invalid credentials', 401);
+        // Evaluate client_secret perfectly (stored without hashing during onboarding logic implicitly natively inside Laravel boot model)
+        if (! $user || $user->client_secret !== $request->client_secret) {
+            return sendResponse(null, 'Invalid API credentials', 401);
         }
 
         if ($user->status !== 'active') {
             return sendResponse(null, 'Account is inactive', 403);
         }
 
-        $token = Str::random(80);
+        // Optional: clear out preceding outdated tokens for this specific device flow
+        $user->tokens()->where('name', 'geodata-auth-token')->delete();
 
-        $user->forceFill([
-            'active_access_token' => $token, // You might want to hash this in production
-            'token_expires_at' => now()->addDays(30),
-        ])->save();
+        // Issue formal Sanctum token targeting user context mapping perfectly to `request()->user()`
+        $tokenResult = $user->createToken('geodata-auth-token');
 
         return sendResponse([
-            'access_token' => $token,
+            'access_token' => $tokenResult->plainTextToken,
             'token_type' => 'Bearer',
-            'expires_at' => $user->token_expires_at,
         ], 'Token generated successfully', 200);
     }
 }

@@ -54,7 +54,6 @@ class User extends Authenticatable
         'active_access_token',
         'token_expires_at',
         'plan_id',
-        'available_credits'
     ];
 
     /**
@@ -102,6 +101,11 @@ class User extends Authenticatable
     public function city()
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function apiLogs()
+    {
+        return $this->hasMany(ApiLog::class);
     }
 
     protected static function booted()

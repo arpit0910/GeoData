@@ -95,7 +95,10 @@ class SubscriptionController extends Controller
             $expiresAt->addYears(100);
         }
 
-        // Record the subscription
+        // Infer absolute credits allocation limit
+        $creditsToAdd = $plan->api_hits_limit ?? 999999999;
+
+        // Record the physical subscription and credit bounds
         Subscription::create([
             'user_id' => Auth::id(),
             'plan_id' => $plan->id,
@@ -105,14 +108,14 @@ class SubscriptionController extends Controller
             'amount_paid' => $amountPaid,
             'status' => 'active',
             'expires_at' => $expiresAt,
+            'total_credits' => $creditsToAdd,
+            'used_credits' => 0,
+            'available_credits' => $creditsToAdd,
         ]);
 
-        // Update User records and assign credits
+        // Update User records context purely
         $user = Auth::user();
         $user->plan_id = $plan->id;
-        // If unlimited limit, give 100 million credits or something functional
-        $creditsToAdd = $plan->api_hits_limit ?? 999999999;
-        $user->available_credits = $user->available_credits + $creditsToAdd;
         $user->save();
 
         return response()->json([

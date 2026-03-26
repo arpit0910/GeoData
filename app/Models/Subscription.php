@@ -18,6 +18,9 @@ class Subscription extends Model
         'amount_paid',
         'status',
         'expires_at',
+        'total_credits',
+        'used_credits',
+        'available_credits',
     ];
 
     protected $casts = [

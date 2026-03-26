@@ -122,6 +122,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::get('/api-keys', [\App\Http\Controllers\ProfileController::class, 'apiKeys'])->name('api-keys.index');
-
+    Route::get('/api-logs', [\App\Http\Controllers\ApiLogController::class, 'index'])->name('api-logs.index');
     Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
 });

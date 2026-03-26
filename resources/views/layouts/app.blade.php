@@ -51,6 +51,11 @@
                         <i class="fas fa-key mr-3 w-5"></i>
                         API Keys
                     </a>
+
+                    <a href="{{ route('api-logs.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('api-logs.*') ? 'bg-amber-700 text-white' : 'text-amber-100 hover:bg-amber-500 hover:text-white' }} transition-colors mt-2">
+                        <i class="fas fa-history mr-3 w-5"></i>
+                        API Logs
+                    </a>
                     
                     @if(auth()->check() && auth()->user()->is_admin)
                     <div class="pt-4 pb-2">
