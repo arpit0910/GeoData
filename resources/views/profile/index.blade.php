@@ -20,15 +20,92 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" x-data="{ isEditing: false }">
-        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+    <!-- Subscription & Credits Section -->
+    <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500">
+        <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex justify-between items-center">
             <div>
-                <h3 class="text-lg font-semibold text-gray-900">Personal & Company Information</h3>
-                <p class="mt-1 text-sm text-gray-500">View and update your registered account details.</p>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Subscription & Credits</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Monitor your current plan status and remaining API credits.</p>
+            </div>
+            @if(!$subscription)
+            <a href="{{ route('pricing') }}" class="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-xl transition-all shadow-sm">
+                Upgrade Plan
+            </a>
+            @endif
+        </div>
+        
+        <div class="p-8">
+            @if($subscription)
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Plan Info -->
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Current Plan</span>
+                        <div class="flex items-center">
+                            <div class="h-12 w-12 rounded-2xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-500 mr-4 shadow-inner">
+                                <i class="fas fa-gem text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-black text-gray-900 dark:text-white uppercase">{{ $subscription->plan->name }}</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter">{{ $subscription->plan->billing_cycle }} BILLING</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Credits Info -->
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Credits Usage</span>
+                        <div class="flex flex-col">
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-2xl font-black text-gray-900 dark:text-white leading-none tracking-tight">{{ number_format($subscription->available_credits) }}</span>
+                                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter">/ {{ number_format($subscription->total_credits) }} Remaining</span>
+                            </div>
+                            <div class="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                @php
+                                    $usagePercent = $subscription->total_credits > 0 ? ($subscription->used_credits / $subscription->total_credits) * 100 : 0;
+                                    $availablePercent = 100 - $usagePercent;
+                                @endphp
+                                <div class="h-full bg-amber-500 transition-all duration-1000" style="width: {{ $availablePercent }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expiry Info -->
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Next Renewal</span>
+                        <div class="flex items-center">
+                            <div class="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 mr-4 shadow-inner">
+                                <i class="fas fa-calendar-alt text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black text-gray-900 dark:text-white">{{ $subscription->expires_at->format('M d, Y') }}</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter">
+                                    {{ now()->diffInDays($subscription->expires_at) }} DAYS REMAINING
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="flex flex-col items-center justify-center py-6 text-center">
+                    <div class="h-16 w-16 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300 dark:text-gray-600 mb-4">
+                        <i class="fas fa-crown text-3xl"></i>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">No Active Subscription</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm mt-1">Upgrade your account to unlock premium API access and high-volume data requests.</p>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500" x-data="{ isEditing: false }">
+        <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex justify-between items-center">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Account Information</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Manage your personal and company profile details.</p>
             </div>
             <div>
-                <button type="button" x-show="!isEditing" @click="isEditing = true" class="inline-flex items-center px-4 py-2 border border-amber-600 text-sm font-medium rounded-lg text-amber-600 bg-white hover:bg-amber-50 focus:outline-none transition-colors">
-                    <i class="fas fa-edit mr-2"></i> Edit Profile
+                <button type="button" x-show="!isEditing" @click="isEditing = true" class="inline-flex items-center px-4 py-2.5 border border-amber-600 dark:border-amber-500/30 text-sm font-bold rounded-xl text-amber-600 dark:text-amber-500 bg-white dark:bg-amber-500/5 hover:bg-amber-50 dark:hover:bg-amber-500/10 focus:outline-none transition-all shadow-sm">
+                    <i class="fas fa-edit mr-2"></i> Edit Details
                 </button>
             </div>
         </div>
@@ -39,21 +116,21 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Full Name <span class="text-red-500" x-show="isEditing" style="display: none;">*</span></label>
+                    <label for="name" class="block text-sm font-bold text-gray-700 dark:text-gray-400 mb-1.5 ml-1 uppercase tracking-wider text-[10px]">Full Name</label>
                     <div class="mt-1">
                         <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required
                             placeholder="e.g. Rahul Sharma"
                             :readonly="!isEditing"
-                            :class="isEditing ? 'bg-white border-gray-300 focus:ring-amber-500 focus:border-amber-500 shadow-sm' : 'bg-gray-50/50 border-transparent text-gray-600 cursor-not-allowed'"
-                            class="appearance-none block w-full px-4 py-3 border rounded-lg sm:text-sm transition-all duration-200">
+                            :class="isEditing ? 'bg-white dark:bg-white/[0.03] border-gray-300 dark:border-white/10 focus:ring-amber-500 focus:border-amber-500 shadow-sm dark:text-white' : 'bg-gray-50/50 dark:bg-white/[0.01] border-transparent text-gray-600 dark:text-gray-500 cursor-not-allowed'"
+                            class="appearance-none block w-full px-5 py-3.5 border rounded-xl sm:text-sm font-medium transition-all duration-300">
                     </div>
                 </div>
 
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email Address <span class="text-gray-400 font-normal">(Non-editable)</span></label>
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address <span class="text-gray-400 font-normal">(Non-editable)</span></label>
                     <div class="mt-1">
                         <input id="email" type="email" value="{{ $user->email }}" readonly
-                            class="appearance-none block w-full px-4 py-3 bg-gray-50/50 border-transparent text-gray-500 cursor-not-allowed rounded-lg sm:text-sm">
+                            class="appearance-none block w-full px-4 py-3 bg-gray-50/50 dark:bg-slate-900/50 border-transparent text-gray-500 dark:text-gray-500 cursor-not-allowed rounded-lg sm:text-sm">
                     </div>
                 </div>
 
@@ -98,8 +175,8 @@
                     </div>
                 </div>
 
-                <div class="md:col-span-2 pt-6 mt-2 border-t border-gray-100">
-                    <h4 class="text-sm font-semibold text-gray-900 tracking-wide uppercase">Location Details</h4>
+                <div class="md:col-span-2 pt-6 mt-2 border-t border-gray-100 dark:border-slate-700">
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-200 tracking-wide uppercase">Location Details</h4>
                 </div>
                 
                 <div class="md:col-span-2">
@@ -175,7 +252,7 @@
             </div>
 
             <div class="pt-6 flex justify-end space-x-3" x-show="isEditing" style="display: none;">
-                <button type="button" @click="isEditing = false; $el.form.reset();" class="inline-flex justify-center py-2.5 px-6 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors">
+                <button type="button" @click="isEditing = false; $el.form.reset();" class="inline-flex justify-center py-2.5 px-6 border border-gray-300 dark:border-slate-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none transition-colors">
                     Cancel
                 </button>
                 <button type="submit" class="inline-flex justify-center py-2.5 px-6 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all hover:shadow-lg">
@@ -186,15 +263,15 @@
     </div>
 
     <!-- Password Reset Section -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6" x-data="{ isChangingPassword: false }">
-        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+    <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden mt-8 transition-all duration-500" x-data="{ isChangingPassword: false }">
+        <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex justify-between items-center">
             <div>
-                <h3 class="text-lg font-semibold text-gray-900">Security Settings</h3>
-                <p class="mt-1 text-sm text-gray-500">Manage your account password and security preferences.</p>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Security & Privacy</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Update your password and login credentials.</p>
             </div>
             <div x-show="!isChangingPassword">
-                <button type="button" @click="isChangingPassword = true" class="inline-flex items-center px-4 py-2 border border-slate-800 text-sm font-medium rounded-lg text-slate-800 bg-white hover:bg-slate-50 focus:outline-none transition-colors">
-                    <i class="fas fa-key mr-2"></i> Change Password
+                <button type="button" @click="isChangingPassword = true" class="inline-flex items-center px-4 py-2.5 border border-slate-800 dark:border-white/10 text-sm font-bold rounded-xl text-slate-800 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 focus:outline-none transition-all shadow-sm">
+                    <i class="fas fa-shield-alt mr-2 opacity-60"></i> Change Password
                 </button>
             </div>
         </div>

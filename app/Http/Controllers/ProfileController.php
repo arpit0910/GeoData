@@ -2,16 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
-        $countries = \App\Models\Country::orderBy('name')->get();
-        return view('profile.index', compact('user', 'countries'));
+        $countries = Country::orderBy('name')->get();
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        return view('profile.index', compact('user', 'countries', 'subscription'));
     }
 
     public function update(Request $request)
@@ -60,7 +69,7 @@ class ProfileController extends Controller
 
         $user = Auth::user();
         $user->forceFill([
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password)
+            'password' => Hash::make($request->password)
         ])->save();
 
         return back()->with('success', 'Password updated successfully!');

@@ -21,6 +21,9 @@ class Subscription extends Model
         'total_credits',
         'used_credits',
         'available_credits',
+        'coupon_id',
+        'discount_amount',
+        'remaining_discount_cycles',
     ];
 
     protected $casts = [
@@ -35,5 +38,10 @@ class Subscription extends Model
     public function plan()
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }

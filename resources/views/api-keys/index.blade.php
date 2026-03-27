@@ -3,23 +3,23 @@
 @section('header', 'API Access Keys')
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
-            <h3 class="text-lg font-semibold text-gray-900"><i class="fas fa-shield-alt text-amber-500 mr-2"></i> Your Authentication Credentials</h3>
-            <p class="mt-1 text-sm text-gray-500">Use these keys to authenticate your programmatic API requests. Do not share your secret key with anyone.</p>
+<div class="max-w-4xl mx-auto space-y-8">
+    <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500">
+        <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight"><i class="fas fa-shield-alt text-amber-500 mr-2"></i> Your Authentication Credentials</h3>
+            <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400 font-medium font-medium">Use these keys to authenticate your programmatic API requests. Do not share your secret key with anyone.</p>
         </div>
         
-        <div class="p-6 space-y-8">
+        <div class="p-8 space-y-10">
             <!-- Public Key -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Public Client Key</label>
-                <div class="flex items-center">
+                <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 ml-1 uppercase tracking-[0.2em]">Public Client Key</label>
+                <div class="flex items-center group/key">
                     <div class="relative flex-grow">
                         <input type="text" readonly id="publicKey" value="{{ $user->client_key }}" 
-                            class="appearance-none block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-l-lg text-gray-600 font-mono text-sm focus:outline-none focus:ring-0 cursor-text">
+                            class="appearance-none block w-full px-5 py-4 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-l-2xl text-gray-600 dark:text-gray-400 font-mono text-sm focus:outline-none focus:ring-0 cursor-text transition-all group-hover/key:border-amber-500/30">
                     </div>
-                    <button type="button" onclick="copyToClipboard('publicKey')" class="inline-flex items-center px-4 py-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none transition-colors ml-[-1px]">
+                    <button type="button" onclick="copyToClipboard('publicKey')" class="inline-flex items-center px-6 py-4 border border-l-0 border-gray-200 dark:border-white/10 rounded-r-2xl bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 font-bold hover:bg-amber-600 dark:hover:bg-amber-600 hover:text-white dark:hover:text-white focus:outline-none transition-all transition-all duration-200">
                         <i class="far fa-copy mr-2"></i> Copy
                     </button>
                 </div>
@@ -27,21 +27,24 @@
 
             <!-- Secret Key -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Secret Client Key</label>
-                <div class="flex items-center">
+                <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 ml-1 uppercase tracking-[0.2em]">Secret Client Key</label>
+                <div class="flex items-center group/key">
                     <div class="relative flex-grow">
                         <input type="password" readonly id="secretKey" value="{{ $user->client_secret }}" 
-                            class="appearance-none block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-l-lg text-gray-800 font-mono text-sm focus:outline-none focus:ring-0 cursor-text tracking-widest">
+                            class="appearance-none block w-full px-5 py-4 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-l-2xl text-gray-800 dark:text-gray-200 font-mono text-sm focus:outline-none focus:ring-0 cursor-text tracking-widest transition-all group-hover/key:border-amber-500/30">
                         
-                        <button type="button" onclick="toggleVisibility('secretKey')" class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400 hover:text-gray-600 focus:outline-none transition-colors">
+                        <button type="button" onclick="toggleVisibility('secretKey')" class="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-400 hover:text-amber-500 focus:outline-none transition-colors">
                             <i class="fas fa-eye" id="secretKeyIcon"></i>
                         </button>
                     </div>
-                    <button type="button" onclick="copyToClipboard('secretKey')" class="inline-flex items-center px-4 py-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none transition-colors ml-[-1px]">
+                    <button type="button" onclick="copyToClipboard('secretKey')" class="inline-flex items-center px-6 py-4 border border-l-0 border-gray-200 dark:border-white/10 rounded-r-2xl bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 font-bold hover:bg-amber-600 dark:hover:bg-amber-600 hover:text-white dark:hover:text-white focus:outline-none transition-all transition-all duration-200">
                         <i class="far fa-copy mr-2"></i> Copy
                     </button>
                 </div>
-                <p class="mt-2 text-xs text-red-500"><i class="fas fa-exclamation-triangle mr-1"></i> Warning: This is highly sensitive. Keep this secret safe.</p>
+                <div class="mt-4 flex items-start p-3 bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 rounded-xl">
+                    <i class="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-3"></i>
+                    <p class="text-xs text-red-600 dark:text-red-400 font-bold">WARNING: This is highly sensitive. Regenerate it immediately if you suspect it has been compromised.</p>
+                </div>
             </div>
         </div>
     </div>

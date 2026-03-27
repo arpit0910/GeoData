@@ -3,17 +3,21 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\CountryController;
-use App\Http\Controllers\RegionController;
-use App\Http\Controllers\SubRegionController;
-use App\Http\Controllers\TimezoneController;
-use App\Http\Controllers\StateController;
-use App\Http\Controllers\CityController;
-use App\Http\Controllers\PincodeController;
-use App\Http\Controllers\PlanController;
-use App\Http\Controllers\SubscriptionAdminController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ApiLogController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\CountryController;
+use App\Http\Controllers\Admin\RegionController;
+use App\Http\Controllers\Admin\SubRegionController;
+use App\Http\Controllers\Admin\TimezoneController;
+use App\Http\Controllers\Admin\StateController;
+use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\PincodeController;
+use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\SubscriptionAdminController;
+use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\TransactionController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -109,19 +113,27 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{subscription}', [SubscriptionAdminController::class, 'show'])->name('show');
     });
 
+    Route::resource('coupons', CouponController::class, ['as' => 'admin']);
+    Route::post('coupons/{coupon}/toggle-status', [CouponController::class, 'toggleStatus'])->name('admin.coupons.toggle-status');
+
+    Route::get('transactions', [TransactionController::class, 'index'])->name('admin.transactions.index');
+    Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->name('admin.transactions.show');
+
 });
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/complete-profile', [AuthController::class, 'completeProfile'])->name('profile.complete');
     Route::post('/complete-profile', [AuthController::class, 'saveProfile'])->name('profile.complete.post');
 
-    Route::post('/pricing/{plan}/order', [\App\Http\Controllers\SubscriptionController::class, 'createOrder'])->name('pricing.order');
-    Route::post('/pricing/verify', [\App\Http\Controllers\SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
+    Route::post('/pricing/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
+    Route::post('/pricing/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
 
-    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
-    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
-    Route::get('/api-keys', [\App\Http\Controllers\ProfileController::class, 'apiKeys'])->name('api-keys.index');
-    Route::get('/api-logs', [\App\Http\Controllers\ApiLogController::class, 'index'])->name('api-logs.index');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::get('/api-keys', [ProfileController::class, 'apiKeys'])->name('api-keys.index');
+    Route::get('/api-logs', [ApiLogController::class, 'index'])->name('api-logs.index');
+    Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
+    Route::post('/pricing/validate-coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.validate-coupon');
     Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
 });

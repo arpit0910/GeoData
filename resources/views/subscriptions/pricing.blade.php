@@ -24,9 +24,22 @@
                                 Current Active Plan
                             </button>
                         @else
-                            <button onclick="buyPlan({{ $plan->id }})" class="mt-8 block w-full bg-amber-600 border border-transparent rounded-md py-3 text-sm font-semibold text-white text-center hover:bg-amber-700 transition-colors">
-                                Buy {{ $plan->name }}
-                            </button>
+                            <div class="mt-8">
+                                <div class="flex space-x-2 mb-4">
+                                    <input type="text" id="coupon_{{ $plan->id }}" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border-gray-300 focus:ring-amber-500 focus:border-amber-500 sm:text-sm" placeholder="Coupon Code">
+                                    <button onclick="applyCoupon({{ $plan->id }})" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-amber-700 bg-amber-100 hover:bg-amber-200 focus:outline-none">
+                                        Apply
+                                    </button>
+                                </div>
+                                <div id="coupon_msg_{{ $plan->id }}" class="text-xs mb-4 hidden"></div>
+                                <div id="discount_details_{{ $plan->id }}" class="hidden mb-4 p-2 bg-green-50 rounded text-xs text-green-700">
+                                    Discount: <span id="discount_val_{{ $plan->id }}"></span> | New Total: <span id="final_val_{{ $plan->id }}"></span>
+                                </div>
+
+                                <button id="buy_btn_{{ $plan->id }}" onclick="buyPlan({{ $plan->id }})" class="block w-full bg-amber-600 border border-transparent rounded-md py-3 text-sm font-semibold text-white text-center hover:bg-amber-700 transition-colors">
+                                    Buy {{ $plan->name }}
+                                </button>
+                            </div>
                         @endif
                     </div>
                     <div class="pt-6 pb-8 px-6">
@@ -60,24 +73,66 @@
 @push('scripts')
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+    let activeCoupons = {};
+
+    function applyCoupon(planId) {
+        let code = $(`#coupon_${planId}`).val();
+        let msgDiv = $(`#coupon_msg_${planId}`);
+        let detailsDiv = $(`#discount_details_${planId}`);
+
+        if (!code) {
+            alert('Please enter a coupon code.');
+            return;
+        }
+
+        $.ajax({
+            url: "{{ route('pricing.validate-coupon') }}",
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                code: code,
+                plan_id: planId
+            },
+            success: function(response) {
+                msgDiv.text(response.message).removeClass('hidden text-red-600').addClass('text-green-600');
+                $(`#discount_val_${planId}`).text('₹' + response.discount_amount.toFixed(2));
+                $(`#final_val_${planId}`).text('₹' + response.final_amount.toFixed(2));
+                detailsDiv.removeClass('hidden');
+                activeCoupons[planId] = response.coupon_id;
+            },
+            error: function(err) {
+                let msg = err.responseJSON ? err.responseJSON.message : "Invalid coupon";
+                msgDiv.text(msg).removeClass('hidden text-green-600').addClass('text-red-600');
+                detailsDiv.addClass('hidden');
+                delete activeCoupons[planId];
+            }
+        });
+    }
+
     function buyPlan(planId) {
-        let btn = $(event.target);
+        let btn = $(`#buy_btn_${planId}`);
         let originalText = btn.text();
         btn.text('Processing...').prop('disabled', true);
+
+        let postData = {
+            _token: '{{ csrf_token() }}'
+        };
+
+        if (activeCoupons[planId]) {
+            postData.coupon_id = activeCoupons[planId];
+        }
 
         // 1. Fetch Order ID from backend
         $.ajax({
             url: `/pricing/${planId}/order`,
             type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
+            data: postData,
             success: function(response) {
                 // Return button to normal state if order is fetched
                 btn.text(originalText).prop('disabled', false);
 
                 if (response.amount == 0) {
-                    processVerification(planId, 'free_plan_' + Math.random(), 'free_plan', 'free_sig');
+                    processVerification(planId, 'free_plan_' + Math.random(), 'free_plan', 'free_sig', postData.coupon_id);
                     return;
                 }
 
@@ -89,7 +144,7 @@
                     "description": "Plan Purchase",
                     "order_id": response.order_id, 
                     "handler": function (paymentResponse){
-                        processVerification(planId, paymentResponse.razorpay_order_id, paymentResponse.razorpay_payment_id, paymentResponse.razorpay_signature);
+                        processVerification(planId, paymentResponse.razorpay_order_id, paymentResponse.razorpay_payment_id, paymentResponse.razorpay_signature, postData.coupon_id);
                     },
                     "prefill": {
                         "name": "{{ Auth::user()->first_name ?? 'User' }} {{ Auth::user()->last_name ?? '' }}",
@@ -115,17 +170,23 @@
         });
     }
 
-    function processVerification(planId, orderId, paymentId, signature) {
+    function processVerification(planId, orderId, paymentId, signature, couponId) {
+        let postData = {
+            _token: '{{ csrf_token() }}',
+            plan_id: planId,
+            razorpay_order_id: orderId,
+            razorpay_payment_id: paymentId,
+            razorpay_signature: signature
+        };
+
+        if (couponId) {
+            postData.coupon_id = couponId;
+        }
+
         $.ajax({
             url: "{{ route('pricing.verify') }}",
             type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                plan_id: planId,
-                razorpay_order_id: orderId,
-                razorpay_payment_id: paymentId,
-                razorpay_signature: signature
-            },
+            data: postData,
             success: function(verifyRes) {
                 if(verifyRes.success) {
                     alert(verifyRes.message);

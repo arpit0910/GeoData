@@ -94,7 +94,7 @@ class AuthController extends Controller
 
     public function completeProfile()
     {
-        $countries = \App\Models\Country::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get();
         return view('auth.complete-profile', compact('countries'));
     }
 
