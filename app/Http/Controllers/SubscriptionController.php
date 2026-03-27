@@ -71,7 +71,13 @@ class SubscriptionController extends Controller
     public function pricing()
     {
         $plans = Plan::where('status', 1)->get();
-        return view('subscriptions.pricing', compact('plans'));
+        $activeSubscription = auth()->check() ? auth()->user()->subscriptions()
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first() : null;
+            
+        return view('subscriptions.pricing', compact('plans', 'activeSubscription'));
     }
 
     public function createOrder(Request $request, Plan $plan)
@@ -324,6 +330,7 @@ class SubscriptionController extends Controller
             // Update User records
             $user->plan_id = $plan->id;
             $user->available_credits = $creditsToAdd; // Reset/Set to plan limit
+            $user->status = 'active';
             $user->save();
 
             return $subscription;

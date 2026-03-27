@@ -64,14 +64,22 @@
         
         <div class="mt-12 p-10 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-3xl flex flex-col md:flex-row items-center justify-between text-left gap-8 transition-all hover:border-amber-500/30">
             <div>
-                <h4 class="text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2">Current Tier</h4>
+                <h4 class="text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2">Current Plan</h4>
                 <div class="flex items-center">
-                    <span class="text-2xl font-bold text-gray-900 dark:text-white">Free Developer Tier</span>
+                    <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ auth()->user()->plan ? auth()->user()->plan->name : 'Free Developer Tier' }}</span>
                     <span class="ml-3 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">Active</span>
+                    @if(auth()->user()->plan && auth()->user()->plan->amount <= 0)
+                        <span class="ml-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-500 text-[10px] font-black uppercase tracking-widest border border-blue-500/20">Free</span>
+                    @endif
                 </div>
             </div>
             <a href="{{ route('pricing') }}" class="group/btn inline-flex items-center px-8 py-4 border border-transparent text-lg font-black rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-xl shadow-amber-600/20 hover:shadow-amber-500/40 transition-all active:scale-95 whitespace-nowrap">
-                Upgrade to Pro <i class="fas fa-crown ml-3 transition-transform group-hover/btn:scale-110 group-hover/btn:rotate-12"></i>
+                @if(auth()->user()->plan && auth()->user()->plan->amount <= 0)
+                    Upgrade to Pro 
+                @else
+                    Upgrade Now
+                @endif
+                <i class="fas fa-crown ml-3 transition-transform group-hover/btn:scale-110 group-hover/btn:rotate-12"></i>
             </a>
         </div>
     </div>

@@ -40,9 +40,20 @@
                             <span class="text-base font-medium text-gray-500">/{{ rtrim($plan->billing_cycle, 'ly') }}</span>
                         </p>
                         
-                        @if(Auth::user()->plan_id === $plan->id)
-                            <button disabled class="mt-8 block w-full bg-green-500 border border-transparent rounded-md py-3 text-sm font-semibold text-white text-center cursor-not-allowed">
-                                Current Active Plan
+                        @php 
+                            $isCurrentPlan = auth()->check() && isset($activeSubscription) && $activeSubscription && $activeSubscription->plan_id == $plan->id;
+                        @endphp
+                        
+                        @if($isCurrentPlan)
+                            <button disabled class="mt-8 block w-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-400/30 rounded-xl py-3 text-sm font-black text-white text-center cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-emerald-500/10 ring-1 ring-white/10 relative overflow-hidden group">
+                                <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-50"></div>
+                                <span class="flex items-center gap-1.5 relative z-10 shrink-0">
+                                    <i class="fas fa-crown text-amber-300 animate-pulse text-xs"></i> 
+                                    Subscribed
+                                </span>
+                                <span class="text-[9px] font-bold opacity-90 uppercase tracking-widest relative z-10 bg-black/20 px-2.5 py-1 rounded-lg border border-white/5 shrink-0">
+                                    Exp: {{ \Carbon\Carbon::parse($activeSubscription->expires_at)->format('M d, Y') }}
+                                </span>
                             </button>
                         @else
                             <button @click="selectPlan({{ json_encode($plan) }})" class="mt-8 block w-full bg-amber-600 border border-transparent rounded-md py-3 text-sm font-semibold text-white text-center hover:bg-amber-700 transition-colors">

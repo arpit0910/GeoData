@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\V1\GeoDataController;
+use App\Http\Controllers\SubscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,23 +21,24 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/v1/auth/token', [App\Http\Controllers\Api\AuthController::class, 'token']);
+Route::prefix('v1')->group(function() {
+    
+    Route::post('/auth/token', [AuthController::class, 'token']);
+    Route::post('/webhooks/razorpay', [SubscriptionController::class, 'handleWebhook'])->name('api.razorpay.webhook');
 
-Route::middleware(['auth:sanctum', 'api.credits'])->prefix('v1')->group(function() {
-    Route::get('/region/list', [App\Http\Controllers\Api\V1\GeoDataController::class, 'regions']);
-    Route::get('/subregion/list', [App\Http\Controllers\Api\V1\GeoDataController::class, 'subregions']);
-    Route::get('/timezone/list', [App\Http\Controllers\Api\V1\GeoDataController::class, 'timezones']);
-    Route::get('/country/list', [App\Http\Controllers\Api\V1\GeoDataController::class, 'countries']);
-    Route::get('/state/list', [App\Http\Controllers\Api\V1\GeoDataController::class, 'states']);
-    Route::get('/city/list', [App\Http\Controllers\Api\V1\GeoDataController::class, 'cities']);
-    Route::get('/pincode/list', [App\Http\Controllers\Api\V1\GeoDataController::class, 'pincodes']);
-    Route::get('/pincode/search', [App\Http\Controllers\Api\V1\GeoDataController::class, 'pincodeSearch']);
-    Route::get('/user/usage', [App\Http\Controllers\Api\V1\GeoDataController::class, 'usage']);
+    Route::middleware(['auth:sanctum', 'api.credits'])->group(function() {
+        Route::get('/region/list', [GeoDataController::class, 'regions']);
+        Route::get('/subregion/list', [GeoDataController::class, 'subregions']);
+        Route::get('/timezone/list', [GeoDataController::class, 'timezones']);
+        Route::get('/country/list', [GeoDataController::class, 'countries']);
+        Route::get('/state/list', [GeoDataController::class, 'states']);
+        Route::get('/city/list', [GeoDataController::class, 'cities']);
+        Route::get('/pincode/list', [GeoDataController::class, 'pincodes']);
+        Route::get('/pincode/search', [GeoDataController::class, 'pincodeSearch']);
+        Route::get('/user/usage', [GeoDataController::class, 'usage']);
 
-    // Fallback for logging non-existent API endpoints under v1
-    Route::fallback(function() {
-        return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);
+        Route::fallback(function() {
+            return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);
+        });
     });
 });
-
-Route::post('/webhooks/razorpay', [App\Http\Controllers\SubscriptionController::class, 'handleWebhook']);

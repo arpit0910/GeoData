@@ -52,7 +52,7 @@ class GeoDataController extends Controller
         if ($request->has('region_id')) {
             $query->where('region_id', $request->query('region_id'));
         } elseif ($request->has('region_name')) {
-            $query->whereHas('region', function($q) use ($request) {
+            $query->whereHas('Region', function($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->query('region_name') . '%');
             });
         }
@@ -101,8 +101,7 @@ class GeoDataController extends Controller
      */
     public function countries(Request $request)
     {
-        $query = Country::select('id', 'name', 'iso2', 'iso3', 'phonecode', 'currency', 'capital', 'region', 'subregion_id', 'region_id')
-            ->where('status', 1);
+        $query = Country::select('id', 'name', 'iso2', 'iso3', 'phonecode', 'currency', 'capital', 'subregion_id', 'region_id');
 
         if ($request->has('name')) {
             $query->where('name', 'LIKE', '%' . $request->query('name') . '%');
@@ -138,7 +137,7 @@ class GeoDataController extends Controller
      */
     public function states(Request $request)
     {
-        $query = State::where('status', 1)->select('id', 'name', 'country_id', 'latitude', 'longitude');
+        $query = State::select('id', 'name', 'country_id', 'latitude', 'longitude');
 
         if ($request->has('name')) {
             $query->where('name', 'LIKE', '%' . $request->query('name') . '%');
@@ -147,7 +146,7 @@ class GeoDataController extends Controller
         if ($request->has('country_id')) {
             $query->where('country_id', $request->query('country_id'));
         } elseif ($request->has('country_name')) {
-            $query->whereHas('country', function($q) use ($request) {
+            $query->whereHas('Country', function($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->query('country_name') . '%');
             });
         }
@@ -170,7 +169,7 @@ class GeoDataController extends Controller
      */
     public function cities(Request $request)
     {
-        $query = City::where('status', 1)->select('id', 'name', 'state_id', 'country_id', 'latitude', 'longitude');
+        $query = City::select('id', 'name', 'state_id', 'country_id', 'latitude', 'longitude');
 
         if ($request->has('name')) {
             $query->where('name', 'LIKE', '%' . $request->query('name') . '%');
@@ -215,8 +214,7 @@ class GeoDataController extends Controller
         $query = Pincode::query(); 
 
         if ($request->has('pincode')) {
-            $query->where('postal_code', 'LIKE', '%' . $request->query('pincode') . '%')
-                  ->orWhere('pincode', 'LIKE', '%' . $request->query('pincode') . '%');
+            $query->where('postal_code', 'LIKE', '%' . $request->query('pincode') . '%');
         }
 
         // Filter by city
@@ -271,7 +269,6 @@ class GeoDataController extends Controller
 
         $pincodes = Pincode::with(['state', 'city', 'country'])
             ->where('postal_code', $code)
-            ->orWhere('pincode', $code)
             ->get();
             
         if ($pincodes->isEmpty()) {

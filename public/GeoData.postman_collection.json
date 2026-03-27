@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "8b9cad0e-1f20-4192-bff0-e1e043ce143d",
-		"name": "GeoData API - Full Portfolio",
-		"description": "Exhaustive, import-ready Postman collection for all 10 GeoData endpoints. Automates token extraction for seamless testing.",
+		"name": "GeoData API - Official Collection v1.1",
+		"description": "Comprehensive Postman collection for the GeoData Platform. Includes all 10 endpoints, detailed search examples, and auto-token extraction.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -17,7 +17,7 @@
 							"script": {
 								"exec": [
 									"var jsonData = pm.response.json();",
-									"if (jsonData.success && jsonData.data.token) {",
+									"if (jsonData.success && jsonData.data && jsonData.data.token) {",
 									"    pm.collectionVariables.set(\"token\", jsonData.data.token);",
 									"    console.log(\"Token auto-updated successfully!\");",
 									"}"
@@ -55,12 +55,51 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Token Generated Successfully",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "client_key",
+											"value": "{{client_key}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{client_secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/token",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"token\": \"1|abcdef1234567890...\"\n    }\n}"
+						}
+					]
 				}
 			]
 		},
 		{
-			"name": "02. Geographic Infrastructure",
+			"name": "02. Global Infrastructure",
 			"item": [
 				{
 					"name": "List Regions",
@@ -84,58 +123,66 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Regions List Example",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        { \"id\": 1, \"name\": \"Asia\" },\n        { \"id\": 2, \"name\": \"Europe\" }\n    ],\n    \"meta\": { \"total\": 6, \"current_page\": 1 }\n}"
+						}
+					]
 				},
 				{
 					"name": "List Sub-Regions",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/subregion/list?region_id=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"subregion",
-								"list"
-							],
-							"query": [
-								{
-									"key": "region_id",
-									"value": "1"
+					"item": [
+						{
+							"name": "All Sub-Regions",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/subregion/list",
+									"host": ["{{base_url}}"],
+									"path": ["subregion", "list"]
 								}
-							]
+							},
+							"response": []
+						},
+						{
+							"name": "Filter by Region ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/subregion/list?region_id=1",
+									"host": ["{{base_url}}"],
+									"path": ["subregion", "list"],
+									"query": [{ "key": "region_id", "value": "1" }]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
 					"name": "List Timezones",
 					"request": {
 						"method": "GET",
 						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
+							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 						],
 						"url": {
-							"raw": "{{base_url}}/timezone/list",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"timezone",
-								"list"
-							]
+							"raw": "{{base_url}}/timezone/list?name=Kolkata",
+							"host": ["{{base_url}}"],
+							"path": ["timezone", "list"],
+							"query": [{ "key": "name", "value": "Kolkata" }]
 						}
 					},
 					"response": []
@@ -147,57 +194,76 @@
 			"item": [
 				{
 					"name": "List Countries",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/country/list",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"country",
-								"list"
-							]
+					"item": [
+						{
+							"name": "All Countries",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/country/list",
+									"host": ["{{base_url}}"],
+									"path": ["country", "list"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Filter by ISO2",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/country/list?iso2=IN",
+									"host": ["{{base_url}}"],
+									"path": ["country", "list"],
+									"query": [{ "key": "iso2", "value": "IN" }]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
 					"name": "List States",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/state/list?country_id=101",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"state",
-								"list"
-							],
-							"query": [
-								{
-									"key": "country_id",
-									"value": "101"
+					"item": [
+						{
+							"name": "States of Country (ID)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/state/list?country_id=101",
+									"host": ["{{base_url}}"],
+									"path": ["state", "list"],
+									"query": [{ "key": "country_id", "value": "101" }]
 								}
-							]
+							},
+							"response": []
+						},
+						{
+							"name": "Search State by Name",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/state/list?name=Maharashtra",
+									"host": ["{{base_url}}"],
+									"path": ["state", "list"],
+									"query": [{ "key": "name", "value": "Maharashtra" }]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				}
 			]
 		},
@@ -206,142 +272,141 @@
 			"item": [
 				{
 					"name": "List Cities",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/city/list?state_id=51",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"city",
-								"list"
-							],
-							"query": [
-								{
-									"key": "state_id",
-									"value": "51"
+					"item": [
+						{
+							"name": "Cities by State ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/city/list?state_id=51",
+									"host": ["{{base_url}}"],
+									"path": ["city", "list"],
+									"query": [{ "key": "state_id", "value": "51" }]
 								}
-							]
+							},
+							"response": []
+						},
+						{
+							"name": "Search City by Name",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/city/list?name=Mumbai",
+									"host": ["{{base_url}}"],
+									"path": ["city", "list"],
+									"query": [{ "key": "name", "value": "Mumbai" }]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
 					"name": "List Pincodes",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/pincode/list?city_id=1024",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"pincode",
-								"list"
-							],
-							"query": [
-								{
-									"key": "city_id",
-									"value": "1024"
+					"item": [
+						{
+							"name": "Pincodes by City ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/pincode/list?city_id=1024",
+									"host": ["{{base_url}}"],
+									"path": ["pincode", "list"],
+									"query": [{ "key": "city_id", "value": "1024" }]
 								}
-							]
+							},
+							"response": []
+						},
+						{
+							"name": "Filter by Pincode Value",
+							"request": {
+								"method": "GET",
+								"header": [
+									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+								],
+								"url": {
+									"raw": "{{base_url}}/pincode/list?pincode=400001",
+									"host": ["{{base_url}}"],
+									"path": ["pincode", "list"],
+									"query": [{ "key": "pincode", "value": "400001" }]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Search Pincode (Detailed)",
+					"name": "Search Pincode (Comprehensive)",
 					"request": {
 						"method": "GET",
 						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
+							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 						],
 						"url": {
-							"raw": "{{base_url}}/pincode/search?code=110001",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"pincode",
-								"search"
-							],
-							"query": [
-								{
-									"key": "code",
-									"value": "110001"
-								}
-							]
+							"raw": "{{base_url}}/pincode/search?code=400001",
+							"host": ["{{base_url}}"],
+							"path": ["pincode", "search"],
+							"query": [{ "key": "code", "value": "400001" }]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Comprehensive Search Response",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"pincode\": \"400001\",\n            \"country\": { \"id\": 101, \"name\": \"India\", \"iso2\": \"IN\" },\n            \"state\": { \"id\": 51, \"name\": \"Maharashtra\" },\n            \"city\": { \"id\": 1024, \"name\": \"Mumbai\" },\n            \"latitude\": \"18.922\",\n            \"longitude\": \"72.834\"\n        }\n    ]\n}"
+						}
+					]
 				}
 			]
 		},
 		{
-			"name": "05. Account & Usage",
+			"name": "05. Metrics & Usage",
 			"item": [
 				{
-					"name": "Usage Report",
+					"name": "Live API Usage Report",
 					"request": {
 						"method": "GET",
 						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
+							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 						],
 						"url": {
 							"raw": "{{base_url}}/user/usage",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"usage"
-							]
+							"host": ["{{base_url}}"],
+							"path": ["user", "usage"]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Usage Report Example",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"plan_name\": \"PRO\",\n        \"total_credits\": 50000,\n        \"available_credits\": 42500,\n        \"recent_logs\": [\n            { \"endpoint\": \"/api/v1/pincode/search\", \"status\": 200, \"time\": \"2026-03-27 12:45:00\" }\n        ]\n    }\n}"
+						}
+					]
 				}
 			]
 		}
 	],
 	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost/api/v1"
-		},
-		{
-			"key": "client_key",
-			"value": "YOUR_PUBLIC_KEY"
-		},
-		{
-			"key": "client_secret",
-			"value": "YOUR_SECRET_KEY"
-		},
-		{
-			"key": "token",
-			"value": "YOUR_BEARER_TOKEN"
-		}
+		{ "key": "base_url", "value": "http://localhost:8000/api/v1" },
+		{ "key": "client_key", "value": "YOUR_PUBLIC_KEY" },
+		{ "key": "client_secret", "value": "YOUR_SECRET_KEY" },
+		{ "key": "token", "value": "YOUR_BEARER_TOKEN" }
 	]
 }
