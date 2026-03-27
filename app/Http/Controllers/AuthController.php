@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -131,6 +132,6 @@ class AuthController extends Controller
             'city_id' => $request->city_id,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Profile completed successfully!');
+        return redirect()->route('pricing')->with('success', 'Profile completed successfully! Please choose a plan to continue.');
     }
 }

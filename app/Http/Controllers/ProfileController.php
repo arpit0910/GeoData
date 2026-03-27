@@ -15,7 +15,7 @@ class ProfileController extends Controller
         $user = Auth::user();
         $countries = Country::orderBy('name')->get();
         $subscription = Subscription::where('user_id', $user->id)
-            ->where('status', 'paid')
+            ->where('status', 'active')
             ->where('expires_at', '>', now())
             ->latest()
             ->first();

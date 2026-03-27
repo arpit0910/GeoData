@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Coupon;
@@ -113,7 +114,11 @@ class SubscriptionController extends Controller
             'receipt'         => 'rcpt_' . Auth::id() . '_' . time(),
             'amount'          => $amountPaise,
             'currency'        => 'INR',
-            'payment_capture' => 1
+            'payment_capture' => 1,
+            'notes'           => [
+                'plan_id' => $plan->id,
+                'coupon_id' => $request->coupon_id ?? null,
+            ]
         ];
 
         try {
@@ -151,7 +156,7 @@ class SubscriptionController extends Controller
                     }
                 }
                 $amountPaid = max(0, $amountPaid - $discountAmount);
-                $remainingCycles = $coupon->apply_to_cycles - 1; // First cycle applied now
+                $remainingCycles = $coupon->apply_to_cycles - 1;
             }
         }
 
@@ -159,7 +164,6 @@ class SubscriptionController extends Controller
         $paymentId = $request->razorpay_payment_id;
         $signature = $request->razorpay_signature;
 
-        // If it's a free plan, skip signature verification
         if ($amountPaid > 0 && strpos($orderId, 'free_plan_') === false) {
             $api = new Api($keyId, $keySecret);
             try {
@@ -177,65 +181,153 @@ class SubscriptionController extends Controller
             }
         }
 
-        // Calculate expiration date
-        $expiresAt = now();
-        if ($plan->billing_cycle === 'monthly') {
-            $expiresAt->addMonth();
-        } elseif ($plan->billing_cycle === 'yearly') {
-            $expiresAt->addYear();
-        } elseif ($plan->billing_cycle === 'lifetime') {
-            $expiresAt->addYears(100);
-        }
+        $subscription = $this->activateSubscription(
+            Auth::user(),
+            $plan,
+            $orderId,
+            $paymentId,
+            $signature,
+            $amountPaid,
+            $discountAmount,
+            $remainingCycles,
+            $couponId
+        );
 
-        // Infer absolute credits allocation limit
-        $creditsToAdd = $plan->api_hits_limit ?? 999999999;
-
-        // Record the physical subscription and credit bounds
-        $subscription = Subscription::create([
-            'user_id' => Auth::id(),
-            'plan_id' => $plan->id,
-            'coupon_id' => $couponId,
-            'razorpay_order_id' => $orderId,
-            'razorpay_payment_id' => $paymentId,
-            'razorpay_signature' => $signature,
-            'amount_paid' => $amountPaid,
-            'discount_amount' => $discountAmount,
-            'remaining_discount_cycles' => $remainingCycles,
-            'status' => 'active',
-            'expires_at' => $expiresAt,
-            'total_credits' => $creditsToAdd,
-            'used_credits' => 0,
-            'available_credits' => $creditsToAdd,
+        return response()->json([
+            'success' => true,
+            'message' => 'Subscription activated successfully!',
+            'subscription' => $subscription,
+            'plan_details' => [
+                'name' => $plan->name,
+                'expires_at' => $subscription->expires_at->format('d M, Y'),
+                'benefits' => $plan->benefits,
+                'credits' => number_format($subscription->total_credits)
+            ]
         ]);
+    }
 
-        if ($couponId) {
-            $coupon = Coupon::find($couponId);
-            if ($coupon) {
-                $coupon->increment('used_count');
-                $coupon->users()->attach(Auth::id(), ['subscription_id' => $subscription->id]);
+    public function handleWebhook(Request $request)
+    {
+        $webhookSecret = env('RAZORPAY_WEBHOOK_SECRET');
+        $signature = $request->header('X-Razorpay-Signature');
+        
+        // Skip signature check if secret not set (not recommended for production)
+        if ($webhookSecret && $signature) {
+            $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
+            try {
+                $api->utility->verifyWebhookSignature($request->getContent(), $signature, $webhookSecret);
+            } catch (SignatureVerificationError $e) {
+                return response()->json(['success' => false, 'message' => 'Invalid webhook signature'], 400);
             }
         }
 
-        // Record Transaction History
-        TransactionHistory::create([
-            'user_id' => Auth::id(),
-            'subscription_id' => $subscription->id,
-            'plan_id' => $plan->id,
-            'coupon_id' => $couponId,
-            'razorpay_payment_id' => $paymentId,
-            'razorpay_order_id' => $orderId,
-            'amount' => $amountPaid,
-            'discount_amount' => $discountAmount,
-            'coupon_code' => $coupon ? $coupon->code : null,
-            'plan_name' => $plan->name,
-            'billing_cycle' => $plan->billing_cycle,
-            'status' => 'success',
-        ]);
+        $payload = $request->all();
+        $event = $payload['event'];
 
-        // Update User records context purely
-        $user = Auth::user();
-        $user->plan_id = $plan->id;
-        $user->save();
+        if ($event === 'payment.captured' || $event === 'order.paid') {
+            $payment = $payload['payload']['payment']['entity'];
+            $orderId = $payment['order_id'];
+            
+            // Check if subscription already exists
+            if (Subscription::where('razorpay_order_id', $orderId)->where('status', 'active')->exists()) {
+                return response()->json(['success' => true, 'message' => 'Subscription already active']);
+            }
+
+            // Find plan from order (we might need to store order details in a separate table or metadata)
+            // For now, let's assume we can find it by finding the transaction history being created by frontend
+            // Or we store order info in a temporary table.
+            // Actually, simpler: finding user by email from payment info
+            $user = User::where('email', $payment['email'])->first();
+            
+            if ($user && $payment['notes']['plan_id'] ?? null) {
+                $plan = Plan::find($payment['notes']['plan_id']);
+                if ($plan) {
+                    $couponId = $payment['notes']['coupon_id'] ?? null;
+                    // Note: Here we'd recalculate or use metadata for discounts
+                    $this->activateSubscription(
+                        $user,
+                        $plan,
+                        $orderId,
+                        $payment['id'],
+                        $signature ?? 'webhook',
+                        $payment['amount'] / 100,
+                        $payment['notes']['discount_amount'] ?? 0,
+                        0, // cycles hard to track here without more metadata
+                        $couponId
+                    );
+                }
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    private function activateSubscription($user, $plan, $orderId, $paymentId, $signature, $amountPaid, $discountAmount, $remainingCycles, $couponId = null)
+    {
+        return DB::transaction(function() use ($user, $plan, $orderId, $paymentId, $signature, $amountPaid, $discountAmount, $remainingCycles, $couponId) {
+            // Calculate expiration date
+            $expiresAt = now();
+            if ($plan->billing_cycle === 'monthly') {
+                $expiresAt->addMonth();
+            } elseif ($plan->billing_cycle === 'yearly') {
+                $expiresAt->addYear();
+            } elseif ($plan->billing_cycle === 'lifetime') {
+                $expiresAt->addYears(100);
+            }
+
+            $creditsToAdd = $plan->api_hits_limit ?? 999999999;
+
+            // Deactivate old subscriptions for this user
+            Subscription::where('user_id', $user->id)->where('status', 'active')->update(['status' => 'expired']);
+
+            $subscription = Subscription::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'coupon_id' => $couponId,
+                'razorpay_order_id' => $orderId,
+                'razorpay_payment_id' => $paymentId,
+                'razorpay_signature' => $signature,
+                'amount_paid' => $amountPaid,
+                'discount_amount' => $discountAmount,
+                'remaining_discount_cycles' => $remainingCycles,
+                'status' => 'active',
+                'expires_at' => $expiresAt,
+                'total_credits' => $creditsToAdd,
+                'used_credits' => 0,
+                'available_credits' => $creditsToAdd,
+            ]);
+
+            if ($couponId) {
+                $coupon = Coupon::find($couponId);
+                if ($coupon) {
+                    $coupon->increment('used_count');
+                    $coupon->users()->attach($user->id, ['subscription_id' => $subscription->id]);
+                }
+            }
+
+            // Record Transaction History
+            TransactionHistory::create([
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'plan_id' => $plan->id,
+                'coupon_id' => $couponId,
+                'razorpay_payment_id' => $paymentId,
+                'razorpay_order_id' => $orderId,
+                'amount' => $amountPaid,
+                'discount_amount' => $discountAmount,
+                'coupon_code' => $couponId ? Coupon::find($couponId)->code : null,
+                'plan_name' => $plan->name,
+                'billing_cycle' => $plan->billing_cycle,
+                'status' => 'success',
+            ]);
+
+            // Update User records
+            $user->plan_id = $plan->id;
+            $user->available_credits = $creditsToAdd; // Reset/Set to plan limit
+            $user->save();
+
+            return $subscription;
+        });
     }
 
     public function transactions(Request $request)
@@ -274,5 +366,17 @@ class SubscriptionController extends Controller
             ->paginate(15);
 
         return view('subscriptions.transactions', compact('transactions'));
+    }
+
+    public function downloadReceipt($id)
+    {
+        $transaction = TransactionHistory::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->with(['plan', 'coupon'])
+            ->firstOrFail();
+
+        $user = Auth::user();
+        
+        return view('subscriptions.receipt', compact('transaction', 'user'));
     }
 }

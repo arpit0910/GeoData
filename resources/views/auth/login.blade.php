@@ -59,7 +59,7 @@
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
                 <div class="mt-1">
-                    <input id="email" name="email" type="email" autocomplete="email" required value="{{ old('email') }}"
+                    <input id="email" name="email" type="email" autocomplete="email" required value="{{ old('email') }}" placeholder="Enter registered email address"
                         class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors blur-0">
                 </div>
             </div>
@@ -71,6 +71,7 @@
                 </div>
                 <div class="mt-1 relative">
                     <input id="password" name="password" :type="show ? 'text' : 'password'" autocomplete="current-password" required
+                        placeholder="Enter Password"
                         class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors pr-10">
                     <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400 hover:text-gray-600 focus:outline-none transition-colors">
                         <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>

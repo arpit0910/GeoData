@@ -27,13 +27,13 @@
         .text-red-700 { color: rgba(252,165,165,1) !important; }
     </style>
 </head>
-<body class="bg-[#000000] flex items-center justify-center min-h-screen py-12 selection:bg-amber-500 selection:text-white relative overflow-hidden">
-
+<body class="bg-[#000000] flex items-center justify-center min-h-screen py-12 selection:bg-amber-500 selection:text-white relative">
+    
     <!-- GeoData Background Elements -->
     <div class="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[600px] h-[600px] rounded-full bg-amber-500 opacity-10 blur-[150px] pointer-events-none"></div>
     
-    <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 md:p-10 border border-white/10 relative z-10">
+    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-8 md:p-10 border border-white/10 relative z-10">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold tracking-tight text-amber-500">Complete your profile</h1>
             <p class="text-gray-500 mt-2 text-sm max-w-sm mx-auto">Just a few more details so we can tailor the GeoData dashboard perfectly to your needs.</p>

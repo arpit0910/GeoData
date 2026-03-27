@@ -36,3 +36,5 @@ Route::middleware(['auth:sanctum', 'api.credits'])->prefix('v1')->group(function
         return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);
     });
 });
+
+Route::post('/webhooks/razorpay', [App\Http\Controllers\SubscriptionController::class, 'handleWebhook']);

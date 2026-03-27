@@ -83,6 +83,14 @@ class User extends Authenticatable
         return $this->belongsTo(Plan::class);
     }
 
+    public function hasActiveSubscription()
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
+
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);

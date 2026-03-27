@@ -105,9 +105,9 @@
                     name: 'receipt',
                     orderable: false,
                     className: 'text-right',
-                    render: function() {
-                        return `<a href="#" class="text-amber-600 hover:text-amber-700 font-bold dark:text-amber-500 dark:hover:text-amber-400">
-                                    <i class="fas fa-download mr-1"></i> PDF
+                    render: function(data, type, row) {
+                        return `<a href="/transactions/${row.id}/receipt" target="_blank" class="text-amber-600 hover:text-amber-700 font-bold dark:text-amber-500 dark:hover:text-amber-400">
+                                    <i class="fas fa-file-invoice mr-1 text-xs"></i> RECEIPT
                                 </a>`;
                     }
                 }

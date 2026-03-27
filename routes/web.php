@@ -121,19 +121,23 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.complete.check'])->group(function () {
     Route::get('/complete-profile', [AuthController::class, 'completeProfile'])->name('profile.complete');
     Route::post('/complete-profile', [AuthController::class, 'saveProfile'])->name('profile.complete.post');
 
+    Route::get('/pricing', [SubscriptionController::class, 'pricing'])->name('pricing');
     Route::post('/pricing/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
     Route::post('/pricing/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
-
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
-    Route::get('/api-keys', [ProfileController::class, 'apiKeys'])->name('api-keys.index');
-    Route::get('/api-logs', [ApiLogController::class, 'index'])->name('api-logs.index');
-    Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
     Route::post('/pricing/validate-coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.validate-coupon');
-    Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
+
+    Route::middleware(['subscribed'])->group(function () {
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+        Route::get('/api-keys', [ProfileController::class, 'apiKeys'])->name('api-keys.index');
+        Route::get('/api-logs', [ApiLogController::class, 'index'])->name('api-logs.index');
+        Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
+        Route::get('/transactions/{transaction}/receipt', [SubscriptionController::class, 'downloadReceipt'])->name('pricing.receipt');
+        Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
+    });
 });
