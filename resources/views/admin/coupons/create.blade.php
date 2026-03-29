@@ -29,8 +29,8 @@
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                     <select name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>Active</option>
-                        <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Inactive</option>
+                        <option value="1" {{ old('status', '1') == '1' ? 'selected' : '' }}>Active</option>
+                        <option value="0" {{ old('status', '1') == '0' ? 'selected' : '' }}>Inactive</option>
                     </select>
                 </div>
 
@@ -80,8 +80,8 @@
             <div>
                 <label for="single_use_per_user" class="block text-sm font-medium text-gray-700">Single use per user</label>
                 <select name="single_use_per_user" id="single_use_per_user" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="0" {{ old('single_use_per_user') == '0' ? 'selected' : '' }}>No</option>
-                    <option value="1" {{ old('single_use_per_user') == '1' ? 'selected' : '' }}>Yes</option>
+                    <option value="0" {{ old('single_use_per_user', '0') == '0' ? 'selected' : '' }}>No</option>
+                    <option value="1" {{ old('single_use_per_user', '0') == '1' ? 'selected' : '' }}>Yes</option>
                 </select>
                 <p class="mt-1 text-xs text-gray-500">If Yes, each user can only use this coupon once.</p>
             </div>

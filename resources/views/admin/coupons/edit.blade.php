@@ -29,10 +29,10 @@
                 <!-- Status -->
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                    <select name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="1" {{ old('status', $coupon->status) == '1' ? 'selected' : '' }}>Active</option>
-                        <option value="0" {{ old('status', $coupon->status) == '0' ? 'selected' : '' }}>Inactive</option>
-                    </select>
+                <select name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="1" {{ old('status', $coupon->status) == '1' ? 'selected' : '' }}>Active</option>
+                    <option value="0" {{ old('status', $coupon->status) == '0' ? 'selected' : '' }}>Inactive</option>
+                </select>
                 </div>
 
                 <!-- Discount Type -->

@@ -25,8 +25,8 @@
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
                     <select name="status" id="status" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-amber-500 outline-none transition-all">
-                        <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>Active</option>
-                        <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Inactive</option>
+                        <option value="1" {{ old('status', '1') == '1' ? 'selected' : '' }}>Active</option>
+                        <option value="0" {{ old('status', '1') == '0' ? 'selected' : '' }}>Inactive</option>
                     </select>
                 </div>
 

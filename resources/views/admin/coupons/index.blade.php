@@ -53,8 +53,8 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <form action="{{ route('admin.coupons.toggle-status', $coupon) }}" method="POST">
                             @csrf
-                            <button type="submit" class="px-3 py-1 text-xs font-semibold rounded-full {{ $coupon->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $coupon->status ? 'Active' : 'Inactive' }}
+                            <button type="submit" class="px-3 py-1 text-xs font-bold rounded-full transition-colors {{ $coupon->status ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-red-500 text-white hover:bg-red-600' }}">
+                                {{ $coupon->status ? 'ACTIVE' : 'INACTIVE' }}
                             </button>
                         </form>
                     </td>

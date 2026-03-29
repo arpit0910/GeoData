@@ -253,16 +253,16 @@
                 <div>
                     <label for="is_oecd" class="block text-sm font-medium text-gray-700">Is OECD Member?</label>
                     <select name="is_oecd" id="is_oecd" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
-                        <option value="0" {{ old('is_oecd') == '0' ? 'selected' : '' }}>No</option>
-                        <option value="1" {{ old('is_oecd') == '1' ? 'selected' : '' }}>Yes</option>
+                        <option value="0" {{ old('is_oecd', '0') == '0' ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('is_oecd', '0') == '1' ? 'selected' : '' }}>Yes</option>
                     </select>
                 </div>
 
                 <div>
                     <label for="is_eu" class="block text-sm font-medium text-gray-700">Is EU Member?</label>
                     <select name="is_eu" id="is_eu" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
-                        <option value="0" {{ old('is_eu') == '0' ? 'selected' : '' }}>No</option>
-                        <option value="1" {{ old('is_eu') == '1' ? 'selected' : '' }}>Yes</option>
+                        <option value="0" {{ old('is_eu', '0') == '0' ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('is_eu', '0') == '1' ? 'selected' : '' }}>Yes</option>
                     </select>
                 </div>
 
