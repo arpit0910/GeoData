@@ -32,6 +32,29 @@ class Country extends Model
         'emoji',
         'emojiU',
         'wiki_data_id',
+        'population',
+        'gdp',
+        'timezones',
+        'max_mobile_digits',
+        'international_prefix',
+        'trunk_prefix',
+        'income_level',
+        'is_oecd',
+        'is_eu',
+        'driving_side',
+        'measurement_system',
+        'tax_system',
+        'standard_tax_rate',
+    ];
+
+    protected $casts = [
+        'is_oecd' => 'boolean',
+        'is_eu' => 'boolean',
+        'population' => 'decimal:2',
+        'gdp' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'area_sq_km' => 'decimal:2',
     ];
 
      public function Region()

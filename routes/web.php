@@ -18,6 +18,10 @@ use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\SubscriptionAdminController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\TicketCategoryController;
+use App\Http\Controllers\Admin\TicketSubCategoryController;
+use App\Http\Controllers\Admin\TicketController as AdminTicketController;
+use App\Http\Controllers\TicketController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -116,8 +120,23 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('coupons', CouponController::class, ['as' => 'admin']);
     Route::post('coupons/{coupon}/toggle-status', [CouponController::class, 'toggleStatus'])->name('admin.coupons.toggle-status');
 
-    Route::get('transactions', [TransactionController::class, 'index'])->name('admin.transactions.index');
-    Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->name('admin.transactions.show');
+    Route::prefix('admin-transactions')->name('admin.transactions.')->group(function () {
+        Route::get('/', [TransactionController::class, 'index'])->name('index');
+        Route::get('/{transaction}', [TransactionController::class, 'show'])->name('show');
+    });
+
+    // Ticketing System
+    Route::resource('ticket-categories', TicketCategoryController::class, ['as' => 'admin']);
+    Route::post('ticket-categories/{ticketCategory}/toggle-status', [TicketCategoryController::class, 'toggleStatus'])->name('admin.ticket-categories.toggle-status');
+    
+    Route::resource('ticket-sub-categories', TicketSubCategoryController::class, ['as' => 'admin']);
+    Route::post('ticket-sub-categories/{ticketSubCategory}/toggle-status', [TicketSubCategoryController::class, 'toggleStatus'])->name('admin.ticket-sub-categories.toggle-status');
+
+    Route::prefix('tickets')->name('admin.tickets.')->group(function () {
+        Route::get('/', [AdminTicketController::class, 'index'])->name('index');
+        Route::get('/{ticket}', [AdminTicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/resolve', [AdminTicketController::class, 'resolve'])->name('resolve');
+    });
 
 });
 
@@ -139,5 +158,10 @@ Route::middleware(['auth', 'profile.complete.check'])->group(function () {
         Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
         Route::get('/transactions/{transaction}/receipt', [SubscriptionController::class, 'downloadReceipt'])->name('pricing.receipt');
         Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
+
+        // Help & Support
+        Route::get('/help-support', [TicketController::class, 'index'])->name('support.index');
+        Route::post('/help-support', [TicketController::class, 'store'])->name('support.store');
+        Route::get('/help-support/sub-categories/{category}', [TicketController::class, 'getSubCategories'])->name('support.sub-categories');
     });
 });

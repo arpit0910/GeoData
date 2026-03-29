@@ -127,6 +127,7 @@
                         Profile
                     </a>
                     
+                    @if(auth()->check() && !auth()->user()->is_admin)
                     <a href="{{ route('api-keys.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('api-keys.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-key mr-3 w-5"></i>
                         API Keys
@@ -141,6 +142,12 @@
                         <i class="fas fa-file-invoice mr-3 w-5"></i>
                         Transactions
                     </a>
+
+                    <a href="{{ route('support.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('support.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-headset mr-3 w-5"></i>
+                        Help & Support
+                    </a>
+                    @endif
                     
                     @if(auth()->check() && auth()->user()->is_admin)
                     <div class="pt-6 pb-2">
@@ -193,6 +200,22 @@
                     <a href="{{ route('admin.transactions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.transactions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-receipt mr-3 w-5"></i>
                         Transactions
+                    </a>
+
+                    <div class="pt-6 pb-2">
+                        <p class="px-4 text-[10px] font-bold text-amber-200 dark:text-gray-500 uppercase tracking-[0.2em]">Support</p>
+                    </div>
+                    <a href="{{ route('admin.ticket-categories.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.ticket-categories.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <i class="fas fa-tags mr-3 w-5"></i>
+                        Categories
+                    </a>
+                    <a href="{{ route('admin.ticket-sub-categories.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.ticket-sub-categories.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-sitemap mr-3 w-5"></i>
+                        Sub-Categories
+                    </a>
+                    <a href="{{ route('admin.tickets.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.tickets.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-ticket-alt mr-3 w-5"></i>
+                        User Tickets
                     </a>
                     <!-- Add more navigation items here -->
                     @endif

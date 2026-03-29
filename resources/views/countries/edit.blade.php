@@ -182,6 +182,97 @@
                     <input type="text" name="wiki_data_id" id="wiki_data_id" value="{{ old('wiki_data_id', $country->wiki_data_id) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. Q668">
                     @error('wiki_data_id')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
+
+                <!-- Additional Info Section -->
+                <div class="col-span-1 lg:col-span-3">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 border-b pb-2 mb-2 mt-4">Additional Info</h3>
+                </div>
+
+                <div>
+                    <label for="population" class="block text-sm font-medium text-gray-700">Population</label>
+                    <input type="number" step="any" name="population" id="population" value="{{ old('population', $country->population) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="Enter population">
+                    @error('population')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="gdp" class="block text-sm font-medium text-gray-700">GDP</label>
+                    <input type="number" step="any" name="gdp" id="gdp" value="{{ old('gdp', $country->gdp) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="Enter GDP">
+                    @error('gdp')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="max_mobile_digits" class="block text-sm font-medium text-gray-700">Max Mobile Digits</label>
+                    <input type="number" name="max_mobile_digits" id="max_mobile_digits" value="{{ old('max_mobile_digits', $country->max_mobile_digits) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. 10">
+                    @error('max_mobile_digits')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="international_prefix" class="block text-sm font-medium text-gray-700">International Prefix</label>
+                    <input type="text" name="international_prefix" id="international_prefix" value="{{ old('international_prefix', $country->international_prefix) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. 00">
+                    @error('international_prefix')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="trunk_prefix" class="block text-sm font-medium text-gray-700">Trunk Prefix</label>
+                    <input type="text" name="trunk_prefix" id="trunk_prefix" value="{{ old('trunk_prefix', $country->trunk_prefix) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. 0">
+                    @error('trunk_prefix')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="income_level" class="block text-sm font-medium text-gray-700">Income Level</label>
+                    <input type="text" name="income_level" id="income_level" value="{{ old('income_level', $country->income_level) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. High income">
+                    @error('income_level')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="driving_side" class="block text-sm font-medium text-gray-700">Driving Side</label>
+                    <select name="driving_side" id="driving_side" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
+                        <option value="" {{ old('driving_side', $country->driving_side) == '' ? 'selected' : '' }}>Select Driving Side</option>
+                        <option value="Right" {{ old('driving_side', $country->driving_side) == 'Right' ? 'selected' : '' }}>Right</option>
+                        <option value="Left" {{ old('driving_side', $country->driving_side) == 'Left' ? 'selected' : '' }}>Left</option>
+                    </select>
+                    @error('driving_side')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="measurement_system" class="block text-sm font-medium text-gray-700">Measurement System</label>
+                    <input type="text" name="measurement_system" id="measurement_system" value="{{ old('measurement_system', $country->measurement_system) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. Metric">
+                    @error('measurement_system')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="tax_system" class="block text-sm font-medium text-gray-700">Tax System</label>
+                    <input type="text" name="tax_system" id="tax_system" value="{{ old('tax_system', $country->tax_system) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. VAT">
+                    @error('tax_system')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="standard_tax_rate" class="block text-sm font-medium text-gray-700">Standard Tax Rate</label>
+                    <input type="text" name="standard_tax_rate" id="standard_tax_rate" value="{{ old('standard_tax_rate', $country->standard_tax_rate) }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. 10%">
+                    @error('standard_tax_rate')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label for="is_oecd" class="block text-sm font-medium text-gray-700">Is OECD Member?</label>
+                    <select name="is_oecd" id="is_oecd" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
+                        <option value="0" {{ old('is_oecd', $country->is_oecd) == '0' ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('is_oecd', $country->is_oecd) == '1' ? 'selected' : '' }}>Yes</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="is_eu" class="block text-sm font-medium text-gray-700">Is EU Member?</label>
+                    <select name="is_eu" id="is_eu" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
+                        <option value="0" {{ old('is_eu', $country->is_eu) == '0' ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('is_eu', $country->is_eu) == '1' ? 'selected' : '' }}>Yes</option>
+                    </select>
+                </div>
+
+                <div class="col-span-1 lg:col-span-3">
+                    <label for="timezones" class="block text-sm font-medium text-gray-700">Timezones (JSON)</label>
+                    <textarea name="timezones" id="timezones" rows="3" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="Enter timezone data in JSON format">{{ old('timezones', $country->timezones) }}</textarea>
+                    @error('timezones')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                </div>
                 
             </div>
 

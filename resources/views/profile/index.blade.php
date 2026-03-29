@@ -20,6 +20,7 @@
         </div>
     @endif
 
+    @if(auth()->check() && !auth()->user()->is_admin)
     <!-- Subscription & Credits Section -->
     <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500">
         <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex justify-between items-center">
@@ -96,6 +97,7 @@
             @endif
         </div>
     </div>
+    @endif
 
     <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500" x-data="{ isEditing: false }">
         <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex justify-between items-center">
@@ -208,7 +210,7 @@
                             :readonly="!isEditing"
                             :class="isEditing ? 'bg-white border-gray-300 focus:ring-amber-500 focus:border-amber-500 shadow-sm' : 'bg-gray-50 border-transparent text-gray-700 border-gray-100 cursor-not-allowed'"
                             class="appearance-none block w-full px-4 py-3 border rounded-lg sm:text-sm transition-colors"
-                            oninput="if(isEditing) searchPincode(this.value)">
+                            @input="if(isEditing) searchPincode($event.target.value)">
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none" id="pincode_loader" style="display: none;">
                             <i class="fas fa-circle-notch fa-spin text-amber-500"></i>
                         </div>

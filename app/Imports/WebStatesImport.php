@@ -66,6 +66,7 @@ class WebStatesImport implements ToCollection, WithHeadingRow, WithChunkReading
                     'latitude' => $rowData['latitude'] ?? null,
                     'longitude' => $rowData['longitude'] ?? null,
                     'wiki_data_id' => $rowData['wikidataid'] ?? null,
+                    'state_code' => $rowData['state_code'] ?? null,
                 ]
             );
         }

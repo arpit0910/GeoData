@@ -28,7 +28,8 @@ class EnsureSubscribed
                 'pricing.validate-coupon',
                 'logout', 
                 'profile.complete', 
-                'profile.complete.post'
+                'profile.complete.post',
+                'api.pincode.lookup'
             ];
             
             $currentRoute = $request->route() ? $request->route()->getName() : null;

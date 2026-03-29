@@ -65,6 +65,7 @@ class StateController extends Controller
             'longitude' => 'nullable|numeric',
             'timezone_id' => 'nullable|exists:timezones,id',
             'wiki_data_id' => 'nullable|string|max:255',
+            'state_code' => 'nullable|string|max:255',
         ]);
 
         State::create($request->all());
@@ -91,6 +92,7 @@ class StateController extends Controller
             'longitude' => 'nullable|numeric',
             'timezone_id' => 'nullable|exists:timezones,id',
             'wiki_data_id' => 'nullable|string|max:255',
+            'state_code' => 'nullable|string|max:255',
         ]);
 
         $state->update($request->all());

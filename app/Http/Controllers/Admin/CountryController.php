@@ -94,6 +94,19 @@ class CountryController extends Controller
             'emoji' => 'nullable|string|max:255',
             'emojiU' => 'nullable|string|max:255',
             'wiki_data_id' => 'nullable|string|max:255',
+            'population' => 'nullable|numeric',
+            'gdp' => 'nullable|numeric',
+            'timezones' => 'nullable|string',
+            'max_mobile_digits' => 'nullable|integer',
+            'international_prefix' => 'nullable|string|max:255',
+            'trunk_prefix' => 'nullable|string|max:255',
+            'income_level' => 'nullable|string|max:255',
+            'is_oecd' => 'nullable|boolean',
+            'is_eu' => 'nullable|boolean',
+            'driving_side' => 'nullable|string|max:255',
+            'measurement_system' => 'nullable|string|max:255',
+            'tax_system' => 'nullable|string|max:255',
+            'standard_tax_rate' => 'nullable|string|max:255',
         ]);
 
         Country::create($validatedData);
@@ -160,6 +173,19 @@ class CountryController extends Controller
             'emoji' => 'nullable|string|max:255',
             'emojiU' => 'nullable|string|max:255',
             'wiki_data_id' => 'nullable|string|max:255',
+            'population' => 'nullable|numeric',
+            'gdp' => 'nullable|numeric',
+            'timezones' => 'nullable|string',
+            'max_mobile_digits' => 'nullable|integer',
+            'international_prefix' => 'nullable|string|max:255',
+            'trunk_prefix' => 'nullable|string|max:255',
+            'income_level' => 'nullable|string|max:255',
+            'is_oecd' => 'nullable|boolean',
+            'is_eu' => 'nullable|boolean',
+            'driving_side' => 'nullable|string|max:255',
+            'measurement_system' => 'nullable|string|max:255',
+            'tax_system' => 'nullable|string|max:255',
+            'standard_tax_rate' => 'nullable|string|max:255',
         ]);
 
         $country->update($validatedData);

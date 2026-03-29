@@ -50,6 +50,19 @@ class WebCountriesImport implements ToCollection, WithHeadingRow, WithChunkReadi
                     'emoji' => $rowData['emoji'] ?? null,
                     'emojiU' => $rowData['emojiu'] ?? null,
                     'wiki_data_id' => $rowData['wikidataid'] ?? null,
+                    'population' => $rowData['population'] ?? null,
+                    'gdp' => $rowData['gdp'] ?? null,
+                    'timezones' => $rowData['timezones'] ?? null,
+                    'max_mobile_digits' => $rowData['max_mobile_digits'] ?? null,
+                    'international_prefix' => $rowData['international_prefix'] ?? null,
+                    'trunk_prefix' => $rowData['trunk_prefix'] ?? null,
+                    'income_level' => $rowData['income_level'] ?? null,
+                    'is_oecd' => (trim(strtolower($rowData['is_oecd'] ?? '')) == 'true'),
+                    'is_eu' => (trim(strtolower($rowData['is_eu'] ?? '')) == 'true'),
+                    'driving_side' => $rowData['driving_side'] ?? null,
+                    'measurement_system' => $rowData['measurement_system'] ?? null,
+                    'tax_system' => $rowData['tax_system'] ?? null,
+                    'standard_tax_rate' => $rowData['standard_tax_rate'] ?? null,
                 ]
             );
         }
