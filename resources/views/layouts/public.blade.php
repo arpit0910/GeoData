@@ -150,6 +150,7 @@
                     <ul class="space-y-4">
                         <li><a href="{{ route('pricing') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Pricing</a></li>
                         <li><a href="{{ route('docs') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="{{ route('faq') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">FAQ</a></li>
                         <li><a href="{{ route('status') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">API Status</a></li>
                     </ul>
                 </div>

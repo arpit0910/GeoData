@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\TicketCategoryController;
 use App\Http\Controllers\Admin\TicketSubCategoryController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -33,6 +34,7 @@ Route::get('/docs', [HomeController::class, 'docs'])->name('docs');
 Route::get('/status', [HomeController::class, 'status'])->name('status');
 Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
 Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
+Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 
 Route::middleware('guest')->group(function() {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -137,6 +139,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{ticket}', [AdminTicketController::class, 'show'])->name('show');
         Route::post('/{ticket}/resolve', [AdminTicketController::class, 'resolve'])->name('resolve');
     });
+
+    // FAQ Management
+    Route::resource('faqs', AdminFaqController::class);
+    Route::post('faqs/{faq}/toggle-status', [AdminFaqController::class, 'toggleStatus'])->name('faqs.toggle-status');
 
 });
 

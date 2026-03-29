@@ -6,8 +6,8 @@
 <div class="max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Add Ticket Sub-Category</h2>
-        <a href="{{ route('admin.ticket-sub-categories.index') }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-            <i class="fas fa-arrow-left mr-1"></i> Back to List
+        <a href="{{ route('admin.ticket-sub-categories.index') }}" class="text-sm font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Back
         </a>
     </div>
 
@@ -41,9 +41,9 @@
                     </select>
                 </div>
 
-                <div class="pt-4">
-                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md">
-                        Create Sub-Category
+                <div class="pt-10">
+                    <button type="submit" class="w-full flex justify-center py-3.5 px-8 border border-transparent rounded-2xl shadow-xl text-lg font-black text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        Publish Sub-Category <i class="fas fa-paper-plane ml-3 text-sm"></i>
                     </button>
                 </div>
             </div>

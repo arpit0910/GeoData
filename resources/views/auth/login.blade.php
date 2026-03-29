@@ -86,9 +86,9 @@
                 </label>
             </div>
 
-            <div>
-                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all hover:shadow-lg">
-                    Sign in
+            <div class="mt-10">
+                <button type="submit" class="w-full flex justify-center py-3.5 px-8 border border-transparent rounded-2xl shadow-xl text-lg font-black text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    Sign In <i class="fas fa-sign-in-alt ml-2 mt-1"></i>
                 </button>
             </div>
         </form>
@@ -101,7 +101,7 @@
         <div class="mt-4 text-center">
             <a href="{{ url('/') }}" class="text-sm text-gray-400 hover:text-gray-600 inline-flex items-center transition-colors">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                Back to Home
+                Back
             </a>
         </div>
     </div>

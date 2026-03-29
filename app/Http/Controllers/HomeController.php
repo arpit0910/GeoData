@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Plan;
+use App\Models\Faq;
 
 class HomeController extends Controller
 {
@@ -51,5 +52,11 @@ class HomeController extends Controller
     public function terms()
     {
         return view('website.terms');
+    }
+
+    public function faq()
+    {
+        $faqs = Faq::where('visibility', 'website')->where('status', 1)->orderBy('order')->get();
+        return view('website.faq', compact('faqs'));
     }
 }

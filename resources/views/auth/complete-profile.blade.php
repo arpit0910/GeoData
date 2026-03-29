@@ -151,9 +151,9 @@
                 </div>
             </div>
 
-            <div class="pt-4 flex items-center justify-between gap-4">
-                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all hover:shadow-lg">
-                    Complete Profile <i class="fas fa-arrow-right ml-2 mt-1 -mr-1"></i>
+            <div class="pt-6">
+                <button type="submit" class="w-full flex justify-center py-4 px-10 border border-transparent rounded-2xl shadow-xl text-lg font-black text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    Complete Profile <i class="fas fa-check-circle ml-2 mt-1"></i>
                 </button>
             </div>
         </form>

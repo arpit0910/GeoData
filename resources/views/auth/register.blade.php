@@ -96,9 +96,9 @@
                 </div>
             </div>
 
-            <div class="pt-2">
-                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all hover:shadow-lg">
-                    Create Account
+            <div class="pt-10">
+                <button type="submit" class="w-full flex justify-center px-8 py-3.5 border border-transparent rounded-2xl shadow-xl text-lg font-black text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    Create Account <i class="fas fa-user-plus ml-2 mt-1"></i>
                 </button>
             </div>
         </form>

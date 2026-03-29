@@ -6,44 +6,49 @@
 <div class="max-w-4xl mx-auto space-y-8">
     <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500">
         <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight"><i class="fas fa-shield-alt text-amber-500 mr-2"></i> Your Authentication Credentials</h3>
-            <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400 font-medium font-medium">Use these keys to authenticate your programmatic API requests. Do not share your secret key with anyone.</p>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
+                <i class="fas fa-shield-alt text-amber-500 mr-3 text-lg"></i> Your Authentication Credentials
+            </h3>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">Use these keys to authenticate your programmatic API requests. These keys provide full access to your account data. Keep the secret key confidential.</p>
         </div>
         
-        <div class="p-8 space-y-10">
+        <div class="p-8 space-y-8 bg-amber-50/10 dark:bg-amber-500/[0.01]">
             <!-- Public Key -->
-            <div>
-                <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 ml-1 uppercase tracking-[0.2em]">Public Client Key</label>
-                <div class="flex items-center group/key">
-                    <div class="relative flex-grow">
-                        <input type="text" readonly id="publicKey" value="{{ $user->client_key }}" 
-                            class="appearance-none block w-full px-5 py-4 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-l-2xl text-gray-600 dark:text-gray-400 font-mono text-sm focus:outline-none focus:ring-0 cursor-text transition-all group-hover/key:border-amber-500/30">
-                    </div>
-                    <button type="button" onclick="copyToClipboard('publicKey')" class="inline-flex items-center px-6 py-4 border border-l-0 border-gray-200 dark:border-white/10 rounded-r-2xl bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 font-bold hover:bg-amber-600 dark:hover:bg-amber-600 hover:text-white dark:hover:text-white focus:outline-none transition-all transition-all duration-200">
-                        <i class="far fa-copy mr-2"></i> Copy
+            <div class="space-y-3">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-amber-700/60 dark:text-amber-500/60 ml-1">Client Public Key</label>
+                <div class="relative group">
+                    <input type="text" readonly value="{{ $user->client_key }}" 
+                        class="w-full px-5 py-4 bg-white dark:bg-white/[0.03] border border-amber-200 dark:border-amber-500/20 rounded-2xl text-amber-900 dark:text-amber-200 font-bold font-mono text-sm focus:ring-0 outline-none transition-all pr-12">
+                    <button type="button" onclick="copyToClipboard('{{ $user->client_key }}', this)" 
+                        class="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400 transition-all">
+                        <i class="fas fa-copy text-lg"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Secret Key -->
-            <div>
-                <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 ml-1 uppercase tracking-[0.2em]">Secret Client Key</label>
-                <div class="flex items-center group/key">
-                    <div class="relative flex-grow">
-                        <input type="password" readonly id="secretKey" value="{{ $user->client_secret }}" 
-                            class="appearance-none block w-full px-5 py-4 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-l-2xl text-gray-800 dark:text-gray-200 font-mono text-sm focus:outline-none focus:ring-0 cursor-text tracking-widest transition-all group-hover/key:border-amber-500/30">
-                        
-                        <button type="button" onclick="toggleVisibility('secretKey')" class="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-400 hover:text-amber-500 focus:outline-none transition-colors">
-                            <i class="fas fa-eye" id="secretKeyIcon"></i>
+            <div class="space-y-3" x-data="{ showSecret: false }">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-amber-700/60 dark:text-amber-500/60 ml-1">Client Secret Key</label>
+                <div class="relative group">
+                    <input :type="showSecret ? 'text' : 'password'" readonly value="{{ $user->client_secret }}" 
+                        class="w-full px-5 py-4 bg-white dark:bg-white/[0.03] border border-amber-200 dark:border-amber-500/20 rounded-2xl text-amber-900 dark:text-amber-200 font-bold font-mono text-sm focus:ring-0 outline-none transition-all pr-24"
+                        :class="!showSecret && 'tracking-[0.3em]'">
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+                        <button type="button" @click="showSecret = !showSecret" 
+                            class="p-2.5 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400 transition-all">
+                            <i class="fas" :class="showSecret ? 'fa-eye-slash' : 'fa-eye'"></i>
+                        </button>
+                        <button type="button" onclick="copyToClipboard('{{ $user->client_secret }}', this)" 
+                            class="p-2.5 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400 transition-all">
+                            <i class="fas fa-copy text-lg"></i>
                         </button>
                     </div>
-                    <button type="button" onclick="copyToClipboard('secretKey')" class="inline-flex items-center px-6 py-4 border border-l-0 border-gray-200 dark:border-white/10 rounded-r-2xl bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 font-bold hover:bg-amber-600 dark:hover:bg-amber-600 hover:text-white dark:hover:text-white focus:outline-none transition-all transition-all duration-200">
-                        <i class="far fa-copy mr-2"></i> Copy
-                    </button>
                 </div>
-                <div class="mt-4 flex items-start p-3 bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 rounded-xl">
-                    <i class="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-3"></i>
-                    <p class="text-xs text-red-600 dark:text-red-400 font-bold">WARNING: This is highly sensitive. Regenerate it immediately if you suspect it has been compromised.</p>
+                <div class="flex items-start p-4 bg-red-500/5 dark:bg-red-500/10 border border-red-500/10 rounded-2xl">
+                    <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-3 text-xs"></i>
+                    <p class="text-[11px] text-red-600/80 dark:text-red-400/80 font-bold leading-relaxed">
+                        CRITICAL: This is a highly sensitive credential. Never expose it in client-side code, public repositories, or shared documents. Regenerate it immediately if you suspect it has been compromised.
+                    </p>
                 </div>
             </div>
         </div>
@@ -60,35 +65,17 @@
 
 @push('scripts')
 <script>
-    function copyToClipboard(elementId) {
-        const copyText = document.getElementById(elementId);
-        
-        const isPassword = copyText.type === 'password';
-        if(isPassword) copyText.type = 'text';
-        
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); // For mobile devices
-        
-        navigator.clipboard.writeText(copyText.value).then(() => {
+    function copyToClipboard(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+            const icon = btn.querySelector('i');
+            const originalClass = icon.className;
+            icon.className = 'fas fa-check text-green-500 scale-125';
+            setTimeout(() => {
+                icon.className = originalClass;
+            }, 2000);
+            
             showToast("Copied to clipboard!");
         });
-        
-        if(isPassword) copyText.type = 'password';
-    }
-
-    function toggleVisibility(elementId) {
-        const input = document.getElementById(elementId);
-        const icon = document.getElementById(elementId + 'Icon');
-        
-        if (input.type === "password") {
-            input.type = "text";
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            input.type = "password";
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
     }
 
     function showToast(message) {

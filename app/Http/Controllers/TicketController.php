@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
 use App\Models\TicketSubCategory;
+use App\Models\Faq;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,7 +19,9 @@ class TicketController extends Controller
             ->latest()
             ->get();
 
-        return view('user.support.index', compact('categories', 'tickets'));
+        $faqs = Faq::where('visibility', 'dashboard')->where('status', 1)->orderBy('order')->get();
+
+        return view('user.support.index', compact('categories', 'tickets', 'faqs'));
     }
 
     public function store(Request $request)

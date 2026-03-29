@@ -6,8 +6,8 @@
         <h1 class="text-2xl font-bold text-gray-900">Edit Pincode</h1>
     </div>
     <div class="flex items-center space-x-4">
-        <a href="{{ route('pincodes.index') }}" class="text-gray-600 hover:text-gray-900">
-            <i class="fas fa-arrow-left mr-2"></i> Back to Pincodes
+        <a href="{{ route('pincodes.index') }}" class="text-sm font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Back
         </a>
     </div>
 </div>
@@ -118,9 +118,12 @@
 
             </div>
 
-            <div class="mt-6 flex justify-end">
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
-                    Update Pincode
+            <div class="mt-10 flex justify-end items-center space-x-6">
+                <a href="{{ route('pincodes.index') }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    Save Changes <i class="fas fa-save ml-3 text-sm"></i>
                 </button>
             </div>
         </form>

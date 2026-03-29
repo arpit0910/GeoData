@@ -3,20 +3,6 @@
 @section('header')
     Edit Plan
 @endsection
-
-@section('content')
-<div class="mb-6 flex justify-between items-center">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-900">Edit Plan</h1>
-    </div>
-    <a href="{{ route('plans.index') }}" class="text-amber-600 hover:text-amber-800 text-sm font-medium flex items-center bg-white px-3 py-1.5 rounded border border-gray-200 shadow-sm">
-        <i class="fas fa-arrow-left mr-2"></i> Back
-    </a>
-</div>
-
-<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="p-8 border-b border-gray-200">
-        <form action="{{ route('plans.update', $plan->id) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -107,16 +93,14 @@
                 </div>
             </div>
 
-            <div class="mt-8 border-t border-gray-200 pt-5">
-                <div class="flex justify-end">
-                    <a href="{{ route('plans.index') }}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                <div class="mt-10 flex justify-end items-center space-x-6">
+                    <a href="{{ route('plans.index') }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors">
                         Cancel
                     </a>
-                    <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
-                        Update Plan
+                    <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        Update Plan <i class="fas fa-save ml-3 text-sm"></i>
                     </button>
                 </div>
-            </div>
         </form>
     </div>
 </div>

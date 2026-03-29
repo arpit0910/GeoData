@@ -19,6 +19,9 @@
             <button @click="activeTab = 'history'" :class="activeTab === 'history' ? 'bg-white dark:bg-amber-600 text-gray-900 dark:text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300">
                 <i class="fas fa-history mr-2"></i> My Ticket History
             </button>
+            <button @click="activeTab = 'faqs'" :class="activeTab === 'faqs' ? 'bg-white dark:bg-amber-600 text-gray-900 dark:text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300">
+                <i class="fas fa-question-circle mr-2"></i> FAQs
+            </button>
         </div>
     </div>
 
@@ -72,9 +75,9 @@
                         <div id="file-name-preview" class="mt-2 text-sm text-amber-600 font-medium hidden"></div>
                     </div>
 
-                    <div class="flex items-center justify-end">
-                        <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-extrabold py-4 px-10 rounded-2xl transition-all shadow-lg hover:shadow-amber-500/20 focus:ring-4 focus:ring-amber-500/40">
-                            Submit Ticket <i class="fas fa-paper-plane ml-2 text-sm"></i>
+                    <div class="mt-10 flex items-center justify-end">
+                        <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                            Submit Ticket <i class="fas fa-paper-plane ml-3 text-sm"></i>
                         </button>
                     </div>
                 </form>
@@ -119,6 +122,34 @@
                 <p class="text-gray-400 text-sm">Submit your first support request using the "New Ticket" tab.</p>
             </div>
         @endforelse
+    </div>
+
+    <!-- FAQs Tab -->
+    <div x-show="activeTab === 'faqs'" x-transition:enter="transition ease-out duration-300 transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" class="space-y-4">
+        <div class="grid grid-cols-1 gap-4" x-data="{ selectedFaq: null }">
+            @forelse($faqs as $faq)
+                <div class="bg-white dark:bg-richdark-surface rounded-2xl border border-gray-200 dark:border-white/5 overflow-hidden transition-all duration-300">
+                    <button @click="selectedFaq = selectedFaq === {{ $faq->id }} ? null : {{ $faq->id }}" 
+                        class="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none group">
+                        <span class="text-base font-bold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">{{ $faq->question }}</span>
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300" :class="selectedFaq === {{ $faq->id }} ? 'rotate-180 text-amber-500' : ''"></i>
+                    </button>
+                    <div x-show="selectedFaq === {{ $faq->id }}" 
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 -translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        class="px-6 pb-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-50 dark:border-white/5 pt-4">
+                        {!! nl2br(e($faq->answer)) !!}
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-20 bg-white dark:bg-richdark-surface rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/5">
+                    <i class="fas fa-question-circle text-5xl text-gray-300 mb-4 block"></i>
+                    <h3 class="text-lg font-bold text-gray-400">No FAQs available yet</h3>
+                    <p class="text-gray-400 text-sm">We're working on adding more helpful information here.</p>
+                </div>
+            @endforelse
+        </div>
     </div>
 </div>
 @endsection

@@ -4,105 +4,117 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-8 flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Create New Coupon</h1>
-            <p class="mt-1 text-sm text-gray-600">Define your discount rules and restrictions.</p>
+            <a href="{{ route('admin.coupons.index') }}" class="text-sm font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i> Back
+            </a>
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white mt-4 tracking-tight">Create New Coupon</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Define your discount rules and restrictions.</p>
         </div>
-        <a href="{{ route('admin.coupons.index') }}" class="text-gray-500 hover:text-gray-700 text-sm font-medium">
-            <i class="fas fa-arrow-left mr-1"></i> Back to list
-        </a>
     </div>
 
-    <form action="{{ route('admin.coupons.store') }}" method="POST" class="bg-white shadow-md rounded-lg overflow-hidden">
-        @csrf
-        <div class="p-6 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Code -->
-                <div>
-                    <label for="code" class="block text-sm font-medium text-gray-700">Coupon Code</label>
-                    <input type="text" name="code" id="code" value="{{ old('code') }}" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm uppercase font-mono" placeholder="e.g. SAVE20">
-                    @error('code') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+    <div class="bg-white dark:bg-richdark-surface rounded-3xl shadow-xl border border-gray-200 dark:border-white/5 overflow-hidden transition-all duration-300">
+        <form action="{{ route('admin.coupons.store') }}" method="POST" class="p-8 md:p-12">
+            @csrf
+            <div class="space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Code -->
+                    <div>
+                        <label for="code" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Coupon Code</label>
+                        <input type="text" name="code" id="code" value="{{ old('code') }}" required 
+                            class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all uppercase font-mono placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="e.g. SAVE20">
+                        @error('code') <p class="mt-2 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label for="status" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Status</label>
+                        <select name="status" id="status" class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                            <option value="1" {{ old('status', '1') == '1' ? 'selected' : '' }}>Active</option>
+                            <option value="0" {{ old('status', '1') == '0' ? 'selected' : '' }}>Inactive</option>
+                        </select>
+                    </div>
+
+                    <!-- Discount Type -->
+                    <div>
+                        <label for="discount_type" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Discount Type</label>
+                        <select name="discount_type" id="discount_type" class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                            <option value="percentage" {{ old('discount_type') == 'percentage' ? 'selected' : '' }}>Percentage (%)</option>
+                            <option value="fixed" {{ old('discount_type') == 'fixed' ? 'selected' : '' }}>Fixed Amount (₹)</option>
+                        </select>
+                    </div>
+
+                    <!-- Discount Value -->
+                    <div>
+                        <label for="discount_value" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Discount Value</label>
+                        <input type="number" step="0.01" name="discount_value" id="discount_value" value="{{ old('discount_value') }}" required 
+                            class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="e.g. 10">
+                    </div>
+
+                    <!-- Max Discount -->
+                    <div>
+                        <label for="max_discount" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Max Discount Amount (₹)</label>
+                        <input type="number" step="0.01" name="max_discount" id="max_discount" value="{{ old('max_discount') }}" 
+                            class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="e.g. 500">
+                        <p class="mt-2 text-[10px] font-bold text-gray-400 uppercase tracking-tight">Only applicable for percentage discounts</p>
+                    </div>
+
+                    <!-- Max Redemptions -->
+                    <div>
+                        <label for="max_redemptions" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Max Global Redemptions</label>
+                        <input type="number" name="max_redemptions" id="max_redemptions" value="{{ old('max_redemptions') }}" 
+                            class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="e.g. 100">
+                    </div>
+
+                    <!-- Apply to Cycles -->
+                    <div>
+                        <label for="apply_to_cycles" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Apply to Billing Cycles</label>
+                        <input type="number" name="apply_to_cycles" id="apply_to_cycles" value="{{ old('apply_to_cycles', 1) }}" required 
+                            class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="e.g. 1">
+                        <p class="mt-2 text-[10px] font-bold text-gray-400 uppercase tracking-tight">1 = First payment only. 999 = Lifetime</p>
+                    </div>
+
+                    <!-- Expiry Date -->
+                    <div>
+                        <label for="expires_at" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Expiry Date</label>
+                        <input type="date" name="expires_at" id="expires_at" value="{{ old('expires_at') }}" 
+                            class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                    </div>
                 </div>
 
-                <!-- Status -->
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                    <select name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="1" {{ old('status', '1') == '1' ? 'selected' : '' }}>Active</option>
-                        <option value="0" {{ old('status', '1') == '0' ? 'selected' : '' }}>Inactive</option>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Single Use Per User -->
+                    <div>
+                        <label for="single_use_per_user" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Single use per user</label>
+                        <select name="single_use_per_user" id="single_use_per_user" class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                            <option value="0" {{ old('single_use_per_user', '0') == '0' ? 'selected' : '' }}>No</option>
+                            <option value="1" {{ old('single_use_per_user', '0') == '1' ? 'selected' : '' }}>Yes</option>
+                        </select>
+                        <p class="mt-2 text-[10px] font-bold text-gray-400 uppercase tracking-tight">Limit to one redemption per account</p>
+                    </div>
+
+                    <!-- Plan Restriction -->
+                    <div>
+                        <label for="plan_id" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Target Plan Restriction</label>
+                        <select name="plan_id" id="plan_id" class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">All Plans (Universal)</option>
+                            @foreach($plans as $plan)
+                                <option value="{{ $plan->id }}" {{ old('plan_id') == $plan->id ? 'selected' : '' }}>{{ $plan->name }} ({{ ucfirst($plan->billing_cycle) }})</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-2 text-[10px] font-bold text-gray-400 uppercase tracking-tight">Select 'All Plans' to make the coupon universal</p>
+                    </div>
                 </div>
 
-                <!-- Discount Type -->
-                <div>
-                    <label for="discount_type" class="block text-sm font-medium text-gray-700">Discount Type</label>
-                    <select name="discount_type" id="discount_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="percentage" {{ old('discount_type') == 'percentage' ? 'selected' : '' }}>Percentage (%)</option>
-                        <option value="fixed" {{ old('discount_type') == 'fixed' ? 'selected' : '' }}>Fixed Amount (₹)</option>
-                    </select>
-                </div>
-
-                <!-- Discount Value -->
-                <div>
-                    <label for="discount_value" class="block text-sm font-medium text-gray-700">Discount Value</label>
-                    <input type="number" step="0.01" name="discount_value" id="discount_value" value="{{ old('discount_value') }}" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="e.g. 10">
-                </div>
-
-                <!-- Max Discount -->
-                <div>
-                    <label for="max_discount" class="block text-sm font-medium text-gray-700">Max Discount Amount (₹)</label>
-                    <input type="number" step="0.01" name="max_discount" id="max_discount" value="{{ old('max_discount') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="e.g. 500">
-                    <p class="mt-1 text-xs text-gray-400">Only applicable for percentage discounts.</p>
-                </div>
-
-                <!-- Max Redemptions -->
-                <div>
-                    <label for="max_redemptions" class="block text-sm font-medium text-gray-700">Max Global Redemptions</label>
-                    <input type="number" name="max_redemptions" id="max_redemptions" value="{{ old('max_redemptions') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="e.g. 100">
-                </div>
-
-                <!-- Apply to Cycles -->
-                <div>
-                    <label for="apply_to_cycles" class="block text-sm font-medium text-gray-700">Apply to Billing Cycles</label>
-                    <input type="number" name="apply_to_cycles" id="apply_to_cycles" value="{{ old('apply_to_cycles', 1) }}" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="e.g. 1">
-                    <p class="mt-1 text-xs text-gray-400">1 = First payment only. 999 = Lifetime.</p>
-                </div>
-
-                <!-- Expiry Date -->
-                <div>
-                    <label for="expires_at" class="block text-sm font-medium text-gray-700">Expiry Date</label>
-                    <input type="date" name="expires_at" id="expires_at" value="{{ old('expires_at') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <!-- Submit Button -->
+                <div class="pt-10 flex justify-end">
+                   <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        Save Coupon <i class="fas fa-save ml-3 text-sm"></i>
+                    </button>
                 </div>
             </div>
-
-            <!-- Single Use Per User -->
-            <div>
-                <label for="single_use_per_user" class="block text-sm font-medium text-gray-700">Single use per user</label>
-                <select name="single_use_per_user" id="single_use_per_user" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="0" {{ old('single_use_per_user', '0') == '0' ? 'selected' : '' }}>No</option>
-                    <option value="1" {{ old('single_use_per_user', '0') == '1' ? 'selected' : '' }}>Yes</option>
-                </select>
-                <p class="mt-1 text-xs text-gray-500">If Yes, each user can only use this coupon once.</p>
-            </div>
-
-            <!-- Plan Restriction -->
-            <div>
-                <label for="plan_id" class="block text-sm font-medium text-gray-700">Target Plan</label>
-                <select name="plan_id" id="plan_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="">All Plans</option>
-                    @foreach($plans as $plan)
-                        <option value="{{ $plan->id }}" {{ old('plan_id') == $plan->id ? 'selected' : '' }}>{{ $plan->name }} ({{ $plan->billing_cycle }})</option>
-                    @endforeach
-                </select>
-                <p class="mt-2 text-xs text-gray-400 italic">Select 'All Plans' to make the coupon universal.</p>
-            </div>
-        </div>
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
-            <button type="submit" class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-bold rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Create Coupon
-            </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 @endsection

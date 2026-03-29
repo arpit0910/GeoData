@@ -106,7 +106,7 @@
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Manage your personal and company profile details.</p>
             </div>
             <div>
-                <button type="button" x-show="!isEditing" @click="isEditing = true" class="inline-flex items-center px-4 py-2.5 border border-amber-600 dark:border-amber-500/30 text-sm font-bold rounded-xl text-amber-600 dark:text-amber-500 bg-white dark:bg-amber-500/5 hover:bg-amber-50 dark:hover:bg-amber-500/10 focus:outline-none transition-all shadow-sm">
+                <button type="button" x-show="!isEditing" @click="isEditing = true" class="inline-flex items-center px-4 py-2.5 border border-amber-600 dark:border-amber-500/30 text-sm font-bold rounded-xl text-amber-600 dark:text-amber-500 bg-white dark:bg-amber-500/5 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-500 transition-all shadow-sm">
                     <i class="fas fa-edit mr-2"></i> Edit Details
                 </button>
             </div>
@@ -253,12 +253,12 @@
 
             </div>
 
-            <div class="pt-6 flex justify-end space-x-3" x-show="isEditing" style="display: none;">
-                <button type="button" @click="isEditing = false; $el.form.reset();" class="inline-flex justify-center py-2.5 px-6 border border-gray-300 dark:border-slate-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none transition-colors">
+            <div class="pt-10 flex justify-end items-center space-x-6" x-show="isEditing" style="display: none;">
+                <button type="button" @click="isEditing = false; $el.form.reset();" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
                     Cancel
                 </button>
-                <button type="submit" class="inline-flex justify-center py-2.5 px-6 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all hover:shadow-lg">
-                    <i class="fas fa-save mr-2 mt-0.5"></i> Save Changes
+                <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    Save Changes <i class="fas fa-save ml-3 text-sm"></i>
                 </button>
             </div>
         </form>
@@ -272,7 +272,7 @@
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Update your password and login credentials.</p>
             </div>
             <div x-show="!isChangingPassword">
-                <button type="button" @click="isChangingPassword = true" class="inline-flex items-center px-4 py-2.5 border border-slate-800 dark:border-white/10 text-sm font-bold rounded-xl text-slate-800 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 focus:outline-none transition-all shadow-sm">
+                <button type="button" @click="isChangingPassword = true" class="inline-flex items-center px-5 py-3 border border-gray-200 dark:border-white/10 text-sm font-bold rounded-xl text-gray-700 dark:text-gray-200 bg-white dark:bg-white/5 hover:bg-gray-900 hover:text-white dark:hover:bg-white/10 transition-all shadow-sm">
                     <i class="fas fa-shield-alt mr-2 opacity-60"></i> Change Password
                 </button>
             </div>
@@ -329,12 +329,12 @@
                     </div>
                 </div>
 
-                <div class="pt-4 flex justify-end space-x-3">
-                    <button type="button" @click="isChangingPassword = false; $el.form.reset();" class="inline-flex justify-center py-2.5 px-6 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors">
+                <div class="pt-10 flex justify-end items-center space-x-6">
+                    <button type="button" @click="isChangingPassword = false; $el.form.reset();" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
                         Cancel
                     </button>
-                    <button type="submit" class="inline-flex justify-center py-2.5 px-6 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-colors">
-                        Update Password
+                    <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        Update Password <i class="fas fa-lock ml-3 text-sm"></i>
                     </button>
                 </div>
             </form>
