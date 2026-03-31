@@ -113,13 +113,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/region/list",
+							"raw": "{{base_url}}/regions",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"region",
-								"list"
+								"regions"
 							]
 						}
 					},
@@ -146,9 +145,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/subregion/list",
+									"raw": "{{base_url}}/sub-regions",
 									"host": ["{{base_url}}"],
-									"path": ["subregion", "list"]
+									"path": ["sub-regions"]
 								}
 							},
 							"response": []
@@ -161,9 +160,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/subregion/list?region_id=1",
+									"raw": "{{base_url}}/sub-regions?region_id=1",
 									"host": ["{{base_url}}"],
-									"path": ["subregion", "list"],
+									"path": ["sub-regions"],
 									"query": [{ "key": "region_id", "value": "1" }]
 								}
 							},
@@ -179,9 +178,9 @@
 							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 						],
 						"url": {
-							"raw": "{{base_url}}/timezone/list?name=Kolkata",
+							"raw": "{{base_url}}/timezones?name=Kolkata",
 							"host": ["{{base_url}}"],
-							"path": ["timezone", "list"],
+							"path": ["timezones"],
 							"query": [{ "key": "name", "value": "Kolkata" }]
 						}
 					},
@@ -203,9 +202,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/country/list",
+									"raw": "{{base_url}}/countries",
 									"host": ["{{base_url}}"],
-									"path": ["country", "list"]
+									"path": ["countries"]
 								}
 							},
 							"response": []
@@ -218,9 +217,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/country/list?iso2=IN",
+									"raw": "{{base_url}}/countries?iso2=IN",
 									"host": ["{{base_url}}"],
-									"path": ["country", "list"],
+									"path": ["countries"],
 									"query": [{ "key": "iso2", "value": "IN" }]
 								}
 							},
@@ -239,9 +238,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/state/list?country_id=101",
+									"raw": "{{base_url}}/states?country_id=101",
 									"host": ["{{base_url}}"],
-									"path": ["state", "list"],
+									"path": ["states"],
 									"query": [{ "key": "country_id", "value": "101" }]
 								}
 							},
@@ -255,9 +254,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/state/list?name=Maharashtra",
+									"raw": "{{base_url}}/states?name=Maharashtra",
 									"host": ["{{base_url}}"],
-									"path": ["state", "list"],
+									"path": ["states"],
 									"query": [{ "key": "name", "value": "Maharashtra" }]
 								}
 							},
@@ -281,9 +280,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/city/list?state_id=51",
+									"raw": "{{base_url}}/cities?state_id=51",
 									"host": ["{{base_url}}"],
-									"path": ["city", "list"],
+									"path": ["cities"],
 									"query": [{ "key": "state_id", "value": "51" }]
 								}
 							},
@@ -297,9 +296,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/city/list?name=Mumbai",
+									"raw": "{{base_url}}/cities?name=Mumbai",
 									"host": ["{{base_url}}"],
-									"path": ["city", "list"],
+									"path": ["cities"],
 									"query": [{ "key": "name", "value": "Mumbai" }]
 								}
 							},
@@ -318,9 +317,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/pincode/list?city_id=1024",
+									"raw": "{{base_url}}/pincodes?city_id=1024",
 									"host": ["{{base_url}}"],
-									"path": ["pincode", "list"],
+									"path": ["pincodes"],
 									"query": [{ "key": "city_id", "value": "1024" }]
 								}
 							},
@@ -334,9 +333,9 @@
 									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 								],
 								"url": {
-									"raw": "{{base_url}}/pincode/list?pincode=400001",
+									"raw": "{{base_url}}/pincodes?pincode=400001",
 									"host": ["{{base_url}}"],
-									"path": ["pincode", "list"],
+									"path": ["pincodes"],
 									"query": [{ "key": "pincode", "value": "400001" }]
 								}
 							},
@@ -352,9 +351,9 @@
 							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
 						],
 						"url": {
-							"raw": "{{base_url}}/pincode/search?code=400001",
+							"raw": "{{base_url}}/pincodes/search?code=400001",
 							"host": ["{{base_url}}"],
-							"path": ["pincode", "search"],
+							"path": ["pincodes", "search"],
 							"query": [{ "key": "code", "value": "400001" }]
 						}
 					},
@@ -399,6 +398,72 @@
 							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"plan_name\": \"PRO\",\n        \"total_credits\": 50000,\n        \"available_credits\": 42500,\n        \"recent_logs\": [\n            { \"endpoint\": \"/api/v1/pincode/search\", \"status\": 200, \"time\": \"2026-03-27 12:45:00\" }\n        ]\n    }\n}"
 						}
 					]
+				}
+			]
+},
+		{
+			"name": "06. Geospatial Analysis",
+			"item": [
+				{
+					"name": "Global Data Statistics (Free)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{base_url}}/geospatial/statistics",
+							"host": ["{{base_url}}"],
+							"path": ["geospatial", "statistics"]
+						},
+						"description": "Comprehensive statistics for countries, states, and cities. This endpoint does not consume credits."
+					},
+					"response": []
+				},
+				{
+					"name": "Precise Distance Calculator",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{base_url}}/geospatial/distance?lat1=18.922&lng1=72.834&lat2=28.613&lng2=77.209&unit=km",
+							"host": ["{{base_url}}"],
+							"path": ["geospatial", "distance"],
+							"query": [
+								{ "key": "lat1", "value": "18.922" },
+								{ "key": "lng1", "value": "72.834" },
+								{ "key": "lat2", "value": "28.613" },
+								{ "key": "lng2", "value": "77.209" },
+								{ "key": "unit", "value": "km" }
+							]
+						},
+						"description": "Calculates the distance between two latitude/longitude points. This endpoint consumes 1 credit."
+					},
+					"response": []
+				},
+				{
+					"name": "Radius-based Nearby Search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{base_url}}/geospatial/nearby?lat=19.076&lng=72.877&radius=100&type=city",
+							"host": ["{{base_url}}"],
+							"path": ["geospatial", "nearby"],
+							"query": [
+								{ "key": "lat", "value": "19.076" },
+								{ "key": "lng", "value": "72.877" },
+								{ "key": "radius", "value": "100" },
+								{ "key": "type", "value": "city" }
+							]
+						},
+						"description": "Searches for Cities or Pincodes within a specific radius. This endpoint consumes 1 credit."
+					},
+					"response": []
 				}
 			]
 		}

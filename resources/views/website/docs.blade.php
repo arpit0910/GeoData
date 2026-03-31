@@ -41,14 +41,22 @@
                     <div>
                         <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">GeoData API</h3>
                         <ul class="mt-4 space-y-4">
-                            <li><a href="#regions" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Regions List</a></li>
-                            <li><a href="#subregions" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Sub-Regions List</a></li>
-                            <li><a href="#timezones" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Timezones List</a></li>
-                            <li><a href="#countries" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Countries List</a></li>
-                            <li><a href="#states" class="text-sm hover:text-amber-500 transition-colors tracking-wide">States List</a></li>
-                            <li><a href="#cities" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Cities List</a></li>
-                            <li><a href="#pincode-list" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincodes List</a></li>
-                            <li><a href="#pincode-search" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincode Search (Deep)</a></li>
+                            <li><a href="#regions" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Regions</a></li>
+                            <li><a href="#sub-regions" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Sub-Regions</a></li>
+                            <li><a href="#timezones" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Timezones</a></li>
+                            <li><a href="#countries" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Countries</a></li>
+                            <li><a href="#states" class="text-sm hover:text-amber-500 transition-colors tracking-wide">States</a></li>
+                            <li><a href="#cities" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Cities</a></li>
+                            <li><a href="#pincodes" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincodes</a></li>
+                            <li><a href="#pincode-search" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincode Search</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Geospatial Analysis</h3>
+                        <ul class="mt-4 space-y-4">
+                            <li><a href="#geo-stats" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Statistics</a></li>
+                            <li><a href="#geo-distance" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Distance Calculator</a></li>
+                            <li><a href="#geo-nearby" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Radius Search</a></li>
                         </ul>
                     </div>
                     <div>
@@ -167,10 +175,10 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                     <h2 class="text-3xl font-bold text-white mb-12">GeoData Endpoints</h2>
                     
                     <div class="space-y-12">
-                        <!-- Regions List -->
+                        <!-- Regions -->
                         <div id="regions" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /region/list</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /regions</h3>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Get a list of global political or geographic regions (e.g., Asia, Europe, Africa).</p>
@@ -205,10 +213,10 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             </div>
                         </div>
 
-                        <!-- Sub-Regions List -->
-                        <div id="subregions" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                        <!-- Sub-Regions -->
+                        <div id="sub-regions" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /subregion/list</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /sub-regions</h3>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Get detailed sub-regions within a parent region.</p>
@@ -243,10 +251,10 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             </div>
                         </div>
 
-                        <!-- Timezones List -->
+                        <!-- Timezones -->
                         <div id="timezones" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /timezone/list</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /timezones</h3>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve standardized IANA timezones.</p>
@@ -280,10 +288,10 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             </div>
                         </div>
 
-                        <!-- Country List -->
+                        <!-- Countries -->
                         <div id="countries" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /country/list</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries</h3>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve a filterable list of countries with their ISO codes, currency, and capital.</p>
@@ -322,10 +330,10 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             </div>
                         </div>
 
-                        <!-- State List -->
+                        <!-- States -->
                         <div id="states" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /state/list</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /states</h3>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve states filtered by country. Perfect for dropdown menus.</p>
@@ -351,10 +359,10 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             </div>
                         </div>
 
-                        <!-- City List -->
+                        <!-- Cities -->
                         <div id="cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /city/list</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /cities</h3>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve cities filtered by state or country.</p>
@@ -384,7 +392,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Pincode Search -->
                         <div id="pincode-search" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincode/search</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes/search</h3>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Search for detailed geographic data by Pincode. Returns associated City, State, and Country data.</p>
@@ -418,10 +426,10 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             </div>
                         </div>
 
-                        <!-- Pincode List (Legacy/Batch) -->
-                        <div id="pincode-list" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                        <!-- Pincodes -->
+                        <div id="pincodes" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincode/list</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes</h3>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Batch retrieve pincodes by city, state or country filter.</p>
@@ -455,6 +463,84 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
     <span class="text-blue-400">"recent_logs"</span>: [ ... ]
   }
 }</pre>
+                                </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Geospatial Analysis -->
+                <section id="geospatial-analysis">
+                    <div class="flex items-center mb-12">
+                        <h2 class="text-3xl font-bold text-white">Geospatial Analysis</h2>
+                    </div>
+
+                    <div class="space-y-12">
+                        <!-- Geo Statistics -->
+                        <div id="geo-stats" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden relative">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/statistics</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-400">Retrieve aggregate data counts for planning your integration. This is a non-chargeable API, perfect for calculating pagination and data volume.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Optional Parameters</h4>
+                                <table class="w-full text-sm mb-6">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                        <tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800 text-gray-400">
+                                        <tr><td class="py-3 font-mono text-amber-500">country_id</td><td class="py-3">Filter counts by Country ID</td></tr>
+                                        <tr><td class="py-3 font-mono text-amber-500">state_id</td><td class="py-3">Filter counts by State ID</td></tr>
+                                    </tbody>
+                                </table>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
+<pre class="text-gray-400">{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"total_countries"</span>: <span class="text-blue-400">240</span>,
+    <span class="text-blue-400">"total_states"</span>: <span class="text-blue-400">4120</span>,
+    <span class="text-blue-400">"total_cities"</span>: <span class="text-blue-400">48000</span>,
+    <span class="text-blue-400">"total_pincodes"</span>: <span class="text-blue-400">1200000</span>
+  }
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Distance Calculator -->
+                        <div id="geo-distance" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex justify-between items-center">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/distance</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-400">Calculate precision distance between two coordinates using the Haversine formula.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Required Parameters</h4>
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div class="font-mono text-xs p-3 bg-gray-900/80 rounded-lg border border-gray-800 text-gray-500">lat1, lng1</div>
+                                    <div class="font-mono text-xs p-3 bg-gray-900/80 rounded-lg border border-gray-800 text-gray-500">lat2, lng2</div>
+                                </div>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+<pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"distance"</span>: <span class="text-blue-400">1146.42</span>,
+    <span class="text-blue-400">"unit"</span>: <span class="text-green-400">"km"</span>
+  }
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nearby Radius Search -->
+                        <div id="geo-nearby" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex justify-between items-center">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/nearby</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-6 text-gray-400">Search for Cities or Pincodes within a customized radius from any coordinate point.</p>
+                                <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-gray-500 border border-gray-800 mb-8">
+                                    /api/v1/geospatial/nearby?lat=19.076&lng=72.877&radius=50&type=pincode
                                 </div>
                             </div>
                         </div>
