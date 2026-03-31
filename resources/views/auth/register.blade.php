@@ -28,7 +28,7 @@
         .text-red-700 { color: rgba(252,165,165,1) !important; }
     </style>
 </head>
-<body class="bg-[#000000] flex items-center justify-center min-h-screen py-12 selection:bg-amber-500 selection:text-white relative overflow-hidden">
+<body class="bg-[#000000] flex items-center justify-center min-h-screen py-12 selection:bg-amber-500 selection:text-white relative">
     
     <!-- GeoData Background Elements -->
     <div class="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>

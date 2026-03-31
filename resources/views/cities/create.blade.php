@@ -66,10 +66,7 @@
                 <div>
                     <label for="timezone_id" class="block text-sm font-medium text-gray-700">Timezone</label>
                     <select name="timezone_id" id="timezone_id" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
-                        <option value="" selected disabled>Select a Timezone</option>
-                        @foreach($timezones as $tz)
-                            <option value="{{ $tz->id }}" {{ old('timezone_id') == $tz->id ? 'selected' : '' }}>{{ $tz->zone_name }}</option>
-                        @endforeach
+                        <option value="" selected disabled>Select a Country first</option>
                     </select>
                     @error('timezone_id')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
@@ -94,3 +91,44 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        const countrySelect = $('#country_id');
+        const timezoneSelect = $('#timezone_id');
+
+        countrySelect.on('change', function() {
+            const countryId = $(this).val();
+            if (!countryId) return;
+
+            // Clear and disable during loading
+            timezoneSelect.html('<option value="" disabled selected>Loading timezones...</option>').prop('disabled', true);
+
+            // Fetch timezones for this country
+            $.get(`/countries/${countryId}/timezones`, function(data) {
+                let html = '<option value="" disabled selected>Select a Timezone</option>';
+                
+                if (data.length > 0) {
+                    data.forEach(function(tz) {
+                        html += `<option value="${tz.id}">${tz.zone_name}</option>`;
+                    });
+                    timezoneSelect.prop('disabled', false);
+                } else {
+                    html = '<option value="" disabled selected>No timezones found for this country</option>';
+                    timezoneSelect.prop('disabled', true);
+                }
+                
+                timezoneSelect.html(html);
+            }).fail(function() {
+                timezoneSelect.html('<option value="" disabled selected>Error loading timezones</option>').prop('disabled', true);
+            });
+        });
+
+        // Trigger change if country is pre-selected
+        if (countrySelect.val()) {
+            countrySelect.trigger('change');
+        }
+    });
+</script>
+@endpush

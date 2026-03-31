@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+use App\Models\Region;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\WebRegionsImport;
 

@@ -29,7 +29,10 @@ class EnsureSubscribed
                 'logout', 
                 'profile.complete', 
                 'profile.complete.post',
-                'api.pincode.lookup'
+                'api.pincode.lookup',
+                'support.index',
+                'support.store',
+                'support.sub-categories'
             ];
             
             $currentRoute = $request->route() ? $request->route()->getName() : null;

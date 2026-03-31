@@ -108,11 +108,11 @@
     </style>
 </head>
 <body class="h-full">
-    <div class="min-h-full flex flex-col">
+    <div class="h-screen flex flex-col overflow-hidden">
         <!-- Sidebar and Content wrapper -->
         <div class="flex flex-1">
             <!-- Navigation -->
-            <nav class="w-64 bg-amber-600 dark:bg-[#080c14] text-white flex-shrink-0 hidden md:block transition-all duration-500 border-r dark:border-white/5">
+            <nav class="w-64 bg-amber-600 dark:bg-[#080c14] text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-500 border-r dark:border-white/5 overflow-y-auto">
                 <div class="p-6">
                     <h1 class="text-2xl font-bold tracking-tight">Geo<span class="text-amber-200 dark:text-amber-500">Data</span></h1>
                 </div>

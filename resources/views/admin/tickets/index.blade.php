@@ -46,11 +46,11 @@
                     name: 'status',
                     render: function(data) {
                         const colors = {
-                            'pending': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500',
-                            'resolved': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500',
-                            'closed': 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-500'
+                            'pending': 'bg-amber-500/10 text-amber-600 border border-amber-500/20',
+                            'resolved': 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20',
+                            'closed': 'bg-gray-500/10 text-gray-600 border border-gray-500/20'
                         };
-                        return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[data] || colors['pending']} capitalize">${data}</span>`;
+                        return `<span class="px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${colors[data] || colors['pending']}">${data}</span>`;
                     }
                 },
                 { 

@@ -92,6 +92,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/{subregion}', [SubRegionController::class, 'destroy'])->name('destroy');
     });
 
+    Route::get('countries/{country}/timezones', [TimezoneController::class, 'getByCountry'])->name('countries.timezones');
     Route::post('timezones/import', [TimezoneController::class, 'import'])->name('timezones.import');
     Route::resource('timezones', TimezoneController::class);
 
@@ -164,10 +165,10 @@ Route::middleware(['auth', 'profile.complete.check'])->group(function () {
         Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
         Route::get('/transactions/{transaction}/receipt', [SubscriptionController::class, 'downloadReceipt'])->name('pricing.receipt');
         Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
-
-        // Help & Support
-        Route::get('/help-support', [TicketController::class, 'index'])->name('support.index');
-        Route::post('/help-support', [TicketController::class, 'store'])->name('support.store');
-        Route::get('/help-support/sub-categories/{category}', [TicketController::class, 'getSubCategories'])->name('support.sub-categories');
     });
+
+    // Help & Support (Accessible without subscription)
+    Route::get('/help-support', [TicketController::class, 'index'])->name('support.index');
+    Route::post('/help-support', [TicketController::class, 'store'])->name('support.store');
+    Route::get('/help-support/sub-categories/{category}', [TicketController::class, 'getSubCategories'])->name('support.sub-categories');
 });

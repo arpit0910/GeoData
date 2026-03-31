@@ -42,12 +42,12 @@
                     data: 'status', 
                     name: 'status',
                     render: function(data, type, row) {
-                        const checked = data ? 'checked' : '';
                         return `
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer toggle-status" data-id="${row.id}" ${checked}>
-                                <div class="w-11 h-6 bg-red-400 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"></div>
-                            </label>
+                            <button type="button" class="toggle-status px-3 py-1 text-[10px] font-black tracking-widest rounded-full transition-all border
+                                ${data ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500 hover:text-white' : 'bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-600 hover:text-white'}" 
+                                data-id="${row.id}">
+                                ${data ? 'ACTIVE' : 'INACTIVE'}
+                            </button>
                         `;
                     }
                 },
@@ -56,11 +56,11 @@
                     render: function(data) {
                         return `
                             <div class="flex space-x-2">
-                                <a href="/ticket-categories/${data}/edit" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                                <form action="/ticket-categories/${data}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                <a href="/admin/ticket-categories/${data}/edit" class="p-2 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 rounded-lg hover:bg-amber-600 hover:text-white dark:hover:bg-amber-500 transition-all"><i class="fas fa-edit"></i></a>
+                                <form action="/admin/ticket-categories/${data}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+                                    <button type="submit" class="p-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 rounded-lg hover:bg-red-600 hover:text-white dark:hover:bg-red-500 transition-all"><i class="fas fa-trash"></i></button>
                                 </form>
                             </div>
                         `;
@@ -69,10 +69,15 @@
             ]
         });
 
-        $(document).on('change', '.toggle-status', function() {
+        $(document).on('click', '.toggle-status', function() {
             const id = $(this).data('id');
+            const btn = $(this);
             $.post(`/admin/ticket-categories/${id}/toggle-status`, {
                 _token: '{{ csrf_token() }}'
+            }, function(response) {
+                if (response.success) {
+                    $('#categories-table').DataTable().ajax.reload(null, false);
+                }
             });
         });
     });

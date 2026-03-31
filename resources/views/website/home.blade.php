@@ -224,11 +224,11 @@
                 ['q' => 'Do you support custom enterprise SLAs?', 'a' => 'Absolutely. For high-volume users, we offer dedicated infrastructure and custom guarantee levels. Contact our sales team for details.']
             ] as $i => $item)
             <div class="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
-                <button @click="active = (active === {{ $i }} ? null : {{ $i }})" class="w-full flex items-center justify-between px-8 py-6 text-left hover:bg-white/5 transition-colors">
+                <button @click="active = (active === {{ $i }} ? null : {{ $i }})" class="w-full flex items-center justify-between px-6 sm:px-8 pt-6 pb-4 text-left hover:bg-white/5 transition-colors">
                     <span class="text-lg font-bold text-white">{{ $item['q'] }}</span>
                     <i class="fas fa-chevron-down text-amber-500 transition-transform" :class="active === {{ $i }} ? 'rotate-180' : ''"></i>
                 </button>
-                <div x-show="active === {{ $i }}" x-collapse class="px-8 pb-6 text-gray-400 font-medium leading-relaxed">
+                <div x-show="active === {{ $i }}" x-collapse class="px-6 sm:px-8 pt-2 pb-6 text-gray-400 font-medium leading-relaxed">
                     {{ $item['a'] }}
                 </div>
             </div>

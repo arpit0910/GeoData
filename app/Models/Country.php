@@ -66,4 +66,9 @@ class Country extends Model
     {
         return $this->belongsTo(SubRegion::class, 'subregion_id');
     }
+
+    public function timezones()
+    {
+        return $this->hasMany(Timezone::class);
+    }
 }

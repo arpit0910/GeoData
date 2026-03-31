@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             StateSeeder::class,
             CitySeeder::class,
             PlanSeeder::class,
+            TicketCategorySeeder::class,
+            FaqSeeder::class,
         ]);
     }
 }

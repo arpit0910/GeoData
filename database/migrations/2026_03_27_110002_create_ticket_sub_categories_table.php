@@ -8,12 +8,12 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('ticket_sub_categories', function (Blueprint $鼓) {
-            $鼓->id();
-            $鼓->foreignId('category_id')->constrained('ticket_categories')->onDelete('cascade');
-            $鼓->string('name');
-            $鼓->boolean('status')->default(true);
-            $鼓->timestamps();
+        Schema::create('ticket_sub_categories', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('category_id')->constrained('ticket_categories')->onDelete('cascade');
+            $table->string('name');
+            $table->boolean('status')->default(true);
+            $table->timestamps();
         });
     }
 

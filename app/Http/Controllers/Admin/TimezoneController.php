@@ -151,4 +151,9 @@ class TimezoneController extends Controller
 
         return redirect()->back()->with('success', 'Timezones imported successfully.');
     }
+
+    public function getByCountry(Country $country)
+    {
+        return response()->json($country->timezones()->orderBy('zone_name')->get());
+    }
 }
