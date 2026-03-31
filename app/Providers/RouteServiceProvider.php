@@ -57,7 +57,21 @@ class RouteServiceProvider extends ServiceProvider
     protected function configureRateLimiting()
     {
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            $user = $request->user();
+
+            if ($user && $user->plan) {
+                $plan = $user->plan;
+                // Calculate actual cost
+                $cost = $plan->amount - ($plan->discount_amount ?? 0);
+
+                if ($cost > 0) {
+                    // Paid tier: 300 hits per minute (5 per second on average)
+                    return Limit::perMinute(300)->by($user->id);
+                }
+            }
+
+            // Free tier or unauthenticated: 60 hits per minute (1 per second on average)
+            return Limit::perMinute(60)->by($user?->id ?: $request->ip());
         });
     }
 }
