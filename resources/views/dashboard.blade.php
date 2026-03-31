@@ -7,7 +7,7 @@
 <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-200 dark:border-white/5 p-8 transition-all duration-500">
     <div class="mb-8">
         <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Welcome to your <span class="text-amber-600 dark:text-amber-500">Admin Console</span></h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium">Real-time overview of the GeoData ecosystem.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium">Real-time overview of the SetuGeo ecosystem.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">

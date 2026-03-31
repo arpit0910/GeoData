@@ -323,7 +323,7 @@
                             "key": response.key,
                             "amount": response.amount,
                             "currency": "INR",
-                            "name": "GeoData Subscriptions",
+                            "name": "SetuGeo Subscriptions",
                             "description": this.selectedPlan.name + " Plan",
                             "order_id": response.order_id,
                             "notes": {

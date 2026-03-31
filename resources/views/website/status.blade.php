@@ -1,5 +1,5 @@
 @extends('layouts.public')
-@section('title', 'API Status - GeoData API')
+@section('title', 'API Status - SetuGeo API')
 
 @section('content')
 <div class="bg-transparent py-24 sm:py-32">

@@ -29,10 +29,10 @@ class AuthController extends Controller
         }
 
         // Optional: clear out preceding outdated tokens for this specific device flow
-        $user->tokens()->where('name', 'geodata-auth-token')->delete();
+        $user->tokens()->where('name', 'setugeo-auth-token')->delete();
 
         // Issue formal Sanctum token targeting user context mapping perfectly to `request()->user()`
-        $tokenResult = $user->createToken('geodata-auth-token');
+        $tokenResult = $user->createToken('setugeo-auth-token');
 
         return sendResponse([
             'access_token' => $tokenResult->plainTextToken,

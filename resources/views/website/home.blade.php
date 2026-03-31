@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'GeoData API - The Most Accurate Geographic Data')
+@section('title', 'SetuGeo API - The Most Accurate Geographic Data')
 
 @section('content')
 <!-- Hero Section -->
@@ -8,7 +8,7 @@
     <!-- Decorative background blobs -->
     <div class="absolute inset-y-0 right-0 w-1/2 bg-amber-500 rounded-l-full opacity-10 transform translate-x-1/3 blur-3xl pointer-events-none z-0"></div>
     <div class="absolute top-0 left-0 w-64 h-64 bg-yellow-500 rounded-br-full opacity-10 transform -translate-y-1/2 -translate-x-1/4 blur-2xl pointer-events-none z-0"></div>
-    <!-- Floating GeoData impact elements -->
+    <!-- Floating SetuGeo impact elements -->
     <div class="hidden lg:block absolute top-[15%] right-[20%] z-30 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-2xl animate-[bounce_4s_infinite]">
         <div class="text-[10px] font-mono text-gray-400 mb-1 flex items-center justify-between gap-4"><span>NODE: TOKYO</span><span class="text-green-400 text-xs">●</span></div>
         <div class="text-sm font-mono text-amber-500">35.6762° N, 139.6503° E</div>
@@ -23,7 +23,7 @@
         <div class="text-center max-w-4xl mx-auto">
             <div class="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-amber-500 mb-8 border border-white/20 shadow-lg cursor-default">
                 <span class="flex h-2 w-2 rounded-full bg-amber-500 mr-2 animate-pulse"></span>
-                <span class="text-xs font-bold tracking-widest uppercase">GeoData Now Live</span>
+                <span class="text-xs font-bold tracking-widest uppercase text-amber-500">SetuGeo Now Live</span>
             </div>
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight mb-8 leading-[1.1]">
                 Integrate <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">Accurate</span> Location Data in Minutes
@@ -51,12 +51,12 @@
                     <div class="ml-4 text-xs font-mono text-gray-400 uppercase tracking-widest">GET /api/v1/countries/IN/cities</div>
                 </div>
                 <div class="p-6 text-left overflow-x-auto text-sm font-mono text-gray-300 leading-relaxed">
-                    <span class="text-pink-400">fetch</span>(<span class="text-green-300">'https://api.geodata.provider/v1/countries/IN/cities'</span>, {<br>
+                    <span class="text-pink-400">fetch</span>(<span class="text-green-300">'https://api.setugeo.provider/v1/countries/IN/cities'</span>, {<br>
                     &nbsp;&nbsp;headers: { <span class="text-amber-300">'Authorization'</span>: <span class="text-green-300">'Bearer YOUR_KEY'</span> }<br>
                     })<br>
                     .<span class="text-pink-400">then</span>(response => response.<span class="text-pink-400">json</span>())<br>
                     .<span class="text-pink-400">then</span>(data => {<br>
-                    &nbsp;&nbsp;<span class="text-blue-300">console</span>.<span class="text-blue-300">log</span>(data.cities); <span class="text-gray-500">// [{ "name": "Mumbai"}]</span><br>
+                    &nbsp;&nbsp;<span class="text-blue-300">console</span>.<span class="text-blue-300">log</span>(data.cities); <span class="text-gray-500">// Explore SetuGeo API</span><br>
                     });
                 </div>
             </div>
@@ -182,7 +182,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
             <div class="bg-white/10 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10">
                 <p class="text-xl text-gray-300 italic mb-8 font-medium italic border-l-4 border-amber-500 pl-6 leading-relaxed">
-                    "GeoData's accuracy is unmatched. We switched from a competitor whose dataset was missing thousands of sub-regions, and we haven't looked back."
+                    "SetuGeo's accuracy is unmatched. We switched from a competitor whose dataset was missing thousands of sub-regions, and we haven't looked back."
                 </p>
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center font-bold text-white">JD</div>

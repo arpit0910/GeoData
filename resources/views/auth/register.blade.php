@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register - GeoData API</title>
+    <title>Register - SetuGeo API</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
@@ -30,13 +30,13 @@
 </head>
 <body class="bg-[#000000] flex items-center justify-center min-h-screen py-12 selection:bg-amber-500 selection:text-white relative">
     
-    <!-- GeoData Background Elements -->
+    <!-- SetuGeo Background Elements -->
     <div class="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
     <div class="absolute right-0 bottom-0 -z-10 w-[500px] h-[500px] rounded-full bg-amber-500 opacity-10 blur-[120px] pointer-events-none"></div>
     
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 border border-white/10 relative z-10">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold tracking-tight text-amber-500">GeoData</h1>
+            <h1 class="text-3xl font-bold tracking-tight text-amber-500">SetuGeo</h1>
             <p class="text-gray-500 mt-2 text-sm">Create your free account today.</p>
         </div>
 

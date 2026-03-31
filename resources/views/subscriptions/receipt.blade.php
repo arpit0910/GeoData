@@ -24,7 +24,7 @@
             
             <div class="flex justify-between items-start relative z-10">
                 <div>
-                    <h1 class="text-3xl font-black tracking-tighter uppercase mb-1">GeoData</h1>
+                    <h1 class="text-3xl font-black tracking-tighter uppercase mb-1">SetuGeo</h1>
                     <p class="text-amber-500 font-bold text-xs tracking-[0.3em] uppercase">Premium API Services</p>
                 </div>
                 <div class="text-right">
@@ -110,7 +110,7 @@
         </div>
         
         <div class="bg-gray-50 px-10 py-6 text-center">
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Thank you for choosing GeoData</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Thank you for choosing SetuGeo</p>
             <p class="text-xs text-gray-300">Transforming locations into insights.</p>
         </div>
     </div>

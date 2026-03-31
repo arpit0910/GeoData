@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'GeoData') }} - Admin</title>
+    <title>{{ config('app.name', 'SetuGeo') }} - Admin</title>
 
     <!-- Tailwind CSS via CDN for instant visual improvement -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -114,7 +114,10 @@
             <!-- Navigation -->
             <nav class="w-64 bg-amber-600 dark:bg-[#080c14] text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-500 border-r dark:border-white/5 overflow-y-auto">
                 <div class="p-6">
-                    <h1 class="text-2xl font-bold tracking-tight">Geo<span class="text-amber-200 dark:text-amber-500">Data</span></h1>
+                    <a href="{{ route('home') }}" class="flex items-center gap-3 group">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-9 w-auto">
+                        <h1 class="text-2xl font-extrabold tracking-tight italic">Setu<span class="text-amber-500">Geo</span></h1>
+                    </a>
                 </div>
                 <div class="mt-4 px-4 space-y-1.5">
                     <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('dashboard') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">

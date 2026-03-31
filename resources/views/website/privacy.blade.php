@@ -1,5 +1,5 @@
 @extends('layouts.public')
-@section('title', 'Privacy Policy - GeoData API')
+@section('title', 'Privacy Policy - SetuGeo API')
 
 @section('content')
 <div class="bg-transparent py-16 sm:py-24">
@@ -10,7 +10,7 @@
                 <p>Last updated: {{ date('F d, Y') }}</p>
 
                 <h3 class="text-2xl font-bold text-gray-900 mt-10 mb-4">1. Introduction</h3>
-                <p>At GeoData, we respect your privacy and are committed to protecting it. This Privacy Policy explains our practices regarding the collection, use, and disclosure of your information.</p>
+                <p>At SetuGeo, we respect your privacy and are committed to protecting it. This Privacy Policy explains our practices regarding the collection, use, and disclosure of your information.</p>
 
                 <h3 class="text-2xl font-bold text-gray-900 mt-10 mb-4">2. Information We Collect</h3>
                 <p>We may collect personal data such as your name, email, billing information, and IP addresses when you interact with our APIs or Dashboard.</p>

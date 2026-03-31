@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Frequently Asked Questions - GeoData API')
+@section('title', 'Frequently Asked Questions - SetuGeo API')
 
 @section('content')
 <!-- Hero Section -->

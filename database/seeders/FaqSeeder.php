@@ -15,8 +15,8 @@ class FaqSeeder extends Seeder
         $faqs = [
             // Website FAQs
             [
-                'question' => 'What is GeoData and how can it benefit my project?',
-                'answer' => 'GeoData is a comprehensive geological and location intelligence platform that provides curated, high-accuracy data APIs for global countries, states, cities, and pincodes. It benefits developers and businesses by providing standardized, ready-to-use geographical datasets.',
+                'question' => 'What is SetuGeo and how can it benefit my project?',
+                'answer' => 'SetuGeo is a comprehensive geological and location intelligence platform that provides curated, high-accuracy data APIs for global countries, states, cities, and pincodes. It benefits developers and businesses by providing standardized, ready-to-use geographical datasets.',
                 'visibility' => 'website',
                 'status' => 'active',
                 'order' => 1
@@ -36,7 +36,7 @@ class FaqSeeder extends Seeder
                 'order' => 3
             ],
             [
-                'question' => 'Can I use GeoData for commercial applications?',
+                'question' => 'Can I use SetuGeo for commercial applications?',
                 'answer' => 'Absolutely! Our paid plans (Pro and Enterprise) are designed specifically for high-volume commercial production environments with guaranteed uptime and priority support.',
                 'visibility' => 'website',
                 'status' => 'active',

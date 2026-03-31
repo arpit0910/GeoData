@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "8b9cad0e-1f20-4192-bff0-e1e043ce143d",
-		"name": "GeoData API - Official Collection v1.1",
-		"description": "Comprehensive Postman collection for the GeoData Platform. Includes all 10 endpoints, detailed search examples, and auto-token extraction.",
+		"name": "SetuGeo API - Official Collection v1.1",
+		"description": "Comprehensive Postman collection for the SetuGeo Platform. Includes all 10 endpoints, detailed search examples, and auto-token extraction.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [

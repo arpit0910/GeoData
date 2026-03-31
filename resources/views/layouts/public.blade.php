@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'GeoData API')</title>
+    <title>@yield('title', 'SetuGeo API')</title>
     <!-- Preconnect to external CDNs for faster asset loading -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -38,11 +38,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20">
                 <div class="flex items-center">
-                    <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center gap-2 group">
-                        <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-lg flex items-center justify-center font-bold text-xl shadow-md border border-amber-400 group-hover:shadow-lg transition-all">
-                            <i class="fas fa-globe-americas"></i>
-                        </div>
-                        <span class="font-extrabold text-2xl tracking-tight text-white">Geo<span class="text-amber-500">Data</span></span>
+                    <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center gap-3 group">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-10 w-auto transform transition-transform group-hover:scale-110">
+                        <span class="font-extrabold text-2xl tracking-tight text-white italic">Setu<span class="text-amber-500">Geo</span></span>
                     </a>
                     
                     <div class="hidden md:ml-12 md:flex md:space-x-8">
@@ -129,14 +127,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="col-span-1 md:col-span-2">
-                    <a href="{{ route('home') }}" class="flex items-center gap-2 mb-5">
-                        <div class="w-8 h-8 bg-amber-600 text-white rounded-md flex items-center justify-center font-bold text-sm">
-                            <i class="fas fa-globe-americas"></i>
-                        </div>
-                        <span class="font-extrabold text-2xl tracking-tight text-white">Geo<span class="text-amber-500">Data</span></span>
+                    <a href="{{ route('home') }}" class="flex items-center gap-3 mb-5 group">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-8 w-auto">
+                        <span class="font-extrabold text-2xl tracking-tight text-white italic">Setu<span class="text-amber-500">Geo</span></span>
                     </a>
                     <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6 font-medium">
-                        Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally.
+                        Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally through SetuGeo.
                     </p>
                     <div class="flex space-x-5">
                         <a href="#" class="text-gray-500 hover:text-amber-500 transition-colors"><i class="fab fa-twitter text-xl"></i></a>
@@ -167,7 +163,7 @@
             </div>
             
             <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-sm font-medium text-gray-500">&copy; {{ date('Y') }} GeoData API Providers. All rights reserved.</p>
+                <p class="text-sm font-medium text-gray-500">&copy; {{ date('Y') }} SetuGeo API Providers. All rights reserved.</p>
                 <div class="mt-4 md:mt-0 flex items-center space-x-2 text-sm font-medium text-gray-500">
                     Made with <i class="fas fa-heart text-red-500 mx-1"></i> for global developers
                 </div>

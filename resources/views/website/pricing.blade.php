@@ -1,5 +1,5 @@
 @extends('layouts.public')
-@section('title', 'Pricing - GeoData API')
+@section('title', 'Pricing - SetuGeo API')
 
 @section('content')
 <div class="bg-transparent py-24 sm:py-32" x-data="{ billingCycle: 'monthly' }">

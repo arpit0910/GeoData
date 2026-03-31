@@ -15,10 +15,10 @@ class AdminUserSeeder extends Seeder
      */
     public function run()
     {
-        if (! User::where('email', 'admin@geodata.com')->exists()) {
+        if (! User::where('email', 'admin@setugeo.com')->exists()) {
             User::create([
                 'name' => 'Admin',
-                'email' => 'admin@geodata.com',
+                'email' => 'admin@setugeo.com',
                 'password' => Hash::make('admin123'),
                 'is_admin' => true,
             ]);

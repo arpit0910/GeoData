@@ -14,8 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('countries', function (Blueprint $table) {
-            $table->string('tax_system')->nullable()->after('measurement_system');
-            $table->string('standard_tax_rate')->nullable()->after('tax_system');
+            $table->string('tax_system')->nullable();
+            $table->string('standard_tax_rate')->nullable();
         });
     }
 
@@ -27,7 +27,8 @@ return new class extends Migration
     public function down()
     {
         Schema::table('countries', function (Blueprint $table) {
-            $table->dropColumn(['tax_system', 'standard_tax_rate']);
+            $table->dropColumn('tax_system');
+            $table->dropColumn('standard_tax_rate');
         });
     }
 };

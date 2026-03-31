@@ -150,7 +150,7 @@
                     <label for="company_name" class="block text-sm font-medium text-gray-700">Company Name <span class="text-red-500" x-show="isEditing" style="display: none;">*</span></label>
                     <div class="mt-1">
                         <input id="company_name" name="company_name" type="text" value="{{ old('company_name', $user->company_name) }}" required
-                            placeholder="e.g. GeoData Solutions Pvt Ltd"
+                            placeholder="e.g. SetuGeo Solutions Pvt Ltd"
                             :readonly="!isEditing"
                             :class="isEditing ? 'bg-white border-gray-300 focus:ring-amber-500 focus:border-amber-500 shadow-sm' : 'bg-gray-50/50 border-transparent text-gray-600 cursor-not-allowed'"
                             class="appearance-none block w-full px-4 py-3 border rounded-lg sm:text-sm transition-all duration-200">

@@ -12,7 +12,7 @@ use App\Models\SubRegion;
 use App\Models\Timezone;
 use Illuminate\Http\Request;
 
-class GeoDataController extends Controller
+class SetuGeoController extends Controller
 {
     /**
      * Retrieve a list of generic Regions

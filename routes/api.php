@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\V1\GeoDataController;
+use App\Http\Controllers\Api\V1\SetuGeoController;
 use App\Http\Controllers\Api\V1\GeoAnalysisController;
 use App\Http\Controllers\SubscriptionController;
 
@@ -32,18 +32,18 @@ Route::prefix('v1')->group(function() {
         Route::get('/geospatial/statistics', [GeoAnalysisController::class, 'stats']);
     });
 
-    // Credit-based GeoData & Analytical APIs
+    // Credit-based SetuGeo & Analytical APIs
     Route::middleware(['auth:sanctum', 'api.credits'])->group(function() {
-        // Core GeoData
-        Route::get('/regions', [GeoDataController::class, 'regions']);
-        Route::get('/sub-regions', [GeoDataController::class, 'subregions']);
-        Route::get('/timezones', [GeoDataController::class, 'timezones']);
-        Route::get('/countries', [GeoDataController::class, 'countries']);
-        Route::get('/states', [GeoDataController::class, 'states']);
-        Route::get('/cities', [GeoDataController::class, 'cities']);
-        Route::get('/pincodes', [GeoDataController::class, 'pincodes']);
-        Route::get('/pincodes/search', [GeoDataController::class, 'pincodeSearch']);
-        Route::get('/user/usage', [GeoDataController::class, 'usage']);
+        // Core SetuGeo APIs
+        Route::get('/regions', [SetuGeoController::class, 'regions']);
+        Route::get('/sub-regions', [SetuGeoController::class, 'subregions']);
+        Route::get('/timezones', [SetuGeoController::class, 'timezones']);
+        Route::get('/countries', [SetuGeoController::class, 'countries']);
+        Route::get('/states', [SetuGeoController::class, 'states']);
+        Route::get('/cities', [SetuGeoController::class, 'cities']);
+        Route::get('/pincodes', [SetuGeoController::class, 'pincodes']);
+        Route::get('/pincodes/search', [SetuGeoController::class, 'pincodeSearch']);
+        Route::get('/user/usage', [SetuGeoController::class, 'usage']);
 
         // Analytical Geospatial Utilities
         Route::get('/geospatial/distance', [GeoAnalysisController::class, 'distance']);

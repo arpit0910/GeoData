@@ -1,5 +1,5 @@
 @extends('layouts.public')
-@section('title', 'GeoData API Documentation')
+@section('title', 'SetuGeo API Documentation')
 
 @section('content')
 <div class="min-h-screen bg-[#020617] text-gray-300 antialiased font-inter">
@@ -8,10 +8,10 @@
         <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-center">
             <div>
                 <h1 class="text-4xl font-extrabold text-white tracking-tight sm:text-5xl">API Documentation</h1>
-                <p class="mt-4 text-xl text-gray-400 max-w-2xl">Comprehensive guide for integrating GeoData's geographic intelligence into your applications.</p>
+                <p class="mt-4 text-xl text-gray-400 max-w-2xl">Comprehensive guide for integrating SetuGeo's geographic intelligence into your applications.</p>
             </div>
             <div class="mt-8 md:mt-0">
-                <a href="{{ asset('GeoData.postman_collection.json') }}" download class="inline-flex items-center px-6 py-3 border border-amber-600/30 text-base font-bold rounded-xl text-white bg-amber-600/10 hover:bg-amber-600 hover:border-amber-600 transition-all shadow-lg group">
+                <a href="{{ asset('SetuGeo.postman_collection.json') }}" download class="inline-flex items-center px-6 py-3 border border-amber-600/30 text-base font-bold rounded-xl text-white bg-amber-600/10 hover:bg-amber-600 hover:border-amber-600 transition-all shadow-lg group">
                     <i class="fas fa-rocket mr-3 text-amber-500 group-hover:text-white"></i>
                     Postman Collection
                 </a>
@@ -39,7 +39,7 @@
                         </ul>
                     </div>
                     <div>
-                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">GeoData API</h3>
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">SetuGeo API</h3>
                         <ul class="mt-4 space-y-4">
                             <li><a href="#regions" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Regions</a></li>
                             <li><a href="#sub-regions" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Sub-Regions</a></li>
@@ -75,7 +75,7 @@
                 <section id="getting-started">
                     <h2 class="text-3xl font-bold text-white mb-6">Getting Started</h2>
                     <p class="text-lg leading-relaxed mb-6">
-                        GeoData provides a comprehensive set of RESTful APIs to retrieve geographic information including Countries, States, Cities, and Pincodes. Our APIs are CORS-enabled and return JSON-formatted responses.
+                        SetuGeo provides a comprehensive set of RESTful APIs to retrieve geographic information including Countries, States, Cities, and Pincodes. Our APIs are CORS-enabled and return JSON-formatted responses.
                     </p>
                     <div class="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
                         <h4 class="text-sm font-semibold text-amber-500 uppercase mb-2">Base URL</h4>
@@ -86,7 +86,7 @@
                 <!-- Authentication -->
                 <section id="authentication">
                     <h2 class="text-3xl font-bold text-white mb-6">Authentication</h2>
-                    <p class="mb-6">GeoData uses Bearer Token authentication. First, generate a token using your Client Key and Secret Key, which you can find in your <a href="{{ route('api-keys.index') }}" class="text-amber-500 hover:underline">Dashboard</a>.</p>
+                    <p class="mb-6">SetuGeo uses Bearer Token authentication. First, generate a token using your Client Key and Secret Key, which you can find in your <a href="{{ route('api-keys.index') }}" class="text-amber-500 hover:underline">Dashboard</a>.</p>
                     
                     <div class="space-y-8">
                         <div id="get-token" class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800">
@@ -131,7 +131,7 @@ axios.<span class="text-yellow-400">post</span>(<span class="text-green-400">'{{
 <pre class="text-gray-300"><span class="text-blue-400">import</span> { useEffect } <span class="text-blue-400">from</span> <span class="text-green-400">'react'</span>;
 <span class="text-blue-400">import</span> axios <span class="text-blue-400">from</span> <span class="text-green-400">'axios'</span>;
 
-<span class="text-blue-400">const</span> GeoDataApp = () => {
+<span class="text-blue-400">const</span> SetuGeoApp = () => {
   <span class="text-yellow-400">useEffect</span>(() => {
     axios.<span class="text-yellow-400">post</span>(<span class="text-green-400">'{{ url('/api/v1/auth/token') }}'</span>, {
       client_key: <span class="text-green-400">'YOUR_KEY'</span>,
@@ -140,7 +140,7 @@ axios.<span class="text-yellow-400">post</span>(<span class="text-green-400">'{{
     .then(<span class="text-blue-400">res</span> => console.<span class="text-yellow-400">log</span>(res.data));
   }, []);
 
-  <span class="text-blue-400">return</span> <span class="text-gray-500">&lt;div&gt;</span>Explore GeoData API<span class="text-gray-500">&lt;/div&gt;</span>;
+  <span class="text-blue-400">return</span> <span class="text-gray-500">&lt;div&gt;</span>Explore SetuGeo API<span class="text-gray-500">&lt;/div&gt;</span>;
 };</pre>
                                     </div>
                                     <div x-show="tab === 'python'" class="bg-[#0f172a] rounded-lg p-5 font-mono text-sm overflow-x-auto">
@@ -170,9 +170,9 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                     </div>
                 </section>
 
-                <!-- GeoData Endpoints -->
+                <!-- SetuGeo Endpoints -->
                 <section id="geo-endpoints">
-                    <h2 class="text-3xl font-bold text-white mb-12">GeoData Endpoints</h2>
+                    <h2 class="text-3xl font-bold text-white mb-12">SetuGeo Endpoints</h2>
                     
                     <div class="space-y-12">
                         <!-- Regions -->
