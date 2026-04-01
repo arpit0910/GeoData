@@ -124,4 +124,30 @@ class PlanController extends Controller
         $plan->delete();
         return redirect()->route('plans.index')->with('success', 'Plan deleted successfully.');
     }
+
+    public function syncToGateway(Plan $plan)
+    {
+        try {
+            $plan->syncWithRazorpay();
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Plan synced with Razorpay successfully! Plan ID: ' . $plan->gateway_product_id,
+                    'gateway_id' => $plan->gateway_product_id
+                ]);
+            }
+            
+            return redirect()->back()->with('success', 'Plan synced with Razorpay successfully!');
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sync failed: ' . $e->getMessage()
+                ], 422);
+            }
+            
+            return redirect()->back()->with('error', 'Sync failed: ' . $e->getMessage());
+        }
+    }
 }

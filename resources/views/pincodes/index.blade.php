@@ -143,17 +143,17 @@
                     searchable: false,
                     className: 'text-right whitespace-nowrap',
                     render: function(data) {
-                        let editUrl = `/pincodes/${data}/edit`;
-                        let deleteUrl = `/pincodes/${data}`;
+                        let editUrl = "{{ route('pincodes.edit', ':id') }}".replace(':id', data);
+                        let deleteUrl = "{{ route('pincodes.destroy', ':id') }}".replace(':id', data);
                         let csrf = '{{ csrf_token() }}';
                         
                         return `
                             <div class="flex justify-end space-x-2">
                                 <a href="${editUrl}" class="text-indigo-600 hover:text-indigo-900" title="Edit"><i class="fas fa-edit"></i></a>
-                                <form action="${deleteUrl}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this pincode?');">
+                                <form action="${deleteUrl}" method="POST" class="inline-block delete-form-actual">
                                     <input type="hidden" name="_token" value="${csrf}">
                                     <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">
+                                    <button type="button" class="p-2 text-rose-600 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors delete-trigger" data-message="Are you sure you want to delete pincode '${row.postal_code}'?" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -164,6 +164,16 @@
             ],
             order: [[0, "asc"]],
             dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col sm:flex-row justify-between items-center mt-4"ip>',
+        });
+
+        $(document).on('click', '.delete-trigger', function() {
+            const btn = $(this);
+            const form = btn.closest('form');
+            const message = btn.data('message');
+            
+            openDeleteModal(message, function() {
+                form.submit();
+            });
         });
 
         // Handle chunked file uploads

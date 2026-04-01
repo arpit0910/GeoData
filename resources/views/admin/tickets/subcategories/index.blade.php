@@ -55,14 +55,16 @@
                 },
                 {
                     data: 'id',
-                    render: function(data) {
+                    render: function(data, type, row) {
+                        let editUrl = "{{ route('admin.ticket-sub-categories.edit', ':id') }}".replace(':id', data);
+                        let deleteUrl = "{{ route('admin.ticket-sub-categories.destroy', ':id') }}".replace(':id', data);
                         return `
                             <div class="flex space-x-2">
-                                <a href="/admin/ticket-sub-categories/${data}/edit" class="p-2 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 rounded-lg hover:bg-amber-600 hover:text-white dark:hover:bg-amber-500 transition-all"><i class="fas fa-edit"></i></a>
-                                <form action="/admin/ticket-sub-categories/${data}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                <a href="${editUrl}" class="p-2 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 rounded-lg hover:bg-amber-600 hover:text-white dark:hover:bg-amber-500 transition-all"><i class="fas fa-edit"></i></a>
+                                <form action="${deleteUrl}" method="POST" class="inline delete-form-actual">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 rounded-lg hover:bg-red-600 hover:text-white dark:hover:bg-red-500 transition-all"><i class="fas fa-trash"></i></button>
+                                    <button type="button" class="p-2 bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded-lg hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-200 dark:hover:bg-white/10 transition-all delete-trigger" data-message="Are you sure you want to delete sub-category '${row.name}'?"><i class="fas fa-trash"></i></button>
                                 </form>
                             </div>
                         `;
@@ -71,9 +73,20 @@
             ]
         });
 
+        $(document).on('click', '.delete-trigger', function() {
+            const btn = $(this);
+            const form = btn.closest('form');
+            const message = btn.data('message');
+            
+            openDeleteModal(message, function() {
+                form.submit();
+            });
+        });
+
         $(document).on('click', '.toggle-status', function() {
             const id = $(this).data('id');
-            $.post(`/admin/ticket-sub-categories/${id}/toggle-status`, {
+            let toggleUrl = "{{ route('admin.ticket-sub-categories.toggle-status', ':id') }}".replace(':id', id);
+            $.post(toggleUrl, {
                 _token: '{{ csrf_token() }}'
             }, function(response) {
                 if (response.success) {

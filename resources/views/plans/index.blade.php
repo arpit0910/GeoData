@@ -114,18 +114,27 @@
                     orderable: false,
                     searchable: false,
                     className: 'text-right whitespace-nowrap',
-                    render: function(data) {
-                        let editUrl = `/plans/${data}/edit`;
-                        let deleteUrl = `/plans/${data}`;
+                    render: function(data, type, row) {
+                        let editUrl = "{{ route('plans.edit', ':id') }}".replace(':id', data);
+                        let deleteUrl = "{{ route('plans.destroy', ':id') }}".replace(':id', data);
+                        let syncUrl = "{{ route('plans.sync', ':id') }}".replace(':id', data);
                         let csrf = '{{ csrf_token() }}';
+
+                        let syncBtn = '';
+                        if (!row.gateway_product_id && row.billing_cycle !== 'lifetime' && (row.amount - row.discount_amount) > 0) {
+                            syncBtn = `<button type="button" class="sync-gateway p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Sync with Razorpay" data-id="${data}" data-url="${syncUrl}">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>`;
+                        }
 
                         return `
                             <div class="flex justify-end space-x-2">
+                                ${syncBtn}
                                 <a href="${editUrl}" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Edit"><i class="fas fa-edit"></i></a>
-                                <form action="${deleteUrl}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this plan?');">
+                                <form action="${deleteUrl}" method="POST" class="inline-block delete-form-actual">
                                     <input type="hidden" name="_token" value="${csrf}">
                                     <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit" class="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete">
+                                    <button type="button" class="p-2 text-rose-600 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors delete-trigger" data-message="Are you sure you want to delete plan '${row.name}'?" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -138,11 +147,46 @@
             dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col sm:flex-row justify-between items-center mt-4"ip>',
         });
 
+        $(document).on('click', '.delete-trigger', function() {
+            const btn = $(this);
+            const form = btn.closest('form');
+            const message = btn.data('message');
+            
+            openDeleteModal(message, function() {
+                form.submit();
+            });
+        });
+
+        // Sync with Razorpay logic
+        $(document).on('click', '.sync-gateway', function() {
+            const btn = $(this);
+            const url = btn.data('url');
+            
+            if (btn.hasClass('opacity-50')) return;
+
+            btn.addClass('opacity-50 pointer-events-none').find('i').addClass('fa-spin');
+
+            $.post(url, {
+                _token: '{{ csrf_token() }}'
+            }, function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    $('#plansTable').DataTable().ajax.reload(null, false);
+                }
+            }).fail(function(xhr) {
+                const message = xhr.responseJSON ? xhr.responseJSON.message : 'Sync failed';
+                alert(message);
+            }).always(function() {
+                btn.removeClass('opacity-50 pointer-events-none').find('i').removeClass('fa-spin');
+            });
+        });
+
         // Status Toggle with modern feedback
         $(document).on('click', '.status-toggle', function() {
             var id = $(this).data('id');
+            let toggleUrl = "{{ route('plans.toggle-status', ':id') }}".replace(':id', id);
             $.ajax({
-                url: `/plans/${id}/toggle-status`,
+                url: toggleUrl,
                 type: 'POST',
                 data: { _token: '{{ csrf_token() }}' },
                 success: function(response) {

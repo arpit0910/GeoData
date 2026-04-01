@@ -3,15 +3,28 @@
 @section('header', 'API Logs')
 
 @section('content')
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">API Access Logs</h1>
-    <p class="mt-1 text-sm text-gray-600">
-        @if(auth()->user()->is_admin)
-            Detailed audit trail of all API requests across the platform.
-        @else
-            Your personal API request history and credit usage audit.
-        @endif
-    </p>
+<div class="mb-6 flex justify-between items-start">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 group flex items-center">
+            <i class="fas fa-history text-amber-500 mr-3"></i> API Access Logs
+        </h1>
+        <p class="mt-1 text-sm text-gray-600">
+            @if(auth()->user()->is_admin)
+                Detailed audit trail of all API requests across the platform.
+            @else
+                Your personal API request history and credit usage audit.
+            @endif
+        </p>
+    </div>
+    
+    <div class="flex items-center space-x-4">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Last Updated: <span class="text-gray-700">{{ now()->format('h:i:s A') }}</span>
+        </div>
+        <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 hover:text-amber-600 transition-all shadow-sm flex items-center cursor-pointer">
+            <i class="fas fa-sync-alt mr-1.5"></i> Refresh
+        </button>
+    </div>
 </div>
 
 <div class="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -70,5 +83,10 @@
             }
         });
     });
+
+    // Auto-refresh the page periodically (every 60 seconds)
+    setTimeout(function() {
+        window.location.reload();
+    }, 60000);
 </script>
 @endpush

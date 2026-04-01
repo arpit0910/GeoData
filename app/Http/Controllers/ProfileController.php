@@ -25,29 +25,38 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'company_name' => 'required|string|max:255',
-            'company_website' => 'nullable|url|max:255',
-            'gst_number' => ['nullable', 'string', 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/'],
-            'phone' => ['required', 'string', 'regex:/^(?:\+?91[\-\s]?)?[6-9]\d{9}$/'],
-            'address_line_1' => 'required|string|max:255',
-            'address_line_2' => 'nullable|string|max:255',
-            'country_id' => 'required|exists:countries,id',
-            'pincode' => ['required', 'string', 'regex:/^[1-9][0-9]{5}$/'],
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
-        ], [
-            'gst_number.regex' => 'Please enter a valid 15-character Indian GSTIN.',
-            'phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
-            'pincode.regex' => 'Please enter a valid 6-digit Indian PIN code.'
-        ]);
-
         $user = Auth::user();
-        $user->update($request->only([
-            'name', 'company_name', 'company_website', 'gst_number',
-            'phone', 'address_line_1', 'address_line_2', 'country_id', 'pincode', 'state_id', 'city_id'
-        ]));
+
+        if ($user->is_admin) {
+            $request->validate([
+                'name' => 'required|string|max:255',
+            ]);
+
+            $user->update($request->only(['name']));
+        } else {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'company_name' => 'required|string|max:255',
+                'company_website' => 'nullable|url|max:255',
+                'gst_number' => ['nullable', 'string', 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/'],
+                'phone' => ['required', 'string', 'regex:/^(?:\+?91[\-\s]?)?[6-9]\d{9}$/'],
+                'address_line_1' => 'required|string|max:255',
+                'address_line_2' => 'nullable|string|max:255',
+                'country_id' => 'required|exists:countries,id',
+                'pincode' => ['required', 'string', 'regex:/^[1-9][0-9]{5}$/'],
+                'state_id' => 'required|exists:states,id',
+                'city_id' => 'required|exists:cities,id',
+            ], [
+                'gst_number.regex' => 'Please enter a valid 15-character Indian GSTIN.',
+                'phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
+                'pincode.regex' => 'Please enter a valid 6-digit Indian PIN code.'
+            ]);
+
+            $user->update($request->only([
+                'name', 'company_name', 'company_website', 'gst_number',
+                'phone', 'address_line_1', 'address_line_2', 'country_id', 'pincode', 'state_id', 'city_id'
+            ]));
+        }
 
         return redirect()->route('profile.index')->with('success', 'Profile updated successfully!');
     }
@@ -79,5 +88,18 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         return view('api-keys.index', compact('user'));
+    }
+
+    public function regenerateApiKeys(Request $request)
+    {
+        $user = Auth::user();
+        
+        $user->forceFill([
+            'client_key' => 'ck_' . \Illuminate\Support\Str::random(32),
+            'client_secret' => 'secret_' . \Illuminate\Support\Str::random(60),
+            'active_access_token' => null, // Optional, but usually good to revoke old tokens if keys are regenerated
+        ])->save();
+
+        return back()->with('success', 'API keys have been successfully regenerated! Please update your applications immediately.');
     }
 }

@@ -87,15 +87,17 @@ $(document).ready(function() {
                 searchable: false,
                 className: 'text-right',
                 render: function(data, type, row) {
+                    let showUrl = "{{ route('user.show', ':id') }}".replace(':id', row.id);
+                    let editUrl = "{{ route('user.edit', ':id') }}".replace(':id', row.id);
                     return `
                         <div class="flex justify-end space-x-2">
-                            <a href="/user/show/${row.id}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View">
+                            <a href="${showUrl}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="/user/edit/${row.id}" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Edit">
+                            <a href="${editUrl}" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <button class="delete-btn p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" data-id="${row.id}" title="Delete">
+                            <button class="delete-btn p-2 text-rose-600 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors" data-id="${row.id}" data-name="${row.name}" title="Delete">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -109,8 +111,9 @@ $(document).ready(function() {
     $(document).on('click', '.status-toggle', function() {
         var id = $(this).data('id');
         var btn = $(this);
-            $.ajax({
-            url: `/user/toggle-status/${id}`,
+        let toggleUrl = "{{ route('user.toggle-status', ':id') }}".replace(':id', id);
+        $.ajax({
+            url: toggleUrl,
             type: 'POST',
             data: { _token: '{{ csrf_token() }}' },
             success: function(response) {
@@ -125,9 +128,11 @@ $(document).ready(function() {
     // Modern Delete confirmation
     $(document).on('click', '.delete-btn', function() {
         var id = $(this).data('id');
-        if(confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+        var name = $(this).data('name');
+        openDeleteModal('Are you sure you want to delete user "' + name + '"? This action cannot be undone.', function() {
+            let deleteUrl = "{{ route('user.destroy', ':id') }}".replace(':id', id);
             $.ajax({
-                url: `/user/delete/${id}`,
+                url: deleteUrl,
                 type: 'DELETE',
                 data: { _token: '{{ csrf_token() }}' },
                 success: function(response) {
@@ -137,7 +142,7 @@ $(document).ready(function() {
                     alert('Error deleting user');
                 }
             });
-        }
+        });
     });
 });
 </script>

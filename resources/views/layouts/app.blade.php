@@ -110,16 +110,18 @@
 <body class="h-full">
     <div class="h-screen flex flex-col overflow-hidden">
         <!-- Sidebar and Content wrapper -->
-        <div class="flex flex-1">
+        <div class="flex flex-1 overflow-hidden" x-data="{ sidebarOpen: false }">
+            <!-- Mobile backdrop -->
+            <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm md:hidden" style="display: none;"></div>
+
             <!-- Navigation -->
-            <nav class="w-64 bg-amber-600 dark:bg-[#080c14] text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-500 border-r dark:border-white/5 overflow-y-auto">
+            <nav :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}" class="-translate-x-full md:translate-x-0 transform fixed md:static inset-y-0 left-0 z-50 w-64 bg-amber-600 dark:bg-[#080c14] text-white flex-shrink-0 flex flex-col transition-transform duration-300 border-r dark:border-white/5 overflow-y-auto">
                 <div class="p-6">
-                    <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-9 w-auto">
-                        <h1 class="text-2xl font-extrabold tracking-tight italic">Setu<span class="text-amber-500">Geo</span></h1>
+                    <a href="{{ route('home') }}" class="flex items-center group">
+                        <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-10 w-auto">
                     </a>
                 </div>
-                <div class="mt-4 px-4 space-y-1.5">
+                <div class="mt-4 px-4 pb-8 space-y-1.5">
                     <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('dashboard') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
                         <i class="fas fa-home mr-3 w-5"></i>
                         Dashboard
@@ -234,7 +236,7 @@
                 <!-- Top Header -->
                 <header class="bg-white dark:bg-[#0f172a]/80 dark:backdrop-blur-xl border-b border-gray-200 dark:border-white/5 h-16 flex items-center justify-between px-8 shadow-sm transition-all duration-300 sticky top-0 z-40">
                     <div class="flex items-center">
-                        <button class="md:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mr-4">
+                        <button @click="sidebarOpen = true" class="md:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mr-4 focus:outline-none">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
                         <h2 class="text-lg font-bold text-gray-800 dark:text-white tracking-tight">
@@ -333,6 +335,88 @@
                     }
                 }
             });
+        });
+    </script>
+    <!-- Global Delete Confirmation Modal -->
+    <div id="global-delete-modal" tabindex="-1" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex flex-col items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900/40 dark:bg-black/80 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeDeleteModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block relative align-bottom bg-white dark:bg-[#161e2d] rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-white/5 ring-1 ring-black/5 dark:ring-white/10 mb-8 mt-[15vh]">
+                <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100/50 dark:bg-red-500/10 sm:mx-0 sm:h-10 sm:w-10 ring-4 ring-red-50 dark:ring-red-500/5">
+                            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-500"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-black text-gray-900 dark:text-white uppercase tracking-tight" id="modal-title">Confirm Deletion</h3>
+                            <div class="mt-2 text-left">
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 leading-relaxed" id="delete-modal-message">
+                                    Are you sure you want to delete this record? This action cannot be undone.
+                                </p>
+                                <p class="text-[10px] font-bold text-red-600 dark:text-red-500 mt-4 pt-3 border-t border-red-100 dark:border-white/5 uppercase tracking-widest flex items-center">
+                                    <i class="fas fa-shield-alt mr-1.5 opacity-70"></i> Requires Admin Confirmation
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 py-3 bg-gray-50/80 dark:bg-[#0f172a]/50 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100 dark:border-white/5">
+                    <button type="button" id="confirm-delete-btn" class="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-red-600 dark:bg-red-500 text-sm font-bold text-white hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-[#161e2d] sm:ml-3 sm:w-auto transition-all active:scale-[0.98]">
+                        <i class="fas fa-trash-alt mr-2 opacity-80"></i> Yes, Delete
+                    </button>
+                    <button type="button" onclick="closeDeleteModal()" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 dark:border-white/10 shadow-sm px-5 py-2.5 bg-white dark:bg-transparent text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 dark:focus:ring-offset-[#161e2d] sm:mt-0 sm:ml-3 sm:w-auto transition-all active:scale-[0.98]">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let _deleteCallback = null;
+        let _deleteFormElement = null;
+        
+        function openDeleteModal(message, target) {
+            document.getElementById('delete-modal-message').innerText = message;
+            document.getElementById('global-delete-modal').classList.remove('hidden');
+            
+            if (typeof target === 'function') {
+                _deleteCallback = target;
+                _deleteFormElement = null;
+            } else {
+                _deleteFormElement = target;
+                _deleteCallback = null;
+            }
+        }
+        
+        function closeDeleteModal() {
+            document.getElementById('global-delete-modal').classList.add('hidden');
+            _deleteCallback = null;
+            _deleteFormElement = null;
+        }
+        
+        document.getElementById('confirm-delete-btn').addEventListener('click', function() {
+            if (_deleteCallback) {
+                _deleteCallback();
+            } else if (_deleteFormElement) {
+                _deleteFormElement.submit();
+            }
+            closeDeleteModal();
+        });
+    
+        // Intercept standard confirm-based forms
+        $(document).on('submit', 'form.delete-form', function(e) {
+            if (!$(this).data('confirmed')) {
+                e.preventDefault();
+                let form = $(this);
+                let message = form.data('confirm-message') || 'Are you sure you want to delete this record?';
+                
+                openDeleteModal(message, function() {
+                    form.data('confirmed', true);
+                    form.submit();
+                });
+            }
         });
     </script>
 </body>

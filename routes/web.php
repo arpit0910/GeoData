@@ -113,6 +113,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::put('/{plan}', [PlanController::class, 'update'])->name('update');
         Route::delete('/{plan}', [PlanController::class, 'destroy'])->name('destroy');
         Route::post('/{plan}/toggle-status', [PlanController::class, 'toggleStatus'])->name('toggle-status');
+        Route::post('/{plan}/sync', [PlanController::class, 'syncToGateway'])->name('sync');
     });
 
     Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
@@ -161,6 +162,7 @@ Route::middleware(['auth', 'profile.complete.check'])->group(function () {
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
         Route::get('/api-keys', [ProfileController::class, 'apiKeys'])->name('api-keys.index');
+        Route::post('/api-keys/regenerate', [ProfileController::class, 'regenerateApiKeys'])->name('api-keys.regenerate');
         Route::get('/api-logs', [ApiLogController::class, 'index'])->name('api-logs.index');
         Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
         Route::get('/transactions/{transaction}/receipt', [SubscriptionController::class, 'downloadReceipt'])->name('pricing.receipt');

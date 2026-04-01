@@ -3,13 +3,18 @@
 @section('header', 'API Access Keys')
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-8">
+<div class="max-w-4xl mx-auto space-y-8" x-data="{ showRegenerateModal: false }">
     <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500">
-        <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
-                <i class="fas fa-shield-alt text-amber-500 mr-3 text-lg"></i> Your Authentication Credentials
-            </h3>
-            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">Use these keys to authenticate your programmatic API requests. These keys provide full access to your account data. Keep the secret key confidential.</p>
+        <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
+                    <i class="fas fa-shield-alt text-amber-500 mr-3 text-lg"></i> Your Authentication Credentials
+                </h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">Use these keys to authenticate your programmatic API requests. These keys provide full access to your account data. Keep the secret key confidential.</p>
+            </div>
+            <button @click="showRegenerateModal = true" type="button" class="flex-shrink-0 flex items-center px-5 py-2.5 bg-red-500/10 hover:bg-red-500 text-red-600 hover:text-white text-sm font-bold rounded-xl transition-all border border-red-500/20 hover:border-red-500">
+                <i class="fas fa-sync-alt mr-2"></i> Regenerate
+            </button>
         </div>
         
         <div class="p-8 space-y-8 bg-amber-50/10 dark:bg-amber-500/[0.01]">
@@ -50,6 +55,41 @@
                         CRITICAL: This is a highly sensitive credential. Never expose it in client-side code, public repositories, or shared documents. Regenerate it immediately if you suspect it has been compromised.
                     </p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Regenerate Modal -->
+    <div x-show="showRegenerateModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showRegenerateModal = false" x-transition.opacity></div>
+        
+        <div class="bg-white dark:bg-[#161e2d] w-full max-w-md p-8 rounded-3xl shadow-2xl relative z-10 border border-gray-100 dark:border-white/10" 
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 scale-95">
+            
+            <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 dark:bg-red-500/10 text-red-600 rounded-full mb-6">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+            </div>
+            
+            <h3 class="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">Regenerate API Keys?</h3>
+            <p class="text-center text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-8">
+                The existing keys will stop working just after this. <strong class="text-gray-700 dark:text-gray-200 block mt-1">Please make sure you update the keys everywhere.</strong>
+            </p>
+            
+            <div class="flex gap-4">
+                <button type="button" @click="showRegenerateModal = false" class="flex-1 px-5 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold rounded-xl transition-colors">
+                    Cancel
+                </button>
+                <form method="POST" action="{{ route('api-keys.regenerate') }}" class="flex-1 flex">
+                    @csrf
+                    <button type="submit" class="flex-1 px-5 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-md shadow-red-500/20">
+                        Regenerate
+                    </button>
+                </form>
             </div>
         </div>
     </div>

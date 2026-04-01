@@ -3,6 +3,20 @@
 @section('header', 'My Profile')
 
 @section('content')
+<div class="max-w-4xl mx-auto mb-6 flex justify-between items-center">
+    <div class="text-gray-900 dark:text-white font-bold text-xl tracking-tight flex items-center">
+        <i class="fas fa-user-circle text-amber-500 mr-2"></i> User Dashboard
+    </div>
+    <div class="flex items-center space-x-4">
+        <div class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+            Last Updated: <span class="text-gray-700 dark:text-gray-300">{{ now()->format('h:i:s A') }}</span>
+        </div>
+        <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:text-amber-600 dark:hover:bg-white/10 dark:hover:text-amber-500 transition-all shadow-sm flex items-center">
+            <i class="fas fa-sync-alt mr-1.5"></i> Refresh
+        </button>
+    </div>
+</div>
+
 <div class="max-w-4xl mx-auto flex flex-col gap-6">
     @if(session('success'))
         <div class="p-4 rounded-lg bg-green-50 border-l-4 border-green-500 text-green-700">
@@ -136,6 +150,7 @@
                     </div>
                 </div>
 
+                @if(!auth()->user()->is_admin)
                 <div>
                     <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500" x-show="isEditing" style="display: none;">*</span></label>
                     <div class="mt-1">
@@ -250,6 +265,7 @@
                             class="appearance-none block w-full px-4 py-3 border border-transparent bg-gray-50 rounded-lg text-gray-500 focus:outline-none sm:text-sm cursor-not-allowed pointer-events-none transition-colors">
                     </div>
                 </div>
+                @endif
 
             </div>
 
@@ -391,6 +407,12 @@
         document.getElementById('state_name').value = '';
         document.getElementById('city_name').value = '';
     }
+</script>
+<script>
+    // Auto-refresh the page every 60 seconds to keep credits updated
+    setTimeout(function() {
+        window.location.reload();
+    }, 60000);
 </script>
 @endpush
 @endsection

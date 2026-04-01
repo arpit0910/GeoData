@@ -3,6 +3,26 @@
 @section('header', 'Transaction History')
 
 @section('content')
+<div class="mb-6 flex justify-between items-start">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white group flex items-center">
+            <i class="fas fa-file-invoice-dollar text-amber-500 mr-3"></i> Transactions
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Comprehensive financial audit of all platform purchases.
+        </p>
+    </div>
+    
+    <div class="flex items-center space-x-4">
+        <div class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest hidden sm:block">
+            Last Updated: <span class="text-gray-700 dark:text-gray-300">{{ now()->format('h:i:s A') }}</span>
+        </div>
+        <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:text-amber-600 dark:hover:bg-white/10 dark:hover:text-amber-500 transition-all shadow-sm flex items-center cursor-pointer">
+            <i class="fas fa-sync-alt mr-1.5"></i> Refresh
+        </button>
+    </div>
+</div>
+
 <div class="space-y-6">
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -34,7 +54,7 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Successful Pymts</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ \App\Models\TransactionHistory::where('status', 'success')->count() }}</h3>
                 </div>
-                <div class="h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-500 group-hover:scale-110 transition-transform">
+                <div class="h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:indigo-500 group-hover:scale-110 transition-transform">
                     <i class="fas fa-check-circle text-xl"></i>
                 </div>
             </div>
@@ -44,7 +64,7 @@
     <!-- Main Table -->
     <div class="bg-white dark:bg-[#0f172a]/80 dark:backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
-            <h2 class="text-lg font-bold text-gray-800 dark:text-white">All System Transactions</h2>
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white">All Transactions</h2>
             <div class="flex space-x-2">
                 <button class="px-4 py-2 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-bold transition-all flex items-center">
                     <i class="fas fa-download mr-2 opacity-60"></i> Export CSV
@@ -152,6 +172,10 @@
             }
         });
     });
+
+    // Auto-refresh the page periodically (every 60 seconds)
+    setTimeout(function() {
+        window.location.reload();
+    }, 60000);
 </script>
 @endpush
-@endsection

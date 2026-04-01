@@ -73,10 +73,10 @@
                             <a href="{{ route('admin.coupons.edit', $coupon) }}" class="p-2 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 rounded-lg hover:bg-amber-600 hover:text-white dark:hover:bg-amber-500 transition-all">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" onsubmit="return confirm('Delete this coupon?');" class="inline">
+                            <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" class="inline delete-form" data-confirm-message="Are you sure you want to delete coupon '{{ $coupon->code }}'?">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="p-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 rounded-lg hover:bg-red-600 hover:text-white dark:hover:bg-red-500 transition-all">
+                                <button type="submit" class="p-2 bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded-lg hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-200 dark:hover:bg-white/10 transition-all">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

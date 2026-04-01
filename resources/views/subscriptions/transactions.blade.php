@@ -3,6 +3,26 @@
 @section('header', 'Transaction History')
 
 @section('content')
+<div class="mb-6 flex justify-between items-start">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white group flex items-center">
+            <i class="fas fa-receipt text-amber-500 mr-3"></i> My Transactions
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            View your billing history and download receipts.
+        </p>
+    </div>
+    
+    <div class="flex items-center space-x-4">
+        <div class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest hidden sm:block">
+            Last Updated: <span class="text-gray-700 dark:text-gray-300">{{ now()->format('h:i:s A') }}</span>
+        </div>
+        <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:text-amber-600 dark:hover:bg-white/10 dark:hover:text-amber-500 transition-all shadow-sm flex items-center cursor-pointer">
+            <i class="fas fa-sync-alt mr-1.5"></i> Refresh
+        </button>
+    </div>
+</div>
+
 <div class="space-y-6">
     <!-- Transactions List -->
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-white/5 dark:bg-[#0f172a]/80 dark:backdrop-blur-xl">
@@ -119,5 +139,10 @@
             }
         });
     });
+
+    // Auto-refresh the page periodically (every 60 seconds)
+    setTimeout(function() {
+        window.location.reload();
+    }, 60000);
 </script>
 @endpush
