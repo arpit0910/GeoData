@@ -20,7 +20,7 @@ class CountrySeeder extends Seeder
         
         if (file_exists($filePath)) {
             $this->command->info('Importing countries from countries.csv...');
-            Excel::import(new CountriesImport, 'public/countries.csv');
+            Excel::import(new CountriesImport, base_path('public/storage/countries.csv'));
             $this->command->info('Countries imported successfully.');
         } else {
             $this->command->error('countries.csv not found inside storage/app/public. Skipping seeder.');

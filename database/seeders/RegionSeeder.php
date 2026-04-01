@@ -20,7 +20,7 @@ class RegionSeeder extends Seeder
         
         if (file_exists($filePath)) {
             $this->command->info('Importing regions from regions.csv...');
-            Excel::import(new RegionsImport, 'public/regions.csv');
+            Excel::import(new RegionsImport, base_path('public/storage/regions.csv'));
             $this->command->info('Regions imported successfully.');
         } else {
             $this->command->error('regions.csv not found inside storage/app/public. Skipping seeder.');

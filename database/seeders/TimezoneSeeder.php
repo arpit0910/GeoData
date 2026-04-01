@@ -20,7 +20,7 @@ class TimezoneSeeder extends Seeder
 
         if (file_exists($filePath)) {
             $this->command->info('Importing timezones from timezones.csv...');
-            Excel::import(new TimezonesImport, 'public/timezones.csv');
+            Excel::import(new TimezonesImport, base_path('public/storage/timezones.csv'));
             $this->command->info('Timezones imported successfully.');
         } else {
             $this->command->error('timezones.csv not found inside storage/app/public. Skipping seeder.');

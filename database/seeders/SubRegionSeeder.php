@@ -20,7 +20,7 @@ class SubRegionSeeder extends Seeder
         
         if (file_exists($filePath)) {
             $this->command->info('Importing sub regions from subregions.csv...');
-            Excel::import(new SubRegionsImport, 'public/subregions.csv');
+            Excel::import(new SubRegionsImport, base_path('public/storage/subregions.csv'));
             $this->command->info('Sub Regions imported successfully.');
         } else {
             $this->command->error('subregions.csv not found inside storage/app/public. Skipping seeder.');
