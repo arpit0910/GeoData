@@ -1,2 +1,2 @@
-*
-!.gitignore
+!*.csv
+!*.gitignore
