@@ -23,6 +23,7 @@ class EnsureSubscribed
             // Whitelisted routes that don't require an active subscription
             $allowedRoutes = [
                 'pricing', 
+                'subscription.pricing',
                 'pricing.order', 
                 'pricing.verify', 
                 'pricing.validate-coupon',
@@ -39,7 +40,7 @@ class EnsureSubscribed
 
             if ($currentRoute && !in_array($currentRoute, $allowedRoutes)) {
                 if (!$user->hasActiveSubscription()) {
-                    return redirect()->route('pricing')->with('error', 'Please subscribe to a plan to access the dashboard.');
+                    return redirect()->route('subscription.pricing')->with('error', 'Please subscribe to a plan to access the dashboard.');
                 }
             }
         }

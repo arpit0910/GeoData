@@ -73,7 +73,7 @@
                     @endif
                 </div>
             </div>
-            <a href="{{ route('pricing') }}" class="group/btn inline-flex items-center px-8 py-4 border border-transparent text-lg font-black rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-xl shadow-amber-600/20 hover:shadow-amber-500/40 transition-all active:scale-95 whitespace-nowrap">
+            <a href="{{ route('subscription.pricing') }}" class="group/btn inline-flex items-center px-8 py-4 border border-transparent text-lg font-black rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-xl shadow-amber-600/20 hover:shadow-amber-500/40 transition-all active:scale-95 whitespace-nowrap">
                 @if(auth()->user()->plan && auth()->user()->plan->amount <= 0)
                     Upgrade to Pro 
                 @else

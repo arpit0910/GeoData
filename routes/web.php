@@ -29,6 +29,7 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.post');
 Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
+Route::get('/subscribe', [SubscriptionController::class, 'pricing'])->name('subscription.pricing')->middleware('auth');
 
 Route::get('/docs', [HomeController::class, 'docs'])->name('docs');
 Route::get('/status', [HomeController::class, 'status'])->name('status');
@@ -152,7 +153,7 @@ Route::middleware(['auth', 'profile.complete.check'])->group(function () {
     Route::get('/complete-profile', [AuthController::class, 'completeProfile'])->name('profile.complete');
     Route::post('/complete-profile', [AuthController::class, 'saveProfile'])->name('profile.complete.post');
 
-    Route::get('/pricing', [SubscriptionController::class, 'pricing'])->name('pricing');
+
     Route::post('/pricing/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
     Route::post('/pricing/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
     Route::post('/pricing/validate-coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.validate-coupon');
