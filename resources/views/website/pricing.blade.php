@@ -22,11 +22,7 @@
                     :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'yearly', 'text-gray-400 hover:text-white': billingCycle !== 'yearly' }" 
                     class="relative w-32 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
                     Yearly
-                </button>
-                <button @click="billingCycle = 'lifetime'" 
-                    :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'lifetime', 'text-gray-400 hover:text-white': billingCycle !== 'lifetime' }" 
-                    class="relative w-32 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
-                    Lifetime
+                    <span class="absolute -top-3 -right-3 bg-green-100 text-green-700 text-[10px] uppercase font-black px-2.5 py-1 rounded-full border border-green-200 shadow-sm animate-bounce">Save 20%</span>
                 </button>
             </div>
         </div>
