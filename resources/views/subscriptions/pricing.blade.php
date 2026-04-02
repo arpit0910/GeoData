@@ -8,19 +8,23 @@
             <p class="mt-4 text-xl text-gray-600">Choose the perfect feature-rich plan for your APIs.</p>
 
             <!-- Billing Toggle -->
-            <div class="mt-8 flex justify-center items-center gap-4">
-                <span :class="billingCycle === 'monthly' ? 'text-amber-600 font-bold' : 'text-gray-500'" class="text-sm font-semibold transition-all duration-300">Monthly</span>
-                <button @click="billingCycle = (billingCycle === 'monthly' ? 'yearly' : 'monthly')" 
-                        class="relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-gray-200"
-                        :class="billingCycle === 'yearly' ? 'bg-amber-600' : 'bg-gray-300'">
-                    <span class="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-300 ease-in-out"
-                          :class="billingCycle === 'yearly' ? 'translate-x-7' : 'translate-x-0'"></span>
-                </button>
-                <div class="flex items-center gap-2">
-                    <span :class="billingCycle === 'yearly' ? 'text-amber-600 font-bold' : 'text-gray-500'" class="text-sm font-semibold transition-all duration-300">Yearly</span>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-800 animate-pulse">
-                        Save 20%
-                    </span>
+            <div class="mt-8 flex justify-center">
+                <div class="flex items-center p-1 bg-white/50 backdrop-blur-md rounded-2xl border border-gray-200">
+                    <button @click="billingCycle = 'monthly'" 
+                        :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'monthly', 'text-gray-500 hover:text-gray-700': billingCycle !== 'monthly' }" 
+                        class="w-32 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
+                        Monthly
+                    </button>
+                    <button @click="billingCycle = 'yearly'" 
+                        :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'yearly', 'text-gray-500 hover:text-gray-700': billingCycle !== 'yearly' }" 
+                        class="w-32 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
+                        Yearly
+                    </button>
+                    <button @click="billingCycle = 'lifetime'" 
+                        :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'lifetime', 'text-gray-500 hover:text-gray-700': billingCycle !== 'lifetime' }" 
+                        class="w-32 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
+                        Lifetime
+                    </button>
                 </div>
             </div>
         </div>
@@ -36,8 +40,13 @@
                         <h2 class="text-2xl leading-6 font-bold text-gray-900">{{ $plan->name }}</h2>
                         <p class="mt-4 text-sm text-gray-500 h-10">{{ $plan->terms }}</p>
                         <p class="mt-8">
-                            <span class="text-4xl font-extrabold text-gray-900">₹{{ number_format($plan->amount - $plan->discount_amount, 2) }}</span>
-                            <span class="text-base font-medium text-gray-500">/{{ rtrim($plan->billing_cycle, 'ly') }}</span>
+                            <span class="text-4xl font-extrabold text-gray-900">₹{{ number_format($plan->amount - $plan->discount_amount, 0) }}</span>
+                            <span class="text-base font-medium text-gray-500">
+                                @if($plan->billing_cycle === 'yearly') /yr
+                                @elseif($plan->billing_cycle === 'monthly') /mo
+                                @else /life
+                                @endif
+                            </span>
                         </p>
                         
                         @php 

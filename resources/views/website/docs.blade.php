@@ -86,8 +86,55 @@
                 <!-- Authentication -->
                 <section id="authentication">
                     <h2 class="text-3xl font-bold text-white mb-6">Authentication</h2>
-                    <p class="mb-6">SetuGeo uses Bearer Token authentication. First, generate a token using your Client Key and Secret Key, which you can find in your <a href="{{ route('api-keys.index') }}" class="text-amber-500 hover:underline">Dashboard</a>.</p>
+                    <div class="bg-amber-600/10 border border-amber-600/30 rounded-2xl p-8 mb-12">
+                        <h3 class="text-xl font-bold text-amber-500 mb-4 flex items-center">
+                            <i class="fas fa-shield-alt mr-3"></i>
+                            The Mandatory Two-Step Process
+                        </h3>
+                        <p class="text-gray-300 leading-relaxed mb-6">All SetuGeo APIs (except Auth) are protected. You cannot use your Client Key or Secret Key directly in standard API calls. You <span class="text-white font-bold underline decoration-amber-500">must</span> follow this sequence:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-black/20 p-4 rounded-xl border border-white/5 relative">
+                                <span class="absolute -top-3 -left-3 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg">1</span>
+                                <h4 class="text-white font-bold text-sm mb-2">Get Your Keys</h4>
+                                <p class="text-[11px] text-gray-500 font-medium">Copy your Client Key and Secret Key from your dashboard.</p>
+                            </div>
+                            <div class="bg-black/20 p-4 rounded-xl border border-white/5 relative">
+                                <span class="absolute -top-3 -left-3 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg">2</span>
+                                <h4 class="text-white font-bold text-sm mb-2">Request Token</h4>
+                                <p class="text-[11px] text-gray-500 font-medium">Call the <code class="text-amber-500">/auth/token</code> endpoint to get an <code class="text-white">access_token</code>.</p>
+                            </div>
+                            <div class="bg-black/20 p-4 rounded-xl border border-white/5 relative">
+                                <span class="absolute -top-3 -left-3 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg">3</span>
+                                <h4 class="text-white font-bold text-sm mb-2">Access API</h4>
+                                <p class="text-[11px] text-gray-500 font-medium">Use the <code class="text-white">access_token</code> as a Bearer Token for all geographic APIs.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mb-8 text-lg">To access geographic intelligence endpoints, ensure your requests include the <code class="text-white">Authorization</code> header exactly as shown below.</p>
                     
+                    <!-- Auth Flow Explanation -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                        <div class="space-y-6">
+                            <h3 class="text-xl font-bold text-white flex items-center">
+                                <span class="w-8 h-8 bg-amber-600/20 text-amber-500 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                                Generate Token
+                            </h3>
+                            <p class="text-gray-400">Send your credentials to the <code class="text-amber-400">/auth/token</code> endpoint. You will receive an <code class="text-white">access_token</code> which is valid for 24 hours.</p>
+                            <div class="bg-gray-900/50 p-4 rounded-xl border border-white/5 text-xs font-mono">
+                                <span class="text-blue-400">POST</span> /api/v1/auth/token
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <h3 class="text-xl font-bold text-white flex items-center">
+                                <span class="w-8 h-8 bg-amber-600/20 text-amber-500 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                                Use Bearer Token
+                            </h3>
+                            <p class="text-gray-400">Include the token in the <code class="text-white">Authorization</code> header for all subsequent API requests as a Bearer string.</p>
+                            <div class="bg-gray-900/50 p-4 rounded-xl border border-white/5 text-xs font-mono">
+                                Authorization: Bearer <span class="text-amber-500">{your_access_token}</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="space-y-8">
                         <div id="get-token" class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800">
                             <div class="px-6 py-4 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center">
@@ -100,12 +147,23 @@
                                         <tr>
                                             <th class="pb-2">Field</th>
                                             <th class="pb-2">Type</th>
+                                            <th class="pb-2">Required</th>
                                             <th class="pb-2">Description</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-800">
-                                        <tr><td class="py-3 font-mono text-white">client_key</td><td class="py-3 text-gray-500">string</td><td class="py-3 text-gray-400">Your unique Public API Key</td></tr>
-                                        <tr><td class="py-3 font-mono text-white">client_secret</td><td class="py-3 text-gray-500">string</td><td class="py-3 text-gray-400">Your protected Secret API Key</td></tr>
+                                        <tr>
+                                            <td class="py-3 font-mono text-white">client_key</td>
+                                            <td class="py-3 text-gray-500">string</td>
+                                            <td class="py-3 text-amber-500 font-bold">Yes</td>
+                                            <td class="py-3 text-gray-400">Your unique Public API Key (Access via Dashboard)</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 font-mono text-white">client_secret</td>
+                                            <td class="py-3 text-gray-500">string</td>
+                                            <td class="py-3 text-amber-500 font-bold">Yes</td>
+                                            <td class="py-3 text-gray-400">Your protected Secret API Key</td>
+                                        </tr>
                                     </tbody>
                                 </table>
 
@@ -170,6 +228,30 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                     </div>
                 </section>
 
+                <!-- Request Patterns -->
+                <section id="request-patterns">
+                    <h2 class="text-3xl font-bold text-white mb-6">Request Patterns</h2>
+                    <p class="mb-8">All SetuGeo API endpoints follow a consistent pattern. Use <span class="text-white">GET</span> for retrieving data and <span class="text-white">POST</span> for authentication or complex analysis.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-gray-900/40 rounded-xl p-6 border border-gray-800">
+                            <h4 class="text-sm font-bold text-amber-500 uppercase mb-4">Content Type</h4>
+                            <p class="text-sm text-gray-400 mb-4">Always send and expect JSON. Ensure your headers include:</p>
+                            <div class="space-y-2 text-xs font-mono">
+                                <div class="bg-black/30 p-2 rounded text-gray-500">Content-Type: <span class="text-green-400">application/json</span></div>
+                                <div class="bg-black/30 p-2 rounded text-gray-500">Accept: <span class="text-green-400">application/json</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900/40 rounded-xl p-6 border border-gray-800">
+                            <h4 class="text-sm font-bold text-amber-500 uppercase mb-4">Standard Response</h4>
+                            <p class="text-sm text-gray-400 mb-4">Every successful response includes a <code class="text-white">success</code> boolean and a <code class="text-white">data</code> object/array.</p>
+                            <div class="bg-[#0f172a] p-3 rounded text-[10px] font-mono text-gray-500">
+                                { "success": true, "data": [...] }
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- SetuGeo Endpoints -->
                 <section id="geo-endpoints">
                     <h2 class="text-3xl font-bold text-white mb-12">SetuGeo Endpoints</h2>
@@ -177,8 +259,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                     <div class="space-y-12">
                         <!-- Regions -->
                         <div id="regions" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /regions</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Get a list of global political or geographic regions (e.g., Asia, Europe, Africa).</p>
@@ -215,8 +300,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Sub-Regions -->
                         <div id="sub-regions" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /sub-regions</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Get detailed sub-regions within a parent region.</p>
@@ -253,8 +341,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Timezones -->
                         <div id="timezones" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /timezones</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve standardized IANA timezones.</p>
@@ -290,8 +381,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Countries -->
                         <div id="countries" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve a filterable list of countries with their ISO codes, currency, and capital.</p>
@@ -332,8 +426,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- States -->
                         <div id="states" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /states</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve states filtered by country. Perfect for dropdown menus.</p>
@@ -361,8 +458,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Cities -->
                         <div id="cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /cities</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve cities filtered by state or country.</p>
@@ -391,8 +491,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Pincode Search -->
                         <div id="pincode-search" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes/search</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Search for detailed geographic data by Pincode. Returns associated City, State, and Country data.</p>
@@ -428,8 +531,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Pincodes -->
                         <div id="pincodes" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Batch retrieve pincodes by city, state or country filter.</p>
@@ -448,8 +554,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Usage API -->
                         <div id="user-usage" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /user/usage</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Monitor your remaining credits and recent API hits.</p>
@@ -477,8 +586,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                     <div class="space-y-12">
                         <!-- Geo Statistics -->
                         <div id="geo-stats" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden relative">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/statistics</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4 text-gray-400">Retrieve aggregate data counts for planning your integration. This is a non-chargeable API, perfect for calculating pagination and data volume.</p>
@@ -509,8 +621,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Distance Calculator -->
                         <div id="geo-distance" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex justify-between items-center">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/distance</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4 text-gray-400">Calculate precision distance between two coordinates using the Haversine formula.</p>
@@ -534,8 +649,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                         <!-- Nearby Radius Search -->
                         <div id="geo-nearby" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
-                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex justify-between items-center">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/nearby</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
                             </div>
                             <div class="p-6">
                                 <p class="mb-6 text-gray-400">Search for Cities or Pincodes within a customized radius from any coordinate point.</p>

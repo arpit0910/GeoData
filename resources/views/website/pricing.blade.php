@@ -12,17 +12,21 @@
 
         <!-- Billing Toggle -->
         <div class="flex justify-center mb-16">
-            <div class="relative flex items-center p-1 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
+            <div class="relative flex items-center p-1 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
                 <button @click="billingCycle = 'monthly'" 
-                    :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'monthly', 'text-gray-400 hover:text-white hover:bg-white/5': billingCycle !== 'monthly' }" 
-                    class="relative w-36 py-2.5 text-sm font-bold rounded-full transition-all duration-300 focus:outline-none">
+                    :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'monthly', 'text-gray-400 hover:text-white': billingCycle !== 'monthly' }" 
+                    class="relative w-32 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
                     Monthly
                 </button>
                 <button @click="billingCycle = 'yearly'" 
-                    :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'yearly', 'text-gray-400 hover:text-white hover:bg-white/5': billingCycle !== 'yearly' }" 
-                    class="relative w-36 py-2.5 text-sm font-bold rounded-full transition-all duration-300 focus:outline-none">
+                    :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'yearly', 'text-gray-400 hover:text-white': billingCycle !== 'yearly' }" 
+                    class="relative w-32 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
                     Yearly
-                    <span class="absolute -top-3 -right-3 bg-green-100 text-green-700 text-[10px] uppercase font-black px-2.5 py-1 rounded-full border border-green-200 shadow-sm animate-bounce">Save 20%</span>
+                </button>
+                <button @click="billingCycle = 'lifetime'" 
+                    :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'lifetime', 'text-gray-400 hover:text-white': billingCycle !== 'lifetime' }" 
+                    class="relative w-32 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
+                    Lifetime
                 </button>
             </div>
         </div>
@@ -47,7 +51,12 @@
 
                     <div class="mb-8 flex items-baseline text-white border-b border-white/10 pb-8">
                         <span class="text-5xl font-extrabold tracking-tight">₹{{ number_format($plan->amount, 0) }}</span>
-                        <span class="ml-1 text-lg font-bold text-gray-500">/{{ $plan->billing_cycle === 'yearly' ? 'yr' : 'mo' }}</span>
+                        <span class="ml-1 text-lg font-bold text-gray-500">
+                            @if($plan->billing_cycle === 'yearly') /yr
+                            @elseif($plan->billing_cycle === 'monthly') /mo
+                            @else /life
+                            @endif
+                        </span>
                     </div>
 
                     <ul role="list" class="flex-1 space-y-4 text-sm leading-6 text-gray-400 mb-8 font-medium">
