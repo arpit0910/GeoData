@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 
 use App\Models\Subscription;
+use App\Models\TransactionHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SubscriptionAdminController extends Controller
 {
@@ -53,5 +55,48 @@ class SubscriptionAdminController extends Controller
     {
         $subscription->load(['user', 'plan']);
         return view('subscriptions.admin.show', compact('subscription'));
+    }
+
+    public function assignCredits(Request $request, Subscription $subscription)
+    {
+        $request->validate([
+            'credits' => 'required|integer|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $creditsToAdd = $request->credits;
+
+            // Update subscription credits
+            $subscription->increment('total_credits', $creditsToAdd);
+            $subscription->increment('available_credits', $creditsToAdd);
+
+            // Record transaction
+            TransactionHistory::create([
+                'user_id' => $subscription->user_id,
+                'subscription_id' => $subscription->id,
+                'plan_id' => $subscription->plan_id,
+                'amount' => 0,
+                'status' => 'completed',
+                'type' => 'credit',
+                'credits' => $creditsToAdd,
+                'plan_name' => $subscription->plan ? $subscription->plan->name : 'Manual Credit',
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "Successfully assigned {$creditsToAdd} credits to the account."
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to assign credits: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

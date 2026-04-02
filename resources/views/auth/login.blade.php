@@ -37,7 +37,7 @@
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 border border-white/10 relative z-10">
         <div class="text-center mb-8">
             <a href="{{ url('/') }}" class="inline-flex items-center justify-center group">
-                <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-20 w-auto transform transition-transform group-hover:scale-105">
+                <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-20 w-auto transform transition-transform">
             </a>
             <p class="text-gray-500 mt-3 text-sm">Welcome back! Please login to your account.</p>
         </div>

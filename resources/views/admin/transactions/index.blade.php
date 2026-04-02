@@ -32,7 +32,7 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Volume</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">₹{{ number_format(\App\Models\TransactionHistory::where('status', 'success')->sum('amount'), 2) }}</h3>
                 </div>
-                <div class="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-500/10 flex items-center justify-center text-green-600 dark:text-green-500 group-hover:scale-110 transition-transform">
+                <div class="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-500/10 flex items-center justify-center text-green-600 dark:text-green-500 transition-transform">
                     <i class="fas fa-chart-line text-xl"></i>
                 </div>
             </div>
@@ -43,7 +43,7 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Discount</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">₹{{ number_format(\App\Models\TransactionHistory::sum('discount_amount'), 2) }}</h3>
                 </div>
-                <div class="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-500 group-hover:scale-110 transition-transform">
+                <div class="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-500 transition-transform">
                     <i class="fas fa-tags text-xl"></i>
                 </div>
             </div>
@@ -54,7 +54,7 @@
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Successful Pymts</p>
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ \App\Models\TransactionHistory::where('status', 'success')->count() }}</h3>
                 </div>
-                <div class="h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:indigo-500 group-hover:scale-110 transition-transform">
+                <div class="h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:indigo-500 transition-transform">
                     <i class="fas fa-check-circle text-xl"></i>
                 </div>
             </div>
@@ -80,6 +80,8 @@
                         <th class="px-6 py-4">Customer</th>
                         <th class="px-6 py-4">Plan Details</th>
                         <th class="px-6 py-4">Financials</th>
+                        <th class="px-6 py-4">Type</th>
+                        <th class="px-6 py-4">Credits</th>
                         <th class="px-6 py-4 text-center">Status</th>
                     </tr>
                 </thead>
@@ -149,17 +151,35 @@
                     }
                 },
                 { 
+                    data: 'type', 
+                    name: 'type',
+                    render: function(data) {
+                        let colorClass = data === 'credit' ? 'amber' : 'blue';
+                        let icon = data === 'credit' ? 'coins' : 'credit-card';
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-${colorClass}-100 text-${colorClass}-700 dark:bg-${colorClass}-500/10 dark:text-${colorClass}-400 border border-${colorClass}-200/50 dark:border-${colorClass}-500/20">
+                                    <i class="fas fa-${icon} mr-1.5 opacity-70"></i> ${data}
+                                </span>`;
+                    }
+                },
+                {
+                    data: 'credits',
+                    name: 'credits',
+                    render: function(data) {
+                        return data > 0 ? `<div class="text-sm font-bold text-amber-600 dark:text-amber-500">+${data}</div>` : `<div class="text-xs text-gray-400">-</div>`;
+                    }
+                },
+                { 
                     data: 'status', 
                     name: 'status',
                     className: 'text-center',
                     render: function(data) {
-                        if (data === 'success') {
+                        if (data === 'success' || data === 'completed') {
                             return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-500 border border-green-200/50 dark:border-green-500/20">
-                                        <i class="fas fa-check-circle mr-1.5"></i> Success
+                                        <i class="fas fa-check-circle mr-1.5"></i> ${data === 'success' ? 'Success' : 'Completed'}
                                     </span>`;
                         } else {
                             return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-500 border border-red-200/50 dark:border-red-500/20">
-                                        <i class="fas fa-times-circle mr-1.5"></i> Failed
+                                        <i class="fas fa-times-circle mr-1.5"></i> ${data.charAt(0).toUpperCase() + data.slice(1)}
                                     </span>`;
                         }
                     }

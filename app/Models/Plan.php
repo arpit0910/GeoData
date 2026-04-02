@@ -30,38 +30,10 @@ class Plan extends Model
         return $this->hasMany(Subscription::class);
     }
 
-    protected static function booted()
-    {
-        static::creating(function ($plan) {
-            $amount = $plan->amount - ($plan->discount_amount ?? 0);
-            
-            // Auto-create plan on Razorpay if credentials are valid and amount is > 0
-            $key = env('RAZORPAY_KEY');
-            $secret = env('RAZORPAY_SECRET');
-            
-            if ($amount > 0 && !empty($key) && !empty($secret) && empty($plan->gateway_product_id) && in_array($plan->billing_cycle, ['monthly', 'yearly'])) {
-                try {
-                    $api = new \Razorpay\Api\Api($key, $secret);
-                    
-                    $planData = [
-                        'period' => $plan->billing_cycle,
-                        'interval' => 1,
-                        'item' => [
-                            'name' => $plan->name,
-                            'amount' => $amount * 100, // in paise
-                            'currency' => 'INR',
-                            'description' => substr($plan->terms ?? $plan->name . ' Subscription', 0, 255)
-                        ]
-                    ];
-                    
-                    $razorpayPlan = $api->plan->create($planData);
-                    $plan->gateway_product_id = $razorpayPlan->id;
-                } catch (\Exception $e) {
-                    \Log::error('Razorpay Plan Auto-Creation Failed: ' . $e->getMessage());
-                }
-            }
-        });
-    }
+    /**
+     * Removed auto-sync on creation to prioritize local model consistency.
+     * Plans can be manually synced via the UI or explicitly in the controller.
+     */
 
     public function syncWithRazorpay()
     {

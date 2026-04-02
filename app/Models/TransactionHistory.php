@@ -22,6 +22,8 @@ class TransactionHistory extends Model
         'plan_name',
         'billing_cycle',
         'status',
+        'type',
+        'credits',
     ];
 
     public function user()

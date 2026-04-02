@@ -42,6 +42,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- DataTables with Tailwind -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- Toastr for notifications -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -118,7 +120,7 @@
             <nav :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}" class="-translate-x-full md:translate-x-0 transform fixed md:static inset-y-0 left-0 z-50 w-64 bg-amber-600 dark:bg-[#080c14] text-white flex-shrink-0 flex flex-col transition-transform duration-300 border-r dark:border-white/5 overflow-y-auto">
                 <div class="p-6">
                     <a href="{{ route('home') }}" class="flex items-center group">
-                        <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-10 w-auto">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-20 w-auto">
                     </a>
                 </div>
                 <div class="mt-4 px-4 pb-8 space-y-1.5">
@@ -234,7 +236,7 @@
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-[#0b1120] transition-colors duration-500">
                 <!-- Top Header -->
-                <header class="bg-white dark:bg-[#0f172a]/80 dark:backdrop-blur-xl border-b border-gray-200 dark:border-white/5 h-16 flex items-center justify-between px-8 shadow-sm transition-all duration-300 sticky top-0 z-40">
+                <header class="bg-white dark:bg-[#0f172a] border-b border-gray-200 dark:border-white/5 h-16 flex items-center justify-between px-8 shadow-sm transition-all duration-300 sticky top-0 z-40">
                     <div class="flex items-center">
                         <button @click="sidebarOpen = true" class="md:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mr-4 focus:outline-none">
                             <i class="fas fa-bars text-xl"></i>
@@ -287,6 +289,7 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     @stack('scripts')
     <script>
         $(document).ready(function() {
@@ -419,5 +422,7 @@
             }
         });
     </script>
+
+    @yield('modals')
 </body>
 </html>

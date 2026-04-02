@@ -34,12 +34,15 @@
     @endif
 
     <!-- Navbar -->
-    <nav x-data="{ mobileMenuOpen: false }" class="bg-transparent backdrop-blur-lg sticky top-0 z-50">
+    <nav x-data="{ mobileMenuOpen: false, scrolled: false }" 
+         @scroll.window="scrolled = (window.pageYOffset > 50)"
+         :class="scrolled ? 'bg-[#000000] border-b border-white/10' : 'bg-transparent'"
+         class="sticky top-0 z-50 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20">
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center group">
-                        <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-12 w-auto transform transition-transform group-hover:scale-110">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-14 w-auto transform transition-transform">
                     </a>
                     
                     <div class="hidden md:ml-12 md:flex md:space-x-8">
@@ -127,7 +130,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="col-span-1 md:col-span-2">
                     <a href="{{ route('home') }}" class="flex items-center mb-5 group">
-                        <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-10 w-auto">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-12 w-auto">
                     </a>
                     <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6 font-medium">
                         Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally through SetuGeo.

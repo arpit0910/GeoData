@@ -70,9 +70,22 @@ class PlanController extends Controller
             $data['benefits'] = array_values(array_filter($data['benefits']));
         }
 
-        Plan::create($data);
+        $plan = Plan::create($data);
 
-        return redirect()->route('plans.index')->with('success', 'Plan created successfully.');
+        // Optional immediate sync if the user requested it and they haven't provided a manual product ID
+        if ($request->sync_now == '1' && empty($plan->gateway_product_id) && $plan->billing_cycle !== 'lifetime') {
+            try {
+                $plan->syncWithRazorpay();
+                $message = 'Plan created and synced with Razorpay successfully.';
+            } catch (\Exception $e) {
+                $message = 'Plan created locally, but Razorpay sync failed: ' . $e->getMessage();
+                return redirect()->route('plans.index')->with('warning', $message);
+            }
+        } else {
+            $message = 'Plan created successfully.';
+        }
+
+        return redirect()->route('plans.index')->with('success', $message);
     }
 
     public function edit(Plan $plan)

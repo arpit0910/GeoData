@@ -120,6 +120,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
         Route::get('/', [SubscriptionAdminController::class, 'index'])->name('index');
         Route::get('/{subscription}', [SubscriptionAdminController::class, 'show'])->name('show');
+        Route::post('/{subscription}/assign-credits', [SubscriptionAdminController::class, 'assignCredits'])->name('assign-credits');
     });
 
     Route::resource('coupons', CouponController::class, ['as' => 'admin']);

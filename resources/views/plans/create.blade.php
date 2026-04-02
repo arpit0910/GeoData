@@ -102,7 +102,23 @@
                 </div>
             </div>
 
-                <div class="mt-10 flex justify-end items-center space-x-6">
+            <!-- Sync Options & Submit -->
+            <div class="mt-10 flex flex-col md:flex-row justify-between items-center bg-gray-50/50 dark:bg-white/5 p-6 rounded-2xl border border-gray-100 dark:border-white/5 space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <label for="sync_now" class="block text-sm text-gray-700 dark:text-gray-300 font-bold whitespace-nowrap">
+                        Sync with Razorpay:
+                    </label>
+                    <div class="relative">
+                        <select name="sync_now" id="sync_now" class="block w-full bg-white dark:bg-[#111827] border border-gray-300 dark:border-white/10 rounded-xl shadow-sm py-2 px-6 pr-10 focus:outline-none focus:ring-amber-500 focus:border-amber-500 text-sm font-semibold transition-all appearance-none cursor-pointer">
+                            <option value="1" selected>Yes, Sync Immediately</option>
+                            <option value="0">No, Sync Later</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
                     <a href="{{ route('plans.index') }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors">
                         Cancel
                     </a>
@@ -110,6 +126,7 @@
                         Save Plan <i class="fas fa-save ml-3 text-sm"></i>
                     </button>
                 </div>
+            </div>
         </form>
     </div>
 </div>

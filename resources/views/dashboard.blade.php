@@ -13,7 +13,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- Quick Stat Card 1 -->
         <div class="group bg-amber-50 dark:bg-amber-600/5 rounded-2xl p-6 border border-amber-100 dark:border-amber-500/10 flex items-center transition-all hover:shadow-lg hover:-translate-y-1">
-            <div class="h-14 w-14 bg-amber-100 dark:bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-500 mr-5 transition-transform group-hover:scale-110">
+            <div class="h-14 w-14 bg-amber-100 dark:bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-500 mr-5 transition-transform">
                 <i class="fas fa-users text-2xl"></i>
             </div>
             <div>
@@ -24,7 +24,7 @@
         
         <!-- Quick Action Card -->
         <div class="group bg-green-50 dark:bg-green-600/5 rounded-2xl p-6 border border-green-100 dark:border-green-500/10 flex items-center transition-all hover:shadow-lg hover:-translate-y-1">
-            <div class="h-14 w-14 bg-green-100 dark:bg-green-500/20 rounded-xl flex items-center justify-center text-green-600 dark:text-green-500 mr-5 transition-transform group-hover:scale-110">
+            <div class="h-14 w-14 bg-green-100 dark:bg-green-500/20 rounded-xl flex items-center justify-center text-green-600 dark:text-green-500 mr-5 transition-transform">
                 <i class="fas fa-user-plus text-2xl"></i>
             </div>
             <div>
@@ -37,7 +37,7 @@
 
         <!-- System Info Card -->
         <div class="group bg-blue-50 dark:bg-blue-600/5 rounded-2xl p-6 border border-blue-100 dark:border-blue-500/10 flex items-center transition-all hover:shadow-lg hover:-translate-y-1">
-            <div class="h-14 w-14 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-500 mr-5 transition-transform group-hover:scale-110">
+            <div class="h-14 w-14 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-500 mr-5 transition-transform">
                 <i class="fas fa-server text-2xl"></i>
             </div>
             <div>
