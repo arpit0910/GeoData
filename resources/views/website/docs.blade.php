@@ -49,6 +49,7 @@
                             <li><a href="#cities" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Cities</a></li>
                             <li><a href="#pincodes" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincodes</a></li>
                             <li><a href="#pincode-search" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincode Search</a></li>
+                            <li><a href="#currency-exchange" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Currency Exchange</a></li>
                         </ul>
                     </div>
                     <div>
@@ -549,6 +550,45 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         <tr><td class="py-3 font-mono text-amber-500">pincode</td><td class="py-3 text-gray-400">Partial match for postal code</td></tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+
+                        <!-- Currency Exchange -->
+                        <div id="currency-exchange" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /currency/exchange</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Get real-time currency exchange rates against USD and INR. We provide high-fidelity rates for 30+ major currencies, synchronized daily.</p>
+                                
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                <table class="w-full text-sm mb-8">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                        <tr><th class="pb-2">Field</th><th class="pb-2">Type</th><th class="pb-2">Description</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        <tr><td class="py-3 font-mono text-amber-500">currency</td><td class="py-3 text-gray-500">string</td><td class="py-3 text-gray-400">The 3-letter currency code (e.g. <code class="text-amber-400">EUR</code>, <code class="text-amber-400">GBP</code>, <code class="text-amber-400">JPY</code>)</td></tr>
+                                    </tbody>
+                                </table>
+
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
+<pre class="text-gray-400">{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"base_currency"</span>: <span class="text-green-400">"EUR"</span>,
+    <span class="text-blue-400">"exchange_rates"</span>: {
+      <span class="text-blue-400">"USD"</span>: <span class="text-blue-400">1.0842</span>,
+      <span class="text-blue-400">"INR"</span>: <span class="text-blue-400">91.350</span>
+    },
+    <span class="text-blue-400">"last_updated"</span>: <span class="text-green-400">"2026-04-05 20:30:00"</span>,
+    <span class="text-blue-400">"provider"</span>: <span class="text-green-400">"SetuGeo Financial Engine"</span>
+  }
+}</pre>
+                                </div>
                             </div>
                         </div>
 

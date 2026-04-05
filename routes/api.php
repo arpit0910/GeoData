@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function() {
         Route::get('/cities', [SetuGeoController::class, 'cities']);
         Route::get('/pincodes', [SetuGeoController::class, 'pincodes']);
         Route::get('/pincodes/search', [SetuGeoController::class, 'pincodeSearch']);
+        Route::get('/currency/exchange', [SetuGeoController::class, 'currencyExchange']);
         Route::get('/user/usage', [SetuGeoController::class, 'usage']);
 
         // Analytical Geospatial Utilities

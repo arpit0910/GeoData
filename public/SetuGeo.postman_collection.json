@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "8b9cad0e-1f20-4192-bff0-e1e043ce143d",
 		"name": "SetuGeo API - Official Collection v1.1",
-		"description": "Comprehensive Postman collection for the SetuGeo Platform. Includes all 10 endpoints, detailed search examples, and auto-token extraction.",
+		"description": "Comprehensive Postman collection for the SetuGeo Platform. Includes all 11 endpoints, detailed search examples, and auto-token extraction.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -142,12 +142,20 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/sub-regions",
-									"host": ["{{base_url}}"],
-									"path": ["sub-regions"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"sub-regions"
+									]
 								}
 							},
 							"response": []
@@ -157,13 +165,26 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/sub-regions?region_id=1",
-									"host": ["{{base_url}}"],
-									"path": ["sub-regions"],
-									"query": [{ "key": "region_id", "value": "1" }]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"sub-regions"
+									],
+									"query": [
+										{
+											"key": "region_id",
+											"value": "1"
+										}
+									]
 								}
 							},
 							"response": []
@@ -175,13 +196,26 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/timezones?name=Kolkata",
-							"host": ["{{base_url}}"],
-							"path": ["timezones"],
-							"query": [{ "key": "name", "value": "Kolkata" }]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timezones"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "Kolkata"
+								}
+							]
 						}
 					},
 					"response": []
@@ -199,12 +233,20 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/countries",
-									"host": ["{{base_url}}"],
-									"path": ["countries"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"countries"
+									]
 								}
 							},
 							"response": []
@@ -214,13 +256,26 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/countries?iso2=IN",
-									"host": ["{{base_url}}"],
-									"path": ["countries"],
-									"query": [{ "key": "iso2", "value": "IN" }]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"countries"
+									],
+									"query": [
+										{
+											"key": "iso2",
+											"value": "IN"
+										}
+									]
 								}
 							},
 							"response": []
@@ -235,13 +290,26 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/states?country_id=101",
-									"host": ["{{base_url}}"],
-									"path": ["states"],
-									"query": [{ "key": "country_id", "value": "101" }]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"states"
+									],
+									"query": [
+										{
+											"key": "country_id",
+											"value": "101"
+										}
+									]
 								}
 							},
 							"response": []
@@ -251,13 +319,26 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/states?name=Maharashtra",
-									"host": ["{{base_url}}"],
-									"path": ["states"],
-									"query": [{ "key": "name", "value": "Maharashtra" }]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"states"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "Maharashtra"
+										}
+									]
 								}
 							},
 							"response": []
@@ -277,13 +358,26 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/cities?state_id=51",
-									"host": ["{{base_url}}"],
-									"path": ["cities"],
-									"query": [{ "key": "state_id", "value": "51" }]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cities"
+									],
+									"query": [
+										{
+											"key": "state_id",
+											"value": "51"
+										}
+									]
 								}
 							},
 							"response": []
@@ -293,13 +387,26 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/cities?name=Mumbai",
-									"host": ["{{base_url}}"],
-									"path": ["cities"],
-									"query": [{ "key": "name", "value": "Mumbai" }]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cities"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "Mumbai"
+										}
+									]
 								}
 							},
 							"response": []
@@ -314,13 +421,26 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/pincodes?city_id=1024",
-									"host": ["{{base_url}}"],
-									"path": ["pincodes"],
-									"query": [{ "key": "city_id", "value": "1024" }]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"pincodes"
+									],
+									"query": [
+										{
+											"key": "city_id",
+											"value": "1024"
+										}
+									]
 								}
 							},
 							"response": []
@@ -330,13 +450,26 @@
 							"request": {
 								"method": "GET",
 								"header": [
-									{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
 								],
 								"url": {
 									"raw": "{{base_url}}/pincodes?pincode=400001",
-									"host": ["{{base_url}}"],
-									"path": ["pincodes"],
-									"query": [{ "key": "pincode", "value": "400001" }]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"pincodes"
+									],
+									"query": [
+										{
+											"key": "pincode",
+											"value": "400001"
+										}
+									]
 								}
 							},
 							"response": []
@@ -348,13 +481,27 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/pincodes/search?code=400001",
-							"host": ["{{base_url}}"],
-							"path": ["pincodes", "search"],
-							"query": [{ "key": "code", "value": "400001" }]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pincodes",
+								"search"
+							],
+							"query": [
+								{
+									"key": "code",
+									"value": "400001"
+								}
+							]
 						}
 					},
 					"response": [
@@ -379,12 +526,21 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/user/usage",
-							"host": ["{{base_url}}"],
-							"path": ["user", "usage"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"usage"
+							]
 						}
 					},
 					"response": [
@@ -400,7 +556,7 @@
 					]
 				}
 			]
-},
+		},
 		{
 			"name": "06. Geospatial Analysis",
 			"item": [
@@ -409,12 +565,21 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/geospatial/statistics",
-							"host": ["{{base_url}}"],
-							"path": ["geospatial", "statistics"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"geospatial",
+								"statistics"
+							]
 						},
 						"description": "Comprehensive statistics for countries, states, and cities. This endpoint does not consume credits."
 					},
@@ -425,18 +590,42 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/geospatial/distance?lat1=18.922&lng1=72.834&lat2=28.613&lng2=77.209&unit=km",
-							"host": ["{{base_url}}"],
-							"path": ["geospatial", "distance"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"geospatial",
+								"distance"
+							],
 							"query": [
-								{ "key": "lat1", "value": "18.922" },
-								{ "key": "lng1", "value": "72.834" },
-								{ "key": "lat2", "value": "28.613" },
-								{ "key": "lng2", "value": "77.209" },
-								{ "key": "unit", "value": "km" }
+								{
+									"key": "lat1",
+									"value": "18.922"
+								},
+								{
+									"key": "lng1",
+									"value": "72.834"
+								},
+								{
+									"key": "lat2",
+									"value": "28.613"
+								},
+								{
+									"key": "lng2",
+									"value": "77.209"
+								},
+								{
+									"key": "unit",
+									"value": "km"
+								}
 							]
 						},
 						"description": "Calculates the distance between two latitude/longitude points. This endpoint consumes 1 credit."
@@ -448,17 +637,38 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/geospatial/nearby?lat=19.076&lng=72.877&radius=100&type=city",
-							"host": ["{{base_url}}"],
-							"path": ["geospatial", "nearby"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"geospatial",
+								"nearby"
+							],
 							"query": [
-								{ "key": "lat", "value": "19.076" },
-								{ "key": "lng", "value": "72.877" },
-								{ "key": "radius", "value": "100" },
-								{ "key": "type", "value": "city" }
+								{
+									"key": "lat",
+									"value": "19.076"
+								},
+								{
+									"key": "lng",
+									"value": "72.877"
+								},
+								{
+									"key": "radius",
+									"value": "100"
+								},
+								{
+									"key": "type",
+									"value": "city"
+								}
 							]
 						},
 						"description": "Searches for Cities or Pincodes within a specific radius. This endpoint consumes 1 credit."
@@ -466,12 +676,70 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "07. Financial Data",
+			"item": [
+				{
+					"name": "Currency Exchange Rate",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/currency/exchange?currency=EUR",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"currency",
+								"exchange"
+							],
+							"query": [
+								{
+									"key": "currency",
+									"value": "EUR"
+								}
+							]
+						},
+						"description": "Retrieve the exchange rate of a given currency against USD and INR. This endpoint consumes 1 credit."
+					},
+					"response": [
+						{
+							"name": "Exchange Rate Response Sample",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"base_currency\": \"EUR\",\n        \"exchange_rates\": {\n            \"USD\": 1.0842,\n            \"INR\": 91.350\n        },\n        \"last_updated\": \"2026-04-05 20:30:00\",\n        \"provider\": \"SetuGeo Financial Engine\"\n    }\n}"
+						}
+					]
+				}
+			]
 		}
 	],
 	"variable": [
-		{ "key": "base_url", "value": "http://localhost:8000/api/v1" },
-		{ "key": "client_key", "value": "YOUR_PUBLIC_KEY" },
-		{ "key": "client_secret", "value": "YOUR_SECRET_KEY" },
-		{ "key": "token", "value": "YOUR_BEARER_TOKEN" }
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api/v1"
+		},
+		{
+			"key": "client_key",
+			"value": "YOUR_PUBLIC_KEY"
+		},
+		{
+			"key": "client_secret",
+			"value": "YOUR_SECRET_KEY"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_BEARER_TOKEN"
+		}
 	]
 }

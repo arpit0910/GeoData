@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\CurrencyConversion;
 use App\Models\State;
 use App\Models\Pincode;
 use App\Models\Region;
@@ -342,6 +343,39 @@ class SetuGeoController extends Controller
                         'credited' => $log->credit_deducted
                     ];
                 })
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve currency conversion rates for a specific currency code (against USD and INR).
+     */
+    public function currencyExchange(Request $request)
+    {
+        $currencyCode = $request->query('currency');
+        if (!$currencyCode) {
+            return response()->json(['success' => false, 'message' => 'Please provide a currency parameter (e.g. ?currency=EUR).'], 400);
+        }
+
+        $currency = strtoupper($currencyCode);
+
+        // Fetch based on currency code
+        $conversion = CurrencyConversion::where('currency', $currency)->first();
+
+        if (!$conversion) {
+            return response()->json(['success' => false, 'message' => 'Currency exchange rate not found for ' . $currency . '. We currently support 30+ major currencies.'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'base_currency' => $conversion->currency,
+                'exchange_rates' => [
+                    'USD' => $conversion->usd_conversion_rate,
+                    'INR' => $conversion->inr_conversion_rate
+                ],
+                'last_updated' => $conversion->updated_at->toDateTimeString(),
+                'provider' => 'SetuGeo Financial Engine'
             ]
         ], 200);
     }
