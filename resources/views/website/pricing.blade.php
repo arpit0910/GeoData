@@ -70,9 +70,15 @@
                         @endif
                     </ul>
 
-                    <a href="{{ route('register') }}" class="mt-auto block w-full bg-white/5 border border-white/10 text-white hover:bg-amber-600 hover:border-amber-600 text-center font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-sm">
-                        Get Started
-                    </a>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="mt-auto block w-full bg-amber-600 hover:bg-amber-700 text-white text-center font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-sm">
+                            Go to Dashboard
+                        </a>
+                    @else
+                        <a href="{{ route('register') }}" class="mt-auto block w-full bg-white/5 border border-white/10 text-white hover:bg-amber-600 hover:border-amber-600 text-center font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-sm">
+                            Get Started
+                        </a>
+                    @endauth
                 </div>
             @endforeach
         </div>

@@ -128,7 +128,7 @@
                     <!-- Body -->
                     <div class="flex-1 overflow-y-auto p-6 space-y-8 relative z-10">
                         <!-- Selected Plan Info -->
-                        <div x-if="selectedPlan" class="bg-white/5 rounded-xl p-5 border border-white/5">
+                        <div x-show="selectedPlan" class="bg-white/5 rounded-xl p-5 border border-white/5">
                             <div class="flex justify-between items-start">
                                 <div>
                                     <h3 class="text-amber-500 font-bold text-lg" x-text="selectedPlan.name"></h3>
@@ -320,7 +320,7 @@
                         this.loading = false;
 
                         if (response.amount == 0) {
-                            this.processVerification('free_plan_' + Math.random(), 'free_plan', 'free_sig');
+                            this.processVerification('free_plan_' + Date.now() + '_' + Math.floor(Math.random() * 1000), 'free_plan', 'free_sig');
                             return;
                         }
 

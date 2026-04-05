@@ -113,7 +113,7 @@
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="block w-full text-center bg-white/10 text-white hover:bg-white/20 px-4 py-3 rounded-lg text-base font-bold transition-all">Log in</a>
-                    <a href="{{ route('register') }}" class="block w-full text-center bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:from-amber-700 hover:to-amber-600 px-4 py-3 rounded-lg text-base font-bold shadow-md transition-all">Register</a>
+                    <a href="{{ route('register') }}" class="block w-full text-center bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:from-amber-700 hover:to-amber-600 px-4 py-3 rounded-lg text-base font-bold shadow-md transition-all">Get Started</a>
                 @endauth
             </div>
         </div>

@@ -187,29 +187,41 @@ class SubscriptionController extends Controller
             }
         }
 
-        $subscription = $this->activateSubscription(
-            Auth::user(),
-            $plan,
-            $orderId,
-            $paymentId,
-            $signature,
-            $amountPaid,
-            $discountAmount,
-            $remainingCycles,
-            $couponId
-        );
+        try {
+            $subscription = $this->activateSubscription(
+                Auth::user(),
+                $plan,
+                $orderId,
+                $paymentId,
+                $signature,
+                $amountPaid,
+                $discountAmount,
+                $remainingCycles,
+                $couponId
+            );
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Subscription activated successfully!',
-            'subscription' => $subscription,
-            'plan_details' => [
-                'name' => $plan->name,
-                'expires_at' => $subscription->expires_at->format('d M, Y'),
-                'benefits' => $plan->benefits,
-                'credits' => number_format($subscription->total_credits)
-            ]
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Subscription activated successfully!',
+                'subscription' => $subscription,
+                'plan_details' => [
+                    'name' => $plan->name,
+                    'expires_at' => $subscription->expires_at ? $subscription->expires_at->format('d M, Y') : 'Never',
+                    'benefits' => $plan->benefits,
+                    'credits' => number_format($subscription->total_credits)
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Subscription Activation Error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'plan_id' => $plan->id,
+                'exception' => $e
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription activation failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function handleWebhook(Request $request)
@@ -271,14 +283,16 @@ class SubscriptionController extends Controller
     private function activateSubscription($user, $plan, $orderId, $paymentId, $signature, $amountPaid, $discountAmount, $remainingCycles, $couponId = null)
     {
         return DB::transaction(function() use ($user, $plan, $orderId, $paymentId, $signature, $amountPaid, $discountAmount, $remainingCycles, $couponId) {
-            // Calculate expiration date
+            // Calculate expiration date - Same date of next month/year
             $expiresAt = now();
             if ($plan->billing_cycle === 'monthly') {
-                $expiresAt->addMonth();
+                $expiresAt = $expiresAt->addMonth();
             } elseif ($plan->billing_cycle === 'yearly') {
-                $expiresAt->addYear();
+                $expiresAt = $expiresAt->addYear();
             } elseif ($plan->billing_cycle === 'lifetime') {
-                $expiresAt->addYears(100);
+                $expiresAt = $expiresAt->addYears(100);
+            } else {
+                $expiresAt = $expiresAt->addMonth(); // Default backup
             }
 
             $creditsToAdd = $plan->api_hits_limit ?? 999999999;
@@ -303,12 +317,12 @@ class SubscriptionController extends Controller
                 'available_credits' => $creditsToAdd,
             ]);
 
-            if ($couponId) {
-                $coupon = Coupon::find($couponId);
-                if ($coupon) {
-                    $coupon->increment('used_count');
-                    $coupon->users()->attach($user->id, ['subscription_id' => $subscription->id]);
-                }
+            $coupon = $couponId ? Coupon::find($couponId) : null;
+            $couponCode = $coupon ? $coupon->code : null;
+
+            if ($coupon) {
+                $coupon->increment('used_count');
+                $coupon->users()->attach($user->id, ['subscription_id' => $subscription->id]);
             }
 
             // Record Transaction History
@@ -321,7 +335,7 @@ class SubscriptionController extends Controller
                 'razorpay_order_id' => $orderId,
                 'amount' => $amountPaid,
                 'discount_amount' => $discountAmount,
-                'coupon_code' => $couponId ? Coupon::find($couponId)->code : null,
+                'coupon_code' => $couponCode,
                 'plan_name' => $plan->name,
                 'billing_cycle' => $plan->billing_cycle,
                 'status' => 'success',
@@ -330,7 +344,7 @@ class SubscriptionController extends Controller
             // Update User records
             $user->plan_id = $plan->id;
             $user->available_credits = $creditsToAdd; // Reset/Set to plan limit
-            $user->status = 'active';
+            $user->status = 1; // User status is boolean (1=active)
             $user->save();
 
             return $subscription;
