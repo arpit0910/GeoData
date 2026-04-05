@@ -150,29 +150,30 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 });
 
-Route::middleware(['auth', 'profile.complete.check'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/complete-profile', [AuthController::class, 'completeProfile'])->name('profile.complete');
     Route::post('/complete-profile', [AuthController::class, 'saveProfile'])->name('profile.complete.post');
+    Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
 
+    Route::middleware(['profile.complete.check'])->group(function () {
+        Route::post('/pricing/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
+        Route::post('/pricing/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
+        Route::post('/pricing/validate-coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.validate-coupon');
 
-    Route::post('/pricing/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
-    Route::post('/pricing/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
-    Route::post('/pricing/validate-coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.validate-coupon');
+        Route::middleware(['subscribed'])->group(function () {
+            Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+            Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+            Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+            Route::get('/api-keys', [ProfileController::class, 'apiKeys'])->name('api-keys.index');
+            Route::post('/api-keys/regenerate', [ProfileController::class, 'regenerateApiKeys'])->name('api-keys.regenerate');
+            Route::get('/api-logs', [ApiLogController::class, 'index'])->name('api-logs.index');
+            Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
+            Route::get('/transactions/{transaction}/receipt', [SubscriptionController::class, 'downloadReceipt'])->name('pricing.receipt');
+        });
 
-    Route::middleware(['subscribed'])->group(function () {
-        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
-        Route::get('/api-keys', [ProfileController::class, 'apiKeys'])->name('api-keys.index');
-        Route::post('/api-keys/regenerate', [ProfileController::class, 'regenerateApiKeys'])->name('api-keys.regenerate');
-        Route::get('/api-logs', [ApiLogController::class, 'index'])->name('api-logs.index');
-        Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
-        Route::get('/transactions/{transaction}/receipt', [SubscriptionController::class, 'downloadReceipt'])->name('pricing.receipt');
-        Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
+        // Help & Support (Accessible without subscription)
+        Route::get('/help-support', [TicketController::class, 'index'])->name('support.index');
+        Route::post('/help-support', [TicketController::class, 'store'])->name('support.store');
+        Route::get('/help-support/sub-categories/{category}', [TicketController::class, 'getSubCategories'])->name('support.sub-categories');
     });
-
-    // Help & Support (Accessible without subscription)
-    Route::get('/help-support', [TicketController::class, 'index'])->name('support.index');
-    Route::post('/help-support', [TicketController::class, 'store'])->name('support.store');
-    Route::get('/help-support/sub-categories/{category}', [TicketController::class, 'getSubCategories'])->name('support.sub-categories');
 });

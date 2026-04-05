@@ -11,9 +11,12 @@ class EnsureProfileComplete
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check() && !Auth::user()->is_admin) {
-            $user = Auth::user();
-            if (empty($user->company_name) || empty($user->phone)) {
-                return redirect()->route('profile.complete');
+            // Skip the check if we're already on the profile completion routes
+            if (!$request->routeIs('profile.complete') && !$request->routeIs('profile.complete.post')) {
+                $user = Auth::user();
+                if (empty($user->company_name) || empty($user->phone)) {
+                    return redirect()->route('profile.complete');
+                }
             }
         }
         return $next($request);
