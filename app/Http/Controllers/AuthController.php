@@ -105,7 +105,7 @@ class AuthController extends Controller
             'company_name' => 'required|string|max:255',
             'company_website' => 'nullable|url|max:255',
             'gst_number' => ['nullable', 'string', 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/'],
-            'phone' => ['required', 'string', 'regex:/^(?:\+?91[\-\s]?)?[6-9]\d{9}$/'],
+            'phone' => ['required', 'string', 'min:7', 'max:20'],
             'address_line_1' => 'required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
             'country_id' => 'required|exists:countries,id',
@@ -114,7 +114,8 @@ class AuthController extends Controller
             'city_id' => 'required|exists:cities,id',
         ], [
             'gst_number.regex' => 'Please enter a valid 15-character Indian GSTIN.',
-            'phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
+            'phone.min' => 'Please enter a valid phone number with at least 7 digits.',
+            'phone.max' => 'Phone number cannot exceed 20 characters.',
             'pincode.regex' => 'Please enter a valid 6-digit Indian PIN code.'
         ]);
 

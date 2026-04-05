@@ -34,6 +34,16 @@
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[600px] h-[600px] rounded-full bg-amber-500 opacity-10 blur-[150px] pointer-events-none"></div>
     
     <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-8 md:p-10 border border-white/10 relative z-10">
+        <!-- Logout Button -->
+        <div class="absolute top-6 right-6">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors text-xs font-bold uppercase tracking-widest flex items-center bg-white/5 px-3 py-2 rounded-lg border border-white/5 shadow-sm">
+                    <i class="fas fa-sign-out-alt mr-2 text-sm"></i> Logout
+                </button>
+            </form>
+        </div>
+
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold tracking-tight text-amber-500">Complete your profile</h1>
             <p class="text-gray-500 mt-2 text-sm max-w-sm mx-auto">Just a few more details so we can tailor the SetuGeo dashboard perfectly to your needs.</p>
@@ -76,7 +86,7 @@
                 <div>
                     <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
                     <div class="mt-1">
-                        <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" required placeholder="+91 98765 43210" pattern="^(?:\+?91[\-\s]?)?[6-9]\d{9}$" title="Please enter a valid 10-digit Indian mobile number (e.g. +91 9876543210)"
+                        <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" required placeholder="e.g. 90909 09090" title="Please enter your phone number without country code"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>

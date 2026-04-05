@@ -23,6 +23,8 @@ use App\Http\Controllers\Admin\TicketSubCategoryController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
+use App\Http\Controllers\Admin\CurrencyConversionController as AdminCurrencyConversionController;
+use App\Http\Controllers\CurrencyConversionController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -148,12 +150,19 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('faqs', AdminFaqController::class);
     Route::post('faqs/{faq}/toggle-status', [AdminFaqController::class, 'toggleStatus'])->name('faqs.toggle-status');
 
+    // Currency Conversions
+    Route::prefix('currency-conversions')->name('admin.currency-conversions.')->group(function () {
+        Route::get('/', [AdminCurrencyConversionController::class, 'index'])->name('index');
+        Route::post('/sync', [AdminCurrencyConversionController::class, 'sync'])->name('sync');
+    });
+
 });
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/complete-profile', [AuthController::class, 'completeProfile'])->name('profile.complete');
     Route::post('/complete-profile', [AuthController::class, 'saveProfile'])->name('profile.complete.post');
     Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
+    Route::get('/api/currency/{currency}', [CurrencyConversionController::class, 'lookup'])->name('api.currency.lookup');
 
     Route::middleware(['profile.complete.check'])->group(function () {
         Route::post('/pricing/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
