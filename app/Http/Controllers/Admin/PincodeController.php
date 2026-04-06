@@ -16,37 +16,39 @@ class PincodeController extends Controller
     public function index(Request $request)
     {
         if ($request->wantsJson() || $request->ajax()) {
-            $query = Pincode::with(['country', 'state', 'city']);
+            $query = Pincode::with(['country:id,name', 'state:id,name', 'city:id,name']);
 
             if ($request->has('search') && !empty($request->search['value'])) {
                 $search = $request->search['value'];
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('postal_code', 'like', "%{$search}%")
-                      ->orWhereHas('country', function($subQ) use ($search) {
-                          $subQ->where('name', 'like', "%{$search}%");
-                      })
-                      ->orWhereHas('state', function($subQ) use ($search) {
-                          $subQ->where('name', 'like', "%{$search}%");
-                      })
-                      ->orWhereHas('city', function($subQ) use ($search) {
-                          $subQ->where('name', 'like', "%{$search}%");
-                      });
+                      ->orWhere('area', 'like', "%{$search}%")
+                      ->orWhereHas('state', fn($s) => $s->where('name', 'like', "%{$search}%"))
+                      ->orWhereHas('city',  fn($c) => $c->where('name', 'like', "%{$search}%"))
+                      ->orWhereHas('country', fn($c) => $c->where('name', 'like', "%{$search}%"));
                 });
             }
 
-            $total = Pincode::count();
+            $total    = Pincode::count();
             $filtered = $query->count();
-            
-            $limit = $request->length ?? 100;
-            $start = $request->start ?? 0;
-            
-            $pincodes = $query->skip($start)->take($limit)->get();
+            $limit    = $request->length ?? 25;
+            $start    = $request->start  ?? 0;
+
+            $pincodes = $query->skip($start)->take($limit)->get()
+                ->map(fn($p) => [
+                    'id'          => $p->id,
+                    'postal_code' => $p->postal_code,
+                    'area'        => $p->area,
+                    'city_name'   => $p->city?->name,
+                    'state_name'  => $p->state?->name,
+                    'country_name'=> $p->country?->name,
+                ]);
 
             return response()->json([
-                'draw' => $request->draw,
-                'recordsTotal' => $total,
+                'draw'            => $request->draw,
+                'recordsTotal'    => $total,
                 'recordsFiltered' => $filtered,
-                'data' => $pincodes
+                'data'            => $pincodes,
             ]);
         }
 
@@ -62,18 +64,19 @@ class PincodeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'postal_code' => 'required|string|max:255',
-            'country_id' => 'required|exists:countries,id',
-            'state_id' => 'nullable|exists:states,id',
-            'city_id' => 'nullable|exists:cities,id',
-            'short_state' => 'nullable|string|max:255',
-            'county' => 'nullable|string|max:255',
-            'short_county' => 'nullable|string|max:255',
-            'community' => 'nullable|string|max:255',
+            'postal_code'     => 'required|string|max:255',
+            'country_id'      => 'required|exists:countries,id',
+            'state_id'        => 'nullable|exists:states,id',
+            'city_id'         => 'nullable|exists:cities,id',
+            'area'            => 'nullable|string|max:255',
+            'short_state'     => 'nullable|string|max:255',
+            'county'          => 'nullable|string|max:255',
+            'short_county'    => 'nullable|string|max:255',
+            'community'       => 'nullable|string|max:255',
             'short_community' => 'nullable|string|max:255',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'accuracy' => 'nullable|string|max:255',
+            'latitude'        => 'nullable|numeric',
+            'longitude'       => 'nullable|numeric',
+            'accuracy'        => 'nullable|string|max:255',
         ]);
 
         Pincode::create($request->all());
@@ -108,9 +111,10 @@ class PincodeController extends Controller
     {
         $request->validate([
             'postal_code' => 'required|string|max:255',
-            'country_id' => 'required|exists:countries,id',
-            'state_id' => 'nullable|exists:states,id',
-            'city_id' => 'nullable|exists:cities,id',
+            'country_id'  => 'required|exists:countries,id',
+            'state_id'    => 'nullable|exists:states,id',
+            'city_id'     => 'nullable|exists:cities,id',
+            'area'        => 'nullable|string|max:255',
             'short_state' => 'nullable|string|max:255',
             'county' => 'nullable|string|max:255',
             'short_county' => 'nullable|string|max:255',
@@ -187,48 +191,80 @@ class PincodeController extends Controller
         set_time_limit(0);
         ini_set('memory_limit', '2048M');
 
+        // ── Build lookup maps ────────────────────────────────────────────────
         $countries = Country::pluck('id', 'iso2')->toArray();
-        $states = [];
-        foreach (State::select('id', 'name', 'country_id')->get() as $state) {
-            $states[$state->country_id . '_' . $state->name] = $state->id;
+
+        // Dual state map: by full name and by iso2/short_state
+        $statesByCountryName  = [];
+        $statesByCountryShort = [];
+        foreach (State::select('id', 'name', 'iso2', 'country_id')->get() as $state) {
+            $statesByCountryName[$state->country_id . '_' . mb_strtolower(trim($state->name))] = $state->id;
+            if (!empty($state->iso2)) {
+                $statesByCountryShort[$state->country_id . '_' . mb_strtolower(trim($state->iso2))] = $state->id;
+            }
         }
-        $cities = [];
-        foreach (City::select('id', 'name', 'state_id')->get() as $city) {
-            $cities[$city->state_id . '_' . $city->name] = $city->id;
+
+        // Dual city map: state-level (preferred) + country-level (fallback)
+        $citiesByState   = [];
+        $citiesByCountry = [];
+        foreach (City::select('id', 'name', 'state_id', 'country_id')->get() as $city) {
+            $norm = mb_strtolower(trim($city->name));
+            if ($city->state_id && !isset($citiesByState[$city->state_id . '_' . $norm])) {
+                $citiesByState[$city->state_id . '_' . $norm] = $city->id;
+            }
+            if ($city->country_id && !isset($citiesByCountry[$city->country_id . '_' . $norm])) {
+                $citiesByCountry[$city->country_id . '_' . $norm] = $city->id;
+            }
         }
 
         $handle = fopen($path, 'r');
         $header = fgetcsv($handle);
         if ($header) {
-            $header = array_map('strtolower', $header);
+            $header    = array_map('strtolower', array_map('trim', $header));
             $header[0] = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $header[0]);
         }
 
-        $chunkSize = 1000;
-        $batch = [];
+        $chunkSize        = 1000;
+        $batch            = [];
         $recordsProcessed = 0;
 
         while (($row = fgetcsv($handle)) !== false) {
             if (count($header) !== count($row)) continue;
-            
-            $rowData = array_combine($header, $row);
 
-            $countryCode = $rowData['country'] ?? null;
-            if (!$countryCode || !isset($countries[$countryCode])) {
-                continue;
-            }
+            $rowData = array_map('trim', array_combine($header, $row));
+
+            // Country
+            $countryCode = $rowData['country'] ?? '';
+            if (!$countryCode || !isset($countries[$countryCode])) continue;
             $countryId = $countries[$countryCode];
 
-            $stateName = $rowData['state'] ?? null;
-            $stateKey = $countryId . '_' . $stateName;
-            $stateId = $stateName && isset($states[$stateKey]) ? $states[$stateKey] : null;
+            if (empty($rowData['postal_code'])) continue;
 
-            $cityName = $rowData['city'] ?? null;
-            $cityKey = $stateId . '_' . $cityName;
-            $cityId = $cityName && isset($cities[$cityKey]) ? $cities[$cityKey] : null;
+            // State — try full name, then short_state column
+            $stateId   = null;
+            $stateName = $rowData['state'] ?? '';
+            if ($stateName) {
+                $stateId = $statesByCountryName[$countryId . '_' . mb_strtolower($stateName)]
+                    ?? $statesByCountryShort[$countryId . '_' . mb_strtolower($stateName)]
+                    ?? null;
+            }
+            if (!$stateId && !empty($rowData['short_state'])) {
+                $sk      = $countryId . '_' . mb_strtolower($rowData['short_state']);
+                $stateId = $statesByCountryShort[$sk] ?? $statesByCountryName[$sk] ?? null;
+            }
 
-            if (empty($rowData['postal_code'])) {
-                continue;
+            // CSV 'city' column = area/locality (e.g. "Mansarovar"), NOT the actual city
+            // Resolve city_id from county → community → city (in that order)
+            $area   = $rowData['city'] ?: null;
+            $cityId = null;
+            foreach (['county', 'community', 'city'] as $cityCol) {
+                $candidateName = $rowData[$cityCol] ?? '';
+                if (!$candidateName) continue;
+                $norm   = mb_strtolower($candidateName);
+                $cityId = ($stateId ? ($citiesByState[$stateId . '_' . $norm] ?? null) : null)
+                    ?? $citiesByCountry[$countryId . '_' . $norm]
+                    ?? null;
+                if ($cityId) break;
             }
 
             $batch[] = [
@@ -236,14 +272,15 @@ class PincodeController extends Controller
                 'country_id'      => $countryId,
                 'state_id'        => $stateId,
                 'city_id'         => $cityId,
-                'short_state'     => $rowData['short_state'] ?? null,
-                'county'          => $rowData['county'] ?? null,
-                'short_county'    => $rowData['short_county'] ?? null,
-                'community'       => $rowData['community'] ?? null,
-                'short_community' => $rowData['short_community'] ?? null,
-                'latitude'        => $rowData['latitude'] ?? null,
-                'longitude'       => $rowData['longitude'] ?? null,
-                'accuracy'        => $rowData['accuracy'] ?? null,
+                'area'            => $area,
+                'short_state'     => $rowData['short_state']     ?: null,
+                'county'          => $rowData['county']          ?: null,
+                'short_county'    => $rowData['short_county']    ?: null,
+                'community'       => $rowData['community']       ?: null,
+                'short_community' => $rowData['short_community'] ?: null,
+                'latitude'        => $rowData['latitude']        ?: null,
+                'longitude'       => $rowData['longitude']       ?: null,
+                'accuracy'        => $rowData['accuracy']        ?: null,
                 'created_at'      => now(),
                 'updated_at'      => now(),
             ];
@@ -252,7 +289,8 @@ class PincodeController extends Controller
                 DB::table('pincodes')->upsert(
                     $batch,
                     ['postal_code', 'country_id'],
-                    ['state_id', 'city_id', 'short_state', 'county', 'short_county', 'community', 'short_community', 'latitude', 'longitude', 'accuracy', 'updated_at']
+                    ['state_id', 'city_id', 'area', 'short_state', 'county', 'short_county',
+                     'community', 'short_community', 'latitude', 'longitude', 'accuracy', 'updated_at']
                 );
                 $recordsProcessed += count($batch);
                 $batch = [];
@@ -263,7 +301,8 @@ class PincodeController extends Controller
             DB::table('pincodes')->upsert(
                 $batch,
                 ['postal_code', 'country_id'],
-                ['state_id', 'city_id', 'short_state', 'county', 'short_county', 'community', 'short_community', 'latitude', 'longitude', 'accuracy', 'updated_at']
+                ['state_id', 'city_id', 'area', 'short_state', 'county', 'short_county',
+                 'community', 'short_community', 'latitude', 'longitude', 'accuracy', 'updated_at']
             );
             $recordsProcessed += count($batch);
         }

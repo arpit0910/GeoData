@@ -1,61 +1,65 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mb-6 flex justify-between items-center">
+{{-- Page Header --}}
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Pincodes</h1>
-        <p class="mt-1 text-sm text-gray-600">A list of all the pincodes in the database.</p>
+        <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Pincodes</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Manage all postal codes with location and area details.</p>
     </div>
-    <div class="flex items-center space-x-4">
-        <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
+    <div class="flex items-center gap-3">
+        <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')"
+            class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all">
             <i class="fas fa-file-import mr-2"></i> Import
         </button>
-        <a href="{{ route('pincodes.create') }}" class="inline-flex items-center px-4 py-2 bg-amber-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-700 active:bg-amber-900 focus:outline-none focus:border-amber-900 focus:ring ring-amber-300 disabled:opacity-25 transition ease-in-out duration-150">
+        <a href="{{ route('pincodes.create') }}"
+            class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
             <i class="fas fa-plus mr-2"></i> Add Pincode
         </a>
     </div>
 </div>
 
-<!-- Import Modal -->
-<div id="importModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="document.getElementById('importModal').classList.add('hidden')"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-            <div class="sm:flex sm:items-start">
-                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-indigo-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
-                    <i class="fas fa-upload text-indigo-600"></i>
-                </div>
-                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Import Pincodes</h3>
-                    <div class="mt-2">
-                        <p class="text-sm text-gray-500">Please upload a valid Excel or CSV file. Large files will automatically be uploaded in chunks.</p>
-                    </div>
+{{-- Import Modal --}}
+<div id="importModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="document.getElementById('importModal').classList.add('hidden')"></div>
+        <div class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
+                    <i class="fas fa-upload text-indigo-600 dark:text-indigo-400"></i>
+                </span>
+                <div>
+                    <h3 class="text-base font-black text-gray-900 dark:text-white">Import Pincodes</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Upload a CSV file. Large files upload in chunks automatically.</p>
                 </div>
             </div>
-            <form id="importForm" action="javascript:void(0)" class="mt-5 sm:mt-4">
+
+            <form id="importForm" action="javascript:void(0)">
                 @csrf
                 <div class="mb-4">
-                    <input type="file" id="import_file" name="import_file" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                    <input type="file" id="import_file" name="import_file" required accept=".csv"
+                        class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-indigo-50 dark:file:bg-indigo-500/10 file:text-indigo-700 dark:file:text-indigo-400 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-500/20 cursor-pointer">
                 </div>
-                
-                <!-- Progress Bar -->
+
+                {{-- Progress --}}
                 <div id="progressContainer" class="hidden mb-4">
-                    <div class="flex justify-between text-xs mb-1">
-                        <span id="progressText" class="font-medium text-indigo-700">0%</span>
-                        <span id="progressStatus" class="font-medium text-gray-500">Uploading chunks...</span>
+                    <div class="flex justify-between text-xs mb-1.5">
+                        <span id="progressText" class="font-bold text-indigo-600 dark:text-indigo-400">0%</span>
+                        <span id="progressStatus" class="text-gray-500">Uploading...</span>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div id="progressBar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <div class="w-full bg-gray-100 dark:bg-white/5 rounded-full h-2">
+                        <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width:0%"></div>
                     </div>
                 </div>
 
-                <div class="sm:flex sm:flex-row-reverse" id="actionButtons">
-                    <button type="submit" id="importBtn" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white transition duration-150 ease-in-out bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:border-indigo-700 focus:ring-indigo sm:ml-3 sm:w-auto sm:text-sm">
-                        Import
-                    </button>
-                    <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:ring-blue sm:mt-0 sm:w-auto sm:text-sm">
+                <div id="actionButtons" class="flex justify-end gap-3">
+                    <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')"
+                        class="px-5 py-2.5 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors">
                         Cancel
+                    </button>
+                    <button type="submit" id="importBtn"
+                        class="inline-flex items-center px-6 py-2.5 text-sm font-black rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-all">
+                        <i class="fas fa-upload mr-2"></i> Import
                     </button>
                 </div>
             </form>
@@ -63,36 +67,30 @@
     </div>
 </div>
 
+{{-- Flash Message --}}
 @if(session('success'))
-<div class="mb-4 bg-green-50 border-l-4 border-green-400 p-4">
-    <div class="flex">
-        <div class="flex-shrink-0">
-            <i class="fas fa-check-circle text-green-400"></i>
-        </div>
-        <div class="ml-3">
-            <p class="text-sm text-green-700">
-                {{ session('success') }}
-            </p>
-        </div>
+    <div class="mb-6 flex items-center gap-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-2xl px-5 py-4">
+        <i class="fas fa-check-circle shrink-0"></i>
+        <span class="text-sm font-medium">{{ session('success') }}</span>
     </div>
-</div>
 @endif
 
-<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="p-6 bg-white border-b border-gray-200 overflow-x-auto">
+{{-- Table Card --}}
+<div class="bg-white dark:bg-[#0f172a]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+    <div class="p-6 overflow-x-auto">
         <table id="pincodesTable" class="w-full text-left border-collapse">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Postal Code</th>
-                    <th>Country</th>
-                    <th>State</th>
                     <th>City</th>
-                    <th>Action</th>
+                    <th>State</th>
+                    <th>Country</th>
+                    <th>Area</th>
+                    <th class="text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
-            </tbody>
+            <tbody class="divide-y divide-gray-100 dark:divide-white/5"></tbody>
         </table>
     </div>
 </div>
@@ -104,65 +102,45 @@
         $('#pincodesTable').DataTable({
             processing: true,
             serverSide: true,
-            pageLength: 100,
+            pageLength: 25,
             ajax: "{{ route('pincodes.index') }}",
             columns: [
-                { data: 'id', name: 'id' },
-                { data: 'postal_code', name: 'postal_code' },
-                { 
-                    data: 'country', 
-                    name: 'country.name',
-                    orderable: false,
-                    searchable: false,
-                    render: function(data, type, row) {
-                        return row.country ? row.country.name : 'N/A';
-                    } 
+                { data: 'id',           name: 'id' },
+                { data: 'postal_code',  name: 'postal_code' },
+                { data: 'city_name',    name: 'city.name',    orderable: false, defaultContent: '—' },
+                { data: 'state_name',   name: 'state.name',   orderable: false, defaultContent: '—' },
+                { data: 'country_name', name: 'country.name', orderable: false, defaultContent: '—' },
+                { data: 'area',         name: 'area',         orderable: false,
+                    render: function(data) { return data || '—'; }
                 },
-                { 
-                    data: 'state', 
-                    name: 'state.name',
+                {
+                    data: 'id',
+                    name: 'action',
                     orderable: false,
-                    searchable: false,
-                    render: function(data, type, row) {
-                        return row.state ? row.state.name : 'N/A';
-                    } 
-                },
-                { 
-                    data: 'city', 
-                    name: 'city.name',
-                    orderable: false,
-                    searchable: false,
-                    render: function(data, type, row) {
-                        return row.city ? row.city.name : 'N/A';
-                    } 
-                },
-                { 
-                    data: 'id', 
-                    name: 'action', 
-                    orderable: false, 
                     searchable: false,
                     className: 'text-right whitespace-nowrap',
                     render: function(data, type, row) {
-                        let editUrl = "{{ route('pincodes.edit', ':id') }}".replace(':id', data);
+                        let editUrl   = "{{ route('pincodes.edit', ':id') }}".replace(':id', data);
                         let deleteUrl = "{{ route('pincodes.destroy', ':id') }}".replace(':id', data);
-                        let csrf = '{{ csrf_token() }}';
-                        
+                        let csrf      = '{{ csrf_token() }}';
                         return `
-                            <div class="flex justify-end space-x-2">
-                                <a href="${editUrl}" class="text-indigo-600 hover:text-indigo-900" title="Edit"><i class="fas fa-edit"></i></a>
+                            <div class="flex justify-end items-center space-x-1">
+                                <a href="${editUrl}" class="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors" title="Edit">
+                                    <i class="fas fa-edit text-sm"></i>
+                                </a>
                                 <form action="${deleteUrl}" method="POST" class="inline-block delete-form-actual">
                                     <input type="hidden" name="_token" value="${csrf}">
                                     <input type="hidden" name="_method" value="DELETE">
-                                    <button type="button" class="p-2 text-rose-600 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors delete-trigger" data-message="Are you sure you want to delete pincode '${row.postal_code}'?" title="Delete">
-                                        <i class="fas fa-trash"></i>
+                                    <button type="button" class="p-2 text-rose-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors delete-trigger"
+                                        data-message="Are you sure you want to delete pincode '${row.postal_code}'?" title="Delete">
+                                        <i class="fas fa-trash text-sm"></i>
                                     </button>
                                 </form>
-                            </div>
-                        `;
+                            </div>`;
                     }
                 }
             ],
-            order: [[0, "asc"]],
+            order: [[0, 'asc']],
             dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col sm:flex-row justify-between items-center mt-4"ip>',
         });
 

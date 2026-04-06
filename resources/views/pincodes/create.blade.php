@@ -99,6 +99,13 @@
                 </div>
             </div>
 
+            {{-- Area (locality) --}}
+            <div>
+                <label for="area" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Area / Locality</label>
+                <input type="text" name="area" id="area" value="{{ old('area') }}" placeholder="e.g. Mansarovar, Andheri West"
+                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+            </div>
+
             {{-- Short State --}}
             <div>
                 <label for="short_state" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Short State</label>
