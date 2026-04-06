@@ -55,10 +55,8 @@ class PincodeController extends Controller
 
     public function create()
     {
-        $countries = Country::orderBy('name')->get();
-        $states = State::orderBy('name')->get();
-        $cities = City::orderBy('name')->get();
-        return view('pincodes.create', compact('countries', 'states', 'cities'));
+        $countries = Country::orderBy('name')->get(['id', 'name']);
+        return view('pincodes.create', compact('countries'));
     }
 
     public function store(Request $request)
@@ -85,9 +83,24 @@ class PincodeController extends Controller
 
     public function edit(Pincode $pincode)
     {
-        $countries = Country::orderBy('name')->get();
-        $states = State::orderBy('name')->get();
-        $cities = City::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get(['id', 'name']);
+
+        // Pre-load states for the pincode's country
+        $states = $pincode->country_id
+            ? State::where('country_id', $pincode->country_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+
+        // Pre-load cities — use state_id if set; otherwise infer it from the city record
+        $effectiveStateId = $pincode->state_id;
+        if (!$effectiveStateId && $pincode->city_id) {
+            $effectiveStateId = City::where('id', $pincode->city_id)->value('state_id');
+        }
+        $cities = $effectiveStateId
+            ? City::where('state_id', $effectiveStateId)->orderBy('name')->get(['id', 'name'])
+            : ($pincode->city_id
+                ? City::where('id', $pincode->city_id)->get(['id', 'name'])   // last resort: just the one city
+                : collect());
+
         return view('pincodes.edit', compact('pincode', 'countries', 'states', 'cities'));
     }
 
