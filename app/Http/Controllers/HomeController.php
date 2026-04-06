@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Plan;
 use App\Models\Faq;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -31,7 +32,18 @@ class HomeController extends Controller
     public function pricing()
     {
         $plans = Plan::where('status', 1)->orderBy('amount', 'asc')->get();
-        return view('website.pricing', compact('plans'));
+
+        $activeSubscription = null;
+        if (Auth::check()) {
+            $activeSubscription = Auth::user()->subscriptions()
+                ->with('plan')
+                ->where('status', 'active')
+                ->where('expires_at', '>', now())
+                ->latest()
+                ->first();
+        }
+
+        return view('website.pricing', compact('plans', 'activeSubscription'));
     }
 
     public function docs()

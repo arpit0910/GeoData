@@ -11,7 +11,7 @@ class CurrencyConversionController extends Controller
 {
     public function index()
     {
-        $rates = CurrencyConversion::with('country')->latest()->paginate(20);
+        $rates = CurrencyConversion::with('country')->latest()->get();
         return view('admin.currency-conversions.index', compact('rates'));
     }
 

@@ -55,6 +55,7 @@ class GeoAnalysisController extends Controller
 
     /**
      * Calculate distance between two coordinate points using Haversine formula.
+     * Supported units: km (default), miles, meters, centimeters.
      * Credit-based endpoint.
      */
     public function distance(Request $request)
@@ -64,31 +65,55 @@ class GeoAnalysisController extends Controller
             'lng1' => 'required|numeric|between:-180,180',
             'lat2' => 'required|numeric|between:-90,90',
             'lng2' => 'required|numeric|between:-180,180',
-            'unit' => 'nullable|string|in:km,miles'
+            'unit' => 'nullable|string|in:km,miles,meters,centimeters',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
+        $unit = strtolower($request->query('unit', 'km'));
+
         $lat1 = deg2rad($request->lat1);
         $lng1 = deg2rad($request->lng1);
         $lat2 = deg2rad($request->lat2);
         $lng2 = deg2rad($request->lng2);
 
-        $earthRadius = ($request->query('unit', 'km') === 'miles') ? 3959 : 6371;
-
+        // Always compute in km using Earth's mean radius
         $latDelta = $lat2 - $lat1;
         $lngDelta = $lng2 - $lng1;
+        $angle    = 2 * asin(sqrt(
+            pow(sin($latDelta / 2), 2) +
+            cos($lat1) * cos($lat2) * pow(sin($lngDelta / 2), 2)
+        ));
+        $distanceKm = $angle * 6371;
 
-        $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) + cos($lat1) * cos($lat2) * pow(sin($lngDelta / 2), 2)));
-        $distance = $angle * $earthRadius;
+        // Convert to the requested unit
+        $conversionFactors = [
+            'km'          => 1,
+            'miles'       => 0.621371,
+            'meters'      => 1000,
+            'centimeters' => 100000,
+        ];
+
+        $factor   = $conversionFactors[$unit] ?? 1;
+        $distance = round($distanceKm * $factor, 4);
+
+        // Human-readable unit labels for the response
+        $unitLabels = [
+            'km'          => 'km',
+            'miles'       => 'miles',
+            'meters'      => 'm',
+            'centimeters' => 'cm',
+        ];
 
         return response()->json([
             'success' => true,
             'data' => [
-                'distance' => round($distance, 4),
-                'unit' => $request->query('unit', 'km')
+                'distance'       => $distance,
+                'unit'           => $unit,
+                'unit_label'     => $unitLabels[$unit],
+                'distance_km'    => round($distanceKm, 4),    // always included for reference
             ]
         ]);
     }

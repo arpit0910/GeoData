@@ -668,24 +668,87 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                 </span>
                             </div>
                             <div class="p-6">
-                                <p class="mb-4 text-gray-400">Calculate precision distance between two coordinates using the Haversine formula.</p>
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Required Parameters</h4>
-                                <div class="grid grid-cols-2 gap-4 mb-6">
-                                    <div class="font-mono text-xs p-3 bg-gray-900/80 rounded-lg border border-gray-800 text-gray-500">lat1, lng1</div>
-                                    <div class="font-mono text-xs p-3 bg-gray-900/80 rounded-lg border border-gray-800 text-gray-500">lat2, lng2</div>
+                                <p class="mb-6 text-gray-400">Calculate the precision distance between two coordinate points using the Haversine formula. Supports multiple output units.</p>
+
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                <table class="w-full text-sm mb-8">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                        <tr>
+                                            <th class="pb-2 pr-4">Field</th>
+                                            <th class="pb-2 pr-4">Type</th>
+                                            <th class="pb-2 pr-4">Required</th>
+                                            <th class="pb-2">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800 text-gray-400">
+                                        <tr>
+                                            <td class="py-3 pr-4 font-mono text-amber-500">lat1</td>
+                                            <td class="py-3 pr-4 text-gray-500">float</td>
+                                            <td class="py-3 pr-4 text-red-400 font-bold">Yes</td>
+                                            <td class="py-3">Latitude of Point A &mdash; must be between <code class="text-white">-90</code> and <code class="text-white">90</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 pr-4 font-mono text-amber-500">lng1</td>
+                                            <td class="py-3 pr-4 text-gray-500">float</td>
+                                            <td class="py-3 pr-4 text-red-400 font-bold">Yes</td>
+                                            <td class="py-3">Longitude of Point A &mdash; must be between <code class="text-white">-180</code> and <code class="text-white">180</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 pr-4 font-mono text-amber-500">lat2</td>
+                                            <td class="py-3 pr-4 text-gray-500">float</td>
+                                            <td class="py-3 pr-4 text-red-400 font-bold">Yes</td>
+                                            <td class="py-3">Latitude of Point B &mdash; must be between <code class="text-white">-90</code> and <code class="text-white">90</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 pr-4 font-mono text-amber-500">lng2</td>
+                                            <td class="py-3 pr-4 text-gray-500">float</td>
+                                            <td class="py-3 pr-4 text-red-400 font-bold">Yes</td>
+                                            <td class="py-3">Longitude of Point B &mdash; must be between <code class="text-white">-180</code> and <code class="text-white">180</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 pr-4 font-mono text-amber-500">unit</td>
+                                            <td class="py-3 pr-4 text-gray-500">string</td>
+                                            <td class="py-3 pr-4 text-gray-600 font-bold">No</td>
+                                            <td class="py-3">
+                                                Output unit for the distance. Defaults to <code class="text-white">km</code>.
+                                                <div class="mt-2 flex flex-wrap gap-2">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 text-[10px] font-mono font-bold">km</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 text-[10px] font-mono font-bold">miles</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/20 text-[10px] font-mono font-bold">meters</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-orange-500/10 text-orange-300 border border-orange-500/20 text-[10px] font-mono font-bold">centimeters</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Example Requests</h4>
+                                <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-gray-500 border border-gray-800 mb-6 space-y-1.5">
+                                    <div><span class="text-gray-600"># Kilometers (default)</span></div>
+                                    <div>/api/v1/geospatial/distance?lat1=28.6&lng1=77.2&lat2=19.0&lng2=72.8</div>
+                                    <div class="mt-2"><span class="text-gray-600"># Miles</span></div>
+                                    <div>/api/v1/geospatial/distance?lat1=28.6&lng1=77.2&lat2=19.0&lng2=72.8&unit=<span class="text-amber-500">miles</span></div>
+                                    <div class="mt-2"><span class="text-gray-600"># Meters</span></div>
+                                    <div>/api/v1/geospatial/distance?lat1=28.6&lng1=77.2&lat2=19.0&lng2=72.8&unit=<span class="text-amber-500">meters</span></div>
+                                    <div class="mt-2"><span class="text-gray-600"># Centimeters</span></div>
+                                    <div>/api/v1/geospatial/distance?lat1=28.6&lng1=77.2&lat2=19.0&lng2=72.8&unit=<span class="text-amber-500">centimeters</span></div>
                                 </div>
+
                                 <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
                                 <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
 <pre>{
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
   <span class="text-blue-400">"data"</span>: {
-    <span class="text-blue-400">"distance"</span>: <span class="text-blue-400">1146.42</span>,
-    <span class="text-blue-400">"unit"</span>: <span class="text-green-400">"km"</span>
+    <span class="text-blue-400">"distance"</span>: <span class="text-blue-400">1146423.8</span>,       <span class="text-gray-600">// value in requested unit</span>
+    <span class="text-blue-400">"unit"</span>: <span class="text-green-400">"meters"</span>,            <span class="text-gray-600">// the unit param you sent</span>
+    <span class="text-blue-400">"unit_label"</span>: <span class="text-green-400">"m"</span>,         <span class="text-gray-600">// short display label</span>
+    <span class="text-blue-400">"distance_km"</span>: <span class="text-blue-400">1146.4238</span>   <span class="text-gray-600">// always present for reference</span>
   }
 }</pre>
                                 </div>
                             </div>
                         </div>
+
 
                         <!-- Nearby Radius Search -->
                         <div id="geo-nearby" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">

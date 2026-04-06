@@ -289,10 +289,9 @@ class SubscriptionController extends Controller
                 $expiresAt = $expiresAt->addMonth();
             } elseif ($plan->billing_cycle === 'yearly') {
                 $expiresAt = $expiresAt->addYear();
-            } elseif ($plan->billing_cycle === 'lifetime') {
-                $expiresAt = $expiresAt->addYears(100);
             } else {
-                $expiresAt = $expiresAt->addMonth(); // Default backup
+                // lifetime / free plans — effectively never expire
+                $expiresAt = $expiresAt->addYears(100);
             }
 
             $creditsToAdd = $plan->api_hits_limit ?? 999999999;

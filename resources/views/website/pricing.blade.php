@@ -2,6 +2,11 @@
 @section('title', 'Pricing - SetuGeo API')
 
 @section('content')
+@php
+    $activePlanAmount = $activeSubscription?->plan?->amount ?? null;
+    $activePlanId     = $activeSubscription?->plan_id ?? null;
+@endphp
+
 <div class="bg-transparent py-24 sm:py-32" x-data="{ billingCycle: 'monthly' }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16">
@@ -30,6 +35,13 @@
         <!-- Pricing Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             @foreach($plans as $plan)
+                @php
+                    $planEffectiveAmount = $plan->amount - ($plan->discount_amount ?? 0);
+                    $isActivePlan        = $activePlanId && $activePlanId == $plan->id;
+                    $isUpgrade           = $activePlanAmount !== null && $planEffectiveAmount > $activePlanAmount;
+                    $isDowngrade         = $activePlanAmount !== null && $planEffectiveAmount < $activePlanAmount;
+                @endphp
+
                 <div x-show="billingCycle === '{{ $plan->billing_cycle }}'" class="flex flex-col rounded-3xl bg-white/10 backdrop-blur-xl shadow-xl border border-white/10 p-8 hover:border-amber-500/50 hover:shadow-amber-500/10 transition-all duration-300 relative transform hover:-translate-y-1" x-transition>
                     
                     @if(str_contains(strtolower($plan->name), 'pro') || str_contains(strtolower($plan->name), 'gold') || str_contains(strtolower($plan->name), 'silver'))
@@ -46,7 +58,7 @@
                     </div>
 
                     <div class="mb-8 flex items-baseline text-white border-b border-white/10 pb-8">
-                        <span class="text-5xl font-extrabold tracking-tight">₹{{ number_format($plan->amount, 0) }}</span>
+                        <span class="text-5xl font-extrabold tracking-tight">₹{{ number_format($planEffectiveAmount, 0) }}</span>
                         <span class="ml-1 text-lg font-bold text-gray-500">
                             @if($plan->billing_cycle === 'yearly') /yr
                             @elseif($plan->billing_cycle === 'monthly') /mo
@@ -70,19 +82,139 @@
                         @endif
                     </ul>
 
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="mt-auto block w-full bg-amber-600 hover:bg-amber-700 text-white text-center font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-sm">
-                            Go to Dashboard
-                        </a>
+                    {{-- CTA Button Logic --}}
+                    @if($isActivePlan)
+                        {{-- Currently on this plan --}}
+                        <button disabled
+                            class="mt-auto block w-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-400/30 rounded-xl py-3.5 text-sm font-black text-white text-center cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 opacity-95">
+                            <i class="fas fa-crown text-amber-300 animate-pulse text-xs"></i>
+                            Active Plan
+                            <span class="text-[9px] font-bold opacity-80 uppercase tracking-widest bg-black/20 px-2 py-0.5 rounded-lg border border-white/10">
+                                Exp: {{ \Carbon\Carbon::parse($activeSubscription->expires_at)->year > 2100 ? 'Lifetime' : \Carbon\Carbon::parse($activeSubscription->expires_at)->format('M d, Y') }}
+                            </span>
+                        </button>
+
+                    @elseif($isDowngrade)
+                        {{-- Lower price plan — disabled Buy Now --}}
+                        <button disabled
+                            class="mt-auto block w-full bg-white/5 border border-white/10 rounded-xl py-3.5 text-sm font-black text-gray-500 text-center cursor-not-allowed flex items-center justify-center gap-2 opacity-60">
+                            <i class="fas fa-arrow-down text-xs"></i>
+                            Buy Now
+                        </button>
+
+                    @elseif($isUpgrade)
+                        {{-- Higher price plan — Upgrade Now --}}
+                        @auth
+                            <a href="{{ route('subscription.pricing') }}#plan-{{ $plan->id }}"
+                                class="mt-auto block w-full bg-amber-600 hover:bg-amber-500 text-white text-center font-black py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-amber-600/20 hover:shadow-amber-500/30 flex items-center justify-center gap-2">
+                                <i class="fas fa-arrow-up text-xs"></i>
+                                Upgrade Now
+                            </a>
+                        @else
+                            <a href="{{ route('register') }}"
+                                class="mt-auto block w-full bg-amber-600 hover:bg-amber-500 text-white text-center font-black py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2">
+                                <i class="fas fa-arrow-up text-xs"></i>
+                                Get Started
+                            </a>
+                        @endauth
+
+                    @elseif($planEffectiveAmount == 0)
+                        {{-- Free plan, new visitors --}}
+                        @auth
+                            {{-- Authenticated but no subscription — assign free plan via subscription flow --}}
+                            <form action="{{ route('pricing.order', $plan) }}" method="POST" id="free-plan-form-{{ $plan->id }}">
+                                @csrf
+                                <button type="button"
+                                    onclick="activateFreePlan({{ $plan->id }})"
+                                    class="mt-auto block w-full bg-white/5 border border-white/20 hover:border-amber-500/50 hover:bg-amber-600 text-white text-center font-black py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                                    <i class="fas fa-bolt text-xs text-amber-400"></i>
+                                    Activate Free Plan
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('register') }}"
+                                class="mt-auto block w-full bg-white/5 border border-white/20 hover:bg-amber-600 hover:border-amber-600 text-white text-center font-black py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                                <i class="fas fa-bolt text-xs text-amber-400"></i>
+                                Get Started Free
+                            </a>
+                        @endauth
+
                     @else
-                        <a href="{{ route('register') }}" class="mt-auto block w-full bg-white/5 border border-white/10 text-white hover:bg-amber-600 hover:border-amber-600 text-center font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-sm">
-                            Get Started
-                        </a>
-                    @endauth
+                        {{-- Paid plan, no current subscription --}}
+                        @auth
+                            <a href="{{ route('subscription.pricing') }}"
+                                class="mt-auto block w-full bg-amber-600 hover:bg-amber-700 text-white text-center font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-sm">
+                                Buy Now
+                            </a>
+                        @else
+                            <a href="{{ route('register') }}"
+                                class="mt-auto block w-full bg-white/5 border border-white/10 text-white hover:bg-amber-600 hover:border-amber-600 text-center font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-sm">
+                                Get Started
+                            </a>
+                        @endauth
+                    @endif
                 </div>
             @endforeach
         </div>
 
     </div>
 </div>
+
+@auth
+<script>
+function activateFreePlan(planId) {
+    if (!confirm('Activate the Free Plan on your account?')) return;
+
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Activating...';
+
+    fetch(`/pricing/${planId}/order`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ coupon_id: null })
+    })
+    .then(r => r.json())
+    .then(orderRes => {
+        if (orderRes.amount == 0) {
+            return fetch('/pricing/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    plan_id: planId,
+                    razorpay_order_id: 'free_plan_' + Date.now(),
+                    razorpay_payment_id: 'free_plan',
+                    razorpay_signature: 'free_sig',
+                    coupon_id: null
+                })
+            });
+        }
+        throw new Error('Plan is not free.');
+    })
+    .then(r => r.json())
+    .then(verifyRes => {
+        if (verifyRes.success) {
+            window.location.href = '{{ route('dashboard') }}';
+        } else {
+            alert('Activation failed. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-bolt text-xs text-amber-400"></i> Activate Free Plan';
+        }
+    })
+    .catch(err => {
+        alert('Something went wrong. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-bolt text-xs text-amber-400"></i> Activate Free Plan';
+    });
+}
+</script>
+@endauth
 @endsection

@@ -119,6 +119,20 @@ class PincodeController extends Controller
         return redirect()->route('pincodes.index')->with('success', 'Pincode deleted successfully.');
     }
 
+    public function statesByCountry(Country $country)
+    {
+        return response()->json(
+            State::where('country_id', $country->id)->orderBy('name')->get(['id', 'name'])
+        );
+    }
+
+    public function citiesByState(State $state)
+    {
+        return response()->json(
+            City::where('state_id', $state->id)->orderBy('name')->get(['id', 'name'])
+        );
+    }
+
     public function uploadChunk(Request $request)
     {
         $request->validate([

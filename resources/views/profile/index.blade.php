@@ -86,16 +86,27 @@
 
                     <!-- Expiry Info -->
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Next Renewal</span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                            @if($subscription->plan->billing_cycle === 'lifetime' || \Carbon\Carbon::parse($subscription->expires_at)->year > 2100)
+                                Validity
+                            @else
+                                Next Renewal
+                            @endif
+                        </span>
                         <div class="flex items-center">
                             <div class="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 mr-4 shadow-inner">
                                 <i class="fas fa-calendar-alt text-xl"></i>
                             </div>
                             <div>
-                                <h4 class="text-sm font-black text-gray-900 dark:text-white">{{ $subscription->expires_at->format('M d, Y') }}</h4>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter">
-                                    {{ now()->diffInDays($subscription->expires_at) }} DAYS REMAINING
-                                </p>
+                                @if($subscription->plan->billing_cycle === 'lifetime' || \Carbon\Carbon::parse($subscription->expires_at)->year > 2100)
+                                    <h4 class="text-sm font-black text-gray-900 dark:text-white">Lifetime</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter">Never Expires</p>
+                                @else
+                                    <h4 class="text-sm font-black text-gray-900 dark:text-white">{{ $subscription->expires_at->format('M d, Y') }}</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter">
+                                        {{ now()->diffInDays($subscription->expires_at) }} DAYS REMAINING
+                                    </p>
+                                @endif
                             </div>
                         </div>
                     </div>

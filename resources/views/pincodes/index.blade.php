@@ -142,7 +142,7 @@
                     orderable: false, 
                     searchable: false,
                     className: 'text-right whitespace-nowrap',
-                    render: function(data) {
+                    render: function(data, type, row) {
                         let editUrl = "{{ route('pincodes.edit', ':id') }}".replace(':id', data);
                         let deleteUrl = "{{ route('pincodes.destroy', ':id') }}".replace(':id', data);
                         let csrf = '{{ csrf_token() }}';

@@ -62,26 +62,49 @@
         <h3 class="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Welcome back, {{ auth()->user()->first_name ?? auth()->user()->name }}!</h3>
         <p class="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-medium leading-relaxed">Your professional geo-platform is ready. Harness the power of global data at your fingertips.</p>
         
-        <div class="mt-12 p-10 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-3xl flex flex-col md:flex-row items-center justify-between text-left gap-8 transition-all hover:border-amber-500/30">
-            <div>
-                <h4 class="text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2">Current Plan</h4>
-                <div class="flex items-center">
-                    <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ auth()->user()->plan ? auth()->user()->plan->name : 'Free Developer Tier' }}</span>
-                    <span class="ml-3 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">Active</span>
-                    @if(auth()->user()->plan && auth()->user()->plan->amount <= 0)
-                        <span class="ml-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-500 text-[10px] font-black uppercase tracking-widest border border-blue-500/20">Free</span>
-                    @endif
-                </div>
-            </div>
-            <a href="{{ route('subscription.pricing') }}" class="group/btn inline-flex items-center px-8 py-4 border border-transparent text-lg font-black rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-xl shadow-amber-600/20 hover:shadow-amber-500/40 transition-all active:scale-95 whitespace-nowrap">
-                @if(auth()->user()->plan && auth()->user()->plan->amount <= 0)
-                    Upgrade to Pro 
-                @else
-                    Upgrade Now
-                @endif
-                <i class="fas fa-crown ml-3 transition-transform group-hover/btn:scale-110 group-hover/btn:rotate-12"></i>
-            </a>
+@php
+    $dashboardSub = auth()->user()->subscriptions()
+        ->with('plan')
+        ->where('status', 'active')
+        ->where('expires_at', '>', now())
+        ->latest()
+        ->first();
+    $dashboardPlan = $dashboardSub?->plan ?? auth()->user()->plan;
+@endphp
+<div class="mt-12 p-10 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-3xl flex flex-col md:flex-row items-center justify-between text-left gap-8 transition-all hover:border-amber-500/30">
+    <div>
+        <h4 class="text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2">Current Plan</h4>
+        <div class="flex items-center flex-wrap gap-2">
+            <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ $dashboardPlan ? $dashboardPlan->name : 'No Active Plan' }}</span>
+            @if($dashboardSub)
+                <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">Active</span>
+            @endif
+            @if($dashboardPlan && ($dashboardPlan->amount ?? 1) <= 0)
+                <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-500 text-[10px] font-black uppercase tracking-widest border border-blue-500/20">Free</span>
+            @endif
         </div>
+        @if($dashboardSub)
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
+                @if(\Carbon\Carbon::parse($dashboardSub->expires_at)->year > 2100)
+                    Lifetime access
+                @else
+                    Renews on {{ $dashboardSub->expires_at->format('M d, Y') }}
+                @endif
+            </p>
+        @endif
+    </div>
+    @if(!$dashboardSub || ($dashboardPlan && ($dashboardPlan->amount ?? 1) <= 0))
+    <a href="{{ route('subscription.pricing') }}" class="group/btn inline-flex items-center px-8 py-4 border border-transparent text-lg font-black rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-xl shadow-amber-600/20 hover:shadow-amber-500/40 transition-all active:scale-95 whitespace-nowrap">
+        Upgrade Now
+        <i class="fas fa-crown ml-3 transition-transform group-hover/btn:scale-110 group-hover/btn:rotate-12"></i>
+    </a>
+    @else
+    <a href="{{ route('pricing') }}" class="group/btn inline-flex items-center px-8 py-4 border border-amber-600/30 text-lg font-black rounded-2xl text-amber-600 dark:text-amber-500 bg-amber-600/5 hover:bg-amber-600 hover:text-white transition-all active:scale-95 whitespace-nowrap">
+        View Plans
+        <i class="fas fa-arrow-right ml-3 transition-transform group-hover/btn:translate-x-1"></i>
+    </a>
+    @endif
+</div>
     </div>
 </div>
 @endif

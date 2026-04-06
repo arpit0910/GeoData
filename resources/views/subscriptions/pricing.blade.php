@@ -9,14 +9,14 @@
 
             <!-- Billing Toggle -->
             <div class="mt-8 flex justify-center">
-                <div class="flex items-center p-1 bg-white/50 backdrop-blur-md rounded-2xl border border-gray-200">
-                    <button @click="billingCycle = 'monthly'" 
-                        :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'monthly', 'text-gray-500 hover:text-gray-700': billingCycle !== 'monthly' }" 
+                <div class="flex items-center p-1 bg-gray-200/60 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-gray-300 dark:border-white/10">
+                    <button @click="billingCycle = 'monthly'"
+                        :class="billingCycle === 'monthly' ? 'bg-amber-600 shadow-md text-white' : 'text-gray-600 dark:text-gray-300 bg-white dark:bg-white/5 hover:text-amber-600 dark:hover:text-amber-400'"
                         class="w-32 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none">
                         Monthly
                     </button>
-                    <button @click="billingCycle = 'yearly'" 
-                        :class="{ 'bg-amber-600 shadow-md text-white': billingCycle === 'yearly', 'text-gray-500 hover:text-gray-700': billingCycle !== 'yearly' }" 
+                    <button @click="billingCycle = 'yearly'"
+                        :class="billingCycle === 'yearly' ? 'bg-amber-600 shadow-md text-white' : 'text-gray-600 dark:text-gray-300 bg-white dark:bg-white/5 hover:text-amber-600 dark:hover:text-amber-400'"
                         class="w-32 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none relative">
                         Yearly
                         <span class="absolute -top-3 -right-3 bg-green-100 text-green-700 text-[10px] uppercase font-black px-2.5 py-1 rounded-full border border-green-200 shadow-sm animate-bounce">Save 20%</span>
@@ -45,23 +45,51 @@
                             </span>
                         </p>
                         
-                        @php 
-                            $isCurrentPlan = auth()->check() && isset($activeSubscription) && $activeSubscription && $activeSubscription->plan_id == $plan->id;
+                        @php
+                            $planEffectiveAmount = $plan->amount - ($plan->discount_amount ?? 0);
+                            $isCurrentPlan = isset($activeSubscription) && $activeSubscription && $activeSubscription->plan_id == $plan->id;
+                            $activePlanAmount = $activeSubscription?->plan?->amount ?? null;
+                            $isUpgrade  = $activePlanAmount !== null && $planEffectiveAmount > $activePlanAmount;
+                            $isDowngrade = $activePlanAmount !== null && $planEffectiveAmount < $activePlanAmount;
                         @endphp
-                        
+
                         @if($isCurrentPlan)
-                            <button disabled class="mt-8 block w-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-400/30 rounded-xl py-3 text-sm font-black text-white text-center cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-emerald-500/10 ring-1 ring-white/10 relative overflow-hidden group">
+                            {{-- Active plan badge --}}
+                            <button disabled class="mt-8 block w-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-400/30 rounded-xl py-3 text-sm font-black text-white text-center cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-emerald-500/10 ring-1 ring-white/10 relative overflow-hidden">
                                 <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-50"></div>
                                 <span class="flex items-center gap-1.5 relative z-10 shrink-0">
-                                    <i class="fas fa-crown text-amber-300 animate-pulse text-xs"></i> 
-                                    Subscribed
+                                    <i class="fas fa-crown text-amber-300 animate-pulse text-xs"></i>
+                                    Active Plan
                                 </span>
                                 <span class="text-[9px] font-bold opacity-90 uppercase tracking-widest relative z-10 bg-black/20 px-2.5 py-1 rounded-lg border border-white/5 shrink-0">
-                                    Exp: {{ \Carbon\Carbon::parse($activeSubscription->expires_at)->format('M d, Y') }}
+                                    Exp: {{ \Carbon\Carbon::parse($activeSubscription->expires_at)->year > 2100 ? 'Lifetime' : \Carbon\Carbon::parse($activeSubscription->expires_at)->format('M d, Y') }}
                                 </span>
                             </button>
+
+                        @elseif($isDowngrade)
+                            {{-- Lower price — disabled Buy Now --}}
+                            <button disabled class="mt-8 block w-full bg-gray-100 border border-gray-200 rounded-xl py-3 text-sm font-black text-gray-400 text-center cursor-not-allowed flex items-center justify-center gap-2 opacity-60">
+                                <i class="fas fa-arrow-down text-xs"></i>
+                                Buy Now
+                            </button>
+
+                        @elseif($isUpgrade)
+                            {{-- Higher price — Upgrade Now --}}
+                            <button @click="selectPlan({{ json_encode($plan) }})" class="mt-8 block w-full bg-amber-600 hover:bg-amber-700 border border-transparent rounded-xl py-3 text-sm font-black text-white text-center transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-arrow-up text-xs"></i>
+                                Upgrade Now
+                            </button>
+
+                        @elseif($planEffectiveAmount == 0)
+                            {{-- Free plan --}}
+                            <button type="button" onclick="activateFreePlanSubscribe({{ $plan->id }})" class="mt-8 block w-full bg-emerald-600 hover:bg-emerald-700 border border-transparent rounded-xl py-3 text-sm font-black text-white text-center transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-bolt text-xs"></i>
+                                Activate Free Plan
+                            </button>
+
                         @else
-                            <button @click="selectPlan({{ json_encode($plan) }})" class="mt-8 block w-full bg-amber-600 border border-transparent rounded-md py-3 text-sm font-semibold text-white text-center hover:bg-amber-700 transition-colors">
+                            {{-- Paid plan, no active subscription --}}
+                            <button @click="selectPlan({{ json_encode($plan) }})" class="mt-8 block w-full bg-amber-600 hover:bg-amber-700 border border-transparent rounded-xl py-3 text-sm font-semibold text-white text-center transition-colors">
                                 Subscribe Now
                             </button>
                         @endif
@@ -392,6 +420,68 @@
                 });
             }
         }
+    }
+
+    function activateFreePlanSubscribe(planId) {
+        if (!confirm('Activate the Free Plan on your account?')) return;
+
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Activating...';
+
+        fetch(`/pricing/${planId}/order`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ coupon_id: null })
+        })
+        .then(r => r.json())
+        .then(orderRes => {
+            if (orderRes.amount == 0) {
+                return fetch('/pricing/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan_id: planId,
+                        razorpay_order_id: 'free_plan_' + Date.now(),
+                        razorpay_payment_id: 'free_plan',
+                        razorpay_signature: 'free_sig',
+                        coupon_id: null
+                    })
+                });
+            }
+            throw new Error('Not a free plan.');
+        })
+        .then(r => r.json())
+        .then(verifyRes => {
+            if (verifyRes.success) {
+                // Reuse the existing Alpine success modal
+                const alpineEl = document.querySelector('[x-data="subscriptionCart()"]');
+                if (alpineEl && alpineEl._x_dataStack) {
+                    const data = Alpine.$data(alpineEl);
+                    data.successData = verifyRes.plan_details;
+                    data.showSuccessModal = true;
+                } else {
+                    window.location.href = '{{ route('dashboard') }}';
+                }
+            } else {
+                alert('Activation failed. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-bolt text-xs"></i> Activate Free Plan';
+            }
+        })
+        .catch(() => {
+            alert('Something went wrong. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-bolt text-xs"></i> Activate Free Plan';
+        });
     }
 </script>
 @endpush

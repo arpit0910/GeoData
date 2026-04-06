@@ -106,6 +106,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('cities', CityController::class);
 
     Route::post('pincodes/upload-chunk', [PincodeController::class, 'uploadChunk'])->name('pincodes.uploadChunk');
+    Route::get('pincodes/states/{country}', [PincodeController::class, 'statesByCountry'])->name('pincodes.states-by-country');
+    Route::get('pincodes/cities/{state}', [PincodeController::class, 'citiesByState'])->name('pincodes.cities-by-state');
     Route::resource('pincodes', PincodeController::class);
 
     Route::prefix('plans')->name('plans.')->group(function () {
