@@ -36,7 +36,7 @@
     <!-- Navbar -->
     <nav x-data="{ mobileMenuOpen: false, scrolled: false }" 
          @scroll.window="scrolled = (window.pageYOffset > 50)"
-         :class="scrolled ? 'bg-[#000000] border-b border-white/10' : 'bg-transparent'"
+         :class="scrolled ? 'bg-[#000000]/95 backdrop-blur-xl' : 'bg-transparent'"
          class="sticky top-0 z-50 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20">

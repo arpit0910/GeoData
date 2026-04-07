@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "8b9cad0e-1f20-4192-bff0-e1e043ce143d",
-		"name": "SetuGeo API - Official Collection v1.1",
-		"description": "Comprehensive Postman collection for the SetuGeo Platform. Includes all 11 endpoints, detailed search examples, and auto-token extraction.",
+		"name": "SetuGeo API - Official Collection v1.2",
+		"description": "Comprehensive Postman collection for the SetuGeo Platform. Includes all 16 endpoints, detailed search examples, and auto-token extraction.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -720,6 +720,138 @@
 							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"base_currency\": \"EUR\",\n        \"exchange_rates\": {\n            \"USD\": 1.0842,\n            \"INR\": 91.350\n        },\n        \"last_updated\": \"2026-04-05 20:30:00\",\n        \"provider\": \"SetuGeo Financial Engine\"\n    }\n}"
 						}
 					]
+				}
+			]
+		},
+		{
+			"name": "08. Banking & IFSC",
+			"item": [
+				{
+					"name": "List All Banks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/banks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"banks"
+							]
+						},
+						"description": "Fetch a paginated list of all banks supported by SetuGeo."
+					},
+					"response": []
+				},
+				{
+					"name": "List Branches of a Bank",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/banks/1/branches",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"banks",
+								"1",
+								"branches"
+							]
+						},
+						"description": "Retrieve all branches associated with a specific bank using its ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specific Branch by IFSC",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/branch/SBIN0000001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"branch",
+								"SBIN0000001"
+							]
+						},
+						"description": "Fetch detailed information (address, city, state, MICR) for a specific bank branch using its unique IFSC code."
+					},
+					"response": []
+				},
+				{
+					"name": "List Banks in a City",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cities/1024/banks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cities",
+								"1024",
+								"banks"
+							]
+						},
+						"description": "Fetch a list of all banks that have branches in a specific city."
+					},
+					"response": []
+				},
+				{
+					"name": "List Banks in a State",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/states/51/banks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"states",
+								"51",
+								"banks"
+							]
+						},
+						"description": "Fetch a list of all banks that have branches within a specific state."
+					},
+					"response": []
 				}
 			]
 		}

@@ -11,6 +11,8 @@ use App\Models\Pincode;
 use App\Models\Region;
 use App\Models\SubRegion;
 use App\Models\Timezone;
+use App\Models\Bank;
+use App\Models\BankBranch;
 use Illuminate\Http\Request;
 
 class SetuGeoController extends Controller
@@ -376,6 +378,101 @@ class SetuGeoController extends Controller
                 ],
                 'last_updated' => $conversion->updated_at->toDateTimeString(),
                 'provider' => 'SetuGeo Financial Engine'
+            ]
+        ], 200);
+    }
+    /**
+     * Retrieve all unique banks
+     */
+    public function banks(Request $request)
+    {
+        $query = Bank::query();
+        if ($request->has('name')) {
+            $query->where('name', 'LIKE', '%' . $request->query('name') . '%');
+        }
+        $banks = $query->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $banks->items(),
+            'meta' => [
+                'current_page' => $banks->currentPage(),
+                'last_page' => $banks->lastPage(),
+                'total' => $banks->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve all branches of a particular bank
+     */
+    public function bankBranches(Bank $bank, Request $request)
+    {
+        $query = $bank->branches()->with(['city', 'state']);
+        $branches = $query->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $branches->items(),
+            'meta' => [
+                'current_page' => $branches->currentPage(),
+                'last_page' => $branches->lastPage(),
+                'total' => $branches->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve details of a specific branch by IFSC code
+     */
+    public function branchInfo($ifsc)
+    {
+        $branch = BankBranch::with(['bank', 'city', 'state'])->where('ifsc', $ifsc)->first();
+
+        if (!$branch) {
+            return response()->json(['success' => false, 'message' => 'Branch with IFCS ' . $ifsc . ' not found.'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $branch
+        ], 200);
+    }
+
+    /**
+     * Retrieve all banks having branches in a particular city
+     */
+    public function banksInCity(City $city, Request $request)
+    {
+        $bankIds = BankBranch::where('city_id', $city->id)->pluck('bank_id')->unique();
+        $banks = Bank::whereIn('id', $bankIds)->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $banks->items(),
+            'meta' => [
+                'current_page' => $banks->currentPage(),
+                'last_page' => $banks->lastPage(),
+                'total' => $banks->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve all banks having branches in a particular state
+     */
+    public function banksInState(State $state, Request $request)
+    {
+        $bankIds = BankBranch::where('state_id', $state->id)->pluck('bank_id')->unique();
+        $banks = Bank::whereIn('id', $bankIds)->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $banks->items(),
+            'meta' => [
+                'current_page' => $banks->currentPage(),
+                'last_page' => $banks->lastPage(),
+                'total' => $banks->total(),
             ]
         ], 200);
     }

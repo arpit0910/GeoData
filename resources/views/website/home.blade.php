@@ -128,7 +128,7 @@
     <!-- Dynamic Line & Glow Background -->
     <i class="fas fa-map-marker-alt absolute top-10 left-[15%] text-amber-500/10 text-5xl transform -rotate-12 blur-[2px]"></i>
     <i class="fas fa-map-marker-alt absolute bottom-20 right-[20%] text-amber-500/10 text-7xl transform rotate-12 blur-[4px]"></i>
-    <i class="fas fa-globe absolute top-1/3 right-[10%] text-amber-500/5 text-9xl blur-[2px]"></i>
+    <i class="fas fa-globe absolute top-1/3 right-[10%] text-amber-500/10 text-9xl blur-[2px] animate-[spin_60s_linear_infinite]"></i>
     
     <div class="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
     <div class="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.05)_0,transparent_60%)]"></div>
@@ -140,7 +140,7 @@
                 <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Uptime SLA</p>
             </div>
             <div class="text-center">
-                <p class="text-5xl font-black text-white mb-2">14<span class="text-amber-500">B+</span></p>
+                <p class="text-5xl font-black text-white mb-2">1<span class="text-amber-500">M+</span></p>
                 <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">API Requests</p>
             </div>
             <div class="text-center">
@@ -217,22 +217,22 @@
         <h2 class="text-base text-amber-500 font-bold tracking-wide uppercase mb-4">Common Questions</h2>
         <p class="text-4xl font-extrabold text-white mb-16 tracking-tight">Got questions? We've got answers.</p>
         
-        <div class="space-y-4 text-left">
-            @foreach([
-                ['q' => 'How often is the data updated?', 'a' => 'Our databases are refreshed every 24 hours from authoritative governmental and geographic sources to ensure maximum accuracy.'],
-                ['q' => 'Is there a free usage tier?', 'a' => 'Yes! Our Bronz plan is completely free and allows up to 5,000 requests per month, perfect for prototyping.'],
-                ['q' => 'Do you support custom enterprise SLAs?', 'a' => 'Absolutely. For high-volume users, we offer dedicated infrastructure and custom guarantee levels. Contact our sales team for details.']
-            ] as $i => $item)
-            <div class="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
-                <button @click="active = (active === {{ $i }} ? null : {{ $i }})" class="w-full flex items-center justify-between px-6 sm:px-8 pt-6 pb-4 text-left hover:bg-white/5 transition-colors">
-                    <span class="text-lg font-bold text-white">{{ $item['q'] }}</span>
-                    <i class="fas fa-chevron-down text-amber-500 transition-transform" :class="active === {{ $i }} ? 'rotate-180' : ''"></i>
+        <div class="space-y-4 text-left" x-data="{ active: null }">
+            @forelse($faqs as $i => $item)
+            <div class="bg-white/5 rounded-3xl border border-white/10 overflow-hidden transition-all hover:border-amber-500/30 hover:bg-white/[0.07] group">
+                <button @click="active = (active === {{ $i }} ? null : {{ $i }})" class="w-full flex items-center justify-between px-8 sm:px-10 pt-8 pb-5 text-left transition-colors">
+                    <span class="text-xl font-bold text-white group-hover:text-amber-500 transition-colors">{{ $item->question }}</span>
+                    <i class="fas fa-chevron-down text-amber-500 transition-transform duration-300" :class="active === {{ $i }} ? 'rotate-180' : ''"></i>
                 </button>
-                <div x-show="active === {{ $i }}" x-collapse class="px-6 sm:px-8 pt-2 pb-6 text-gray-400 font-medium leading-relaxed">
-                    {{ $item['a'] }}
+                <div x-show="active === {{ $i }}" x-collapse class="px-8 sm:px-10 pt-0 pb-8 text-gray-400 font-medium leading-relaxed text-lg">
+                    {{ $item->answer }}
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div class="text-center py-12">
+                <p class="text-gray-500">No FAQs available at the moment.</p>
+            </div>
+            @endforelse
         </div>
     </div>
 </div>

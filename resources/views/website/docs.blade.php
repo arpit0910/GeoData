@@ -50,6 +50,11 @@
                             <li><a href="#pincodes" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincodes</a></li>
                             <li><a href="#pincode-search" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincode Search</a></li>
                             <li><a href="#currency-exchange" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Currency Exchange</a></li>
+                            <li><a href="#banks" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-bold text-amber-400">Banks List</a></li>
+                            <li><a href="#bank-branches" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Bank Branches</a></li>
+                            <li><a href="#branch-info" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Branch Details</a></li>
+                            <li><a href="#banks-in-city" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Banks in City</a></li>
+                            <li><a href="#banks-in-state" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Banks in State</a></li>
                         </ul>
                     </div>
                     <div>
@@ -589,6 +594,96 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   }
 }</pre>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Banks List -->
+                        <div id="banks" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Fetch list of all unique banks supported in the system.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Optional Parameters</h4>
+                                <table class="w-full text-sm mb-4">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                        <tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        <tr><td class="py-3 font-mono text-amber-500">name</td><td class="py-3 text-gray-400">Search by bank name</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Bank Branches -->
+                        <div id="bank-branches" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks/{bank_id}/branches</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Retrieve all available branches for a specific bank. Includes IFSC, MICR, and full address.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Example Response</h4>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
+<pre class="text-gray-400">{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"bank_id"</span>: 1,
+      <span class="text-blue-400">"ifsc"</span>: <span class="text-green-400">"ABHY0065001"</span>,
+      <span class="text-blue-400">"branch"</span>: <span class="text-green-400">"Abhyudaya Co-operative Bank IMPS"</span>,
+      <span class="text-blue-400">"address"</span>: <span class="text-green-400">"Abhyudaya Bhavan, V.G. Market, Vevay Road, Mumbai"</span>,
+      <span class="text-blue-400">"city"</span>: { <span class="text-blue-400">"name"</span>: "Mumbai" },
+      <span class="text-blue-400">"state"</span>: { <span class="text-blue-400">"name"</span>: "Maharashtra" }
+    }
+  ]
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Branch Info -->
+                        <div id="branch-info" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/{ifsc}</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Fetch comprehensive details of a single branch using its unique IFSC code.</p>
+                            </div>
+                        </div>
+
+                        <!-- Banks in City -->
+                        <div id="banks-in-city" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /cities/{city_id}/banks</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Get a collection of all banks that have active physical branches in a specified city.</p>
+                            </div>
+                        </div>
+
+                        <!-- Banks in State -->
+                        <div id="banks-in-state" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{state_id}/banks</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-lock mr-2"></i> Token Required
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">List all banks operating within a particular state.</p>
                             </div>
                         </div>
 

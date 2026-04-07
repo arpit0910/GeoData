@@ -11,7 +11,8 @@ class HomeController extends Controller
 {
     public function index()
     {
-        return view('website.home');
+        $faqs = Faq::where('visibility', 'website')->where('status', 1)->orderBy('order')->get();
+        return view('website.home', compact('faqs'));
     }
 
     public function about()

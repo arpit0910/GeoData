@@ -1,0 +1,175 @@
+﻿commit 3deb81b8cdc89cbc38718a19cf814e05b4ba85e4
+Author: Arpit Vijay <arpitvijay0910@gmail.com>
+Date:   Mon Apr 6 00:10:23 2026 +0530
+
+    Updated: Billing and Web views.
+
+diff --git a/resources/views/layouts/public.blade.php b/resources/views/layouts/public.blade.php
+index 53f2d2d..ceca399 100644
+--- a/resources/views/layouts/public.blade.php
++++ b/resources/views/layouts/public.blade.php
+@@ -113,7 +113,7 @@ class="sticky top-0 z-50 transition-all duration-300">
+                     </form>
+                 @else
+                     <a href="{{ route('login') }}" class="block w-full text-center bg-white/10 text-white hover:bg-white/20 px-4 py-3 rounded-lg text-base font-bold transition-all">Log in</a>
+-                    <a href="{{ route('register') }}" class="block w-full text-center bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:from-amber-700 hover:to-amber-600 px-4 py-3 rounded-lg text-base font-bold shadow-md transition-all">Register</a>
++                    <a href="{{ route('register') }}" class="block w-full text-center bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:from-amber-700 hover:to-amber-600 px-4 py-3 rounded-lg text-base font-bold shadow-md transition-all">Get Started</a>
+                 @endauth
+             </div>
+         </div>
+
+commit 065bc596345fff452664bcb4047865a720557fe3
+Author: Arpit Vijay <arpitvijay0910@gmail.com>
+Date:   Thu Apr 2 17:07:12 2026 +0530
+
+    Updated: Plan Seeder and Sync functionality on Plan to Razorpay.
+
+diff --git a/resources/views/layouts/public.blade.php b/resources/views/layouts/public.blade.php
+index e57e4d0..53f2d2d 100644
+--- a/resources/views/layouts/public.blade.php
++++ b/resources/views/layouts/public.blade.php
+@@ -34,12 +34,15 @@
+     @endif
+ 
+     <!-- Navbar -->
+-    <nav x-data="{ mobileMenuOpen: false }" class="bg-transparent backdrop-blur-lg sticky top-0 z-50">
++    <nav x-data="{ mobileMenuOpen: false, scrolled: false }" 
++         @scroll.window="scrolled = (window.pageYOffset > 50)"
++         :class="scrolled ? 'bg-[#000000] border-b border-white/10' : 'bg-transparent'"
++         class="sticky top-0 z-50 transition-all duration-300">
+         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             <div class="flex justify-between h-20">
+                 <div class="flex items-center">
+                     <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center group">
+-                        <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-12 w-auto transform transition-transform group-hover:scale-110">
++                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-14 w-auto transform transition-transform">
+                     </a>
+                     
+                     <div class="hidden md:ml-12 md:flex md:space-x-8">
+@@ -127,7 +130,7 @@
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                 <div class="col-span-1 md:col-span-2">
+                     <a href="{{ route('home') }}" class="flex items-center mb-5 group">
+-                        <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-10 w-auto">
++                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-12 w-auto">
+                     </a>
+                     <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6 font-medium">
+                         Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally through SetuGeo.
+
+commit 0c7e489db378deec8f8d5ea8bf832b1e65bc4b40
+Author: Arpit Vijay <arpitvijay0910@gmail.com>
+Date:   Wed Apr 1 16:02:16 2026 +0530
+
+    Updated: Login and other pages for Logo.
+
+diff --git a/resources/views/layouts/public.blade.php b/resources/views/layouts/public.blade.php
+index c73fa2b..e57e4d0 100644
+--- a/resources/views/layouts/public.blade.php
++++ b/resources/views/layouts/public.blade.php
+@@ -38,9 +38,8 @@
+         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             <div class="flex justify-between h-20">
+                 <div class="flex items-center">
+-                    <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center gap-3 group">
+-                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-10 w-auto transform transition-transform group-hover:scale-110">
+-                        <span class="font-extrabold text-2xl tracking-tight text-white italic">Setu<span class="text-amber-500">Geo</span></span>
++                    <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center group">
++                        <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-12 w-auto transform transition-transform group-hover:scale-110">
+                     </a>
+                     
+                     <div class="hidden md:ml-12 md:flex md:space-x-8">
+@@ -127,9 +126,8 @@
+         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                 <div class="col-span-1 md:col-span-2">
+-                    <a href="{{ route('home') }}" class="flex items-center gap-3 mb-5 group">
+-                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-8 w-auto">
+-                        <span class="font-extrabold text-2xl tracking-tight text-white italic">Setu<span class="text-amber-500">Geo</span></span>
++                    <a href="{{ route('home') }}" class="flex items-center mb-5 group">
++                        <img src="{{ asset('assets/img/logo.svg') }}" alt="SetuGeo Logo" class="h-10 w-auto">
+                     </a>
+                     <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6 font-medium">
+                         Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally through SetuGeo.
+
+commit 16fd9bf225385a7997f1e95a326d47f65c177269
+Author: Arpit Vijay <arpitvijay0910@gmail.com>
+Date:   Tue Mar 31 23:37:49 2026 +0530
+
+    Changed: GeoData to SetuGeo.
+
+diff --git a/resources/views/layouts/public.blade.php b/resources/views/layouts/public.blade.php
+index 0f498a6..c73fa2b 100644
+--- a/resources/views/layouts/public.blade.php
++++ b/resources/views/layouts/public.blade.php
+@@ -3,7 +3,7 @@
+ <head>
+     <meta charset="utf-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+-    <title>@yield('title', 'GeoData API')</title>
++    <title>@yield('title', 'SetuGeo API')</title>
+     <!-- Preconnect to external CDNs for faster asset loading -->
+     <link rel="preconnect" href="https://cdn.tailwindcss.com">
+     <link rel="preconnect" href="https://cdn.jsdelivr.net">
+@@ -38,11 +38,9 @@
+         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             <div class="flex justify-between h-20">
+                 <div class="flex items-center">
+-                    <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center gap-2 group">
+-                        <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-lg flex items-center justify-center font-bold text-xl shadow-md border border-amber-400 group-hover:shadow-lg transition-all">
+-                            <i class="fas fa-globe-americas"></i>
+-                        </div>
+-                        <span class="font-extrabold text-2xl tracking-tight text-white">Geo<span class="text-amber-500">Data</span></span>
++                    <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center gap-3 group">
++                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-10 w-auto transform transition-transform group-hover:scale-110">
++                        <span class="font-extrabold text-2xl tracking-tight text-white italic">Setu<span class="text-amber-500">Geo</span></span>
+                     </a>
+                     
+                     <div class="hidden md:ml-12 md:flex md:space-x-8">
+@@ -129,14 +127,12 @@
+         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                 <div class="col-span-1 md:col-span-2">
+-                    <a href="{{ route('home') }}" class="flex items-center gap-2 mb-5">
+-                        <div class="w-8 h-8 bg-amber-600 text-white rounded-md flex items-center justify-center font-bold text-sm">
+-                            <i class="fas fa-globe-americas"></i>
+-                        </div>
+-                        <span class="font-extrabold text-2xl tracking-tight text-white">Geo<span class="text-amber-500">Data</span></span>
++                    <a href="{{ route('home') }}" class="flex items-center gap-3 mb-5 group">
++                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-8 w-auto">
++                        <span class="font-extrabold text-2xl tracking-tight text-white italic">Setu<span class="text-amber-500">Geo</span></span>
+                     </a>
+                     <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6 font-medium">
+-                        Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally.
++                        Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally through SetuGeo.
+                     </p>
+                     <div class="flex space-x-5">
+                         <a href="#" class="text-gray-500 hover:text-amber-500 transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+@@ -167,7 +163,7 @@
+             </div>
+             
+             <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+-                <p class="text-sm font-medium text-gray-500">&copy; {{ date('Y') }} GeoData API Providers. All rights reserved.</p>
++                <p class="text-sm font-medium text-gray-500">&copy; {{ date('Y') }} SetuGeo API Providers. All rights reserved.</p>
+                 <div class="mt-4 md:mt-0 flex items-center space-x-2 text-sm font-medium text-gray-500">
+                     Made with <i class="fas fa-heart text-red-500 mx-1"></i> for global developers
+                 </div>
+
+commit 042353e239090823edd63f0e2120ef449ae7cf0b
+Author: Arpit Vijay <arpitvijay0910@gmail.com>
+Date:   Mon Mar 30 00:27:48 2026 +0530
+
+    Added: FAQ MOdule.
+    Updated: BUttons and other UI elements.
+
+diff --git a/resources/views/layouts/public.blade.php b/resources/views/layouts/public.blade.php
+index 2afb75e..0f498a6 100644
+--- a/resources/views/layouts/public.blade.php
++++ b/resources/views/layouts/public.blade.php
+@@ -150,6 +150,7 @@
+                     <ul class="space-y-4">
+                         <li><a href="{{ route('pricing') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Pricing</a></li>
+                         <li><a href="{{ route('docs') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Documentation</a></li>
++                        <li><a href="{{ route('faq') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                         <li><a href="{{ route('status') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">API Status</a></li>
+                     </ul>
+                 </div>

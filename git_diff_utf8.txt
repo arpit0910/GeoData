@@ -1,0 +1,13 @@
+﻿diff --git a/resources/views/website/home.blade.php b/resources/views/website/home.blade.php
+index ec151d8..1c45b95 100644
+--- a/resources/views/website/home.blade.php
++++ b/resources/views/website/home.blade.php
+@@ -140,7 +140,7 @@
+                 <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Uptime SLA</p>
+             </div>
+             <div class="text-center">
+-                <p class="text-5xl font-black text-white mb-2">14<span class="text-amber-500">B+</span></p>
++                <p class="text-5xl font-black text-white mb-2">1<span class="text-amber-500">M+</span></p>
+                 <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">API Requests</p>
+             </div>
+             <div class="text-center">

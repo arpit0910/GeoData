@@ -44,6 +44,14 @@ Route::prefix('v1')->group(function() {
         Route::get('/pincodes', [SetuGeoController::class, 'pincodes']);
         Route::get('/pincodes/search', [SetuGeoController::class, 'pincodeSearch']);
         Route::get('/currency/exchange', [SetuGeoController::class, 'currencyExchange']);
+        
+        // Bank APIs
+        Route::get('/banks', [SetuGeoController::class, 'banks']);
+        Route::get('/banks/{bank}/branches', [SetuGeoController::class, 'bankBranches']);
+        Route::get('/branch/{ifsc}', [SetuGeoController::class, 'branchInfo']);
+        Route::get('/cities/{city}/banks', [SetuGeoController::class, 'banksInCity']);
+        Route::get('/states/{state}/banks', [SetuGeoController::class, 'banksInState']);
+        
         Route::get('/user/usage', [SetuGeoController::class, 'usage']);
 
         // Analytical Geospatial Utilities

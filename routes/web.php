@@ -105,6 +105,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('cities/import', [CityController::class, 'import'])->name('cities.import');
     Route::resource('cities', CityController::class);
 
+    Route::resource('banks', BankController::class);
+    Route::resource('bank-branches', BankBranchController::class);
+
     Route::post('pincodes/upload-chunk', [PincodeController::class, 'uploadChunk'])->name('pincodes.uploadChunk');
     Route::get('pincodes/states/{country}', [PincodeController::class, 'statesByCountry'])->name('pincodes.states-by-country');
     Route::get('pincodes/cities/{state}', [PincodeController::class, 'citiesByState'])->name('pincodes.cities-by-state');
