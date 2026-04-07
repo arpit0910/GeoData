@@ -11,8 +11,8 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">Modify user details and account settings.</p>
             </div>
             <div class="flex items-center space-x-4">
-                <div class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {{ $user->status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-500' : 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-500' }}">
-                    {{ $user->status }}
+                <div class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {{ $user->status == 1 ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-500' : 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-500' }}">
+                    {{ $user->status == 1 ? 'Active' : 'Inactive' }}
                 </div>
                 <a href="{{ route('user.list') }}" class="text-sm font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back
@@ -105,8 +105,8 @@
                     <div class="space-y-2">
                         <label class="text-sm font-semibold text-gray-700">Status</label>
                         <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all appearance-none bg-white">
-                            <option value="active" {{ $user->status == 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ $user->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                            <option value="1" {{ $user->status == 1 ? 'selected' : '' }}>Active</option>
+                            <option value="0" {{ $user->status == 0 ? 'selected' : '' }}>Inactive</option>
                         </select>
                     </div>
                 </div>

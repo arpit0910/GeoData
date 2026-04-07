@@ -27,7 +27,7 @@ class ValidateGkToken
         // Fast query using indexed column
         $user = User::where('active_access_token', $token)
             ->where('token_expires_at', '>', now())
-            ->where('status', 'active')
+            ->where('status', 1)
             ->first();
 
         if (! $user) {

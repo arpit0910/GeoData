@@ -71,7 +71,7 @@ $(document).ready(function() {
                 name: 'status',
                 className: 'text-center',
                 render: function(data, type, row) {
-                    const isActive = data === 'active';
+                    const isActive = data == 1;
                     return `
                         <div class="flex justify-center">
                             <button type="button" class="status-toggle group relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 ${isActive ? 'bg-amber-600' : 'bg-gray-200'}" data-id="${row.id}">

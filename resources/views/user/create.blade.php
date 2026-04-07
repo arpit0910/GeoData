@@ -99,8 +99,8 @@
                     <div class="space-y-2">
                         <label class="text-sm font-semibold text-gray-700">Status</label>
                         <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all appearance-none bg-white">
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
                         </select>
                     </div>
                 </div>

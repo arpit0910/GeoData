@@ -50,7 +50,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'profile.complete.check'])->name('dashboard');
+})->middleware(['auth', 'profile.complete.check', 'subscribed'])->name('dashboard');
 
 Route::middleware(['auth', 'admin'])->group(function () {
 

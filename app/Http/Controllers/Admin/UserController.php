@@ -72,7 +72,7 @@ class UserController extends Controller
             'company_name' => 'nullable|string',
             'company_website' => 'nullable|url',
             'gst_number' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:1,0',
         ]);
 
         $user = new User();
@@ -127,7 +127,7 @@ class UserController extends Controller
             'company_name' => 'nullable|string',
             'company_website' => 'nullable|url',
             'gst_number' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:1,0',
         ]);
 
         if (empty($validated['password'])) {
@@ -166,7 +166,7 @@ class UserController extends Controller
 
     public function toggleStatus(Request $request, User $user)
     {
-        $user->status = $user->status === 'active' ? 'inactive' : 'active';
+        $user->status = $user->status ? 0 : 1;
         $user->save();
 
         return sendResponse(['status' => $user->status], 'Status updated successfully');

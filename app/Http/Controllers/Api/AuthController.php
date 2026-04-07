@@ -24,8 +24,8 @@ class AuthController extends Controller
             return sendResponse(null, 'Invalid API credentials', 401);
         }
 
-        if ($user->status !== 'active') {
-            return sendResponse(null, 'Account is inactive', 403);
+        if ($user->status === 0) {
+            return sendResponse(null, 'Account is inactive. Please contact support.', 403);
         }
 
         // Optional: clear out preceding outdated tokens for this specific device flow

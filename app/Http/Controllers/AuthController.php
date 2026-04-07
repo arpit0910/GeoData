@@ -30,6 +30,12 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            if (Auth::user()->status === 0 && !Auth::user()->is_admin) {
+                Auth::logout();
+                throw ValidationException::withMessages([
+                    'email' => 'Your account is inactive. Please contact support.',
+                ]);
+            }
             $request->session()->regenerate();
 
             return redirect()->intended('dashboard');
@@ -71,7 +77,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'status' => 1,
+            'status' => null,
             'available_credits' => 0,
         ]);
 
