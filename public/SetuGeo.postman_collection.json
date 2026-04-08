@@ -1,228 +1,643 @@
 {
-	"info": {
-		"_postman_id": "c661300e-1800-4b74-9da3-c08a53831dd1",
-		"name": "SetuGeo Premium API - Full Suite",
-		"description": "The definitive Postman collection for SetuGeo. Includes recursive geographic drills, advanced banking analytics, geospatial clustering, and financial conversion tools. Designed for immediate production-ready testing.",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "0. Authentication Service",
-			"description": "Essential endpoints to manage access. You must generate a Bearer Token here before calling any other resource.",
-			"item": [
-				{
-					"name": "Get Bearer Token",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"client_key\": \"YOUR_KEY_HERE\",\n    \"client_secret\": \"YOUR_SECRET_HERE\"\n}",
-							"options": { "raw": { "language": "json" } }
-						},
-						"url": { "raw": "{{baseUrl}}/auth/token" },
-						"description": "Returns a high-security access token valid for 24 hours. Rate limited to 10 requests per minute per client."
-					},
-					"response": [
-						{
-							"name": "Success Response",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": { "mode": "raw", "raw": "{\n    \"client_key\": \"...\",\n    \"client_secret\": \"...\"\n}" },
-								"url": { "raw": "{{baseUrl}}/auth/token" }
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [],
-							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"access_token\": \"3|V6q...\",\n        \"token_type\": \"Bearer\",\n        \"expires_in\": 86400\n    }\n}"
-						}
-					]
-				}
-			]
-		},
-		{
-			"name": "1. Geographic Mastery",
-			"description": "Hierarchical lookups and detailed descriptions of world regions, countries, states, and cities.",
-			"item": [
-				{
-					"name": "Countries - Global Search",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/countries?name=India&iso2=IN",
-							"query": [
-								{ "key": "name", "value": "India", "description": "Search by full or partial name" },
-								{ "key": "iso2", "value": "IN", "description": "Filter by 2-character ISO code" }
-							]
-						},
-						"description": "Retrieve list of countries with core data (Currency, Capital, Population)."
-					},
-					"response": [
-						{
-							"name": "Single Item Example",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"id\": 101,\n            \"name\": \"India\",\n            \"iso2\": \"IN\",\n            \"iso3\": \"IND\",\n            \"currency\": \"INR\",\n            \"capital\": \"New Delhi\",\n            \"population\": \"1400000000\"\n        }\n    ]\n}"
-						}
-					]
-				},
-				{
-					"name": "Drill - States within Country",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": { "raw": "{{baseUrl}}/countries/101/states" },
-						"description": "Fetch all first-level administrative divisions (States/Provinces) of a country."
-					},
-					"response": []
-				},
-				{
-					"name": "Drill - Cities within State",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": { "raw": "{{baseUrl}}/states/51/cities" }
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "2. Banking & Finance",
-			"description": "Deep-search banking infrastructure, IFSC validation, and financial coverage analysis.",
-			"item": [
-				{
-					"name": "Global Branch Search",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/branch/search?q=HDFC Mumbai&limit=5",
-							"query": [
-								{ "key": "q", "value": "HDFC Mumbai", "description": "Combined search query: Bank + City or IFSC fragment" },
-								{ "key": "limit", "value": "5", "description": "Number of results to return" }
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Multiple Results Example",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"ifsc\": \"HDFC0000060\",\n            \"bank\": \"HDFC BANK\",\n            \"branch\": \"FORT\",\n            \"city\": \"MUMBAI\",\n            \"state\": \"MAHARASHTRA\"\n        }\n    ]\n}"
-						}
-					]
-				},
-				{
-					"name": "Coverage Analysis",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": { "raw": "{{baseUrl}}/banks/1/coverage" },
-						"description": "Get a statistical breakdown of a bank's presence across different states."
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "3. Geospatial Intelligence",
-			"description": "Advanced coordinate-based operations including distance, radius, and reverse geocoding.",
-			"item": [
-				{
-					"name": "Reverse Geocide",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/geospatial/geocode?lat=18.921&lng=72.834",
-							"query": [
-								{ "key": "lat", "value": "18.921" },
-								{ "key": "lng", "value": "72.834" }
-							]
-						},
-						"description": "Converts Lat/Lng coordinates into the nearest high-fidelity city/state data."
-					},
-					"response": [
-						{
-							"name": "Geocode Result",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"formatted_address\": \"Mumbai, Maharashtra, India\",\n        \"city\": \"Mumbai\",\n        \"distance_km\": 0.45\n    }\n}"
-						}
-					]
-				},
-				{
-					"name": "Radius Search (Nearby Cities)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/geospatial/nearby?lat=19.0&lng=72.8&radius=100&type=city",
-							"query": [
-								{ "key": "lat", "value": "19.0" },
-								{ "key": "lng", "value": "72.8" },
-								{ "key": "radius", "value": "100", "description": "Radius in kilometers" },
-								{ "key": "type", "value": "city", "description": "Object type: city or pincode" }
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "4. Intelligent Utilities",
-			"description": "Cross-domain conversion and validation tools.",
-			"item": [
-				{
-					"name": "Currency - Powerful Converter",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/currency/convert?from=USD&to=INR&amount=100",
-							"query": [
-								{ "key": "from", "value": "USD" },
-								{ "key": "to", "value": "INR" },
-								{ "key": "amount", "value": "100" }
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Conversion Example",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"from\": \"USD\",\n        \"to\": \"INR\",\n        \"amount\": 100,\n        \"result\": \"8345.50\",\n        \"rate\": 83.455\n    }\n}"
-						}
-					]
-				},
-				{
-					"name": "Address - Intelligent Autocomplete",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/address/autocomplete?q=Mum",
-							"query": [
-								{ "key": "q", "value": "Mum", "description": "Search string (minimum 2 chars)" }
-							]
-						}
-					}
-				}
-			]
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [ { "key": "token", "value": "{{bearerToken}}", "type": "string" } ]
-	},
-	"variable": [
-		{ "key": "baseUrl", "value": "http://127.0.0.1:8000/api/v1", "type": "string" },
-		{ "key": "bearerToken", "value": "YOUR_JWT_HERE", "type": "string" }
-	]
+    "info": {
+        "_postman_id": "c661300e-1800-4b74-9da3-c08a53831dd1",
+        "name": "SetuGeo Premium API - Full Suite",
+        "description": "The definitive Postman collection for SetuGeo. Includes recursive geographic drills, advanced banking analytics, geospatial clustering, and financial conversion tools. Designed for immediate production-ready testing.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "0. Authentication & Account",
+            "item": [
+                {
+                    "name": "Get Bearer Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"client_key\": \"YOUR_KEY_HERE\",\n    \"client_secret\": \"YOUR_SECRET_HERE\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/token"
+                        }
+                    }
+                },
+                {
+                    "name": "User Usage Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/user/usage"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "1. Geographic Mastery",
+            "item": [
+                {
+                    "name": "Regions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/regions"
+                        }
+                    }
+                },
+                {
+                    "name": "Sub-Regions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/sub-regions"
+                        }
+                    }
+                },
+                {
+                    "name": "Timezones",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/timezones"
+                        }
+                    }
+                },
+                {
+                    "name": "Countries",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries?name=India",
+                            "query": [
+                                {
+                                    "key": "name",
+                                    "value": "India"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "States",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/states?country_id=101",
+                            "query": [
+                                {
+                                    "key": "country_id",
+                                    "value": "101"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Cities",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/cities?state_id=51",
+                            "query": [
+                                {
+                                    "key": "state_id",
+                                    "value": "51"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Pincodes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/pincodes?city_id=1024",
+                            "query": [
+                                {
+                                    "key": "city_id",
+                                    "value": "1024"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Pincode Search",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/pincodes/search?pincode=400001",
+                            "query": [
+                                {
+                                    "key": "pincode",
+                                    "value": "400001"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "2. Hierarchical Drill-Downs",
+            "item": [
+                {
+                    "name": "Country Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/101"
+                        }
+                    }
+                },
+                {
+                    "name": "States of a Country",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/101/states"
+                        }
+                    }
+                },
+                {
+                    "name": "Cities of a Country",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/101/cities"
+                        }
+                    }
+                },
+                {
+                    "name": "Timezones of a Country",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/101/timezones"
+                        }
+                    }
+                },
+                {
+                    "name": "Banks of a Country",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/101/banks"
+                        }
+                    }
+                },
+                {
+                    "name": "Neighbors of a Country",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/101/neighbors"
+                        }
+                    }
+                },
+                {
+                    "name": "Compare Countries",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/compare?c1_id=101&c2_id=233",
+                            "query": [
+                                {
+                                    "key": "c1_id",
+                                    "value": "101"
+                                },
+                                {
+                                    "key": "c2_id",
+                                    "value": "233"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "State Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/states/51"
+                        }
+                    }
+                },
+                {
+                    "name": "Cities of a State",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/states/51/cities"
+                        }
+                    }
+                },
+                {
+                    "name": "City Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/cities/1024"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "3. Banking & Finance",
+            "item": [
+                {
+                    "name": "Banks List",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/banks"
+                        }
+                    }
+                },
+                {
+                    "name": "Bank Branches",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/banks/1/branches"
+                        }
+                    }
+                },
+                {
+                    "name": "Bank Coverage Analytics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/banks/1/coverage"
+                        }
+                    }
+                },
+                {
+                    "name": "Branch Fuzzy Search",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/branch/search?search_query=HDFC Mumbai",
+                            "query": [
+                                {
+                                    "key": "search_query",
+                                    "value": "HDFC Mumbai"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Branch Single Info",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/branch/HDFC0000060"
+                        }
+                    }
+                },
+                {
+                    "name": "Banks in City",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/cities/1024/banks"
+                        }
+                    }
+                },
+                {
+                    "name": "Banks in State",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/states/51/banks"
+                        }
+                    }
+                },
+                {
+                    "name": "Banks by Pincode",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/pincodes/400001/banks"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "4. Geospatial Intelligence",
+            "item": [
+                {
+                    "name": "Data Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/geospatial/statistics"
+                        }
+                    }
+                },
+                {
+                    "name": "Distance Calculator",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/geospatial/distance?lat1=19.0&lng1=72.8&lat2=28.6&lng2=77.2&unit=km",
+                            "query": [
+                                {
+                                    "key": "lat1",
+                                    "value": "19.0"
+                                },
+                                {
+                                    "key": "lng1",
+                                    "value": "72.8"
+                                },
+                                {
+                                    "key": "lat2",
+                                    "value": "28.6"
+                                },
+                                {
+                                    "key": "lng2",
+                                    "value": "77.2"
+                                },
+                                {
+                                    "key": "unit",
+                                    "value": "km"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Radius Search (Nearby)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/geospatial/nearby?lat=19.0&lng=72.8&radius=100&type=city",
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "19.0"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "72.8"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "100"
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "city"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Reverse Geocode",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/geospatial/geocode?lat=18.921&lng=72.834",
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "18.921"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "72.834"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Boundary Map",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/geospatial/boundary?min_lat=18.9&max_lat=19.1&min_lng=72.8&max_lng=73.0&type=city",
+                            "query": [
+                                {
+                                    "key": "min_lat",
+                                    "value": "18.9"
+                                },
+                                {
+                                    "key": "max_lat",
+                                    "value": "19.1"
+                                },
+                                {
+                                    "key": "min_lng",
+                                    "value": "72.8"
+                                },
+                                {
+                                    "key": "max_lng",
+                                    "value": "73.0"
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "city"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Grid Cluster",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/geospatial/cluster?lat=19.0&lng=72.8&radius=100&grid_size=0.5",
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "19.0"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "72.8"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "100"
+                                },
+                                {
+                                    "key": "grid_size",
+                                    "value": "0.5"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "5. Intelligent Utilities",
+            "item": [
+                {
+                    "name": "Currency Exchange Rates",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/currency/exchange?currency=EUR",
+                            "query": [
+                                {
+                                    "key": "currency",
+                                    "value": "EUR"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Currency Converter",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/currency/convert?from=USD&to=INR&amount=100",
+                            "query": [
+                                {
+                                    "key": "from",
+                                    "value": "USD"
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "INR"
+                                },
+                                {
+                                    "key": "amount",
+                                    "value": "100"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Timezone Converter",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/timezones/convert?from=UTC&to=Asia/Kolkata",
+                            "query": [
+                                {
+                                    "key": "from",
+                                    "value": "UTC"
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "Asia/Kolkata"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Address Autocomplete",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/address/autocomplete?search_query=Mum",
+                            "query": [
+                                {
+                                    "key": "search_query",
+                                    "value": "Mum"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Address Validate",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/address/validate?pincode=400001&city_id=1024",
+                            "query": [
+                                {
+                                    "key": "pincode",
+                                    "value": "400001"
+                                },
+                                {
+                                    "key": "city_id",
+                                    "value": "1024"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{bearerToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://127.0.0.1:8000/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "bearerToken",
+            "value": "YOUR_JWT_HERE",
+            "type": "string"
+        }
+    ]
 }

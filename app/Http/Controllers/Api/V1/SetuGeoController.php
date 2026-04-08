@@ -755,9 +755,9 @@ class SetuGeoController extends Controller
      */
     public function branchSearch(Request $request)
     {
-        $q = $request->query('q', $request->query('query'));
+        $q = $request->query('search_query', $request->query('q', $request->query('query')));
         if (!$q || strlen($q) < 2) {
-            return response()->json(['success' => false, 'message' => 'Please provide a search query of at least 2 characters (e.g. ?q=andheri).'], 400);
+            return response()->json(['success' => false, 'message' => 'Please provide a search query of at least 2 characters (e.g. ?search_query=andheri).'], 400);
         }
 
         $query = BankBranch::with(['bank', 'city', 'state'])
@@ -968,11 +968,11 @@ class SetuGeoController extends Controller
      */
     public function countriesCompare(Request $request)
     {
-        $c1Id = $request->query('c1', $request->query('country1'));
-        $c2Id = $request->query('c2', $request->query('country2'));
+        $c1Id = $request->query('c1_id', $request->query('c1', $request->query('country1')));
+        $c2Id = $request->query('c2_id', $request->query('c2', $request->query('country2')));
 
         if (!$c1Id || !$c2Id) {
-            return response()->json(['success' => false, 'message' => 'Please provide two country IDs to compare (e.g. ?c1=101&c2=233).'], 400);
+            return response()->json(['success' => false, 'message' => 'Please provide two country IDs to compare (e.g. ?c1_id=101&c2_id=233).'], 400);
         }
 
         $c1 = Country::find($c1Id);
@@ -1066,7 +1066,7 @@ class SetuGeoController extends Controller
      */
     public function addressAutocomplete(Request $request)
     {
-        $q = $request->query('q', $request->query('query', ''));
+        $q = $request->query('search_query', $request->query('q', $request->query('query', '')));
         if (strlen($q) < 3) {
             return response()->json(['success' => true, 'data' => []]);
         }
