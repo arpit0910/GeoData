@@ -163,6 +163,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/sync', [AdminCurrencyConversionController::class, 'sync'])->name('sync');
     });
 
+    // Server Logs
+    Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->name('admin.logs');
+
 });
 
 Route::middleware(['auth'])->group(function () {
