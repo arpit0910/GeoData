@@ -48,7 +48,7 @@
                 <input type="text" name="postal_code" id="postal_code"
                     value="{{ old('postal_code', $pincode->postal_code) }}" required
                     placeholder="e.g. 400001"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
             {{-- Country --}}
@@ -58,7 +58,7 @@
                 </label>
                 <div class="relative">
                     <select name="country_id" id="country_id" required
-                        class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all appearance-none cursor-pointer">
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer">
                         <option value="">— Select Country —</option>
                         @foreach($countries as $country)
                             <option value="{{ $country->id }}" {{ old('country_id', $pincode->country_id) == $country->id ? 'selected' : '' }}>
@@ -75,7 +75,7 @@
                 <label for="state_id" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">State</label>
                 <div class="relative">
                     <select name="state_id" id="state_id"
-                        class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all appearance-none cursor-pointer"
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer"
                         @if($states->isEmpty()) disabled @endif>
                         <option value="">{{ $states->isEmpty() ? '— Select Country First —' : '— Select State —' }}</option>
                         @foreach($states as $state)
@@ -96,7 +96,7 @@
                 <label for="city_id" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">City</label>
                 <div class="relative">
                     <select name="city_id" id="city_id"
-                        class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all appearance-none cursor-pointer"
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer"
                         @if($cities->isEmpty()) disabled @endif>
                         <option value="">{{ $cities->isEmpty() ? '— Select State First —' : '— Select City —' }}</option>
                         @foreach($cities as $city)
@@ -117,7 +117,7 @@
                 <label for="area" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Area / Locality</label>
                 <input type="text" name="area" id="area"
                     value="{{ old('area', $pincode->area) }}" placeholder="e.g. Mansarovar, Andheri West"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
             {{-- Short State --}}
@@ -125,7 +125,7 @@
                 <label for="short_state" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Short State</label>
                 <input type="text" name="short_state" id="short_state"
                     value="{{ old('short_state', $pincode->short_state) }}" placeholder="e.g. MH"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
         </div>
@@ -145,28 +145,28 @@
                 <label for="county" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">County</label>
                 <input type="text" name="county" id="county"
                     value="{{ old('county', $pincode->county) }}" placeholder="County name"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
             <div>
                 <label for="short_county" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Short County</label>
                 <input type="text" name="short_county" id="short_county"
                     value="{{ old('short_county', $pincode->short_county) }}" placeholder="e.g. CNT"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
             <div>
                 <label for="community" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Community</label>
                 <input type="text" name="community" id="community"
                     value="{{ old('community', $pincode->community) }}" placeholder="Community name"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
             <div>
                 <label for="short_community" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Short Community</label>
                 <input type="text" name="short_community" id="short_community"
                     value="{{ old('short_community', $pincode->short_community) }}" placeholder="e.g. COM"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
         </div>
@@ -186,21 +186,21 @@
                 <label for="latitude" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Latitude</label>
                 <input type="text" name="latitude" id="latitude"
                     value="{{ old('latitude', $pincode->latitude) }}" placeholder="e.g. 19.0760"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
             <div>
                 <label for="longitude" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Longitude</label>
                 <input type="text" name="longitude" id="longitude"
                     value="{{ old('longitude', $pincode->longitude) }}" placeholder="e.g. 72.8777"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
             <div>
                 <label for="accuracy" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Accuracy</label>
                 <input type="text" name="accuracy" id="accuracy"
                     value="{{ old('accuracy', $pincode->accuracy) }}" placeholder="e.g. 4"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all">
+                    class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
             </div>
 
         </div>

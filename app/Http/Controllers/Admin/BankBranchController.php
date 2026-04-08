@@ -56,8 +56,17 @@ class BankBranchController extends Controller
     public function create()
     {
         $banks = Bank::orderBy('name')->get();
-        $states = State::orderBy('name')->get();
-        return view('admin.bank-branches.create', compact('banks', 'states'));
+        // Only get states of India
+        $states = State::whereHas('Country', function($query) {
+            $query->where('name', 'India');
+        })->orderBy('name')->get();
+        
+        $cities = collect();
+        if (old('state_id')) {
+            $cities = City::where('state_id', old('state_id'))->orderBy('name')->get();
+        }
+        
+        return view('admin.bank-branches.create', compact('banks', 'states', 'cities'));
     }
 
     public function store(Request $request)
@@ -66,10 +75,16 @@ class BankBranchController extends Controller
             'bank_id' => 'required|exists:banks,id',
             'ifsc' => 'required|string|unique:bank_branches,ifsc',
             'branch' => 'required|string',
+            'micr' => 'nullable|string',
             'city_id' => 'required|exists:cities,id',
             'state_id' => 'required|exists:states,id',
             'address' => 'nullable|string',
             'contact' => 'nullable|string',
+            'swift' => 'nullable|string',
+            'imps' => 'nullable|boolean',
+            'rtgs' => 'nullable|boolean',
+            'neft' => 'nullable|boolean',
+            'upi' => 'nullable|boolean',
         ]);
 
         BankBranch::create($request->all());
@@ -80,8 +95,17 @@ class BankBranchController extends Controller
     public function edit(BankBranch $bankBranch)
     {
         $banks = Bank::orderBy('name')->get();
-        $states = State::orderBy('name')->get();
-        $cities = City::where('state_id', $bankBranch->state_id)->orderBy('name')->get();
+        // Only get states of India
+        $states = State::whereHas('Country', function($query) {
+            $query->where('name', 'India');
+        })->orderBy('name')->get();
+        
+        // Ensure cities are linked strictly to the branch state
+        $cities = collect();
+        if ($bankBranch->state_id) {
+            $cities = City::where('state_id', $bankBranch->state_id)->orderBy('name')->get();
+        }
+        
         return view('admin.bank-branches.edit', compact('bankBranch', 'banks', 'states', 'cities'));
     }
 
@@ -91,10 +115,16 @@ class BankBranchController extends Controller
             'bank_id' => 'required|exists:banks,id',
             'ifsc' => 'required|string|unique:bank_branches,ifsc,' . $bankBranch->id,
             'branch' => 'required|string',
+            'micr' => 'nullable|string',
             'city_id' => 'required|exists:cities,id',
             'state_id' => 'required|exists:states,id',
             'address' => 'nullable|string',
             'contact' => 'nullable|string',
+            'swift' => 'nullable|string',
+            'imps' => 'nullable|boolean',
+            'rtgs' => 'nullable|boolean',
+            'neft' => 'nullable|boolean',
+            'upi' => 'nullable|boolean',
         ]);
 
         $bankBranch->update($request->all());

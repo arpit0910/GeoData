@@ -3,49 +3,53 @@
 @section('header', 'Add Sub-Category')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Add Ticket Sub-Category</h2>
-        <a href="{{ route('admin.ticket-sub-categories.index') }}" class="text-sm font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors flex items-center">
-            <i class="fas fa-arrow-left mr-2"></i> Back
+<div class="max-w-3xl mx-auto">
+    <div class="mb-8">
+        <a href="{{ route('admin.ticket-sub-categories.index') }}" class="text-sm font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Sub-Categories
         </a>
+        <h1 class="text-3xl font-black text-gray-900 dark:text-white mt-4 tracking-tight">Add New Sub-Category</h1>
+        <p class="mt-2 text-sm font-medium text-gray-500 dark:text-gray-400 leading-relaxed">Create a new ticket sub-category under a parent category.</p>
     </div>
 
-    <div class="bg-white dark:bg-richdark-surface rounded-xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
-        <form action="{{ route('admin.ticket-sub-categories.store') }}" method="POST" class="p-8">
+    <div class="bg-white dark:bg-richdark-surface rounded-3xl shadow-xl border border-gray-200 dark:border-white/5 overflow-hidden transition-all duration-300">
+        <form action="{{ route('admin.ticket-sub-categories.store') }}" method="POST" class="p-8 md:p-12">
             @csrf
-            <div class="space-y-6">
-                <div>
-                    <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Parent Category</label>
-                    <select name="category_id" id="category_id" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-amber-500 outline-none transition-all" required>
-                        <option value="">Select Category</option>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                <div class="space-y-2">
+                    <label for="category_id" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Parent Category</label>
+                    <select name="category_id" id="category_id" required
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer">
+                        <option value="">— Select Category —</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                         @endforeach
                     </select>
-                    @error('category_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    @error('category_id') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sub-Category Name</label>
-                    <input type="text" name="name" id="name" value="{{ old('name') }}" placeholder="e.g. API Issues" 
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-amber-500 outline-none transition-all" required>
-                    @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                <div class="space-y-2">
+                    <label for="name" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Sub-Category Name</label>
+                    <input type="text" name="name" id="name" value="{{ old('name') }}" placeholder="e.g. API Issues" required
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
+                    @error('name') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                    <select name="status" id="status" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-amber-500 outline-none transition-all">
+                <div class="space-y-2">
+                    <label for="status" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Status</label>
+                    <select name="status" id="status"
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer">
                         <option value="1" {{ old('status', '1') == '1' ? 'selected' : '' }}>Active</option>
                         <option value="0" {{ old('status', '1') == '0' ? 'selected' : '' }}>Inactive</option>
                     </select>
                 </div>
+            </div>
 
-                <div class="pt-10">
-                    <button type="submit" class="w-full flex justify-center py-3.5 px-8 border border-transparent rounded-2xl shadow-xl text-lg font-black text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
-                        Publish Sub-Category <i class="fas fa-paper-plane ml-3 text-sm"></i>
-                    </button>
-                </div>
+            <div class="mt-12 flex flex-col md:flex-row justify-end items-center gap-4">
+                <a href="{{ route('admin.ticket-sub-categories.index') }}" class="w-full md:w-auto px-8 py-3.5 text-sm font-black text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Cancel</a>
+                <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center px-10 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    Save Sub-Category <i class="fas fa-save ml-3 text-sm opacity-80"></i>
+                </button>
             </div>
         </form>
     </div>

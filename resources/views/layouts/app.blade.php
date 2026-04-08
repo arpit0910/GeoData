@@ -133,6 +133,11 @@
                         <i class="fas fa-user-circle mr-3 w-5"></i>
                         Profile
                     </a>
+
+                    <a href="{{ route('docs') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('docs') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-book mr-3 w-5"></i>
+                        Docs
+                    </a>
                     
                     @if(auth()->check() && !auth()->user()->is_admin)
                     <a href="{{ route('api-keys.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('api-keys.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
@@ -195,6 +200,14 @@
                     <a href="{{ route('pincodes.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('pincodes.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-location-dot mr-3 w-5"></i>
                         Pincodes
+                    </a>
+                    <a href="{{ route('banks.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('banks.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-university mr-3 w-5"></i>
+                        Banks
+                    </a>
+                    <a href="{{ route('bank-branches.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('bank-branches.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-code-branch mr-3 w-5"></i>
+                        Bank Branches
                     </a>
                     <a href="{{ route('plans.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('plans.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-credit-card mr-3 w-5"></i>
@@ -340,7 +353,7 @@
                         document.documentElement.classList.add('dark');
                         localStorage.setItem('color-theme', 'dark');
                     }
-                }
+                } 
             });
         });
     </script>

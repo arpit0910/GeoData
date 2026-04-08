@@ -1,129 +1,112 @@
 @extends('layouts.app')
 
-@section('header')
-    Add New Plan
-@endsection
+@section('header', 'Add New Plan')
 
 @section('content')
-<div class="mb-6 flex justify-between items-center">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-900">Add New Plan</h1>
+<div class="max-w-5xl mx-auto">
+    <div class="mb-8">
+        <a href="{{ route('plans.index') }}" class="text-sm font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Plans
+        </a>
+        <h1 class="text-3xl font-black text-gray-900 dark:text-white mt-4 tracking-tight">Add New Plan</h1>
+        <p class="mt-2 text-sm font-medium text-gray-500 dark:text-gray-400 leading-relaxed">Create a new subscription plan for the platform.</p>
     </div>
-    <a href="{{ route('plans.index') }}" class="text-sm font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors flex items-center">
-        <i class="fas fa-arrow-left mr-2"></i> Back
-    </a>
-</div>
 
-<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="p-8 border-b border-gray-200">
-        <form action="{{ route('plans.store') }}" method="POST">
+    <div class="bg-white dark:bg-richdark-surface rounded-3xl shadow-xl border border-gray-200 dark:border-white/5 overflow-hidden transition-all duration-300">
+        <form action="{{ route('plans.store') }}" method="POST" class="p-8 md:p-12">
             @csrf
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Name -->
-                <div class="col-span-1 lg:col-span-1">
-                    <label for="name" class="block text-sm font-medium text-gray-700">Plan Name <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" id="name" value="{{ old('name') }}" required class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. Basic, Pro">
-                    @error('name')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                <div class="space-y-2">
+                    <label for="name" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Plan Name</label>
+                    <input type="text" name="name" id="name" value="{{ old('name') }}" required placeholder="e.g. Basic, Pro, Enterprise"
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
+                    @error('name') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Gateway Product ID -->
-                <div class="col-span-1 lg:col-span-1">
-                    <label for="gateway_product_id" class="block text-sm font-medium text-gray-700">Gateway Product ID</label>
-                    <input type="text" name="gateway_product_id" id="gateway_product_id" value="{{ old('gateway_product_id') }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="e.g. prod_xyz123">
-                    @error('gateway_product_id')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                <div class="space-y-2">
+                    <label for="gateway_product_id" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Gateway Product ID</label>
+                    <input type="text" name="gateway_product_id" id="gateway_product_id" value="{{ old('gateway_product_id') }}" placeholder="e.g. prod_xyz123"
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
+                    @error('gateway_product_id') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Billing Cycle -->
-                <div class="col-span-1">
-                    <label for="billing_cycle" class="block text-sm font-medium text-gray-700">Billing Cycle <span class="text-red-500">*</span></label>
-                    <select name="billing_cycle" id="billing_cycle" required class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
+                <div class="space-y-2">
+                    <label for="billing_cycle" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Billing Cycle</label>
+                    <select name="billing_cycle" id="billing_cycle" required class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer">
                         <option value="monthly" {{ old('billing_cycle') == 'monthly' ? 'selected' : '' }}>Monthly</option>
                         <option value="yearly" {{ old('billing_cycle') == 'yearly' ? 'selected' : '' }}>Yearly</option>
                         <option value="lifetime" {{ old('billing_cycle') == 'lifetime' ? 'selected' : '' }}>Lifetime</option>
                     </select>
-                    @error('billing_cycle')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                    @error('billing_cycle') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Price & Limits Section -->
-                <div class="col-span-1 lg:col-span-3">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 border-b pb-2 mb-2 mt-4">Pricing & Limits</h3>
+                {{-- Pricing Section --}}
+                <div class="md:col-span-2 pt-2"><p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5 pb-3">Pricing & Limits</p></div>
+
+                <div class="space-y-2">
+                    <label for="amount" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Price Amount</label>
+                    <input type="number" step="0.01" name="amount" id="amount" value="{{ old('amount', '0.00') }}" required placeholder="e.g. 499.00"
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
+                    @error('amount') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Amount -->
-                <div>
-                    <label for="amount" class="block text-sm font-medium text-gray-700">Price Amount <span class="text-red-500">*</span></label>
-                    <input type="number" step="0.01" name="amount" id="amount" value="{{ old('amount', '0.00') }}" required class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="0.00">
-                    @error('amount')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                <div class="space-y-2">
+                    <label for="discount_amount" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Discount Amount</label>
+                    <input type="number" step="0.01" name="discount_amount" id="discount_amount" value="{{ old('discount_amount', '0.00') }}" placeholder="e.g. 100.00"
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
+                    @error('discount_amount') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Discount Amount -->
-                <div>
-                    <label for="discount_amount" class="block text-sm font-medium text-gray-700">Discount Amount</label>
-                    <input type="number" step="0.01" name="discount_amount" id="discount_amount" value="{{ old('discount_amount', '0.00') }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="0.00">
-                    @error('discount_amount')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                <div class="space-y-2">
+                    <label for="api_hits_limit" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">API Hits Limit</label>
+                    <input type="number" name="api_hits_limit" id="api_hits_limit" value="{{ old('api_hits_limit') }}" placeholder="e.g. 50000 (blank = unlimited)"
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
+                    <p class="mt-1 text-[10px] text-gray-400 dark:text-gray-500">Leave empty for unlimited API hits.</p>
+                    @error('api_hits_limit') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- API Hits Limit -->
-                <div>
-                    <label for="api_hits_limit" class="block text-sm font-medium text-gray-700">API Hits Limit</label>
-                    <input type="number" name="api_hits_limit" id="api_hits_limit" value="{{ old('api_hits_limit') }}" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="Leave blank for unlimited">
-                    <p class="mt-1 text-xs text-gray-500">e.g. 50000. Leave empty for unlimited hits.</p>
-                    @error('api_hits_limit')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                {{-- Features Section --}}
+                <div class="md:col-span-2 pt-2"><p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5 pb-3">Features & Conditions</p></div>
+
+                <div class="md:col-span-2 space-y-2">
+                    <label for="terms" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Terms & Description</label>
+                    <textarea name="terms" id="terms" rows="3" placeholder="Brief description or terms of the plan..."
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">{{ old('terms') }}</textarea>
+                    @error('terms') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Terms & Benefits Section -->
-                <div class="col-span-1 lg:col-span-3">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 border-b pb-2 mb-2 mt-4">Features & Conditions</h3>
-                </div>
-
-                <!-- Terms -->
-                <div class="col-span-1 lg:col-span-3">
-                    <label for="terms" class="block text-sm font-medium text-gray-700">Terms & Description</label>
-                    <textarea name="terms" id="terms" rows="3" class="mt-1 focus:ring-amber-500 focus:border-amber-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="Brief description or terms of the plan...">{{ old('terms') }}</textarea>
-                    @error('terms')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
-                </div>
-
-                <!-- Benefits (Alpine.js) -->
-                <div class="col-span-1 lg:col-span-3" x-data="{ benefits: {{ json_encode(old('benefits', [''])) }} }">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Plan Benefits</label>
+                {{-- Benefits (Alpine.js) --}}
+                <div class="md:col-span-2" x-data="{ benefits: {{ json_encode(old('benefits', [''])) }} }">
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-3">Plan Benefits</label>
                     <template x-for="(benefit, index) in benefits" :key="index">
-                        <div class="flex items-center mb-2">
-                            <input type="text" x-model="benefits[index]" :name="'benefits[' + index + ']'" class="flex-1 focus:ring-amber-500 focus:border-amber-500 block shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="Enter a benefit (e.g. Priority Support)">
-                            <button type="button" @click="benefits.splice(index, 1)" class="ml-2 px-3 py-2 text-red-500 hover:text-red-700 focus:outline-none" x-show="benefits.length > 1">
+                        <div class="flex items-center mb-3">
+                            <input type="text" x-model="benefits[index]" :name="'benefits[' + index + ']'" placeholder="e.g. Priority Support, Unlimited Exports"
+                                class="flex-1 appearance-none px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
+                            <button type="button" @click="benefits.splice(index, 1)" class="ml-3 px-3 py-2 text-red-500 hover:text-red-700 focus:outline-none transition-colors" x-show="benefits.length > 1">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </template>
-                    <button type="button" @click="benefits.push('')" class="mt-2 text-sm text-amber-600 hover:text-amber-800 font-medium focus:outline-none">
+                    <button type="button" @click="benefits.push('')" class="mt-2 text-sm text-amber-600 hover:text-amber-800 font-bold focus:outline-none transition-colors">
                         <i class="fas fa-plus mr-1"></i> Add Another Benefit
                     </button>
-                    @error('benefits')<span class="text-red-500 text-xs block mt-1">{{ $message }}</span>@enderror
+                    @error('benefits') <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                 </div>
             </div>
 
-            <!-- Sync Options & Submit -->
-            <div class="mt-10 flex flex-col md:flex-row justify-between items-center bg-gray-50/50 dark:bg-white/5 p-6 rounded-2xl border border-gray-100 dark:border-white/5 space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-4">
-                    <label for="sync_now" class="block text-sm text-gray-700 dark:text-gray-300 font-bold whitespace-nowrap">
-                        Sync with Razorpay:
-                    </label>
-                    <div class="relative">
-                        <select name="sync_now" id="sync_now" class="block w-full bg-white dark:bg-[#111827] border border-gray-300 dark:border-white/10 rounded-xl shadow-sm py-2 px-6 pr-10 focus:outline-none focus:ring-amber-500 focus:border-amber-500 text-sm font-semibold transition-all appearance-none cursor-pointer">
-                            <option value="1" selected>Yes, Sync Immediately</option>
-                            <option value="0">No, Sync Later</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
+            {{-- Sync & Submit --}}
+            <div class="mt-12 flex flex-col md:flex-row justify-between items-center gap-6 bg-gray-50/50 dark:bg-white/5 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
+                <div class="flex items-center gap-4">
+                    <label for="sync_now" class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 whitespace-nowrap">Sync with Razorpay</label>
+                    <select name="sync_now" id="sync_now" class="appearance-none px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer">
+                        <option value="1" selected>Yes, Sync Immediately</option>
+                        <option value="0">No, Sync Later</option>
+                    </select>
                 </div>
-                <div class="flex items-center space-x-6">
-                    <a href="{{ route('plans.index') }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors">
-                        Cancel
-                    </a>
-                    <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
-                        Save Plan <i class="fas fa-save ml-3 text-sm"></i>
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('plans.index') }}" class="px-8 py-3.5 text-sm font-black text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Cancel</a>
+                    <button type="submit" class="inline-flex items-center justify-center px-10 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        Save Plan <i class="fas fa-save ml-3 text-sm opacity-80"></i>
                     </button>
                 </div>
             </div>

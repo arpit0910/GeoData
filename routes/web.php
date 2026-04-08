@@ -24,6 +24,8 @@ use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\CurrencyConversionController as AdminCurrencyConversionController;
+use App\Http\Controllers\Admin\BankController;
+use App\Http\Controllers\Admin\BankBranchController;
 use App\Http\Controllers\CurrencyConversionController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');

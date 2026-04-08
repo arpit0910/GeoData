@@ -62,7 +62,7 @@
                                 <form action="${deleteUrl}" method="POST" class="inline delete-form-actual">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" class="p-2 bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded-lg hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-200 dark:hover:bg-white/10 transition-all delete-trigger" data-message="Are you sure you want to delete category '${row.name}'?"><i class="fas fa-trash"></i></button>
+                                    <button type="button" class="p-2 bg-white dark:bg-white/10 text-gray-500 dark:text-gray-400 rounded-lg hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-200 dark:hover:bg-white/10 transition-all delete-trigger" data-message="Are you sure you want to delete category '${row.name}'?"><i class="fas fa-trash"></i></button>
                                 </form>
                             </div>
                         `;

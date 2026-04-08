@@ -113,7 +113,7 @@
                 </div>
             @else
                 <div class="flex flex-col items-center justify-center py-6 text-center">
-                    <div class="h-16 w-16 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300 dark:text-gray-600 mb-4">
+                    <div class="h-16 w-16 rounded-full bg-white dark:bg-white/10 flex items-center justify-center text-gray-300 dark:text-gray-600 mb-4">
                         <i class="fas fa-crown text-3xl"></i>
                     </div>
                     <h4 class="text-lg font-bold text-gray-900 dark:text-white">No Active Subscription</h4>

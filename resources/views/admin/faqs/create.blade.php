@@ -19,7 +19,7 @@
                 <div>
                     <label for="question" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Question</label>
                     <input type="text" name="question" id="question" value="{{ old('question') }}" placeholder="What is the most common concern?" 
-                        class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" required>
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors" required>
                     @error('question')
                         <p class="mt-2 text-xs font-bold text-red-500">{{ $message }}</p>
                     @enderror
@@ -29,7 +29,7 @@
                 <div>
                     <label for="answer" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Answer</label>
                     <textarea name="answer" id="answer" rows="6" placeholder="Provide a detailed and helpful response..." 
-                        class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" required>{{ old('answer') }}</textarea>
+                        class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors" required>{{ old('answer') }}</textarea>
                     @error('answer')
                         <p class="mt-2 text-xs font-bold text-red-500">{{ $message }}</p>
                     @enderror
@@ -39,7 +39,7 @@
                     <!-- Visibility -->
                     <div>
                         <label for="visibility" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Visibility Category</label>
-                        <select name="visibility" id="visibility" class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                        <select name="visibility" id="visibility" class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer">
                             <option value="dashboard" {{ old('visibility') === 'dashboard' ? 'selected' : '' }}>Visible on Dashboard</option>
                             <option value="website" {{ old('visibility') === 'website' ? 'selected' : '' }}>Visible on Website</option>
                         </select>
@@ -52,7 +52,7 @@
                     <div>
                         <label for="order" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">Display Order</label>
                         <input type="number" name="order" id="order" value="{{ old('order', 0) }}" 
-                            class="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600">
+                            class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                         @error('order')
                             <p class="mt-2 text-xs font-bold text-red-500">{{ $message }}</p>
                         @enderror

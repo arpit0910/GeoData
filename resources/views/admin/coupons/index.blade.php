@@ -16,7 +16,7 @@
 <div class="bg-white dark:bg-richdark-surface rounded-2xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
     <div class="p-0 overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-white/5">
-            <thead class="bg-gray-50 dark:bg-white/5">
+            <thead class="bg-white dark:bg-white/10">
                 <tr>
                     <th class="px-6 py-4 text-left text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Code</th>
                     <th class="px-6 py-4 text-left text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Discount</th>
@@ -76,7 +76,7 @@
                             <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" class="inline delete-form" data-confirm-message="Are you sure you want to delete coupon '{{ $coupon->code }}'?">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="p-2 bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded-lg hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-200 dark:hover:bg-white/10 transition-all">
+                                <button type="submit" class="p-2 bg-white dark:bg-white/10 text-gray-500 dark:text-gray-400 rounded-lg hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-200 dark:hover:bg-white/10 transition-all">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
@@ -92,7 +92,7 @@
         </table>
     </div>
     @if($coupons->hasPages())
-    <div class="px-6 py-4 bg-gray-50 dark:bg-white/5 border-t border-gray-200 dark:border-white/5">
+    <div class="px-6 py-4 bg-white dark:bg-white/10 border-t border-gray-200 dark:border-white/5">
         {{ $coupons->links() }}
     </div>
     @endif
