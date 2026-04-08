@@ -81,9 +81,12 @@
                 {{-- City --}}
                 <div class="space-y-2">
                     <label for="city_id" class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">City</label>
-                    <select name="city_id" id="city_id" required disabled
+                    <select name="city_id" id="city_id" required {{ $cities->count() > 0 ? '' : 'disabled' }}
                         class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors cursor-pointer disabled:opacity-50">
-                        <option value="">Loading...</option>
+                        <option value="">{{ $cities->count() > 0 ? '— Select City —' : '— Select State First —' }}</option>
+                        @foreach($cities as $city)
+                            <option value="{{ $city->id }}" {{ old('city_id', $bankBranch->city_id) == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
+                        @endforeach
                     </select>
                     @error('city_id')
                         <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p>

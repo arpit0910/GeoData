@@ -44,25 +44,58 @@
                             <li><a href="#regions" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Regions</a></li>
                             <li><a href="#sub-regions" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Sub-Regions</a></li>
                             <li><a href="#timezones" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Timezones</a></li>
-                            <li><a href="#countries" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Countries</a></li>
-                            <li><a href="#states" class="text-sm hover:text-amber-500 transition-colors tracking-wide">States</a></li>
-                            <li><a href="#cities" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Cities</a></li>
-                            <li><a href="#pincodes" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincodes</a></li>
+                            <li><a href="#countries" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Countries List</a></li>
+                            <li><a href="#country-detail" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Country Detail</a></li>
+                            <li><a href="#country-cities" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Cities of Country</a></li>
+                            <li><a href="#country-timezones" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Timezones of Country</a></li>
+                            <li><a href="#states" class="text-sm hover:text-amber-500 transition-colors tracking-wide">States List</a></li>
+                            <li><a href="#state-detail" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">State Detail</a></li>
+                            <li><a href="#state-cities" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Cities of State</a></li>
+                            <li><a href="#cities" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Cities List</a></li>
+                            <li><a href="#city-detail" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">City Detail</a></li>
+                            <li><a href="#pincodes" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincodes List</a></li>
                             <li><a href="#pincode-search" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Pincode Search</a></li>
-                            <li><a href="#currency-exchange" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Currency Exchange</a></li>
-                            <li><a href="#banks" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-bold text-amber-400">Banks List</a></li>
-                            <li><a href="#bank-branches" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Bank Branches</a></li>
-                            <li><a href="#branch-info" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Branch Details</a></li>
-                            <li><a href="#banks-in-city" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Banks in City</a></li>
-                            <li><a href="#banks-in-state" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Banks in State</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Geospatial Analysis</h3>
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Financial & Analytics</h3>
                         <ul class="mt-4 space-y-4">
-                            <li><a href="#geo-stats" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Statistics</a></li>
-                            <li><a href="#geo-distance" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Distance Calculator</a></li>
+                            <li><a href="#currency-exchange" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Exchange Rates</a></li>
+                            <li><a href="#currency-convert" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Currency Convert</a></li>
+                            <li><a href="#timezone-convert" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Timezone Convert</a></li>
+                            <li><a href="#countries-compare" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Country Compare</a></li>
+                            <li><a href="#countries-neighbors" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Country Neighbors</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Banking API</h3>
+                        <ul class="mt-4 space-y-4">
+                            <li><a href="#banks" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Banks Overview</a></li>
+                            <li><a href="#bank-branches" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Branches List</a></li>
+                            <li><a href="#branch-search" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Full branch Search</a></li>
+                            <li><a href="#branch-info" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Branch Detail (IFSC)</a></li>
+                            <li><a href="#bank-coverage" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Bank Coverage Map</a></li>
+                            <li><a href="#banks-in-city" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Banks in City</a></li>
+                            <li><a href="#banks-in-state" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Banks in State</a></li>
+                            <li><a href="#banks-in-pincode" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Banks in Pincode</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Geospatial Intelligence</h3>
+                        <ul class="mt-4 space-y-4">
+                            <li><a href="#geo-stats" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Global Stats</a></li>
+                            <li><a href="#geo-distance" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Haversine Distance</a></li>
                             <li><a href="#geo-nearby" class="text-sm hover:text-amber-500 transition-colors tracking-wide">Radius Search</a></li>
+                            <li><a href="#geo-geocode" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-bold text-blue-400 tracking-wider">Reverse Geocode</a></li>
+                            <li><a href="#geo-boundary" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Bounding Box</a></li>
+                            <li><a href="#geo-cluster" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Grid Clustering</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Smart Addressing</h3>
+                        <ul class="mt-4 space-y-4">
+                            <li><a href="#addr-autocomplete" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Autocomplete</a></li>
+                            <li><a href="#addr-validate" class="text-sm hover:text-amber-500 transition-colors tracking-wide font-medium text-blue-400">Address Validate</a></li>
                         </ul>
                     </div>
                     <div>
@@ -116,7 +149,41 @@
                             </div>
                         </div>
                     </div>
-                    <p class="mb-8 text-lg">To access geographic intelligence endpoints, ensure your requests include the <code class="text-white">Authorization</code> header exactly as shown below.</p>
+                </section>
+
+                <!-- Postman Collection -->
+                <section id="postman-guide">
+                    <h2 class="text-3xl font-bold text-white mb-6">Postman Collection</h2>
+                    <div class="bg-blue-900/10 border border-blue-900/30 rounded-2xl p-8 mb-12">
+                        <div class="flex items-start gap-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-blue-600/20 text-blue-400 rounded-xl flex items-center justify-center border border-blue-600/30">
+                                <i class="fas fa-file-download text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white mb-2">Zero-Config Testing</h3>
+                                <p class="text-gray-400 leading-relaxed mb-6">We provide a high-fidelity Postman collection that includes every endpoint, folder-based organization, and <strong>pre-recorded response examples</strong> for visual reference.</p>
+                                <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <li class="flex items-center text-sm text-gray-500 font-medium">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i> Pre-defined Variables (baseUrl, bearerToken)
+                                    </li>
+                                    <li class="flex items-center text-sm text-gray-500 font-medium">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i> Folder-level Authentication Header
+                                    </li>
+                                    <li class="flex items-center text-sm text-gray-500 font-medium">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i> Real-world Mock JSON Responses
+                                    </li>
+                                    <li class="flex items-center text-sm text-gray-500 font-medium">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i> Dynamic Parameter Descriptions
+                                    </li>
+                                </ul>
+                                <a href="{{ asset('SetuGeo.postman_collection.json') }}" download class="inline-flex items-center px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-download mr-3"></i> Download Collection
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+    <p class="mb-8 text-lg">To access geographic intelligence endpoints, ensure your requests include the <code class="text-white">Authorization</code> header exactly as shown below.</p>
                     
                     <!-- Auth Flow Explanation -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
@@ -389,110 +456,134 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="countries" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-lock mr-2"></i> Token Required
-                                </span>
+                                <div class="flex gap-2">
+                                    <span class="bg-gray-800 text-gray-400 text-[10px] uppercase font-bold px-3 py-1 rounded-full border border-gray-700">Searchable</span>
+                                    <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30">Token Req</span>
+                                </div>
                             </div>
                             <div class="p-6">
                                 <p class="mb-4">Retrieve a filterable list of countries with their ISO codes, currency, and capital.</p>
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Request Headers</h4>
-                                <div class="bg-gray-900 rounded p-3 text-sm font-mono mb-6 text-gray-400 border border-gray-800">
-                                    Authorization: Bearer <span class="text-amber-500">{your_token}</span>
-                                </div>
-
                                 <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
                                 <table class="w-full text-sm mb-8">
-                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800 text-[11px]">
                                         <tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-800">
-                                        <tr><td class="py-3 font-mono text-amber-500">name</td><td class="py-3 text-gray-400">Filter by country name (Partial match)</td></tr>
-                                        <tr><td class="py-3 font-mono text-amber-500">iso2</td><td class="py-3 text-gray-400">Filter by 2-letter ISO code (e.g. "IN")</td></tr>
-                                        <tr><td class="py-3 font-mono text-amber-500">iso3</td><td class="py-3 text-gray-400">Filter by 3-letter ISO code (e.g. "IND")</td></tr>
-                                        <tr><td class="py-3 font-mono text-amber-500">region_id</td><td class="py-3 text-gray-400">Filter by Region ID</td></tr>
+                                    <tbody class="divide-y divide-gray-800 text-gray-400">
+                                        <tr><td class="py-3 font-mono text-amber-500">name</td><td class="py-3">Filter by country name (Partial match)</td></tr>
+                                        <tr><td class="py-3 font-mono text-amber-500">iso2</td><td class="py-3">Filter by 2-letter ISO code (e.g. "IN")</td></tr>
+                                        <tr><td class="py-3 font-mono text-amber-500">region_id</td><td class="py-3">Filter by Region ID</td></tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
 
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                        <!-- Country Detail (NEW) -->
+                        <div id="country-detail" class="bg-gray-900/40 rounded-xl border border-blue-900/20 shadow-[0_0_20px_rgba(30,58,138,0.1)] overflow-hidden">
+                            <div class="px-6 py-4 bg-blue-900/20 border-b border-blue-900/30 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{id}</h3>
+                                <span class="bg-blue-600/20 text-blue-400 text-[10px] uppercase font-bold px-3 py-1 rounded-full border border-blue-600/30">Single Resource</span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-300">Get complete data for a specific country including coordinates, phonecodes, and economic indicators.</p>
                                 <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
 <pre class="text-gray-400">{
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
-  <span class="text-blue-400">"data"</span>: [
-    {
-      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"India"</span>,
-      <span class="text-blue-400">"iso2"</span>: <span class="text-green-400">"IN"</span>,
-      <span class="text-blue-400">"capital"</span>: <span class="text-green-400">"New Delhi"</span>,
-      <span class="text-blue-400">"currency"</span>: <span class="text-green-400">"INR"</span>
-    }
-  ]
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"id"</span>: <span class="text-blue-400">101</span>,
+    <span class="text-blue-400">"name"</span>: <span class="text-green-400">"India"</span>,
+    <span class="text-blue-400">"iso2"</span>: <span class="text-green-400">"IN"</span>,
+    <span class="text-blue-400">"phonecode"</span>: <span class="text-green-400">"91"</span>,
+    <span class="text-blue-400">"latitude"</span>: <span class="text-green-400">"20.00000000"</span>,
+    <span class="text-blue-400">"longitude"</span>: <span class="text-green-400">"77.0000000"</span>,
+    <span class="text-blue-400">"population"</span>: <span class="text-green-400">"1400000000"</span>,
+    <span class="text-blue-400">"currency"</span>: <span class="text-green-400">"INR"</span>
+  }
 }</pre>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- States Drill Down -->
+                        <div id="states-drill" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{id}/states</h3>
+                                <span class="bg-gray-800 text-gray-400 text-[10px] uppercase font-bold px-3 py-1 rounded-full">Drill-Down</span>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-400">Get all states belonging to a specific country.</p>
+                            </div>
+                        </div>
+
+                        <!-- Cities Drill Down -->
+                        <div id="cities-drill" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{id}/cities</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-400">Get all cities belonging to a specific country (Global lookup).</p>
+                            </div>
+                        </div>
+
+                        <!-- Timezones Drill Down -->
+                        <div id="timezones-drill" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{id}/timezones</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-400">Get all timezones operating within a specific country.</p>
+                            </div>
+                        </div>
+
+                        <!-- Cities of Country Drill -->
+                        <div id="country-cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{id}/cities</h3>
+                            </div>
+                            <div class="p-6 text-gray-400">Direct city drill-down from country level.</div>
+                        </div>
+
+                        <!-- Cities of State Drill -->
+                        <div id="state-cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{id}/cities</h3>
+                            </div>
+                            <div class="p-6 text-gray-400">Detailed city list for specific state.</div>
                         </div>
 
                         <!-- States -->
                         <div id="states" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /states</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-lock mr-2"></i> Token Required
-                                </span>
                             </div>
                             <div class="p-6">
-                                <p class="mb-4">Retrieve states filtered by country. Perfect for dropdown menus.</p>
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Query Parameters</h4>
-                                <ul class="text-sm space-y-2 mb-4 text-gray-400">
-                                    <li><code class="text-amber-500">country_id</code>: <span class="italic text-gray-600">(Recommended)</span> Filter by Country ID.</li>
-                                    <li><code class="text-amber-500">country_name</code>: Filter by Country Name.</li>
-                                </ul>
+                                <p class="mb-4">Retrieve states filtered by country.</p>
+                            </div>
+                        </div>
 
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
-                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
-<pre class="text-gray-400">{
-  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
-  <span class="text-blue-400">"data"</span>: [
-    {
-      <span class="text-blue-400">"id"</span>: <span class="text-blue-400">51</span>,
-      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"Maharashtra"</span>,
-      <span class="text-blue-400">"iso2"</span>: <span class="text-green-400">"MH"</span>
-    }
-  ]
-}</pre>
-                                </div>
+                        <!-- State Detail (NEW) -->
+                        <div id="state-detail" class="bg-gray-900/40 rounded-xl border border-blue-900/20 shadow-md overflow-hidden">
+                            <div class="px-6 py-4 bg-blue-900/10 border-b border-blue-900/30 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{id}</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-400">Get specific state parameters including FIPS code, latitude, and longitude.</p>
                             </div>
                         </div>
 
                         <!-- Cities -->
                         <div id="cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /cities</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-lock mr-2"></i> Token Required
-                                </span>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /cities</h3>
                             </div>
-                            <div class="p-6">
-                                <p class="mb-4">Retrieve cities filtered by state or country.</p>
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Query Parameters</h4>
-                                <ul class="text-sm space-y-2 mb-4 text-gray-400">
-                                    <li><code class="text-amber-500">state_id</code>: Filter by State ID.</li>
-                                    <li><code class="text-amber-500">state_name</code>: Filter by State Name.</li>
-                                </ul>
+                            <div class="p-6"><p class="text-gray-400">Filterable list of all cities globally.</p></div>
+                        </div>
 
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
-                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
-<pre class="text-gray-400">{
-  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
-  <span class="text-blue-400">"data"</span>: [
-    {
-      <span class="text-blue-400">"id"</span>: <span class="text-blue-400">1024</span>,
-      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"Mumbai"</span>,
-      <span class="text-blue-400">"latitude"</span>: <span class="text-blue-400">19.0760</span>,
-      <span class="text-blue-400">"longitude"</span>: <span class="text-blue-400">72.8777</span>
-    }
-  ]
-}</pre>
-                                </div>
+                        <!-- City Detail (NEW) -->
+                        <div id="city-detail" class="bg-gray-900/40 rounded-xl border border-blue-900/20 shadow-md overflow-hidden">
+                            <div class="px-6 py-4 bg-blue-900/10 border-b border-blue-900/30 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /cities/{id}</h3>
                             </div>
+                            <div class="p-6 text-gray-400">Retrieve high-resolution coordinates and parent hierarchy for a city.</div>
                         </div>
 
                         <!-- Pincode Search -->
@@ -562,38 +653,57 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="currency-exchange" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /currency/exchange</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-lock mr-2"></i> Token Required
-                                </span>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30">Token Req</span>
                             </div>
                             <div class="p-6">
-                                <p class="mb-4">Get real-time currency exchange rates against USD and INR. We provide high-fidelity rates for 30+ major currencies, synchronized daily.</p>
-                                
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
-                                <table class="w-full text-sm mb-8">
-                                    <thead class="text-gray-500 text-left border-b border-gray-800">
-                                        <tr><th class="pb-2">Field</th><th class="pb-2">Type</th><th class="pb-2">Description</th></tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-800">
-                                        <tr><td class="py-3 font-mono text-amber-500">currency</td><td class="py-3 text-gray-500">string</td><td class="py-3 text-gray-400">The 3-letter currency code (e.g. <code class="text-amber-400">EUR</code>, <code class="text-amber-400">GBP</code>, <code class="text-amber-400">JPY</code>)</td></tr>
-                                    </tbody>
-                                </table>
+                                <p class="mb-4">Get real-time exchange rates against USD and INR.</p>
+                            </div>
+                        </div>
 
-                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
-                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
-<pre class="text-gray-400">{
+                        <!-- Currency Convert (NEW) -->
+                        <div id="currency-convert" class="bg-gray-900/40 border-l-4 border-l-blue-500 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /currency/convert</h3>
+                                <span class="bg-blue-600/20 text-blue-400 text-[10px] uppercase font-bold px-3 py-1 rounded-full border border-blue-600/30">Financial Tool</span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-300">Convert a specific amount between any two supported currencies.</p>
+                                <div class="bg-gray-900 p-2 font-mono text-[10px] text-amber-500 mb-4">/api/v1/currency/convert?from=USD&to=INR&amount=100</div>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Example Response</h4>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+<pre>{
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
   <span class="text-blue-400">"data"</span>: {
-    <span class="text-blue-400">"base_currency"</span>: <span class="text-green-400">"EUR"</span>,
-    <span class="text-blue-400">"exchange_rates"</span>: {
-      <span class="text-blue-400">"USD"</span>: <span class="text-blue-400">1.0842</span>,
-      <span class="text-blue-400">"INR"</span>: <span class="text-blue-400">91.350</span>
-    },
-    <span class="text-blue-400">"last_updated"</span>: <span class="text-green-400">"2026-04-05 20:30:00"</span>,
-    <span class="text-blue-400">"provider"</span>: <span class="text-green-400">"SetuGeo Financial Engine"</span>
+    <span class="text-blue-400">"from"</span>: <span class="text-green-400">"USD"</span>,
+    <span class="text-blue-400">"to"</span>: <span class="text-green-400">"INR"</span>,
+    <span class="text-blue-400">"original_amount"</span>: <span class="text-blue-400">100</span>,
+    <span class="text-blue-400">"converted_amount"</span>: <span class="text-blue-400">8345.50</span>,
+    <span class="text-blue-400">"rate"</span>: <span class="text-blue-400">83.455</span>
   }
 }</pre>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Timezone Convert (NEW) -->
+                        <div id="timezone-convert" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /timezones/convert</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-sm text-gray-400">Convert time between any two global IANA timezones.</p>
+                                <div class="mt-4 text-xs font-mono text-gray-600">Params: from, to, time(optional)</div>
+                            </div>
+                        </div>
+
+                        <!-- Country Compare (NEW) -->
+                        <div id="countries-compare" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/compare</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-sm text-gray-400">Analytic comparison of two countries (Economy, Tax, Pop, Area).</p>
+                                <div class="mt-4 text-xs font-mono text-gray-600">Params: c1, c2 (IDs)</div>
                             </div>
                         </div>
 
@@ -648,16 +758,49 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             </div>
                         </div>
 
+                        <!-- Full Branch Search (NEW) -->
+                        <div id="branch-search" class="bg-gray-900/40 rounded-xl border border-blue-500/20 overflow-hidden shadow-[0_0_15px_rgba(59,130,246,0.05)]">
+                            <div class="px-6 py-4 bg-blue-900/20 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/search</h3>
+                                <span class="bg-blue-600/20 text-blue-400 text-[10px] uppercase font-bold px-3 py-1 rounded-full border border-blue-600/30">Universal Search</span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-300">Powerful cross-bank search engine. Locate branches by combining bank names, city names, or partial address keywords.</p>
+                                <div class="bg-gray-900 p-2 font-mono text-[10px] text-amber-500 mb-2">/api/v1/branch/search?q=HDFC+Mumbai&limit=10</div>
+                            </div>
+                        </div>
+
                         <!-- Branch Info -->
                         <div id="branch-info" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/{ifsc}</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-lock mr-2"></i> Token Required
-                                </span>
                             </div>
                             <div class="p-6">
-                                <p class="mb-4">Fetch comprehensive details of a single branch using its unique IFSC code.</p>
+                                <p class="mb-4 text-gray-400">Detailed single branch data via IFSC.</p>
+                            </div>
+                        </div>
+
+                        <!-- Bank Coverage Map (NEW) -->
+                        <div id="bank-coverage" class="bg-purple-900/10 border-l-4 border-l-purple-500 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-purple-400 mr-2 uppercase">GET</span> /banks/{id}/coverage</h3>
+                                <span class="bg-purple-600/20 text-purple-400 text-[10px] uppercase font-bold px-3 py-1 rounded-full border border-purple-600/30">Banking Analytics</span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-300">Get a analytical summary of a bank's global presence. Returns count of branches grouped by state.</p>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+<pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"bank"</span>: <span class="text-green-400">"SBI"</span>,
+    <span class="text-blue-400">"total_branches"</span>: <span class="text-blue-400">22400</span>,
+    <span class="text-blue-400">"coverage"</span>: [
+      { <span class="text-blue-400">"state"</span>: <span class="text-green-400">"Maharashtra"</span>, <span class="text-blue-400">"branches"</span>: 1200 },
+      { <span class="text-blue-400">"state"</span>: <span class="text-green-400">"Delhi"</span>, <span class="text-blue-400">"branches"</span>: 850 }
+    ]
+  }
+}</pre>
+                                </div>
                             </div>
                         </div>
 
@@ -678,13 +821,16 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="banks-in-state" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{state_id}/banks</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-lock mr-2"></i> Token Required
-                                </span>
                             </div>
-                            <div class="p-6">
-                                <p class="mb-4">List all banks operating within a particular state.</p>
+                            <div class="p-6 text-gray-400">Banks coverage at state level.</div>
+                        </div>
+
+                        <!-- Banks in Pincode -->
+                        <div id="banks-in-pincode" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes/{pincode}/banks</h3>
                             </div>
+                            <div class="p-6 text-gray-400">Hyper-local banking availability.</div>
                         </div>
 
                         <!-- Usage API -->
@@ -849,16 +995,72 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="geo-nearby" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/nearby</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-lock mr-2"></i> Token Required
-                                </span>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30">RADIUS</span>
                             </div>
                             <div class="p-6">
-                                <p class="mb-6 text-gray-400">Search for Cities or Pincodes within a customized radius from any coordinate point.</p>
-                                <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-gray-500 border border-gray-800 mb-8">
-                                    /api/v1/geospatial/nearby?lat=19.076&lng=72.877&radius=50&type=pincode
+                                <p class="mb-4 text-gray-400">Search for Cities or Pincodes within a customized radius from any coordinate point.</p>
+                            </div>
+                        </div>
+
+                        <!-- Reverse Geocode (NEW) -->
+                        <div id="geo-geocode" class="bg-blue-900/10 border-l-4 border-l-blue-500 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/geocode</h3>
+                                <div class="flex gap-2">
+                                    <span class="bg-blue-600/20 text-blue-400 text-[10px] uppercase font-bold px-3 py-1 rounded-full border border-blue-600/30">Reverse Engine</span>
                                 </div>
                             </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-300">Identify the nearest city, state, and country for any latitude/longitude coordinate pair.</p>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+<pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"formatted_address"</span>: <span class="text-green-400">"Mumbai, Maharashtra, India"</span>,
+    <span class="text-blue-400">"city"</span>: { <span class="text-blue-400">"id"</span>: 1024, <span class="text-blue-400">"name"</span>: <span class="text-green-400">"Mumbai"</span> },
+    <span class="text-blue-400">"distance_km"</span>: <span class="text-blue-400">1.24</span>
+  }
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boundary Search (NEW) -->
+                        <div id="geo-boundary" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/boundary</h3>
+                            </div>
+                            <div class="p-6 text-sm text-gray-400">Retrieve all data points within a lat/lng bounding box. (Min/Max Lat/Lng params).</div>
+                        </div>
+
+                        <!-- Grid Clustering (NEW) -->
+                        <div id="geo-cluster" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/cluster</h3>
+                            </div>
+                            <div class="p-6 text-sm text-gray-400">Visual mapping support: Get dense location clusters summarized into grid points.</div>
+                        </div>
+
+                        <!-- Address Autocomplete (NEW) -->
+                        <div id="addr-autocomplete" class="bg-blue-600/5 rounded-xl border border-blue-500/20 overflow-hidden shadow-lg">
+                            <div class="px-6 py-4 bg-blue-900/20 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /address/autocomplete</h3>
+                                <span class="bg-blue-600/30 text-blue-300 text-[10px] uppercase font-bold px-3 py-1 rounded-full">UX Utilities</span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-300">Fast, partial-word search across Countries, States, and Cities for UI search boxes.</p>
+                                <div class="bg-gray-900 p-3 rounded font-mono text-[11px] text-gray-500 mb-4 divider-y divide-gray-800">
+                                    /api/v1/address/autocomplete?q=Mum
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Validation (NEW) -->
+                        <div id="addr-validate" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /address/validate</h3>
+                            </div>
+                            <div class="p-6 text-xs text-gray-400 font-mono">Verify if ?pincode=... matches ?city=... and ?state=...</div>
                         </div>
                     </div>
                 </section>

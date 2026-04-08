@@ -439,6 +439,50 @@ class SetuGeoController extends Controller
         ], 200);
     }
 
+
+    /**
+     * Retrieve all banks operating in a specific country.
+     */
+    public function countryBanks(Country $country, Request $request)
+    {
+        $bankIds = BankBranch::where('country_id', $country->id)->pluck('bank_id')->unique();
+        $banks = Bank::whereIn('id', $bankIds)->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $banks->items(),
+            'meta' => [
+                'country' => $country->name,
+                'current_page' => $banks->currentPage(),
+                'last_page' => $banks->lastPage(),
+                'total' => $banks->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve all banks having branches in a specific pincode area.
+     */
+    public function pincodeBanks($pincode, Request $request)
+    {
+        // We match by postal_code since pincode records might be multiple (areas)
+        $cityIds = Pincode::where('postal_code', $pincode)->pluck('city_id')->unique();
+        
+        $bankIds = BankBranch::whereIn('city_id', $cityIds)->pluck('bank_id')->unique();
+        $banks = Bank::whereIn('id', $bankIds)->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $banks->items(),
+            'meta' => [
+                'pincode' => $pincode,
+                'current_page' => $banks->currentPage(),
+                'last_page' => $banks->lastPage(),
+                'total' => $banks->total(),
+            ]
+        ], 200);
+    }
+
     /**
      * Retrieve all banks having branches in a particular city
      */
@@ -474,6 +518,569 @@ class SetuGeoController extends Controller
                 'last_page' => $banks->lastPage(),
                 'total' => $banks->total(),
             ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve full details of a single country including region, sub-region, and timezones.
+     */
+    public function countryDetail(Country $country)
+    {
+        $country->load(['Region', 'SubRegion', 'timezones']);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $country->id,
+                'name' => $country->name,
+                'iso2' => $country->iso2,
+                'iso3' => $country->iso3,
+                'numeric_code' => $country->numeric_code,
+                'phonecode' => $country->phonecode,
+                'capital' => $country->capital,
+                'currency' => $country->currency,
+                'currency_name' => $country->currency_name,
+                'currency_symbol' => $country->currency_symbol,
+                'tld' => $country->tld,
+                'native' => $country->native,
+                'nationality' => $country->nationality,
+                'latitude' => $country->latitude,
+                'longitude' => $country->longitude,
+                'emoji' => $country->emoji,
+                'population' => $country->population,
+                'gdp' => $country->gdp,
+                'area_sq_km' => $country->area_sq_km,
+                'income_level' => $country->income_level,
+                'driving_side' => $country->driving_side,
+                'measurement_system' => $country->measurement_system,
+                'tax_system' => $country->tax_system,
+                'standard_tax_rate' => $country->standard_tax_rate,
+                'is_oecd' => $country->is_oecd,
+                'is_eu' => $country->is_eu,
+                'dialing' => [
+                    'phonecode' => $country->phonecode,
+                    'international_prefix' => $country->international_prefix,
+                    'trunk_prefix' => $country->trunk_prefix,
+                    'max_mobile_digits' => $country->max_mobile_digits,
+                ],
+                'postal_code' => [
+                    'format' => $country->postal_code_format,
+                    'regex' => $country->postal_code_regex,
+                ],
+                'region' => $country->Region ? [
+                    'id' => $country->Region->id,
+                    'name' => $country->Region->name,
+                ] : null,
+                'sub_region' => $country->SubRegion ? [
+                    'id' => $country->SubRegion->id,
+                    'name' => $country->SubRegion->name,
+                ] : null,
+                'timezones' => $country->timezones->map(fn($tz) => [
+                    'zone_name' => $tz->zone_name,
+                    'gmt_offset_name' => $tz->gmt_offset_name,
+                    'abbreviation' => $tz->abbreviation,
+                    'tz_name' => $tz->tz_name,
+                ]),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve a single state with its country info.
+     */
+    public function stateDetail(State $state)
+    {
+        $state->load('Country');
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $state->id,
+                'name' => $state->name,
+                'state_code' => $state->state_code,
+                'iso2' => $state->iso2,
+                'type' => $state->type,
+                'latitude' => $state->latitude,
+                'longitude' => $state->longitude,
+                'country' => $state->Country ? [
+                    'id' => $state->Country->id,
+                    'name' => $state->Country->name,
+                    'iso2' => $state->Country->iso2,
+                ] : null,
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve a single city with state and country.
+     */
+    public function cityDetail(City $city)
+    {
+        $city->load(['State', 'Country', 'Timezone']);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $city->id,
+                'name' => $city->name,
+                'latitude' => $city->latitude,
+                'longitude' => $city->longitude,
+                'type' => $city->type,
+                'state' => $city->State ? [
+                    'id' => $city->State->id,
+                    'name' => $city->State->name,
+                    'state_code' => $city->State->state_code,
+                ] : null,
+                'country' => $city->Country ? [
+                    'id' => $city->Country->id,
+                    'name' => $city->Country->name,
+                    'iso2' => $city->Country->iso2,
+                ] : null,
+                'timezone' => $city->Timezone ? [
+                    'zone_name' => $city->Timezone->zone_name,
+                    'abbreviation' => $city->Timezone->abbreviation,
+                    'gmt_offset_name' => $city->Timezone->gmt_offset_name,
+                ] : null,
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve all states belonging to a country.
+     */
+    public function countryStates(Country $country, Request $request)
+    {
+        $query = State::where('country_id', $country->id)
+            ->select('id', 'name', 'state_code', 'iso2', 'type', 'latitude', 'longitude');
+
+        if ($request->has('name')) {
+            $query->where('name', 'LIKE', '%' . $request->query('name') . '%');
+        }
+
+        $states = $query->orderBy('name')->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $states->items(),
+            'meta' => [
+                'country' => $country->name,
+                'current_page' => $states->currentPage(),
+                'last_page' => $states->lastPage(),
+                'total' => $states->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve all cities belonging to a country.
+     */
+    public function countryCities(Country $country, Request $request)
+    {
+        $query = City::where('country_id', $country->id)
+            ->select('id', 'name', 'state_id', 'latitude', 'longitude', 'type');
+
+        if ($request->has('name')) {
+            $query->where('name', 'LIKE', '%' . $request->query('name') . '%');
+        }
+        if ($request->has('state_id')) {
+            $query->where('state_id', $request->query('state_id'));
+        }
+
+        $cities = $query->orderBy('name')->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $cities->items(),
+            'meta' => [
+                'country' => $country->name,
+                'current_page' => $cities->currentPage(),
+                'last_page' => $cities->lastPage(),
+                'total' => $cities->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve all timezones belonging to a country.
+     */
+    public function countryTimezones(Country $country)
+    {
+        $timezones = Timezone::where('country_id', $country->id)->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $timezones->map(fn($tz) => [
+                'id' => $tz->id,
+                'zone_name' => $tz->zone_name,
+                'gmt_offset' => $tz->gmt_offset,
+                'gmt_offset_name' => $tz->gmt_offset_name,
+                'abbreviation' => $tz->abbreviation,
+                'tz_name' => $tz->tz_name,
+            ]),
+            'meta' => [
+                'country' => $country->name,
+                'total' => $timezones->count(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Retrieve all cities in a state.
+     */
+    public function stateCities(State $state, Request $request)
+    {
+        $query = City::where('state_id', $state->id)
+            ->select('id', 'name', 'latitude', 'longitude', 'type');
+
+        if ($request->has('name')) {
+            $query->where('name', 'LIKE', '%' . $request->query('name') . '%');
+        }
+
+        $cities = $query->orderBy('name')->paginate($request->query('limit', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $cities->items(),
+            'meta' => [
+                'state' => $state->name,
+                'current_page' => $cities->currentPage(),
+                'last_page' => $cities->lastPage(),
+                'total' => $cities->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Search bank branches by name, address, or IFSC.
+     */
+    public function branchSearch(Request $request)
+    {
+        $q = $request->query('q', $request->query('query'));
+        if (!$q || strlen($q) < 2) {
+            return response()->json(['success' => false, 'message' => 'Please provide a search query of at least 2 characters (e.g. ?q=andheri).'], 400);
+        }
+
+        $query = BankBranch::with(['bank', 'city', 'state'])
+            ->where(function($qb) use ($q) {
+                $qb->where('branch', 'LIKE', "%{$q}%")
+                   ->orWhere('ifsc', 'LIKE', "%{$q}%")
+                   ->orWhere('address', 'LIKE', "%{$q}%")
+                   ->orWhere('micr', 'LIKE', "%{$q}%")
+                   ->orWhereHas('bank', function($bq) use ($q) {
+                       $bq->where('name', 'LIKE', "%{$q}%");
+                   });
+            });
+
+        // Optional filters
+        if ($request->has('state_id')) {
+            $query->where('state_id', $request->query('state_id'));
+        }
+        if ($request->has('city_id')) {
+            $query->where('city_id', $request->query('city_id'));
+        }
+        if ($request->has('bank_id')) {
+            $query->where('bank_id', $request->query('bank_id'));
+        }
+
+        $branches = $query->paginate($request->query('limit', 50));
+
+        return response()->json([
+            'success' => true,
+            'data' => $branches->items(),
+            'meta' => [
+                'query' => $q,
+                'current_page' => $branches->currentPage(),
+                'last_page' => $branches->lastPage(),
+                'total' => $branches->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Convert an amount from one currency to another using stored exchange rates.
+     * Usage: ?from=USD&to=INR&amount=100
+     */
+    public function currencyConvert(Request $request)
+    {
+        $from = strtoupper($request->query('from', ''));
+        $to = strtoupper($request->query('to', ''));
+        $amount = floatval($request->query('amount', 0));
+
+        if (!$from || !$to) {
+            return response()->json(['success' => false, 'message' => 'Please provide both "from" and "to" currency codes (e.g. ?from=USD&to=INR&amount=100).'], 400);
+        }
+        if ($amount <= 0) {
+            return response()->json(['success' => false, 'message' => 'Please provide a positive "amount" parameter.'], 400);
+        }
+
+        // Get rates for both currencies relative to USD
+        $fromRate = null;
+        $toRate = null;
+
+        if ($from === 'USD') {
+            $fromRate = 1;
+        } else {
+            $fromConversion = CurrencyConversion::where('currency', $from)->first();
+            if (!$fromConversion) {
+                return response()->json(['success' => false, 'message' => "Exchange rate not found for {$from}."], 404);
+            }
+            $fromRate = $fromConversion->usd_conversion_rate;
+        }
+
+        if ($to === 'USD') {
+            $toRate = 1;
+        } else {
+            $toConversion = CurrencyConversion::where('currency', $to)->first();
+            if (!$toConversion) {
+                return response()->json(['success' => false, 'message' => "Exchange rate not found for {$to}."], 404);
+            }
+            $toRate = $toConversion->usd_conversion_rate;
+        }
+
+        // Convert: from → USD → to
+        // fromRate = how many USD per 1 unit of "from"
+        // toRate = how many USD per 1 unit of "to"
+        // So: convertedAmount = amount * (fromRate / toRate)
+        $rate = $fromRate / $toRate;
+        $convertedAmount = round($amount * $rate, 4);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'from' => $from,
+                'to' => $to,
+                'amount' => $amount,
+                'converted_amount' => $convertedAmount,
+                'exchange_rate' => round($rate, 6),
+                'provider' => 'SetuGeo Financial Engine',
+            ]
+        ], 200);
+    }
+
+    /**
+     * Validate an Indian address by cross-checking pincode, state, and city.
+     * Usage: ?pincode=400001 or ?pincode=400001&state=Maharashtra&city=Mumbai
+     */
+    public function addressValidate(Request $request)
+    {
+        $pincodeVal = $request->query('pincode');
+        if (!$pincodeVal) {
+            return response()->json(['success' => false, 'message' => 'Please provide a "pincode" parameter (e.g. ?pincode=400001).'], 400);
+        }
+
+        $pincodes = Pincode::with(['state', 'city', 'country'])
+            ->where('postal_code', $pincodeVal)
+            ->get();
+
+        if ($pincodes->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'is_valid' => false,
+                    'pincode' => $pincodeVal,
+                    'message' => 'Pincode not found in our database.',
+                ]
+            ], 200);
+        }
+
+        $result = [
+            'is_valid' => true,
+            'pincode' => $pincodeVal,
+            'matches' => [],
+            'warnings' => [],
+        ];
+
+        foreach ($pincodes as $pin) {
+            $result['matches'][] = [
+                'state' => $pin->state ? $pin->state->name : null,
+                'city' => $pin->city ? $pin->city->name : null,
+                'country' => $pin->country ? $pin->country->name : null,
+                'latitude' => $pin->latitude,
+                'longitude' => $pin->longitude,
+            ];
+        }
+
+        // Cross-check if user provided state/city
+        $stateParam = $request->query('state');
+        $cityParam = $request->query('city');
+
+        if ($stateParam) {
+            $stateMatches = $pincodes->filter(fn($p) => $p->state && stripos($p->state->name, $stateParam) !== false);
+            if ($stateMatches->isEmpty()) {
+                $result['warnings'][] = "State '{$stateParam}' does not match pincode {$pincodeVal}. Expected: " . $pincodes->pluck('state.name')->unique()->filter()->implode(', ');
+                $result['is_valid'] = false;
+            }
+        }
+
+        if ($cityParam) {
+            $cityMatches = $pincodes->filter(fn($p) => $p->city && stripos($p->city->name, $cityParam) !== false);
+            if ($cityMatches->isEmpty()) {
+                $result['warnings'][] = "City '{$cityParam}' does not match pincode {$pincodeVal}. Expected: " . $pincodes->pluck('city.name')->unique()->filter()->implode(', ');
+                $result['is_valid'] = false;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+        ], 200);
+    }
+
+    /**
+     * Bank coverage: which states/cities a bank operates in.
+     */
+    public function bankCoverage(Bank $bank, Request $request)
+    {
+        $stateIds = BankBranch::where('bank_id', $bank->id)->pluck('state_id')->unique();
+        $cityIds = BankBranch::where('bank_id', $bank->id)->pluck('city_id')->unique();
+
+        $states = State::whereIn('id', $stateIds)->select('id', 'name', 'state_code')->orderBy('name')->get();
+        $totalBranches = BankBranch::where('bank_id', $bank->id)->count();
+
+        // Per-state branch counts
+        $stateBranches = BankBranch::where('bank_id', $bank->id)
+            ->selectRaw('state_id, COUNT(*) as branch_count')
+            ->groupBy('state_id')
+            ->pluck('branch_count', 'state_id');
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'bank' => [
+                    'id' => $bank->id,
+                    'name' => $bank->name,
+                ],
+                'total_branches' => $totalBranches,
+                'total_states' => $states->count(),
+                'total_cities' => $cityIds->count(),
+                'states' => $states->map(fn($s) => [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'state_code' => $s->state_code,
+                    'branches' => $stateBranches[$s->id] ?? 0,
+                ]),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Compare two countries based on demographic and economic data.
+     */
+    public function countriesCompare(Request $request)
+    {
+        $c1Id = $request->query('c1', $request->query('country1'));
+        $c2Id = $request->query('c2', $request->query('country2'));
+
+        if (!$c1Id || !$c2Id) {
+            return response()->json(['success' => false, 'message' => 'Please provide two country IDs to compare (e.g. ?c1=101&c2=233).'], 400);
+        }
+
+        $c1 = Country::find($c1Id);
+        $c2 = Country::find($c2Id);
+
+        if (!$c1 || !$c2) {
+            return response()->json(['success' => false, 'message' => 'One or both countries not found.'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'countries' => [$c1->name, $c2->name],
+                'comparison' => [
+                    'population' => ['val1' => $c1->population, 'val2' => $c2->population, 'diff' => floatval($c1->population) - floatval($c2->population)],
+                    'gdp' => ['val1' => $c1->gdp, 'val2' => $c2->gdp, 'diff' => floatval($c1->gdp) - floatval($c2->gdp)],
+                    'area_sq_km' => ['val1' => $c1->area_sq_km, 'val2' => $c2->area_sq_km, 'diff' => floatval($c1->area_sq_km) - floatval($c2->area_sq_km)],
+                    'standard_tax_rate' => ['val1' => $c1->standard_tax_rate, 'val2' => $c2->standard_tax_rate, 'diff' => floatval($c1->standard_tax_rate) - floatval($c2->standard_tax_rate)],
+                    'currencies' => ['val1' => $c1->currency, 'val2' => $c2->currency],
+                    'phonecodes' => ['val1' => $c1->phonecode, 'val2' => $c2->phonecode],
+                    'regions' => ['val1' => $c1->Region ? $c1->Region->name : 'N/A', 'val2' => $c2->Region ? $c2->Region->name : 'N/A'],
+                ]
+            ]
+        ], 200);
+    }
+
+    /**
+     * Find countries that are geographically nearest to the specified country.
+     */
+    public function countryNeighbors(Country $country, Request $request)
+    {
+        if (!$country->latitude || !$country->longitude) {
+            return response()->json(['success' => false, 'message' => 'Coordinates not available for this country.'], 400);
+        }
+
+        $lat = $country->latitude;
+        $lng = $country->longitude;
+        $limit = $request->query('limit', 5);
+
+        $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+
+        $neighbors = Country::where('id', '!=', $country->id)
+            ->select('id', 'name', 'iso2', 'emoji')
+            ->selectRaw("{$rawDistance} AS distance")
+            ->orderBy('distance')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $neighbors,
+        ], 200);
+    }
+
+    /**
+     * Convert time between two specific timezone identifiers.
+     */
+    public function timezoneConvert(Request $request)
+    {
+        $from = $request->query('from');
+        $to = $request->query('to');
+        $timeStr = $request->query('time', now()->toTimeString());
+
+        if (!$from || !$to) {
+            return response()->json(['success' => false, 'message' => 'Please provide "from" and "to" timezone names (e.g. ?from=Asia/Kolkata&to=America/New_York).'], 400);
+        }
+
+        $now = now();
+        $date = new \DateTime($timeStr, new \DateTimeZone($from));
+        $fromTime = $date->format('Y-m-d H:i:s');
+        $date->setTimezone(new \DateTimeZone($to));
+        $toTime = $date->format('Y-m-d H:i:s');
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'from' => [
+                    'zone' => $from,
+                    'time' => $fromTime,
+                ],
+                'to' => [
+                    'zone' => $to,
+                    'time' => $toTime,
+                ]
+            ]
+        ], 200);
+    }
+
+    /**
+     * Simple address autocomplete suggestions as user types.
+     */
+    public function addressAutocomplete(Request $request)
+    {
+        $q = $request->query('q', $request->query('query', ''));
+        if (strlen($q) < 3) {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+
+        $limit = $request->query('limit', 10);
+
+        // Search across cities, states, and countries
+        $cities = City::where('name', 'LIKE', "{$q}%")->limit(5)->get(['id', 'name'])->map(fn($c) => ['type' => 'city', 'id' => $c->id, 'text' => "City: {$c->name}"]);
+        $states = State::where('name', 'LIKE', "{$q}%")->limit(3)->get(['id', 'name'])->map(fn($s) => ['type' => 'state', 'id' => $s->id, 'text' => "State: {$s->name}"]);
+        $countries = Country::where('name', 'LIKE', "{$q}%")->limit(2)->get(['id', 'name'])->map(fn($c) => ['type' => 'country', 'id' => $c->id, 'text' => "Country: {$c->name}"]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $cities->concat($states)->concat($countries)->take($limit),
         ], 200);
     }
 }

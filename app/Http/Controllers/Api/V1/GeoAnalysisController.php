@@ -161,4 +161,146 @@ class GeoAnalysisController extends Controller
             'data' => $results
         ]);
     }
+
+    /**
+     * Reverse geocode a coordinate to find the nearest city and its hierarchy.
+     */
+    public function geocode(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'lat' => 'required|numeric|between:-90,90',
+            'lng' => 'required|numeric|between:-180,180',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $lat = $request->lat;
+        $lng = $request->lng;
+
+        // Search nearest city within 50km
+        $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+
+        $city = City::with(['State', 'Country'])
+            ->select('*')
+            ->selectRaw("{$rawDistance} AS distance")
+            ->having('distance', '<=', 50)
+            ->orderBy('distance')
+            ->first();
+
+        if (!$city) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No known city found within 50km radius of these coordinates.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'city' => [
+                    'id' => $city->id,
+                    'name' => $city->name,
+                    'latitude' => $city->latitude,
+                    'longitude' => $city->longitude,
+                    'distance_km' => round($city->distance, 4),
+                ],
+                'state' => $city->State ? [
+                    'id' => $city->State->id,
+                    'name' => $city->State->name,
+                    'state_code' => $city->State->state_code,
+                ] : null,
+                'country' => $city->Country ? [
+                    'id' => $city->Country->id,
+                    'name' => $city->Country->name,
+                    'iso2' => $city->Country->iso2,
+                    'emoji' => $city->Country->emoji,
+                ] : null,
+                'formatted_address' => "{$city->name}, " . ($city->State ? $city->State->name . ", " : "") . $city->Country->name,
+            ]
+        ]);
+    }
+
+    /**
+     * Retrieve all locations (cities/pincodes) within a geographical bounding box.
+     */
+    public function boundary(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'min_lat' => 'required|numeric|between:-90,90',
+            'max_lat' => 'required|numeric|between:-90,90',
+            'min_lng' => 'required|numeric|between:-180,180',
+            'max_lng' => 'required|numeric|between:-180,180',
+            'type' => 'required|string|in:city,pincode',
+            'limit' => 'nullable|integer|min:1|max:200'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $minLat = $request->min_lat;
+        $maxLat = $request->max_lat;
+        $minLng = $request->min_lng;
+        $maxLng = $request->max_lng;
+        $limit = $request->query('limit', 100);
+
+        $query = $request->type === 'city' ? City::query() : Pincode::query();
+        
+        $results = $query->whereBetween('latitude', [$minLat, $maxLat])
+            ->whereBetween('longitude', [$minLng, $maxLng])
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $results,
+            'meta' => [
+                'count' => $results->count(),
+                'type' => $request->type,
+            ]
+        ]);
+    }
+
+    /**
+     * Simple clustering: returns representative grid-points for locations in an area.
+     */
+    public function cluster(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'lat' => 'required|numeric|between:-90,90',
+            'lng' => 'required|numeric|between:-180,180',
+            'radius' => 'required|numeric|max:500',
+            'grid_size' => 'nullable|numeric|min:0.01|max:2',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $gridSize = $request->query('grid_size', 0.5);
+        $radius = $request->radius;
+        $lat = $request->lat;
+        $lng = $request->lng;
+
+        // Efficient grid-based clustering using floor in SQL
+        $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+
+        $clusters = City::selectRaw("
+                ROUND(latitude / {$gridSize}) * {$gridSize} as grid_lat,
+                ROUND(longitude / {$gridSize}) * {$gridSize} as grid_lng,
+                COUNT(*) as count,
+                AVG(latitude) as center_lat,
+                AVG(longitude) as center_lng
+            ")
+            ->whereRaw("{$rawDistance} <= ?", [$radius])
+            ->groupBy('grid_lat', 'grid_lng')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $clusters,
+        ]);
+    }
 }
