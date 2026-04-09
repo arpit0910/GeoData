@@ -7,6 +7,8 @@ use App\Models\Plan;
 use App\Models\Faq;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\WebsiteQuery;
+
 class HomeController extends Controller
 {
     public function index()
@@ -27,6 +29,22 @@ class HomeController extends Controller
 
     public function sendContact(Request $request)
     {
+        $request->validate([
+            'first-name' => 'required|string|max:100',
+            'last-name' => 'required|string|max:100',
+            'email' => 'required|email|max:255',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+
+        WebsiteQuery::create([
+            'name' => $request->input('first-name') . ' ' . $request->input('last-name'),
+            'email' => $request->email,
+            'subject' => $request->subject,
+            'message' => $request->message,
+            'status' => 'pending',
+        ]);
+
         return back()->with('success', 'Thank you for your message! Our team will get back to you shortly.');
     }
 

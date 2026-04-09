@@ -54,6 +54,7 @@ class User extends Authenticatable
         'active_access_token',
         'token_expires_at',
         'plan_id',
+        'timezone',
     ];
 
     /**
@@ -114,6 +115,17 @@ class User extends Authenticatable
     public function apiLogs()
     {
         return $this->hasMany(ApiLog::class);
+    }
+
+    public function formatDate($date, $format = 'd-m-Y @ h:i A')
+    {
+        if (!$date) return 'N/A';
+        
+        $timezone = $this->timezone ?? config('app.timezone', 'UTC');
+        
+        return \Carbon\Carbon::parse($date)
+            ->setTimezone($timezone)
+            ->format($format);
     }
 
     protected static function booted()

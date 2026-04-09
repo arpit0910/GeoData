@@ -372,11 +372,17 @@ class SubscriptionController extends Controller
             
             $transactions = $query->latest()->skip($start)->take($limit)->get();
 
+            $data = $transactions->map(function($transaction) {
+                return array_merge($transaction->toArray(), [
+                    'formatted_date' => Auth::user()->formatDate($transaction->created_at)
+                ]);
+            });
+
             return response()->json([
                 'draw' => intval($request->draw),
                 'recordsTotal' => TransactionHistory::where('user_id', Auth::id())->count(),
                 'recordsFiltered' => $total,
-                'data' => $transactions
+                'data' => $data
             ]);
         }
 

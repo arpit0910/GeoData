@@ -21,7 +21,7 @@
                         <p class="mt-2 font-bold text-white">Uptime SLA guaranteeing stability.</p>
                     </div>
                     <div>
-                        <h4 class="text-4xl font-extrabold text-amber-500">14B+</h4>
+                        <h4 class="text-4xl font-extrabold text-amber-500">1M+</h4>
                         <p class="mt-2 font-bold text-white">API Requests reliably served monthly.</p>
                     </div>
                 </div>

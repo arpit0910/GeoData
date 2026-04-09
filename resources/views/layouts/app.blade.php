@@ -237,6 +237,10 @@
                         <i class="fas fa-sitemap mr-3 w-5"></i>
                         Sub-Categories
                     </a>
+                    <a href="{{ route('admin.website-queries.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.website-queries.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-envelope-open-text mr-3 w-5"></i>
+                        Website Queries
+                    </a>
                     <a href="{{ route('admin.tickets.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.tickets.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-ticket-alt mr-3 w-5"></i>
                         User Tickets

@@ -15,9 +15,9 @@
     
     <div class="flex items-center space-x-4">
         <div class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest hidden sm:block">
-            Last Updated: <span class="text-gray-700 dark:text-gray-300">{{ now()->format('h:i:s A') }}</span>
+            Last Updated: <span id="lastUpdatedTime" class="text-gray-700 dark:text-gray-300">{{ now()->format('d-m-Y @ h:i A') }}</span>
         </div>
-        <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:text-amber-600 dark:hover:bg-white/10 dark:hover:text-amber-500 transition-all shadow-sm flex items-center cursor-pointer">
+        <button onclick="userTransactionsTable.ajax.reload(null, false); const now = new Date(); const day = String(now.getDate()).padStart(2, '0'); const month = String(now.getMonth() + 1).padStart(2, '0'); const year = now.getFullYear(); const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); $('#lastUpdatedTime').text(`${day}-${month}-${year} @ ${timeString}`);" class="px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:text-amber-600 dark:hover:bg-white/10 dark:hover:text-amber-500 transition-all shadow-sm flex items-center cursor-pointer">
             <i class="fas fa-sync-alt mr-1.5"></i> Refresh
         </button>
     </div>
@@ -62,19 +62,19 @@
 
 @push('scripts')
 <script>
+    let userTransactionsTable;
+
     $(document).ready(function() {
-        $('#userTransactionsTable').DataTable({
+        userTransactionsTable = $('#userTransactionsTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('transactions.index') }}",
             columns: [
                 { 
-                    data: 'created_at', 
+                    data: 'formatted_date', 
                     name: 'created_at',
                     render: function(data) {
-                        let date = new Date(data);
-                        return `<div class="text-sm font-medium text-gray-900 dark:text-white">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>`;
+                        return `<div class="text-sm font-medium text-gray-900 dark:text-white">${data}</div>`;
                     }
                 },
                 { 
@@ -139,10 +139,5 @@
             }
         });
     });
-
-    // Auto-refresh the page periodically (every 60 seconds)
-    setTimeout(function() {
-        window.location.reload();
-    }, 60000);
 </script>
 @endpush

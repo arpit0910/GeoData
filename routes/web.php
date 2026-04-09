@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ApiLogController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CountryController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Admin\StateController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\PincodeController;
 use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\WebsiteQueryController;
 use App\Http\Controllers\Admin\SubscriptionAdminController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\TransactionController;
@@ -46,6 +48,11 @@ Route::middleware('guest')->group(function() {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+    
+    Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -140,6 +147,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{transaction}', [TransactionController::class, 'show'])->name('show');
     });
 
+    Route::prefix('website-queries')->name('admin.website-queries.')->group(function () {
+        Route::get('/', [WebsiteQueryController::class, 'index'])->name('index');
+        Route::get('/{websiteQuery}', [WebsiteQueryController::class, 'show'])->name('show');
+        Route::delete('/{websiteQuery}', [WebsiteQueryController::class, 'destroy'])->name('destroy');
+        Route::post('/{websiteQuery}/mark-viewed', [WebsiteQueryController::class, 'markAsViewed'])->name('mark-viewed');
+    });
+
     // Ticketing System
     Route::resource('ticket-categories', TicketCategoryController::class, ['as' => 'admin']);
     Route::post('ticket-categories/{ticketCategory}/toggle-status', [TicketCategoryController::class, 'toggleStatus'])->name('admin.ticket-categories.toggle-status');
@@ -186,6 +200,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/api-keys', [ProfileController::class, 'apiKeys'])->name('api-keys.index');
             Route::post('/api-keys/regenerate', [ProfileController::class, 'regenerateApiKeys'])->name('api-keys.regenerate');
             Route::get('/api-logs', [ApiLogController::class, 'index'])->name('api-logs.index');
+            Route::get('/api-logs/latest-id', [ApiLogController::class, 'latestId'])->name('api-logs.latest-id');
             Route::get('/transactions', [SubscriptionController::class, 'transactions'])->name('transactions.index');
             Route::get('/transactions/{transaction}/receipt', [SubscriptionController::class, 'downloadReceipt'])->name('pricing.receipt');
         });

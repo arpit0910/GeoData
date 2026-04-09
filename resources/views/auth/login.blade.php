@@ -69,7 +69,7 @@
             <div x-data="{ show: false }">
                 <div class="flex items-center justify-between">
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <a href="#" class="text-sm font-medium text-amber-600 hover:text-amber-500 transition-colors">Forgot password?</a>
+                    <a href="{{ route('password.request') }}" class="text-sm font-medium text-amber-600 hover:text-amber-500 transition-colors">Forgot password?</a>
                 </div>
                 <div class="mt-1 relative">
                     <input id="password" name="password" :type="show ? 'text' : 'password'" autocomplete="current-password" required

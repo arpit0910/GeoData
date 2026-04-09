@@ -19,9 +19,9 @@
     
     <div class="flex items-center space-x-4">
         <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">
-            Last Updated: <span class="text-gray-700">{{ now()->format('h:i:s A') }}</span>
+            Last Updated: <span id="lastUpdatedTime" class="text-gray-700">{{ now()->format('d-m-Y @ h:i A') }}</span>
         </div>
-        <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 hover:text-amber-600 transition-all shadow-sm flex items-center cursor-pointer">
+        <button onclick="logsTable.ajax.reload(null, false); const now = new Date(); const day = String(now.getDate()).padStart(2, '0'); const month = String(now.getMonth() + 1).padStart(2, '0'); const year = now.getFullYear(); const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); $('#lastUpdatedTime').text(`${day}-${month}-${year} @ ${timeString}`);" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 hover:text-amber-600 transition-all shadow-sm flex items-center cursor-pointer">
             <i class="fas fa-sync-alt mr-1.5"></i> Refresh
         </button>
     </div>
@@ -52,12 +52,19 @@
 
 @push('scripts')
 <script>
+    let logsTable;
+
     $(document).ready(function() {
-        $('#logsTable').DataTable({
+        logsTable = $('#logsTable').DataTable({
             processing: true,
             serverSide: true,
             pageLength: 50,
-            ajax: "{{ route('api-logs.index') }}",
+            ajax: {
+                url: "{{ route('api-logs.index') }}",
+                dataSrc: function (json) {
+                    return json.data;
+                }
+            },
             order: [[{{ auth()->user()->is_admin ? 6 : 5 }}, 'desc']],
             columns: [
                 @if(auth()->user()->is_admin)
@@ -67,7 +74,7 @@
                     data: 'endpoint', 
                     name: 'endpoint',
                     render: function(data) {
-                        return `<code class="text-xs bg-gray-100 px-1 py-0.5 rounded">/${data}</code>`;
+                        return `<code class="text-xs bg-gray-100 px-1 py-0.5 rounded break-all" style="word-break: break-all; white-space: normal;">/${data}</code>`;
                     }
                 },
                 { data: 'method', name: 'method' },
@@ -79,14 +86,10 @@
             dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col sm:flex-row justify-between items-center mt-4"ip>',
             language: {
                 searchPlaceholder: "Search logs...",
-                lengthMenu: "_MENU_ per page"
+                lengthMenu: "_MENU_ per page",
+                infoFiltered: ""
             }
         });
     });
-
-    // Auto-refresh the page periodically (every 60 seconds)
-    setTimeout(function() {
-        window.location.reload();
-    }, 60000);
 </script>
 @endpush

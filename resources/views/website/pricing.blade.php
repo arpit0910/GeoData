@@ -86,11 +86,10 @@
                     @if($isActivePlan)
                         {{-- Currently on this plan --}}
                         <button disabled
-                            class="mt-auto block w-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-400/30 rounded-xl py-3.5 text-sm font-black text-white text-center cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 opacity-95">
-                            <i class="fas fa-crown text-amber-300 animate-pulse text-xs"></i>
+                            class="mt-auto block w-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-400/30 rounded-xl py-3.5 text-sm font-black text-white text-center cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10">
                             Active Plan
                             <span class="text-[9px] font-bold opacity-80 uppercase tracking-widest bg-black/20 px-2 py-0.5 rounded-lg border border-white/10">
-                                Exp: {{ \Carbon\Carbon::parse($activeSubscription->expires_at)->year > 2100 ? 'Lifetime' : \Carbon\Carbon::parse($activeSubscription->expires_at)->format('M d, Y') }}
+                                Exp: {{ \Carbon\Carbon::parse($activeSubscription->expires_at)->year > 2100 ? 'Lifetime' : \Carbon\Carbon::parse($activeSubscription->expires_at)->format('d M, Y') }}
                             </span>
                         </button>
 

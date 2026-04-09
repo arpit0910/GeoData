@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMail;
 
 class AuthController extends Controller
 {
@@ -80,6 +82,12 @@ class AuthController extends Controller
             'status' => null,
             'available_credits' => 0,
         ]);
+
+        try {
+            Mail::to($user->email)->send(new WelcomeMail($user));
+        } catch (\Exception $e) {
+            \Log::error('Could not send welcome email: ' . $e->getMessage());
+        }
 
         Auth::login($user);
 

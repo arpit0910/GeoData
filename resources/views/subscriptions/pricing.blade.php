@@ -54,17 +54,16 @@
                         @endphp
 
                         @if($isCurrentPlan)
-                            {{-- Active plan badge --}}
-                            <button disabled class="mt-8 block w-full bg-gradient-to-r from-emerald-600 to-teal-500 border border-emerald-400/30 rounded-xl py-3 text-sm font-black text-white text-center cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-emerald-500/10 ring-1 ring-white/10 relative overflow-hidden">
-                                <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-50"></div>
-                                <span class="flex items-center gap-1.5 relative z-10 shrink-0">
-                                    <i class="fas fa-crown text-amber-300 animate-pulse text-xs"></i>
+                            {{-- Active plan badge simplified to bordered button --}}
+                            <div class="mt-8 space-y-2">
+                                <button disabled class="block w-full bg-white dark:bg-transparent border-2 border-emerald-500 rounded-xl py-3 text-sm font-black text-emerald-600 dark:text-emerald-500 text-center cursor-not-allowed flex items-center justify-center gap-2">
+                                    <i class="fas fa-crown text-xs"></i>
                                     Active Plan
-                                </span>
-                                <span class="text-[9px] font-bold opacity-90 uppercase tracking-widest relative z-10 bg-black/20 px-2.5 py-1 rounded-lg border border-white/5 shrink-0">
-                                    Exp: {{ \Carbon\Carbon::parse($activeSubscription->expires_at)->year > 2100 ? 'Lifetime' : \Carbon\Carbon::parse($activeSubscription->expires_at)->format('M d, Y') }}
-                                </span>
-                            </button>
+                                </button>
+                                <p class="text-[10px] text-center font-bold text-gray-400 uppercase tracking-widest">
+                                    Expires: {{ \Carbon\Carbon::parse($activeSubscription->expires_at)->year > 2100 ? 'Lifetime' : \Carbon\Carbon::parse($activeSubscription->expires_at)->format('d M, Y') }}
+                                </p>
+                            </div>
 
                         @elseif($isDowngrade)
                             {{-- Lower price — disabled Buy Now --}}
