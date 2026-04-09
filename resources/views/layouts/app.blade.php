@@ -261,7 +261,7 @@
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-[#0b1120] transition-colors duration-500">
                 <!-- Top Header -->
-                <header class="bg-white dark:bg-[#0f172a] border-b border-gray-200 dark:border-white/5 h-16 flex items-center justify-between px-8 shadow-sm transition-all duration-300 sticky top-0 z-40">
+                <header class="bg-white dark:bg-[#0f172a] border-b border-gray-200 dark:border-white/5 h-16 flex items-center justify-between px-4 md:px-8 shadow-sm transition-all duration-300 sticky top-0 z-40">
                     <div class="flex items-center">
                         <button @click="sidebarOpen = true" class="md:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mr-4 focus:outline-none">
                             <i class="fas fa-bars text-xl"></i>
@@ -304,7 +304,7 @@
                 </header>
 
                 <!-- Page Content -->
-                <main class="flex-1 p-8 overflow-y-auto">
+                <main class="flex-1 p-4 md:p-8 overflow-y-auto">
                     @yield('content')
                 </main>
             </div>

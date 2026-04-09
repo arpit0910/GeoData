@@ -4,7 +4,7 @@
 
 @section('content')
 @if(auth()->user()->is_admin)
-<div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-200 dark:border-white/5 p-8 transition-all duration-500">
+<div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-200 dark:border-white/5 p-6 md:p-8 transition-all duration-500">
     <div class="mb-8">
         <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Welcome to your <span class="text-amber-600 dark:text-amber-500">Admin Console</span></h3>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium">Real-time overview of the SetuGeo ecosystem.</p>
@@ -51,16 +51,16 @@
     </div>
 </div>
 @else
-<div class="bg-white dark:bg-[#161e2d] rounded-[2rem] shadow-2xl border border-gray-100 dark:border-white/5 p-12 text-center max-w-4xl mx-auto mt-10 transition-all duration-700 relative overflow-hidden group">
+<div class="bg-white dark:bg-[#161e2d] rounded-[2rem] shadow-2xl border border-gray-100 dark:border-white/5 p-6 md:p-12 text-center max-w-4xl mx-auto mt-6 md:mt-10 transition-all duration-700 relative overflow-hidden group">
     <!-- Animated background element for premium feel -->
     <div class="absolute -top-24 -right-24 w-64 h-64 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none group-hover:bg-amber-500/20 transition-all duration-1000"></div>
     
     <div class="relative z-10">
-        <div class="inline-flex justify-center items-center w-24 h-24 rounded-3xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 mb-8 border border-amber-100 dark:border-amber-500/20 transform rotate-3 hover:rotate-0 transition-transform duration-500 shadow-inner">
-            <i class="fas fa-rocket text-4xl"></i>
+        <div class="inline-flex justify-center items-center w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 mb-8 border border-amber-100 dark:border-amber-500/20 transform rotate-3 hover:rotate-0 transition-transform duration-500 shadow-inner">
+            <i class="fas fa-rocket text-3xl md:text-4xl"></i>
         </div>
-        <h3 class="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Welcome back, {{ auth()->user()->first_name ?? auth()->user()->name }}!</h3>
-        <p class="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-medium leading-relaxed">Your professional geo-platform is ready. Harness the power of global data at your fingertips.</p>
+        <h3 class="text-2xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Welcome back, {{ auth()->user()->first_name ?? auth()->user()->name }}!</h3>
+        <p class="text-base md:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-medium leading-relaxed">Your professional geo-platform is ready. Harness the power of global data at your fingertips.</p>
         
 @php
     $dashboardSub = auth()->user()->subscriptions()
@@ -71,7 +71,7 @@
         ->first();
     $dashboardPlan = $dashboardSub?->plan ?? auth()->user()->plan;
 @endphp
-<div class="mt-12 p-10 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-3xl flex flex-col md:flex-row items-center justify-between text-left gap-8 transition-all hover:border-amber-500/30">
+<div class="mt-8 md:mt-12 p-6 md:p-10 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-3xl flex flex-col md:flex-row items-center justify-between text-left gap-8 transition-all hover:border-amber-500/30">
     <div>
         <h4 class="text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2">Current Plan</h4>
         <div class="flex items-center flex-wrap gap-2">

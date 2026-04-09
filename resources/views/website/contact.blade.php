@@ -43,35 +43,35 @@
             </div>
         @endif
 
-        <div class="glass-card rounded-[2rem] shadow-2xl p-8 md:p-14 max-w-4xl mx-auto">
-            <form action="{{ route('contact.post') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-8">
+        <div class="glass-card rounded-[2rem] shadow-2xl p-6 md:p-14 max-w-4xl mx-auto">
+            <form action="{{ route('contact.post') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-y-6 md:gap-y-8 gap-x-8">
                 @csrf
                 <div>
-                    <label for="first-name" class="block text-sm font-bold text-gray-900">First name</label>
+                    <label for="first-name" class="block text-sm font-bold text-white/80">First name</label>
                     <div class="mt-2">
                         <input type="text" name="first-name" id="first-name" autocomplete="given-name" placeholder="John" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
                     </div>
                 </div>
                 <div>
-                    <label for="last-name" class="block text-sm font-bold text-gray-900">Last name</label>
+                    <label for="last-name" class="block text-sm font-bold text-white/80">Last name</label>
                     <div class="mt-2">
                         <input type="text" name="last-name" id="last-name" autocomplete="family-name" placeholder="Doe" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <label for="email" class="block text-sm font-bold text-gray-900">Email address</label>
+                    <label for="email" class="block text-sm font-bold text-white/80">Email address</label>
                     <div class="mt-2">
                         <input id="email" name="email" type="email" autocomplete="email" placeholder="john.doe@company.com" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <label for="subject" class="block text-sm font-bold text-gray-900">Subject</label>
+                    <label for="subject" class="block text-sm font-bold text-white/80">Subject</label>
                     <div class="mt-2">
                         <input id="subject" name="subject" type="text" placeholder="Inquiry about API Pricing" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <label for="message" class="block text-sm font-bold text-gray-900">How can we help you?</label>
+                    <label for="message" class="block text-sm font-bold text-white/80">How can we help you?</label>
                     <div class="mt-2">
                         <textarea id="message" name="message" rows="5" placeholder="Tell us about your project, integration questions, or support needs..." class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required></textarea>
                     </div>

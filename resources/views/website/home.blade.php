@@ -25,7 +25,7 @@
                 <span class="flex h-2 w-2 rounded-full bg-amber-500 mr-2 animate-pulse"></span>
                 <span class="text-xs font-bold tracking-widest uppercase text-amber-500">SetuGeo Now Live</span>
             </div>
-            <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight mb-8 leading-[1.1]">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight mb-8 leading-[1.1]">
                 Integrate <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">Accurate</span> Location Data in Minutes
             </h1>
             <p class="mt-4 max-w-2xl text-lg md:text-xl text-gray-300 mx-auto mb-10 leading-relaxed font-medium">

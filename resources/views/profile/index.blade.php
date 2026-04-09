@@ -3,7 +3,7 @@
 @section('header', 'My Profile')
 
 @section('content')
-<div class="max-w-4xl mx-auto mb-6 flex justify-between items-center">
+<div class="max-w-4xl mx-auto mb-4 md:mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div class="text-gray-900 dark:text-white font-bold text-xl tracking-tight flex items-center">
         <i class="fas fa-user-circle text-amber-500 mr-2"></i> User Dashboard
     </div>
@@ -37,9 +37,9 @@
     @if(auth()->check() && !auth()->user()->is_admin)
     <!-- Subscription & Credits Section -->
     <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500">
-        <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex justify-between items-center">
+        <div class="px-6 md:px-8 py-5 md:py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Subscription & Credits</h3>
+                <h3 class="text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-tight">Subscription & Credits</h3>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Monitor your current plan status and remaining API credits.</p>
             </div>
             @if(!$subscription)
@@ -49,7 +49,7 @@
             @endif
         </div>
         
-        <div class="p-8">
+        <div class="p-6 md:p-8">
             @if($subscription)
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <!-- Plan Info -->
@@ -125,9 +125,9 @@
     @endif
 
     <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all duration-500" x-data="{ isEditing: false }">
-        <div class="px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex justify-between items-center">
+        <div class="px-6 md:px-8 py-5 md:py-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Account Information</h3>
+                <h3 class="text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-tight">Account Information</h3>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Manage your personal and company profile details.</p>
             </div>
             <div>
@@ -280,7 +280,7 @@
 
             </div>
 
-            <div class="pt-10 flex justify-end items-center space-x-6" x-show="isEditing" style="display: none;">
+            <div class="pt-8 md:pt-10 flex flex-col sm:flex-row justify-end items-center gap-4 sm:space-x-6" x-show="isEditing" style="display: none;">
                 <button type="button" @click="isEditing = false; $el.form.reset();" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
                     Cancel
                 </button>
@@ -356,11 +356,11 @@
                     </div>
                 </div>
 
-                <div class="pt-10 flex justify-end items-center space-x-6">
-                    <button type="button" @click="isChangingPassword = false; $el.form.reset();" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                <div class="pt-8 md:pt-10 flex flex-col sm:flex-row justify-end items-center gap-4 sm:space-x-6">
+                    <button type="button" @click="isChangingPassword = false; $el.form.reset();" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors cursor-pointer w-full sm:w-auto text-center">
                         Cancel
                     </button>
-                    <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    <button type="submit" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-black rounded-2xl shadow-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-500/40 transition-all transform hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto">
                         Update Password <i class="fas fa-lock ml-3 text-sm"></i>
                     </button>
                 </div>
