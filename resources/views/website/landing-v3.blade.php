@@ -126,30 +126,42 @@
 <!-- Stats Section -->
 <div class="relative overflow-hidden bg-transparent py-24 sm:py-32">
     <!-- Dynamic Line & Glow Background -->
-    <i class="fas fa-map-marker-alt absolute top-10 left-[15%] text-amber-500/10 text-5xl transform -rotate-12 blur-[2px]"></i>
-    <i class="fas fa-map-marker-alt absolute bottom-20 right-[20%] text-amber-500/10 text-7xl transform rotate-12 blur-[4px]"></i>
-    <i class="fas fa-globe absolute top-1/3 right-[10%] text-amber-500/10 text-9xl blur-[2px] animate-[spin_60s_linear_infinite]"></i>
+    <i class="fas fa-map-marker-alt absolute top-10 left-[15%] text-amber-500/5 text-5xl transform -rotate-12 blur-[2px] z-0"></i>
+    <i class="fas fa-map-marker-alt absolute bottom-20 right-[20%] text-amber-500/5 text-7xl transform rotate-12 blur-[4px] z-0"></i>
+    <i class="fas fa-globe absolute top-1/3 right-[10%] text-amber-500/5 text-9xl blur-[4px] animate-[spin_60s_linear_infinite] z-0"></i>
     
-    <div class="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
-    <div class="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.05)_0,transparent_60%)]"></div>
+    <div class="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent"></div>
+    <div class="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.02)_0,transparent_60%)]"></div>
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div class="text-center">
-                <p class="text-5xl font-black text-white mb-2">99.9<span class="text-amber-500">%</span></p>
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Uptime SLA</p>
+            <div class="relative overflow-hidden text-center bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border hover:border-amber-500/30 border-white/10 transition-all shadow-2xl group">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10">
+                    <p class="text-5xl font-black text-white mb-2 drop-shadow-lg">99.9<span class="text-amber-500">%</span></p>
+                    <p class="text-sm font-bold text-gray-200 uppercase tracking-widest drop-shadow-md">Uptime SLA</p>
+                </div>
             </div>
-            <div class="text-center">
-                <p class="text-5xl font-black text-white mb-2">1<span class="text-amber-500">M+</span></p>
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">API Requests</p>
+            <div class="relative overflow-hidden text-center bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border hover:border-amber-500/30 border-white/10 transition-all shadow-2xl group">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10">
+                    <p class="text-5xl font-black text-white mb-2 drop-shadow-lg">1<span class="text-amber-500">M+</span></p>
+                    <p class="text-sm font-bold text-gray-200 uppercase tracking-widest drop-shadow-md">API Requests</p>
+                </div>
             </div>
-            <div class="text-center">
-                <p class="text-5xl font-black text-white mb-2">200<span class="text-amber-500">+</span></p>
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Countries Covered</p>
+            <div class="relative overflow-hidden text-center bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border hover:border-amber-500/30 border-white/10 transition-all shadow-2xl group">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10">
+                    <p class="text-5xl font-black text-white mb-2 drop-shadow-lg">200<span class="text-amber-500">+</span></p>
+                    <p class="text-sm font-bold text-gray-200 uppercase tracking-widest drop-shadow-md">Countries Covered</p>
+                </div>
             </div>
-            <div class="text-center">
-                <p class="text-5xl font-black text-white mb-2">50<span class="text-amber-500">ms</span></p>
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Avg Latency</p>
+            <div class="relative overflow-hidden text-center bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border hover:border-amber-500/30 border-white/10 transition-all shadow-2xl group">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10">
+                    <p class="text-5xl font-black text-white mb-2 drop-shadow-lg">50<span class="text-amber-500">ms</span></p>
+                    <p class="text-sm font-bold text-gray-200 uppercase tracking-widest drop-shadow-md">Avg Latency</p>
+                </div>
             </div>
         </div>
     </div>

@@ -23,37 +23,23 @@
     .hero-gradient-text { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 40%, #fcd34d 60%, #f59e0b 100%); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 </style>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  HERO — Editorial / Magazine Style                                 -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="relative overflow-hidden min-h-[80vh] flex items-center">
-    <!-- Layered background -->
-    <div class="absolute inset-0">
+<section class="relative overflow-hidden min-h-[90vh] lg:min-h-screen flex items-center pt-10 lg:pt-0">
+    <div class="absolute inset-0 overflow-hidden">
         <div class="absolute top-[10%] left-[5%] w-[500px] h-[500px] bg-amber-500/[0.07] rounded-full blur-[100px]"></div>
         <div class="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-yellow-500/[0.05] rounded-full blur-[100px]"></div>
         <div class="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:32px_32px]"></div>
     </div>
-
-    <!-- Decorative vertical line -->
-    <div class="hidden lg:block absolute left-[8%] top-[15%] bottom-[15%] w-px bg-gradient-to-b from-transparent via-amber-500/20 to-transparent"></div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full py-14">
-        <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            <!-- Left Column — Main Copy (7 cols) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full pt-6 sm:pt-20 lg:pt-24 pb-14">
+        <div class="grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
             <div class="lg:col-span-7">
-                <div class="anim-reveal flex items-center gap-3 mb-6">
-                    <div class="h-px w-12 bg-amber-500"></div>
-                    <span class="text-xs font-bold tracking-[0.2em] uppercase text-amber-500">Geographic Data API</span>
-                </div>
-
-                <h1 class="anim-reveal-d1 text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white leading-[1.1] sm:leading-[1.06] tracking-tight mb-8">
+                <h1 class="anim-reveal-d1 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] sm:leading-[1.06] tracking-tight mb-8">
                     Power your apps with the world's
                     <span class="hero-gradient-text break-words">most precise</span>
                     location data
                 </h1>
 
                 <p class="anim-reveal-d2 text-lg lg:text-xl text-gray-400 max-w-xl mb-8 font-medium leading-relaxed">
-                    One unified API for countries, states, cities, pincodes, timezones, bank branches, and real-time currency conversions. Trusted infrastructure for production workloads.
+                    One unified API for countries, states, cities, pincodes, timezones, bank branches, and currency conversions. Trusted infrastructure for production workloads.
                 </p>
 
                 <div class="anim-reveal-d3 flex flex-wrap gap-4">
@@ -66,7 +52,6 @@
                     </a>
                 </div>
 
-                <!-- Trust strip -->
                 <div class="anim-reveal-d4 mt-10 pt-6 border-t border-white/5">
                     <p class="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4">Trusted by developers at</p>
                     <div class="flex flex-wrap items-center gap-6 text-gray-600">
@@ -79,11 +64,9 @@
                 </div>
             </div>
 
-            <!-- Right Column — Live Data Preview (5 cols) -->
             <div class="lg:col-span-5 anim-reveal-d3 hidden lg:block">
                 <div class="space-y-4">
-                    <!-- Data card 1 -->
-                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-amber-500/20 transition-all duration-300 group">
+                    <div class="bg-gray-900/60 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 hover:border-amber-500/30 transition-all duration-300 shadow-xl group">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
@@ -91,19 +74,18 @@
                                 </div>
                                 <div>
                                     <p class="text-white text-sm font-bold">Countries API</p>
-                                    <p class="text-gray-600 text-xs font-mono">/v1/countries</p>
+                                    <p class="text-gray-400 text-xs font-mono">/v1/countries</p>
                                 </div>
                             </div>
-                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
+                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded-lg">LIVE</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-500 font-medium">India → 36 States → 150K+ Cities</span>
+                            <span class="text-gray-300 font-medium">India → 36 States → 150K+ Cities</span>
                             <span class="text-amber-500 font-bold">18ms</span>
                         </div>
                     </div>
 
-                    <!-- Data card 2 -->
-                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-sky-500/20 transition-all duration-300 group">
+                    <div class="bg-gray-900/60 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 hover:border-sky-500/30 transition-all duration-300 shadow-xl group">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 bg-sky-500/10 rounded-xl flex items-center justify-center">
@@ -111,19 +93,18 @@
                                 </div>
                                 <div>
                                     <p class="text-white text-sm font-bold">Pincode Lookup</p>
-                                    <p class="text-gray-600 text-xs font-mono">/v1/pincodes/400001</p>
+                                    <p class="text-gray-400 text-xs font-mono">/v1/pincodes/400001</p>
                                 </div>
                             </div>
-                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
+                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded-lg">LIVE</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-500 font-medium">Mumbai, Maharashtra, India</span>
+                            <span class="text-gray-300 font-medium">Mumbai, Maharashtra, India</span>
                             <span class="text-sky-500 font-bold">12ms</span>
                         </div>
                     </div>
 
-                    <!-- Data card 3 -->
-                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-purple-500/20 transition-all duration-300 group">
+                    <div class="bg-gray-900/60 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 hover:border-purple-500/30 transition-all duration-300 shadow-xl group">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
@@ -131,19 +112,18 @@
                                 </div>
                                 <div>
                                     <p class="text-white text-sm font-bold">Currency Rates</p>
-                                    <p class="text-gray-600 text-xs font-mono">/v1/currencies/USD</p>
+                                    <p class="text-gray-400 text-xs font-mono">/v1/currencies/USD</p>
                                 </div>
                             </div>
-                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
+                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded-lg">LIVE</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-500 font-medium">1 USD = ₹83.25 INR</span>
+                            <span class="text-gray-300 font-medium">1 USD = ₹83.25 INR</span>
                             <span class="text-purple-500 font-bold">22ms</span>
                         </div>
                     </div>
 
-                    <!-- Data card 4 -->
-                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-emerald-500/20 transition-all duration-300 group">
+                    <div class="bg-gray-900/60 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 hover:border-emerald-500/30 transition-all duration-300 shadow-xl group">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
@@ -151,13 +131,13 @@
                                 </div>
                                 <div>
                                     <p class="text-white text-sm font-bold">Timezone Data</p>
-                                    <p class="text-gray-600 text-xs font-mono">/v1/timezones/IN</p>
+                                    <p class="text-gray-400 text-xs font-mono">/v1/timezones/IN</p>
                                 </div>
                             </div>
-                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
+                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded-lg">LIVE</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-500 font-medium">Asia/Kolkata → UTC+05:30</span>
+                            <span class="text-gray-300 font-medium">Asia/Kolkata → UTC+05:30</span>
                             <span class="text-emerald-500 font-bold">8ms</span>
                         </div>
                     </div>
@@ -166,10 +146,6 @@
         </div>
     </div>
 </section>
-
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  SCROLLING TICKER — Technology Logos                                -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <section class="py-10 border-y border-white/5 overflow-hidden">
     <div class="ticker-track">
         @for($t = 0; $t < 2; $t++)
@@ -189,15 +165,11 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  API REFERENCE TABLE — Interactive Endpoint Directory               -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <section class="relative py-14 sm:py-20 overflow-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(245,158,11,0.04)_0%,transparent_50%)]"></div>
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="grid lg:grid-cols-5 gap-12 items-start">
-            <!-- Left Text -->
             <div class="lg:col-span-2 lg:sticky lg:top-28">
                 <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">API Reference</h2>
                 <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Complete endpoint directory.</p>
@@ -210,7 +182,6 @@
                 </a>
             </div>
 
-            <!-- Right — Endpoint list -->
             <div class="lg:col-span-3 space-y-3">
                 <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
                     <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>

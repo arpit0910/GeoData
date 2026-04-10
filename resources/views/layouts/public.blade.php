@@ -30,7 +30,7 @@
 <body class="bg-[#000000] text-gray-100 antialiased selection:bg-amber-500 selection:text-white flex flex-col min-h-screen">
     @if(request()->routeIs('home'))
     <!-- Globe Background Container (Top Right Only) -->
-    <div id="globe-canvas-container" class="absolute top-0 right-0 w-full lg:w-[60%] h-[900px] lg:h-[1100px] z-0 pointer-events-none opacity-100 overflow-hidden" style="mask-image: linear-gradient(to bottom, black 60%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);"></div>
+    <div id="globe-canvas-container" class="absolute top-0 right-0 w-full lg:w-[60%] h-[850px] sm:h-[900px] lg:h-[1100px] z-0 pointer-events-none opacity-100 overflow-hidden" style="mask-image: linear-gradient(to bottom, black 60%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);"></div>
     @endif
 
     <!-- Navbar -->
@@ -247,7 +247,7 @@
                         
                         float luma = dot(nightLights, vec3(0.299, 0.587, 0.114));
                         if (luma < 0.12) nightLights = vec3(0.0); // Slightly more inclusive
-                        else nightLights *= 15.0;
+                        else nightLights *= 1.5; // Highly reduced to keep text readable
                         nightLights.b = 0.0;
                         
                         // Composite with soft mix
@@ -295,11 +295,11 @@
             }
 
             function createPoint(v) {
-                const pointGeo = new THREE.SphereGeometry(0.015, 12, 12);
+                const pointGeo = new THREE.SphereGeometry(0.035, 12, 12);
                 const pointMat = new THREE.MeshBasicMaterial({ 
                     color: 0xffcc33,
                     transparent: true,
-                    opacity: 0.8
+                    opacity: 1.0
                 });
                 const point = new THREE.Mesh(pointGeo, pointMat);
                 point.position.copy(v);
@@ -317,7 +317,17 @@
                 {lat: -23.5505, lon: -46.6333}, // Sao Paulo
                 {lat: 48.8566, lon: 2.3522}, // Paris
                 {lat: 1.3521, lon: 103.8198}, // Singapore
-                {lat: 25.2048, lon: 55.2708}  // Dubai
+                {lat: 25.2048, lon: 55.2708},  // Dubai
+                {lat: -1.2921, lon: 36.8219}, // Nairobi
+                {lat: 30.0444, lon: 31.2357}, // Cairo
+                {lat: 55.7558, lon: 37.6173}, // Moscow
+                {lat: -34.6037, lon: -58.3816}, // Buenos Aires
+                {lat: 19.4326, lon: -99.1332}, // Mexico City
+                {lat: 31.2304, lon: 121.4737}, // Shanghai
+                {lat: -26.2041, lon: 28.0473}, // Johannesburg
+                {lat: 43.6532, lon: -79.3832}, // Toronto
+                {lat: 37.7749, lon: -122.4194}, // San Francisco
+                {lat: 1.29027, lon: 103.851959} // Singapore 2
             ];
 
             const arcs = new THREE.Group();
@@ -326,17 +336,16 @@
                 const start = latLongToVector3(locations[i].lat, locations[i].lon, globeRadius);
                 points.add(createPoint(start));
                 
-                // Fewer, more focused connections
-                const nextIndex = (i + 3) % locations.length;
+                // Reduced back to single connection for high text readability
+                const nextIndex = (i + 5) % locations.length;
                 const end = latLongToVector3(locations[nextIndex].lat, locations[nextIndex].lon, globeRadius);
                 arcs.add(createArc(start, end));
-
-                const acrossIndex = (i + 5) % locations.length;
-                const endAcross = latLongToVector3(locations[acrossIndex].lat, locations[acrossIndex].lon, globeRadius);
-                arcs.add(createArc(start, endAcross));
             }
             earth.add(arcs);
             earth.add(points);
+            
+            // Initial mobile scale
+            if (window.innerWidth < 768) earth.scale.set(0.85, 0.85, 0.85);
 
             // Stars (Optimized count for better initialization and render performance)
             const starGeometry = new THREE.BufferGeometry();
@@ -359,6 +368,10 @@
                 camera.aspect = container.clientWidth / container.clientHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(container.clientWidth, container.clientHeight);
+                
+                // Update scale on resize
+                const s = window.innerWidth < 768 ? 0.85 : 1;
+                earth.scale.set(s, s, s);
             });
 
             // Scroll interaction removed based on requirements.
@@ -376,7 +389,7 @@
                 
                 // Keep earth stable at the center organically (since container is now 60% width on right)
                 earth.position.x = Math.sin(time * 0.5) * 0.05;
-                earth.position.y = -0.1 + Math.cos(time * 0.3) * 0.05;
+                earth.position.y = 0.7 + Math.cos(time * 0.3) * 0.05; // Lowered to add 'padding' from header
                 
                 // Pulse arcs
                 arcs.children.forEach(line => {
@@ -387,7 +400,7 @@
                 points.children.forEach(p => {
                     const s = 1 + Math.sin(Date.now() * 0.004) * 0.3;
                     p.scale.set(s, s, s);
-                    p.material.opacity = 0.5 + Math.sin(Date.now() * 0.004) * 0.3;
+                    p.material.opacity = 0.7 + Math.sin(Date.now() * 0.004) * 0.3;
                 });
                 
                 // Pause rendering when tab is inactive to save battery/CPU
