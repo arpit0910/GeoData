@@ -3,13 +3,65 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'SetuGeo API')</title>
+    <meta name="theme-color" content="#d97706">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/apple-touch-icon.png') }}">
+    
+    <title>@yield('title', 'SetuGeo - World-Class Geographic Data API Platform')</title>
+    <meta name="description" content="@yield('meta_description', 'SetuGeo provides high-speed, accurate geographic data APIs for countries, states, cities, pincodes, timezones, and currency conversions. Build faster with reliable location data.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'geographic api, location data api, pincode api, zip code api, city state country api, currency conversion api, timezone api, setugeo')">
+    <link rel="canonical" href="@yield('canonical_url', request()->url())">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request()->url() }}">
+    <meta property="og:site_name" content="SetuGeo">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:title" content="@yield('title', 'SetuGeo - World-Class Geographic Data API Platform')">
+    <meta property="og:description" content="@yield('meta_description', 'SetuGeo provides high-speed, accurate geographic data APIs for countries, states, cities, pincodes, timezones, and currency conversions.')">
+    <meta property="og:image" content="@yield('og_image', asset('assets/img/og-image.jpg'))">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request()->url() }}">
+    <meta property="twitter:title" content="@yield('title', 'SetuGeo - World-Class Geographic Data API Platform')">
+    <meta property="twitter:description" content="@yield('meta_description', 'SetuGeo provides high-speed, accurate geographic data APIs for countries, states, cities, pincodes, timezones, and currency conversions.')">
+    <meta property="twitter:image" content="@yield('og_image', asset('assets/img/og-image.jpg'))">
+
     <!-- Preconnect to external CDNs for faster asset loading -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Structured Data (JSON-LD) -->
+    @yield('structured_data')
+
+    {{-- Automatic Breadcrumb Schema --}}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "{{ route('home') }}"
+        }
+        @if(!request()->routeIs('home'))
+        ,{
+          "@type": "ListItem",
+          "position": 2,
+          "name": "@yield('title')",
+          "item": "{{ request()->url() }}"
+        }
+        @endif
+      ]
+    }
+    </script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
@@ -136,9 +188,9 @@
                         Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally through SetuGeo.
                     </p>
                     <div class="flex space-x-5">
-                        <a href="#" class="text-gray-500 hover:text-amber-500 transition-colors"><i class="fab fa-twitter text-xl"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-amber-500 transition-colors"><i class="fab fa-github text-xl"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-amber-500 transition-colors"><i class="fab fa-linkedin text-xl"></i></a>
+                        <a href="https://twitter.com/setugeo" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-amber-500 transition-colors" aria-label="Follow SetuGeo on Twitter"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="https://github.com/setugeo" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-amber-500 transition-colors" aria-label="Check SetuGeo on GitHub"><i class="fab fa-github text-xl"></i></a>
+                        <a href="https://linkedin.com/company/setugeo" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-amber-500 transition-colors" aria-label="Connect with SetuGeo on LinkedIn"><i class="fab fa-linkedin text-xl"></i></a>
                     </div>
                 </div>
                 

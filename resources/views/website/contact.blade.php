@@ -1,5 +1,7 @@
 @extends('layouts.public')
-@section('title', 'Contact Us - SetuGeo API')
+@section('title', 'Contact Us - Get Technical Support & Enterprise Solutions - SetuGeo')
+@section('meta_description', 'Contact the SetuGeo support team for inquiries about API integration, pricing plans, enterprise solutions, or technical support. We are here to help you build faster.')
+@section('meta_keywords', 'contact setugeo, api support, enterprise geographic data, setugeo help desk, integration assistance')
 
 @section('content')
 <div class="relative bg-transparent py-24 sm:py-32 overflow-hidden">

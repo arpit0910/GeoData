@@ -1,5 +1,7 @@
 @extends('layouts.public')
-@section('title', 'SetuGeo API Documentation')
+@section('title', 'API Documentation - SetuGeo Geographic Data API Integration Guide')
+@section('meta_description', 'Comprehensive API documentation for SetuGeo. Learn how to integrate geographic data APIs for countries, states, cities, pincodes, and banking details into your apps.')
+@section('meta_keywords', 'api documentation, setugeo api guide, geographic api integration, pincode api docs, bank ifsc api documentation')
 
 @section('content')
 <div class="min-h-screen bg-[#020617] text-gray-300 antialiased font-inter">

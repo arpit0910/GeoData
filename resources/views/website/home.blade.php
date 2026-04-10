@@ -1,6 +1,45 @@
 @extends('layouts.public')
 
-@section('title', 'SetuGeo - World-Class Geographic Data API Platform')
+@section('title', 'SetuGeo - The Ultimate Geographic Data API for Developers')
+@section('meta_description', 'SetuGeo is a powerful geographic data API platform providing instant access to global countries, states, cities, pincodes (ZIP codes), timezones, and bank IFSC details with sub-50ms latency.')
+@section('meta_keywords', 'geographic data api, pincode lookup api, indian pincode api, global cities database, state list api, country list api, bank ifsc api, local currency converter api, developer location api')
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "SetuGeo API",
+  "operatingSystem": "All",
+  "applicationCategory": "DeveloperApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0.00",
+    "priceCurrency": "INR"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "ratingCount": "1240"
+  },
+  "description": "SetuGeo provides high-speed, accurate geographic data APIs for developers including country, state, city, pincode, and currency data."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "SetuGeo",
+  "url": "{{ route('home') }}",
+  "logo": "{{ asset('assets/img/logo.png') }}",
+  "sameAs": [
+    "https://twitter.com/setugeo",
+    "https://github.com/setugeo",
+    "https://linkedin.com/company/setugeo"
+  ]
+}
+</script>
+@endsection
 
 @section('content')
 <style>

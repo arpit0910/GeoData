@@ -1,5 +1,34 @@
 @extends('layouts.public')
-@section('title', 'Pricing - SetuGeo API')
+@section('title', 'Pricing Plans - High-Performance Geographic Data APIs at Scale')
+@section('meta_description', 'Explore SetuGeo flexible pricing plans for geographic data APIs. From a generous free tier for developers to custom enterprise solutions for high-volume applications.')
+@section('meta_keywords', 'pincode api pricing, geographic data cost, setugeo plans, developer api subscription, location data pricing')
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "SetuGeo API Subscription Plans",
+  "description": "Flexible pricing plans for high-speed geographic data APIs including country, state, city, and pincode data.",
+  "brand": {
+    "@type": "Brand",
+    "name": "SetuGeo"
+  },
+  "offers": [
+    @foreach($plans as $plan)
+    {
+      "@type": "Offer",
+      "name": "{{ $plan->name }}",
+      "price": "{{ $plan->amount - ($plan->discount_amount ?? 0) }}",
+      "priceCurrency": "INR",
+      "availability": "https://schema.org/InStock",
+      "url": "{{ route('pricing') }}"
+    } @if(!$loop->last) , @endif
+    @endforeach
+  ]
+}
+</script>
+@endsection
 
 @section('content')
 @php

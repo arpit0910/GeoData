@@ -1,5 +1,7 @@
 @extends('layouts.public')
-@section('title', 'About Us - SetuGeo API')
+@section('title', 'About SetuGeo - The Mission Behind Our Geographic Data API')
+@section('meta_description', 'Learn about SetuGeo mission to build the most accurate and high-speed geographic data APIs for developers. Discover our commitment to reliability, accuracy, and accessibility.')
+@section('meta_keywords', 'about setugeo, geographic data company, api providers, location data infrastructure, reliable data APIs')
 
 @section('content')
 <div class="bg-transparent py-24 sm:py-32">

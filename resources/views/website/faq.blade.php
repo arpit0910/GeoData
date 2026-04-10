@@ -1,6 +1,29 @@
 @extends('layouts.public')
 
-@section('title', 'Frequently Asked Questions - SetuGeo API')
+@section('title', 'Frequently Asked Questions (FAQ) - SetuGeo Geographic Data API')
+@section('meta_description', 'Find answers to common questions about SetuGeo geographical data APIs, including pricing, technical implementation, data accuracy, and account management.')
+@section('meta_keywords', 'setugeo faq, geographic data questions, pincode api faq, location data support, common questions about setugeo')
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    @foreach($faqs as $i => $faq)
+    {
+      "@type": "Question",
+      "name": "{{ $faq->question }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ strip_tags($faq->answer) }}"
+      }
+    } @if(!$loop->last) , @endif
+    @endforeach
+  ]
+}
+</script>
+@endsection
 
 @section('content')
 <!-- Hero Section -->
