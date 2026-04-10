@@ -293,13 +293,13 @@
                     <i class="fas fa-shopping-cart text-xl text-amber-500"></i>
                 </div>
                 <h3 class="text-base font-bold text-white mb-2">E-Commerce</h3>
-                <p class="text-gray-500 text-xs leading-relaxed font-medium">Auto-fill addresses, validate pincodes, calculate shipping zones globally.</p>
+                <p class="text-gray-500 text-xs leading-relaxed font-medium">Auto-fill addresses, validate pincodes, calculate geographic zones globally.</p>
             </div>
             <div class="use-case-card shimmer-border bg-white/[0.03] rounded-2xl p-7 border border-white/5 hover:border-sky-500/20 text-center group">
                 <div class="w-14 h-14 mx-auto bg-sky-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-sky-500/20 transition-colors">
                     <i class="fas fa-truck text-xl text-sky-500"></i>
                 </div>
-                <h3 class="text-base font-bold text-white mb-2">Logistics</h3>
+                <h3 class="text-base font-bold text-white mb-2">Commerce</h3>
                 <p class="text-gray-500 text-xs leading-relaxed font-medium">Route planning, delivery zone mapping, and warehouse coverage analysis.</p>
             </div>
             <div class="use-case-card shimmer-border bg-white/[0.03] rounded-2xl p-7 border border-white/5 hover:border-emerald-500/20 text-center group">
@@ -342,7 +342,7 @@
                     <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-white font-bold">JD</div>
                     <div>
                         <p class="text-white font-bold">James Dalton</p>
-                        <p class="text-gray-500 text-sm">CTO, Global Logistics Inc.</p>
+                        <p class="text-gray-500 text-sm">CTO, Global Commerce Inc.</p>
                     </div>
                 </div>
             </div>

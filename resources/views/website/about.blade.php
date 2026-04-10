@@ -12,7 +12,7 @@
                     At SetuGeo, we believe that developers shouldn't have to wrestle with outdated, inaccurate, or slow geographic databases. Our mission is to provide an accessible, developer-first infrastructure that powers location-aware applications globally.
                 </p>
                 <p class="mt-4 text-lg text-gray-300 leading-relaxed font-medium">
-                    We aggregate millions of data points across 200+ nations daily, validating coordinate accuracy down to the millimeter. Whether you're building a checkout form, a logistics engine, or a global travel platform, SetuGeo guarantees reliability at sub-50ms latency.
+                    We aggregate millions of data points across 200+ nations daily, validating coordinate accuracy down to the millimeter. Whether you're building a checkout form, a Commerce engine, or a global travel platform, SetuGeo guarantees reliability at sub-50ms latency.
                 </p>
                 
                 <div class="mt-12 grid grid-cols-2 gap-8 border-t border-white/10 pt-10">

@@ -1,484 +1,232 @@
 @extends('layouts.public')
 
-@section('title', 'SetuGeo - World-Class Geographic Data API Platform')
+@section('title', 'SetuGeo API - The Most Accurate Geographic Data')
 
 @section('content')
-<style>
-    @keyframes reveal { from { opacity:0; transform:translateY(30px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
-    @keyframes draw-line { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
-    @keyframes ticker { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
-    @keyframes ping-slow { 0%,100% { transform:scale(1); opacity:0.6; } 50% { transform:scale(1.5); opacity:0; } }
-    .anim-reveal { animation: reveal 0.7s ease-out both; }
-    .anim-reveal-d1 { animation: reveal 0.7s 0.1s ease-out both; }
-    .anim-reveal-d2 { animation: reveal 0.7s 0.2s ease-out both; }
-    .anim-reveal-d3 { animation: reveal 0.7s 0.3s ease-out both; }
-    .anim-reveal-d4 { animation: reveal 0.7s 0.4s ease-out both; }
-    .comparison-row:hover { background: rgba(255,255,255,0.02); }
-    .pricing-card-glow { position:relative; }
-    .pricing-card-glow::before { content:''; position:absolute; inset:-1px; border-radius:1.5rem; padding:1px; background:linear-gradient(135deg,rgba(245,158,11,0.3),transparent 50%,rgba(245,158,11,0.15)); -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
-    .ticker-track { display:flex; width:fit-content; animation:ticker 30s linear infinite; }
-    .ticker-track:hover { animation-play-state:paused; }
-    .api-endpoint-row { transition: all 0.2s ease; }
-    .api-endpoint-row:hover { background: rgba(245,158,11,0.04); transform:translateX(4px); }
-    .hero-gradient-text { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 40%, #fcd34d 60%, #f59e0b 100%); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-</style>
-
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  HERO — Editorial / Magazine Style                                 -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="relative overflow-hidden min-h-[80vh] flex items-center">
-    <!-- Layered background -->
-    <div class="absolute inset-0">
-        <div class="absolute top-[10%] left-[5%] w-[500px] h-[500px] bg-amber-500/[0.07] rounded-full blur-[100px]"></div>
-        <div class="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-yellow-500/[0.05] rounded-full blur-[100px]"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:32px_32px]"></div>
+<!-- Hero Section -->
+<div class="relative overflow-hidden bg-transparent">
+    <!-- Decorative background blobs -->
+    <div class="absolute inset-y-0 right-0 w-1/2 bg-amber-500 rounded-l-full opacity-10 transform translate-x-1/3 blur-3xl pointer-events-none z-0"></div>
+    <div class="absolute top-0 left-0 w-64 h-64 bg-yellow-500 rounded-br-full opacity-10 transform -translate-y-1/2 -translate-x-1/4 blur-2xl pointer-events-none z-0"></div>
+    <!-- Floating SetuGeo impact elements -->
+    <div class="hidden lg:block absolute top-[15%] right-[20%] z-30 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-2xl animate-[bounce_4s_infinite]">
+        <div class="text-[10px] font-mono text-gray-400 mb-1 flex items-center justify-between gap-4"><span>NODE: TOKYO</span><span class="text-green-400 text-xs">●</span></div>
+        <div class="text-sm font-mono text-amber-500">35.6762° N, 139.6503° E</div>
     </div>
-
-    <!-- Decorative vertical line -->
-    <div class="hidden lg:block absolute left-[8%] top-[15%] bottom-[15%] w-px bg-gradient-to-b from-transparent via-amber-500/20 to-transparent"></div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full py-14">
-        <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            <!-- Left Column — Main Copy (7 cols) -->
-            <div class="lg:col-span-7">
-                <div class="anim-reveal flex items-center gap-3 mb-6">
-                    <div class="h-px w-12 bg-amber-500"></div>
-                    <span class="text-xs font-bold tracking-[0.2em] uppercase text-amber-500">Geographic Data API</span>
-                </div>
-
-                <h1 class="anim-reveal-d1 text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white leading-[1.06] tracking-tight mb-8">
-                    Power your apps with the world's
-                    <span class="hero-gradient-text">most precise</span>
-                    location data
-                </h1>
-
-                <p class="anim-reveal-d2 text-lg lg:text-xl text-gray-400 max-w-xl mb-8 font-medium leading-relaxed">
-                    One unified API for countries, states, cities, pincodes, timezones, bank branches, and real-time currency conversions. Trusted infrastructure for production workloads.
-                </p>
-
-                <div class="anim-reveal-d3 flex flex-wrap gap-4">
-                    <a href="{{ route('register') }}" class="group inline-flex items-center px-8 py-4 text-base font-bold rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-lg shadow-amber-600/20 hover:shadow-amber-500/30 transform hover:-translate-y-0.5 transition-all duration-300">
-                        Get Your API Key
-                        <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                    </a>
-                    <a href="{{ route('pricing') }}" class="inline-flex items-center px-8 py-4 text-base font-bold rounded-2xl text-gray-300 border border-white/10 hover:bg-white/5 hover:border-white/20 transition-all duration-300">
-                        View Plans & Pricing
-                    </a>
-                </div>
-
-                <!-- Trust strip -->
-                <div class="anim-reveal-d4 mt-10 pt-6 border-t border-white/5">
-                    <p class="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4">Trusted by developers at</p>
-                    <div class="flex flex-wrap items-center gap-6 text-gray-600">
-                        <span class="text-lg font-black tracking-tight">LogiFlow</span>
-                        <span class="text-lg font-black tracking-tight">FinServ</span>
-                        <span class="text-lg font-black tracking-tight">ShipRocket</span>
-                        <span class="text-lg font-black tracking-tight">TravelStack</span>
-                        <span class="text-lg font-black tracking-tight">DataBridge</span>
-                    </div>
-                </div>
+    
+    <div class="hidden lg:block absolute bottom-[25%] right-[10%] z-30 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-2xl animate-[bounce_5s_infinite_0.5s]">
+        <div class="text-[10px] font-mono text-gray-400 mb-1 flex items-center justify-between gap-4"><span>NODE: LONDON</span><span class="text-green-400 text-xs">●</span></div>
+        <div class="text-sm font-mono text-amber-500">51.5074° N, 0.1278° W</div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 pt-20 pb-24 sm:pt-28 sm:pb-32 lg:pt-36 lg:pb-40">
+        <div class="text-center max-w-4xl mx-auto">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-amber-500 mb-8 border border-white/20 shadow-lg cursor-default">
+                <span class="flex h-2 w-2 rounded-full bg-amber-500 mr-2 animate-pulse"></span>
+                <span class="text-xs font-bold tracking-widest uppercase text-amber-500">SetuGeo Now Live</span>
             </div>
-
-            <!-- Right Column — Live Data Preview (5 cols) -->
-            <div class="lg:col-span-5 anim-reveal-d3 hidden lg:block">
-                <div class="space-y-4">
-                    <!-- Data card 1 -->
-                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-amber-500/20 transition-all duration-300 group">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-globe text-amber-500"></i>
-                                </div>
-                                <div>
-                                    <p class="text-white text-sm font-bold">Countries API</p>
-                                    <p class="text-gray-600 text-xs font-mono">/v1/countries</p>
-                                </div>
-                            </div>
-                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-500 font-medium">India → 36 States → 150K+ Cities</span>
-                            <span class="text-amber-500 font-bold">18ms</span>
-                        </div>
-                    </div>
-
-                    <!-- Data card 2 -->
-                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-sky-500/20 transition-all duration-300 group">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-sky-500/10 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-map-pin text-sky-500"></i>
-                                </div>
-                                <div>
-                                    <p class="text-white text-sm font-bold">Pincode Lookup</p>
-                                    <p class="text-gray-600 text-xs font-mono">/v1/pincodes/400001</p>
-                                </div>
-                            </div>
-                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-500 font-medium">Mumbai, Maharashtra, India</span>
-                            <span class="text-sky-500 font-bold">12ms</span>
-                        </div>
-                    </div>
-
-                    <!-- Data card 3 -->
-                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-purple-500/20 transition-all duration-300 group">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-exchange-alt text-purple-500"></i>
-                                </div>
-                                <div>
-                                    <p class="text-white text-sm font-bold">Currency Rates</p>
-                                    <p class="text-gray-600 text-xs font-mono">/v1/currencies/USD</p>
-                                </div>
-                            </div>
-                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-500 font-medium">1 USD = ₹83.25 INR</span>
-                            <span class="text-purple-500 font-bold">22ms</span>
-                        </div>
-                    </div>
-
-                    <!-- Data card 4 -->
-                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-emerald-500/20 transition-all duration-300 group">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-clock text-emerald-500"></i>
-                                </div>
-                                <div>
-                                    <p class="text-white text-sm font-bold">Timezone Data</p>
-                                    <p class="text-gray-600 text-xs font-mono">/v1/timezones/IN</p>
-                                </div>
-                            </div>
-                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-500 font-medium">Asia/Kolkata → UTC+05:30</span>
-                            <span class="text-emerald-500 font-bold">8ms</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  SCROLLING TICKER — Technology Logos                                -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="py-10 border-y border-white/5 overflow-hidden">
-    <div class="ticker-track">
-        @for($t = 0; $t < 2; $t++)
-        <div class="flex items-center gap-14 px-7 whitespace-nowrap">
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-laravel text-2xl text-red-500/50"></i> Laravel</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-react text-2xl text-sky-500/50"></i> React</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-node-js text-2xl text-green-500/50"></i> Node.js</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-python text-2xl text-yellow-500/50"></i> Python</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-vuejs text-2xl text-emerald-500/50"></i> Vue</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-angular text-2xl text-red-500/50"></i> Angular</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-golang text-2xl text-sky-500/50"></i> Go</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-java text-2xl text-orange-500/50"></i> Java</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-swift text-2xl text-orange-500/50"></i> Swift</span>
-            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-php text-2xl text-indigo-500/50"></i> PHP</span>
-        </div>
-        @endfor
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  API REFERENCE TABLE — Interactive Endpoint Directory               -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="relative py-14 sm:py-20 overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(245,158,11,0.04)_0%,transparent_50%)]"></div>
-
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="grid lg:grid-cols-5 gap-12 items-start">
-            <!-- Left Text -->
-            <div class="lg:col-span-2 lg:sticky lg:top-28">
-                <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">API Reference</h2>
-                <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Complete endpoint directory.</p>
-                <p class="text-gray-400 font-medium leading-relaxed mb-8">
-                    Well-documented RESTful endpoints returning clean JSON. Integrate with any language or framework using standard HTTP calls.
-                </p>
-                <a href="{{ route('docs') }}" class="inline-flex items-center text-amber-500 font-bold hover:text-amber-400 transition-colors group">
-                    View Full Documentation
-                    <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight mb-8 leading-[1.1]">
+                Integrate <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">Accurate</span> Location Data in Minutes
+            </h1>
+            <p class="mt-4 max-w-2xl text-lg md:text-xl text-gray-300 mx-auto mb-10 leading-relaxed font-medium">
+                Empower your application with lightning-fast APIs for countries, states, cities, coordinates, and pincodes. High precision data trusted by modern developers globally.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{{ route('register') }}" class="inline-flex justify-center items-center px-8 py-4 border border-transparent text-lg font-bold rounded-xl text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+                    Get Access Now <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                </a>
+                <a href="{{ route('about') }}" class="inline-flex justify-center items-center px-8 py-4 border-2 border-white/20 text-lg font-bold rounded-xl text-white bg-white/10 backdrop-blur-md hover:bg-white/20 transform hover:-translate-y-1 transition-all duration-200">
+                    Learn More
                 </a>
             </div>
-
-            <!-- Right — Endpoint list -->
-            <div class="lg:col-span-3 space-y-3">
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/countries</p>
-                        <p class="text-gray-600 text-xs truncate">List all countries with ISO codes, dial codes, regions, flags</p>
+            
+            <!-- Terminal/Code snippet mock -->
+            <div class="mt-20 max-w-3xl mx-auto hidden sm:block shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-gray-900/80 backdrop-blur-xl transform transition-transform hover:scale-[1.02] duration-300">
+                <div class="flex items-center px-4 py-3 bg-white/5 border-b border-white/10">
+                    <div class="flex space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
                     </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~15ms</span>
+                    <div class="ml-4 text-xs font-mono text-gray-400 uppercase tracking-widest">GET /api/v1/countries/IN/cities</div>
                 </div>
-
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/countries/{iso}/states</p>
-                        <p class="text-gray-600 text-xs truncate">States/provinces by country with coordinates</p>
-                    </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~18ms</span>
-                </div>
-
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/states/{id}/cities</p>
-                        <p class="text-gray-600 text-xs truncate">Cities by state with lat/lng coordinates</p>
-                    </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~25ms</span>
-                </div>
-
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/pincodes/{code}</p>
-                        <p class="text-gray-600 text-xs truncate">Pincode lookup with city, state, area, coordinates</p>
-                    </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~12ms</span>
-                </div>
-
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/timezones/{country}</p>
-                        <p class="text-gray-600 text-xs truncate">Timezone data with GMT offset, abbreviation, DST</p>
-                    </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~8ms</span>
-                </div>
-
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/currencies/{code}</p>
-                        <p class="text-gray-600 text-xs truncate">Real-time exchange rates vs USD & INR</p>
-                    </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~22ms</span>
-                </div>
-
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/banks/{ifsc}</p>
-                        <p class="text-gray-600 text-xs truncate">Bank branch details via IFSC code lookup</p>
-                    </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~10ms</span>
+                <div class="p-6 text-left overflow-x-auto text-sm font-mono text-gray-300 leading-relaxed">
+                    <span class="text-pink-400">fetch</span>(<span class="text-green-300">'https://api.setugeo.provider/v1/countries/IN/cities'</span>, {<br>
+                    &nbsp;&nbsp;headers: { <span class="text-amber-300">'Authorization'</span>: <span class="text-green-300">'Bearer YOUR_KEY'</span> }<br>
+                    })<br>
+                    .<span class="text-pink-400">then</span>(response => response.<span class="text-pink-400">json</span>())<br>
+                    .<span class="text-pink-400">then</span>(data => {<br>
+                    &nbsp;&nbsp;<span class="text-blue-300">console</span>.<span class="text-blue-300">log</span>(data.cities); <span class="text-gray-500">// Explore SetuGeo API</span><br>
+                    });
                 </div>
             </div>
         </div>
     </div>
-</section>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  WHY SetuGeo — Comparison Strip                                    -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="relative py-14 sm:py-20 border-t border-white/5">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center max-w-3xl mx-auto mb-10">
-            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Why SetuGeo</h2>
-            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">The unfair advantage for your stack.</p>
-        </div>
+<!-- Features Section -->
+<div class="relative overflow-hidden bg-white/5 backdrop-blur-lg py-24 sm:py-32 border-t border-white/10">
+    <!-- Rich Background Elements -->
+    <!-- Subtle connecting lines SVG network -->
+    <svg class="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10%" y1="20%" x2="40%" y2="50%" stroke="#f59e0b" stroke-width="2"/>
+        <line x1="40%" y1="50%" x2="80%" y2="30%" stroke="#f59e0b" stroke-width="2"/>
+        <line x1="80%" y1="30%" x2="90%" y2="70%" stroke="#f59e0b" stroke-width="2"/>
+        <line x1="40%" y1="50%" x2="50%" y2="80%" stroke="#f59e0b" stroke-width="2"/>
+        <line x1="10%" y1="80%" x2="50%" y2="80%" stroke="#f59e0b" stroke-width="2"/>
+        <circle cx="10%" cy="20%" r="6" fill="#f59e0b"/>
+        <circle cx="40%" cy="50%" r="8" fill="#f59e0b"/>
+        <circle cx="80%" cy="30%" r="6" fill="#f59e0b"/>
+        <circle cx="90%" cy="70%" r="5" fill="#f59e0b"/>
+        <circle cx="50%" cy="80%" r="7" fill="#f59e0b"/>
+        <circle cx="10%" cy="80%" r="5" fill="#f59e0b"/>
+    </svg>
+    <div class="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]"></div>
 
-        <div class="bg-white/[0.02] rounded-3xl border border-white/5 overflow-hidden">
-            <!-- Table Header -->
-            <div class="grid grid-cols-3 text-center border-b border-white/5 bg-white/[0.02]">
-                <div class="py-5 px-4 text-sm font-bold text-gray-500 uppercase tracking-wider">Feature</div>
-                <div class="py-5 px-4 text-sm font-bold text-amber-500 uppercase tracking-wider border-x border-white/5">SetuGeo</div>
-                <div class="py-5 px-4 text-sm font-bold text-gray-600 uppercase tracking-wider">Others</div>
-            </div>
-            <!-- Rows -->
-            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
-                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Response Time</div>
-                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5">&lt;50ms</div>
-                <div class="py-4 px-4 text-sm text-gray-600 font-medium">200-500ms</div>
-            </div>
-            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
-                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Data Freshness</div>
-                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5">Weekly Updates</div>
-                <div class="py-4 px-4 text-sm text-gray-600 font-medium">Monthly/Manual</div>
-            </div>
-            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
-                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Coverage</div>
-                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5">200+ Countries</div>
-                <div class="py-4 px-4 text-sm text-gray-600 font-medium">50-100 Countries</div>
-            </div>
-            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
-                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Pincode Data</div>
-                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5"><i class="fas fa-check text-emerald-500"></i> Full Coverage</div>
-                <div class="py-4 px-4 text-sm text-gray-600 font-medium"><i class="fas fa-times text-red-500/50"></i> Limited</div>
-            </div>
-            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
-                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Currency Rates</div>
-                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5"><i class="fas fa-check text-emerald-500"></i> Built-in</div>
-                <div class="py-4 px-4 text-sm text-gray-600 font-medium"><i class="fas fa-times text-red-500/50"></i> Separate API</div>
-            </div>
-            <div class="comparison-row grid grid-cols-3 text-center transition-colors">
-                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Free Tier</div>
-                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5"><i class="fas fa-check text-emerald-500"></i> Yes</div>
-                <div class="py-4 px-4 text-sm text-gray-600 font-medium">Paid Only</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  PRICING PREVIEW                                                   -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="relative py-14 sm:py-20 border-t border-white/5">
+    <div class="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-amber-500 opacity-20 blur-[100px]"></div>
+    
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center max-w-3xl mx-auto mb-10">
-            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Pricing</h2>
-            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Transparent, developer-friendly pricing.</p>
-            <p class="text-gray-400 font-medium">Start free. Scale when you're ready. No hidden charges, ever.</p>
+        <div class="text-center max-w-3xl mx-auto mb-20">
+            <h2 class="text-base text-amber-500 font-bold tracking-wide uppercase">Core Infrastructure</h2>
+            <p class="mt-2 text-3xl font-extrabold text-white sm:text-4xl tracking-tight">Everything you need to map the world.</p>
+            <p class="mt-4 text-lg text-gray-300 font-medium">We provide beautifully structured JSON payloads containing over 200+ countries, 4,000+ states, and millions of cities and zip codes.</p>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <!-- Free Tier -->
-            <div class="bg-white/[0.03] rounded-3xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 flex flex-col">
-                <h3 class="text-xl font-bold text-white mb-2">Free</h3>
-                <p class="text-gray-500 text-sm mb-6">Perfect for prototyping and testing.</p>
-                <p class="text-4xl font-black text-white mb-1">₹0</p>
-                <p class="text-gray-600 text-sm font-medium mb-8">/month forever</p>
-                <ul class="space-y-3 text-sm text-gray-400 font-medium mb-8 flex-1">
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> 100 API requests/month</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> All endpoints access</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Standard support</li>
-                </ul>
-                <a href="{{ route('register') }}" class="block text-center py-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
-                    Get Started Free
-                </a>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12">
+            <!-- Feature 1 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-3xl p-10 shadow-sm border border-white/10 hover:shadow-amber-500/20 hover:border-amber-500/50 transition-all duration-300 group">
+                <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
+                    <i class="fas fa-bullseye text-2xl text-amber-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3 tracking-tight">Millimeter Accuracy</h3>
+                <p class="text-gray-400 leading-relaxed font-medium">Our geocoding algorithms and databases are updated daily from global authoritative sources guaranteeing >99.9% accuracy, keeping your applications flawless.</p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-3xl p-10 shadow-sm border border-white/10 hover:shadow-amber-500/20 hover:border-amber-500/50 transition-all duration-300 transform md:-translate-y-4 group">
+                <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
+                    <i class="fas fa-bolt text-2xl text-amber-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3 tracking-tight">Sub-50ms Latency</h3>
+                <p class="text-gray-400 leading-relaxed font-medium">Global CDN edge routing ensures that API queries resolve consistently blazing fast, no matter where your users or application servers are globally located.</p>
             </div>
 
-            <!-- Pro Tier -->
-            <div class="pricing-card-glow bg-white/[0.05] rounded-3xl p-8 border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300 flex flex-col relative transform md:-translate-y-4 shadow-lg shadow-amber-500/5">
-                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest">Most Popular</div>
-                <h3 class="text-xl font-bold text-white mb-2">Pro</h3>
-                <p class="text-gray-500 text-sm mb-6">For production applications at scale.</p>
-                <p class="text-4xl font-black text-white mb-1">₹999</p>
-                <p class="text-gray-600 text-sm font-medium mb-8">/month</p>
-                <ul class="space-y-3 text-sm text-gray-400 font-medium mb-8 flex-1">
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> 50,000 API requests/month</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> All endpoints access</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> Priority support</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> Usage analytics</li>
-                </ul>
-                <a href="{{ route('register') }}" class="block text-center py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold transition-all shadow-md">
-                    Start Pro Plan
-                </a>
-            </div>
-
-            <!-- Enterprise Tier -->
-            <div class="bg-white/[0.03] rounded-3xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 flex flex-col">
-                <h3 class="text-xl font-bold text-white mb-2">Enterprise</h3>
-                <p class="text-gray-500 text-sm mb-6">For high-volume, mission-critical apps.</p>
-                <p class="text-4xl font-black text-white mb-1">Custom</p>
-                <p class="text-gray-600 text-sm font-medium mb-8">tailored for you</p>
-                <ul class="space-y-3 text-sm text-gray-400 font-medium mb-8 flex-1">
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Unlimited API requests</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Dedicated support</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Custom SLA</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> On-premise option</li>
-                </ul>
-                <a href="{{ route('contact') }}" class="block text-center py-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
-                    Contact Sales
-                </a>
-            </div>
-        </div>
-
-        <div class="text-center mt-8">
-            <a href="{{ route('pricing') }}" class="text-amber-500 font-bold hover:text-amber-400 transition-colors text-sm">
-                View all plans and compare features →
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  TESTIMONIALS — Stacked Cards                                      -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="relative py-14 sm:py-20 border-t border-white/5 overflow-hidden">
-    <div class="absolute top-1/2 left-0 w-[400px] h-[400px] bg-amber-600/5 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/2"></div>
-
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center max-w-3xl mx-auto mb-10">
-            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Developer Love</h2>
-            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">What our users are saying.</p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-6">
-            <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-7 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
-                <div class="flex mb-3 gap-0.5">
-                    @for($s=0; $s<5; $s++)<i class="fas fa-star text-amber-500 text-xs"></i>@endfor
+            <!-- Feature 3 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-3xl p-10 shadow-sm border border-white/10 hover:shadow-amber-500/20 hover:border-amber-500/50 transition-all duration-300 group">
+                <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
+                    <i class="fas fa-code text-2xl text-amber-500"></i>
                 </div>
-                <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">"SetuGeo's accuracy is unmatched. We switched from a competitor and haven't looked back."</p>
-                <div class="flex items-center gap-3 border-t border-white/5 pt-4">
-                    <div class="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-white text-xs font-bold">JD</div>
-                    <div>
-                        <p class="text-white text-xs font-bold">James Dalton</p>
-                        <p class="text-gray-600 text-[11px]">CTO, Global Logistics</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-7 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
-                <div class="flex mb-3 gap-0.5">
-                    @for($s=0; $s<5; $s++)<i class="fas fa-star text-amber-500 text-xs"></i>@endfor
-                </div>
-                <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">"Integration took 15 minutes. The docs are clear and the sub-50ms latency is real."</p>
-                <div class="flex items-center gap-3 border-t border-white/5 pt-4">
-                    <div class="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-white text-xs font-bold">SK</div>
-                    <div>
-                        <p class="text-white text-xs font-bold">Sarah Koenig</p>
-                        <p class="text-gray-600 text-[11px]">Sr. Dev, SaaS Travel</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-7 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
-                <div class="flex mb-3 gap-0.5">
-                    @for($s=0; $s<5; $s++)<i class="fas fa-star text-amber-500 text-xs"></i>@endfor
-                </div>
-                <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">"The pincode API alone saved us 200+ engineering hours. 3M lookups/month, zero issues."</p>
-                <div class="flex items-center gap-3 border-t border-white/5 pt-4">
-                    <div class="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-white text-xs font-bold">RM</div>
-                    <div>
-                        <p class="text-white text-xs font-bold">Ravi Mehta</p>
-                        <p class="text-gray-600 text-[11px]">VP Eng, FinServ</p>
-                    </div>
-                </div>
+                <h3 class="text-xl font-bold text-white mb-3 tracking-tight">Developer Friendly</h3>
+                <p class="text-gray-400 leading-relaxed font-medium">Crystal clear documentation, comprehensive RESTful endpoints, and standard JSON formats meant to drop cleanly into your application workflow instantly.</p>
             </div>
         </div>
     </div>
-</section>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  FAQ                                                               -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="relative py-14 sm:py-20 border-t border-white/5" x-data="{ active: null }">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center mb-10">
-            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">FAQ</h2>
-            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Common questions.</p>
+<!-- Stats Section -->
+<div class="relative overflow-hidden bg-transparent py-24 sm:py-32">
+    <!-- Dynamic Line & Glow Background -->
+    <i class="fas fa-map-marker-alt absolute top-10 left-[15%] text-amber-500/10 text-5xl transform -rotate-12 blur-[2px]"></i>
+    <i class="fas fa-map-marker-alt absolute bottom-20 right-[20%] text-amber-500/10 text-7xl transform rotate-12 blur-[4px]"></i>
+    <i class="fas fa-globe absolute top-1/3 right-[10%] text-amber-500/10 text-9xl blur-[2px] animate-[spin_60s_linear_infinite]"></i>
+    
+    <div class="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
+    <div class="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.05)_0,transparent_60%)]"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="text-center">
+                <p class="text-5xl font-black text-white mb-2">99.9<span class="text-amber-500">%</span></p>
+                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Uptime SLA</p>
+            </div>
+            <div class="text-center">
+                <p class="text-5xl font-black text-white mb-2">1<span class="text-amber-500">M+</span></p>
+                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">API Requests</p>
+            </div>
+            <div class="text-center">
+                <p class="text-5xl font-black text-white mb-2">200<span class="text-amber-500">+</span></p>
+                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Countries Covered</p>
+            </div>
+            <div class="text-center">
+                <p class="text-5xl font-black text-white mb-2">50<span class="text-amber-500">ms</span></p>
+                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">Avg Latency</p>
+            </div>
         </div>
+    </div>
+</div>
 
-        <div class="space-y-3">
+<!-- Integrations Section -->
+<div class="bg-white/5 backdrop-blur-lg py-24 sm:py-32 border-y border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-base text-amber-500 font-bold tracking-wide uppercase mb-12">Works with your stack</h2>
+        <div class="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 italic font-black text-3xl text-gray-400">
+            <span class="flex items-center gap-2"><i class="fab fa-laravel text-red-500"></i> Laravel</span>
+            <span class="flex items-center gap-2"><i class="fab fa-react text-blue-400"></i> React</span>
+            <span class="flex items-center gap-2"><i class="fab fa-python text-yellow-500"></i> Python</span>
+            <span class="flex items-center gap-2"><i class="fab fa-node-js text-green-500"></i> Node.js</span>
+            <span class="flex items-center gap-2"><i class="fab fa-php text-purple-400"></i> PHP</span>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials Section -->
+<div class="relative overflow-hidden bg-transparent py-24 sm:py-32">
+    <!-- Ambient glowing abstract shapes -->
+    <div class="absolute top-1/2 left-0 w-96 h-96 bg-amber-600 rounded-full opacity-10 mix-blend-screen blur-[120px] -translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+    <div class="absolute top-1/2 right-0 w-96 h-96 bg-yellow-500 rounded-full opacity-10 mix-blend-screen blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <h2 class="text-base text-amber-500 font-bold tracking-wide uppercase mb-4">Trusted by Developers</h2>
+        <p class="text-4xl font-extrabold text-white mb-20 tracking-tight">The data layer for industry leaders.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+            <div class="bg-white/10 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10">
+                <p class="text-gray-400 text-sm italic mb-6">"SetuGeo has been a game-changer for our platform. The precision and speed of their API are unmatched in the industry."</p>
+                <div class="flex items-center">
+                    <div class="h-10 w-10 flex-shrink-0">
+                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/20">
+                            <span class="text-sm font-bold text-amber-500">JD</span>
+                        </span>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-bold text-white">James Dalton</p>
+                        <p class="text-gray-500 text-sm">CTO, Global Commerce</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10">
+                <p class="text-xl text-gray-300 italic mb-8 font-medium border-l-4 border-amber-500 pl-6 leading-relaxed">
+                    "Integrating the API was a breeze. The documentation is perfect, and the sub-50ms latency is exactly what we needed for our scale."
+                </p>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center font-bold text-white">SK</div>
+                    <div>
+                        <p class="text-white font-bold">Sarah Koenig</p>
+                        <p class="text-gray-500 text-sm">Senior Developer, SaaS Travel</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<div class="relative overflow-hidden bg-white/5 backdrop-blur-lg py-24 sm:py-32 border-t border-white/10" x-data="{ active: null }">
+    <!-- Delicate dot pattern -->
+    <div class="absolute inset-0 z-0 bg-[radial-gradient(#ffffff1a_1px,transparent_1px)] [background-size:20px_20px] opacity-30"></div>
+
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <h2 class="text-base text-amber-500 font-bold tracking-wide uppercase mb-4">Common Questions</h2>
+        <p class="text-4xl font-extrabold text-white mb-16 tracking-tight">Got questions? We've got answers.</p>
+        
+        <div class="space-y-4 text-left" x-data="{ active: null }">
             @forelse($faqs as $i => $item)
-            <div class="bg-white/[0.03] rounded-2xl border border-white/5 overflow-hidden hover:border-amber-500/20 transition-all group">
-                <button @click="active = (active === {{ $i }} ? null : {{ $i }})" class="w-full flex items-center justify-between px-6 sm:px-8 py-5 text-left">
-                    <span class="text-sm font-bold text-white group-hover:text-amber-400 transition-colors pr-4">{{ $item->question }}</span>
-                    <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-chevron-down text-amber-500 text-[10px] transition-transform duration-300" :class="active === {{ $i }} ? 'rotate-180' : ''"></i>
-                    </div>
+            <div class="bg-white/5 rounded-3xl border border-white/10 overflow-hidden transition-all hover:border-amber-500/30 hover:bg-white/[0.07] group">
+                <button @click="active = (active === {{ $i }} ? null : {{ $i }})" class="w-full flex items-center justify-between px-8 sm:px-10 pt-8 pb-5 text-left transition-colors">
+                    <span class="text-xl font-bold text-white group-hover:text-amber-500 transition-colors">{{ $item->question }}</span>
+                    <i class="fas fa-chevron-down text-amber-500 transition-transform duration-300" :class="active === {{ $i }} ? 'rotate-180' : ''"></i>
                 </button>
-                <div x-show="active === {{ $i }}" x-collapse class="px-6 sm:px-8 pb-5 text-gray-400 font-medium leading-relaxed text-sm">
+                <div x-show="active === {{ $i }}" x-collapse class="px-8 sm:px-10 pt-0 pb-8 text-gray-400 font-medium leading-relaxed text-lg">
                     {{ $item->answer }}
                 </div>
             </div>
@@ -489,41 +237,27 @@
             @endforelse
         </div>
     </div>
-</section>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  FINAL CTA                                                         -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<section class="relative py-16 sm:py-24 border-t border-white/5">
-    <div class="absolute inset-0 bg-gradient-to-t from-amber-500/[0.03] to-transparent"></div>
-
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <div class="mb-8">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span class="text-xs font-bold tracking-widest uppercase text-emerald-400">All systems operational</span>
+<!-- CTA Section -->
+<div class="bg-white/5 backdrop-blur-xl border-y border-white/10">
+    <div class="max-w-7xl mx-auto py-24 sm:py-32 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between">
+        <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+            <span class="block">Ready to map the globe?</span>
+            <span class="block text-amber-500 mt-2">Start integrating our APIs today for free.</span>
+        </h2>
+        <div class="mt-10 flex lg:mt-0 lg:flex-shrink-0">
+            <div class="inline-flex rounded-xl shadow">
+                <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-xl text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition-colors shadow-md">
+                    Get Started Free
+                </a>
+            </div>
+            <div class="ml-3 inline-flex rounded-xl shadow">
+                <a href="{{ route('pricing') }}" class="inline-flex items-center justify-center px-6 py-3 border border-white/10 text-base font-bold rounded-xl text-white bg-white/10 hover:bg-white/20 transition-colors shadow-md backdrop-blur-md">
+                    View Pricing
+                </a>
             </div>
         </div>
-
-        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">
-            Ship faster with <span class="hero-gradient-text">SetuGeo</span>.
-        </h2>
-        <p class="text-lg text-gray-400 mb-8 font-medium max-w-2xl mx-auto">
-            Get your API keys in 60 seconds. Start with a generous free tier — upgrade when your product takes off.
-        </p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="{{ route('register') }}" class="group inline-flex justify-center items-center px-10 py-4 text-base font-bold rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-lg shadow-amber-600/20 transform hover:-translate-y-0.5 transition-all duration-300">
-                Create Free Account
-                <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-            </a>
-            <a href="{{ route('docs') }}" class="inline-flex justify-center items-center px-10 py-4 text-base font-bold rounded-2xl text-gray-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300">
-                <i class="fas fa-book-open mr-2 text-amber-500"></i>
-                Read Documentation
-            </a>
-        </div>
     </div>
-</section>
+</div>
 @endsection

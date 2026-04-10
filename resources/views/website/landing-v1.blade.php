@@ -399,7 +399,7 @@
                     <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-white text-sm font-bold">JD</div>
                     <div>
                         <p class="text-white text-sm font-bold">James Dalton</p>
-                        <p class="text-gray-600 text-xs">CTO, Global Logistics Inc.</p>
+                        <p class="text-gray-600 text-xs">CTO, Global Commerce Inc.</p>
                     </div>
                 </div>
             </div>

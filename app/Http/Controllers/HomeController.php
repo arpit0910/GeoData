@@ -32,7 +32,8 @@ class HomeController extends Controller
     public function landingV3()
     {
         $faqs = Faq::where('visibility', 'website')->where('status', 1)->orderBy('order')->get();
-        return view('website.landing-v3', compact('faqs'));
+        $plans = Plan::where('status', 1)->orderBy('amount', 'asc')->get();
+        return view('website.landing-v3', compact('faqs', 'plans'));
     }
 
     public function about()
