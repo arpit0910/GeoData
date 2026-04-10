@@ -77,6 +77,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'token_expires_at' => 'datetime',
+        'status' => 'integer',
+        'is_admin' => 'boolean',
     ];
 
     public function plan()

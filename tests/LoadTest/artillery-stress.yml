@@ -1,0 +1,92 @@
+# ============================================================================
+# SetuGeo API — Artillery Stress Test Configuration  
+# ============================================================================
+# Purpose: Push the API to its breaking point to identify max capacity.
+#
+# Usage:
+#   artillery run tests/LoadTest/artillery-stress.yml
+# ============================================================================
+
+config:
+  target: "http://localhost:8000"
+  phases:
+    # ── Phase 1: Baseline ──
+    - duration: 30
+      arrivalRate: 10
+      name: "Baseline"
+
+    # ── Phase 2: Medium Load ──
+    - duration: 60
+      arrivalRate: 50
+      name: "Medium Load"
+
+    # ── Phase 3: Heavy Load ──
+    - duration: 60
+      arrivalRate: 100
+      name: "Heavy Load"
+
+    # ── Phase 4: Breaking Point ──
+    - duration: 60
+      arrivalRate: 200
+      name: "Breaking Point"
+
+    # ── Phase 5: Extreme ──
+    - duration: 30
+      arrivalRate: 500
+      name: "Extreme Stress"
+
+  defaults:
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+
+  plugins:
+    ensure:
+      thresholds:
+        - http.response_time.p95: 3000
+        - http.response_time.p99: 5000
+
+  variables:
+    bearerToken: "YOUR_BEARER_TOKEN_HERE"
+
+scenarios:
+  # Single endpoint stress — isolates bottlenecks
+  - name: "Countries Listing Stress"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/v1/countries"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+  - name: "Pincode Search Stress"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/v1/pincodes/search?pincode=400001"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+  - name: "Branch Search Stress"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/v1/branch/search?search_query=mumbai"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+  - name: "Distance Calculation Stress"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/v1/geospatial/distance?lat1=19.076&lng1=72.877&lat2=28.613&lng2=77.209"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+  - name: "Nearby Search Stress"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/v1/geospatial/nearby?lat=19.076&lng=72.877&radius=50&type=city"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"

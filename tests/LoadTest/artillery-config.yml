@@ -1,0 +1,213 @@
+# ============================================================================
+# SetuGeo API — Artillery Load Testing Configuration
+# ============================================================================
+# Usage:
+#   1. Install Artillery:    npm install -g artillery
+#   2. Run load test:        artillery run tests/LoadTest/artillery-config.yml
+#   3. Generate report:      artillery run --output report.json tests/LoadTest/artillery-config.yml
+#                             artillery report report.json
+#
+# Before running, update the 'target' and 'token' values below.
+# ============================================================================
+
+config:
+  target: "http://localhost:8000"
+  phases:
+    # ── Warm-up Phase ──
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm Up"
+
+    # ── Ramp-up Phase ──
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 25
+      name: "Ramp Up"
+
+    # ── Sustained Load ──
+    - duration: 120
+      arrivalRate: 25
+      name: "Sustained Load"
+
+    # ── Spike Test ──
+    - duration: 30
+      arrivalRate: 50
+      name: "Spike Test"
+
+    # ── Cool Down ──
+    - duration: 30
+      arrivalRate: 5
+      name: "Cool Down"
+
+  defaults:
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+
+  # Ensure metrics capture response times
+  plugins:
+    ensure:
+      thresholds:
+        - http.response_time.p95: 1000   # 95th percentile under 1 second
+        - http.response_time.p99: 2000   # 99th percentile under 2 seconds
+        - http.response_time.median: 500 # Median under 500ms
+
+  variables:
+    # ── REPLACE THESE WITH ACTUAL VALUES ──
+    bearerToken: "YOUR_BEARER_TOKEN_HERE"
+    countryId: 1
+    stateId: 1
+    cityId: 1
+
+scenarios:
+  # ─────────────────────────────────────────────────────────────────
+  # Scenario 1: Token Generation Flow
+  # ─────────────────────────────────────────────────────────────────
+  - name: "Auth Token Generation"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/v1/auth/token"
+          json:
+            client_key: "{{ $env.CLIENT_KEY }}"
+            client_secret: "{{ $env.CLIENT_SECRET }}"
+          capture:
+            - json: "$.data.access_token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+            - contentType: json
+
+  # ─────────────────────────────────────────────────────────────────
+  # Scenario 2: GeoData Listing Flow (Most Common)
+  # ─────────────────────────────────────────────────────────────────
+  - name: "GeoData Browse Flow"
+    weight: 40
+    flow:
+      - get:
+          url: "/api/v1/regions"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/countries"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/countries/{{ countryId }}"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/countries/{{ countryId }}/states"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/states/{{ stateId }}/cities"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+  # ─────────────────────────────────────────────────────────────────
+  # Scenario 3: Search & Lookup Flow
+  # ─────────────────────────────────────────────────────────────────
+  - name: "Search & Lookup Flow"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/v1/pincodes/search?pincode=400001"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/address/validate?pincode=400001&state=Maharashtra"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/address/autocomplete?q=Mumbai"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/branch/search?search_query=andheri"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Scenario 4: Currency & Utility Flow
+  # ─────────────────────────────────────────────────────────────────
+  - name: "Currency & Utility Flow"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/v1/currency/exchange?currency=EUR"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+      - get:
+          url: "/api/v1/currency/convert?from=USD&to=INR&amount=100"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+      - get:
+          url: "/api/v1/timezones/convert?from=Asia/Kolkata&to=America/New_York&time=12:00:00"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+      - get:
+          url: "/api/v1/user/usage"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Scenario 5: Geospatial Computation Flow
+  # ─────────────────────────────────────────────────────────────────
+  - name: "Geospatial Analysis Flow"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/v1/geospatial/statistics"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/geospatial/distance?lat1=19.076&lng1=72.877&lat2=28.613&lng2=77.209"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/v1/geospatial/nearby?lat=19.076&lng=72.877&radius=25&type=city"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+      - get:
+          url: "/api/v1/geospatial/geocode?lat=19.076&lng=72.877"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"
+
+      - get:
+          url: "/api/v1/geospatial/boundary?min_lat=18&max_lat=20&min_lng=72&max_lng=74&type=city"
+          headers:
+            Authorization: "Bearer {{ bearerToken }}"

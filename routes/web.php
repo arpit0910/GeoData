@@ -31,6 +31,9 @@ use App\Http\Controllers\Admin\BankBranchController;
 use App\Http\Controllers\CurrencyConversionController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/landing-v1', [HomeController::class, 'landingV1'])->name('landing.v1');
+Route::get('/landing-v2', [HomeController::class, 'landingV2'])->name('landing.v2');
+Route::get('/landing-v3', [HomeController::class, 'landingV3'])->name('landing.v3');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.post');

@@ -151,7 +151,7 @@ class GeoAnalysisController extends Controller
         $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
 
         $results = $query->selectRaw("{$rawDistance} AS distance")
-            ->having('distance', '<=', $radius)
+            ->whereRaw("{$rawDistance} <= ?", [$radius])
             ->orderBy('distance')
             ->limit($limit)
             ->get();
@@ -185,7 +185,7 @@ class GeoAnalysisController extends Controller
         $city = City::with(['State', 'Country'])
             ->select('*')
             ->selectRaw("{$rawDistance} AS distance")
-            ->having('distance', '<=', 50)
+            ->whereRaw("{$rawDistance} <= 50")
             ->orderBy('distance')
             ->first();
 

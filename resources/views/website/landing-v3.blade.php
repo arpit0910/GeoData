@@ -1,0 +1,529 @@
+@extends('layouts.public')
+
+@section('title', 'SetuGeo - World-Class Geographic Data API Platform')
+
+@section('content')
+<style>
+    @keyframes reveal { from { opacity:0; transform:translateY(30px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes draw-line { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+    @keyframes ticker { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
+    @keyframes ping-slow { 0%,100% { transform:scale(1); opacity:0.6; } 50% { transform:scale(1.5); opacity:0; } }
+    .anim-reveal { animation: reveal 0.7s ease-out both; }
+    .anim-reveal-d1 { animation: reveal 0.7s 0.1s ease-out both; }
+    .anim-reveal-d2 { animation: reveal 0.7s 0.2s ease-out both; }
+    .anim-reveal-d3 { animation: reveal 0.7s 0.3s ease-out both; }
+    .anim-reveal-d4 { animation: reveal 0.7s 0.4s ease-out both; }
+    .comparison-row:hover { background: rgba(255,255,255,0.02); }
+    .pricing-card-glow { position:relative; }
+    .pricing-card-glow::before { content:''; position:absolute; inset:-1px; border-radius:1.5rem; padding:1px; background:linear-gradient(135deg,rgba(245,158,11,0.3),transparent 50%,rgba(245,158,11,0.15)); -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
+    .ticker-track { display:flex; width:fit-content; animation:ticker 30s linear infinite; }
+    .ticker-track:hover { animation-play-state:paused; }
+    .api-endpoint-row { transition: all 0.2s ease; }
+    .api-endpoint-row:hover { background: rgba(245,158,11,0.04); transform:translateX(4px); }
+    .hero-gradient-text { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 40%, #fcd34d 60%, #f59e0b 100%); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  HERO — Editorial / Magazine Style                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="relative overflow-hidden min-h-[80vh] flex items-center">
+    <!-- Layered background -->
+    <div class="absolute inset-0">
+        <div class="absolute top-[10%] left-[5%] w-[500px] h-[500px] bg-amber-500/[0.07] rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-yellow-500/[0.05] rounded-full blur-[100px]"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:32px_32px]"></div>
+    </div>
+
+    <!-- Decorative vertical line -->
+    <div class="hidden lg:block absolute left-[8%] top-[15%] bottom-[15%] w-px bg-gradient-to-b from-transparent via-amber-500/20 to-transparent"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full py-14">
+        <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            <!-- Left Column — Main Copy (7 cols) -->
+            <div class="lg:col-span-7">
+                <div class="anim-reveal flex items-center gap-3 mb-6">
+                    <div class="h-px w-12 bg-amber-500"></div>
+                    <span class="text-xs font-bold tracking-[0.2em] uppercase text-amber-500">Geographic Data API</span>
+                </div>
+
+                <h1 class="anim-reveal-d1 text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white leading-[1.06] tracking-tight mb-8">
+                    Power your apps with the world's
+                    <span class="hero-gradient-text">most precise</span>
+                    location data
+                </h1>
+
+                <p class="anim-reveal-d2 text-lg lg:text-xl text-gray-400 max-w-xl mb-8 font-medium leading-relaxed">
+                    One unified API for countries, states, cities, pincodes, timezones, bank branches, and real-time currency conversions. Trusted infrastructure for production workloads.
+                </p>
+
+                <div class="anim-reveal-d3 flex flex-wrap gap-4">
+                    <a href="{{ route('register') }}" class="group inline-flex items-center px-8 py-4 text-base font-bold rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-lg shadow-amber-600/20 hover:shadow-amber-500/30 transform hover:-translate-y-0.5 transition-all duration-300">
+                        Get Your API Key
+                        <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                    </a>
+                    <a href="{{ route('pricing') }}" class="inline-flex items-center px-8 py-4 text-base font-bold rounded-2xl text-gray-300 border border-white/10 hover:bg-white/5 hover:border-white/20 transition-all duration-300">
+                        View Plans & Pricing
+                    </a>
+                </div>
+
+                <!-- Trust strip -->
+                <div class="anim-reveal-d4 mt-10 pt-6 border-t border-white/5">
+                    <p class="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4">Trusted by developers at</p>
+                    <div class="flex flex-wrap items-center gap-6 text-gray-600">
+                        <span class="text-lg font-black tracking-tight">LogiFlow</span>
+                        <span class="text-lg font-black tracking-tight">FinServ</span>
+                        <span class="text-lg font-black tracking-tight">ShipRocket</span>
+                        <span class="text-lg font-black tracking-tight">TravelStack</span>
+                        <span class="text-lg font-black tracking-tight">DataBridge</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column — Live Data Preview (5 cols) -->
+            <div class="lg:col-span-5 anim-reveal-d3 hidden lg:block">
+                <div class="space-y-4">
+                    <!-- Data card 1 -->
+                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-amber-500/20 transition-all duration-300 group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-globe text-amber-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white text-sm font-bold">Countries API</p>
+                                    <p class="text-gray-600 text-xs font-mono">/v1/countries</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500 font-medium">India → 36 States → 150K+ Cities</span>
+                            <span class="text-amber-500 font-bold">18ms</span>
+                        </div>
+                    </div>
+
+                    <!-- Data card 2 -->
+                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-sky-500/20 transition-all duration-300 group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-sky-500/10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-map-pin text-sky-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white text-sm font-bold">Pincode Lookup</p>
+                                    <p class="text-gray-600 text-xs font-mono">/v1/pincodes/400001</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500 font-medium">Mumbai, Maharashtra, India</span>
+                            <span class="text-sky-500 font-bold">12ms</span>
+                        </div>
+                    </div>
+
+                    <!-- Data card 3 -->
+                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-purple-500/20 transition-all duration-300 group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-exchange-alt text-purple-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white text-sm font-bold">Currency Rates</p>
+                                    <p class="text-gray-600 text-xs font-mono">/v1/currencies/USD</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500 font-medium">1 USD = ₹83.25 INR</span>
+                            <span class="text-purple-500 font-bold">22ms</span>
+                        </div>
+                    </div>
+
+                    <!-- Data card 4 -->
+                    <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:border-emerald-500/20 transition-all duration-300 group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-clock text-emerald-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white text-sm font-bold">Timezone Data</p>
+                                    <p class="text-gray-600 text-xs font-mono">/v1/timezones/IN</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">LIVE</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500 font-medium">Asia/Kolkata → UTC+05:30</span>
+                            <span class="text-emerald-500 font-bold">8ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  SCROLLING TICKER — Technology Logos                                -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="py-10 border-y border-white/5 overflow-hidden">
+    <div class="ticker-track">
+        @for($t = 0; $t < 2; $t++)
+        <div class="flex items-center gap-14 px-7 whitespace-nowrap">
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-laravel text-2xl text-red-500/50"></i> Laravel</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-react text-2xl text-sky-500/50"></i> React</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-node-js text-2xl text-green-500/50"></i> Node.js</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-python text-2xl text-yellow-500/50"></i> Python</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-vuejs text-2xl text-emerald-500/50"></i> Vue</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-angular text-2xl text-red-500/50"></i> Angular</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-golang text-2xl text-sky-500/50"></i> Go</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-java text-2xl text-orange-500/50"></i> Java</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-swift text-2xl text-orange-500/50"></i> Swift</span>
+            <span class="flex items-center gap-2 text-gray-600 font-bold text-lg"><i class="fab fa-php text-2xl text-indigo-500/50"></i> PHP</span>
+        </div>
+        @endfor
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  API REFERENCE TABLE — Interactive Endpoint Directory               -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="relative py-14 sm:py-20 overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(245,158,11,0.04)_0%,transparent_50%)]"></div>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid lg:grid-cols-5 gap-12 items-start">
+            <!-- Left Text -->
+            <div class="lg:col-span-2 lg:sticky lg:top-28">
+                <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">API Reference</h2>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Complete endpoint directory.</p>
+                <p class="text-gray-400 font-medium leading-relaxed mb-8">
+                    Well-documented RESTful endpoints returning clean JSON. Integrate with any language or framework using standard HTTP calls.
+                </p>
+                <a href="{{ route('docs') }}" class="inline-flex items-center text-amber-500 font-bold hover:text-amber-400 transition-colors group">
+                    View Full Documentation
+                    <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+            </div>
+
+            <!-- Right — Endpoint list -->
+            <div class="lg:col-span-3 space-y-3">
+                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-sm truncate">/v1/countries</p>
+                        <p class="text-gray-600 text-xs truncate">List all countries with ISO codes, dial codes, regions, flags</p>
+                    </div>
+                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~15ms</span>
+                </div>
+
+                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-sm truncate">/v1/countries/{iso}/states</p>
+                        <p class="text-gray-600 text-xs truncate">States/provinces by country with coordinates</p>
+                    </div>
+                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~18ms</span>
+                </div>
+
+                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-sm truncate">/v1/states/{id}/cities</p>
+                        <p class="text-gray-600 text-xs truncate">Cities by state with lat/lng coordinates</p>
+                    </div>
+                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~25ms</span>
+                </div>
+
+                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-sm truncate">/v1/pincodes/{code}</p>
+                        <p class="text-gray-600 text-xs truncate">Pincode lookup with city, state, area, coordinates</p>
+                    </div>
+                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~12ms</span>
+                </div>
+
+                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-sm truncate">/v1/timezones/{country}</p>
+                        <p class="text-gray-600 text-xs truncate">Timezone data with GMT offset, abbreviation, DST</p>
+                    </div>
+                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~8ms</span>
+                </div>
+
+                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-sm truncate">/v1/currencies/{code}</p>
+                        <p class="text-gray-600 text-xs truncate">Real-time exchange rates vs USD & INR</p>
+                    </div>
+                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~22ms</span>
+                </div>
+
+                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
+                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-sm truncate">/v1/banks/{ifsc}</p>
+                        <p class="text-gray-600 text-xs truncate">Bank branch details via IFSC code lookup</p>
+                    </div>
+                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~10ms</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  WHY SetuGeo — Comparison Strip                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="relative py-14 sm:py-20 border-t border-white/5">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center max-w-3xl mx-auto mb-10">
+            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Why SetuGeo</h2>
+            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">The unfair advantage for your stack.</p>
+        </div>
+
+        <div class="bg-white/[0.02] rounded-3xl border border-white/5 overflow-hidden">
+            <!-- Table Header -->
+            <div class="grid grid-cols-3 text-center border-b border-white/5 bg-white/[0.02]">
+                <div class="py-5 px-4 text-sm font-bold text-gray-500 uppercase tracking-wider">Feature</div>
+                <div class="py-5 px-4 text-sm font-bold text-amber-500 uppercase tracking-wider border-x border-white/5">SetuGeo</div>
+                <div class="py-5 px-4 text-sm font-bold text-gray-600 uppercase tracking-wider">Others</div>
+            </div>
+            <!-- Rows -->
+            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
+                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Response Time</div>
+                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5">&lt;50ms</div>
+                <div class="py-4 px-4 text-sm text-gray-600 font-medium">200-500ms</div>
+            </div>
+            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
+                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Data Freshness</div>
+                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5">Weekly Updates</div>
+                <div class="py-4 px-4 text-sm text-gray-600 font-medium">Monthly/Manual</div>
+            </div>
+            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
+                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Coverage</div>
+                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5">200+ Countries</div>
+                <div class="py-4 px-4 text-sm text-gray-600 font-medium">50-100 Countries</div>
+            </div>
+            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
+                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Pincode Data</div>
+                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5"><i class="fas fa-check text-emerald-500"></i> Full Coverage</div>
+                <div class="py-4 px-4 text-sm text-gray-600 font-medium"><i class="fas fa-times text-red-500/50"></i> Limited</div>
+            </div>
+            <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
+                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Currency Rates</div>
+                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5"><i class="fas fa-check text-emerald-500"></i> Built-in</div>
+                <div class="py-4 px-4 text-sm text-gray-600 font-medium"><i class="fas fa-times text-red-500/50"></i> Separate API</div>
+            </div>
+            <div class="comparison-row grid grid-cols-3 text-center transition-colors">
+                <div class="py-4 px-4 text-sm text-gray-400 font-medium">Free Tier</div>
+                <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5"><i class="fas fa-check text-emerald-500"></i> Yes</div>
+                <div class="py-4 px-4 text-sm text-gray-600 font-medium">Paid Only</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  PRICING PREVIEW                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="relative py-14 sm:py-20 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center max-w-3xl mx-auto mb-10">
+            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Pricing</h2>
+            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Transparent, developer-friendly pricing.</p>
+            <p class="text-gray-400 font-medium">Start free. Scale when you're ready. No hidden charges, ever.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <!-- Free Tier -->
+            <div class="bg-white/[0.03] rounded-3xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 flex flex-col">
+                <h3 class="text-xl font-bold text-white mb-2">Free</h3>
+                <p class="text-gray-500 text-sm mb-6">Perfect for prototyping and testing.</p>
+                <p class="text-4xl font-black text-white mb-1">₹0</p>
+                <p class="text-gray-600 text-sm font-medium mb-8">/month forever</p>
+                <ul class="space-y-3 text-sm text-gray-400 font-medium mb-8 flex-1">
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> 100 API requests/month</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> All endpoints access</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Standard support</li>
+                </ul>
+                <a href="{{ route('register') }}" class="block text-center py-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
+                    Get Started Free
+                </a>
+            </div>
+
+            <!-- Pro Tier -->
+            <div class="pricing-card-glow bg-white/[0.05] rounded-3xl p-8 border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300 flex flex-col relative transform md:-translate-y-4 shadow-lg shadow-amber-500/5">
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest">Most Popular</div>
+                <h3 class="text-xl font-bold text-white mb-2">Pro</h3>
+                <p class="text-gray-500 text-sm mb-6">For production applications at scale.</p>
+                <p class="text-4xl font-black text-white mb-1">₹999</p>
+                <p class="text-gray-600 text-sm font-medium mb-8">/month</p>
+                <ul class="space-y-3 text-sm text-gray-400 font-medium mb-8 flex-1">
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> 50,000 API requests/month</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> All endpoints access</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> Priority support</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> Usage analytics</li>
+                </ul>
+                <a href="{{ route('register') }}" class="block text-center py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold transition-all shadow-md">
+                    Start Pro Plan
+                </a>
+            </div>
+
+            <!-- Enterprise Tier -->
+            <div class="bg-white/[0.03] rounded-3xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 flex flex-col">
+                <h3 class="text-xl font-bold text-white mb-2">Enterprise</h3>
+                <p class="text-gray-500 text-sm mb-6">For high-volume, mission-critical apps.</p>
+                <p class="text-4xl font-black text-white mb-1">Custom</p>
+                <p class="text-gray-600 text-sm font-medium mb-8">tailored for you</p>
+                <ul class="space-y-3 text-sm text-gray-400 font-medium mb-8 flex-1">
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Unlimited API requests</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Dedicated support</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Custom SLA</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> On-premise option</li>
+                </ul>
+                <a href="{{ route('contact') }}" class="block text-center py-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
+                    Contact Sales
+                </a>
+            </div>
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="{{ route('pricing') }}" class="text-amber-500 font-bold hover:text-amber-400 transition-colors text-sm">
+                View all plans and compare features →
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  TESTIMONIALS — Stacked Cards                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="relative py-14 sm:py-20 border-t border-white/5 overflow-hidden">
+    <div class="absolute top-1/2 left-0 w-[400px] h-[400px] bg-amber-600/5 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/2"></div>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center max-w-3xl mx-auto mb-10">
+            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Developer Love</h2>
+            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">What our users are saying.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-7 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
+                <div class="flex mb-3 gap-0.5">
+                    @for($s=0; $s<5; $s++)<i class="fas fa-star text-amber-500 text-xs"></i>@endfor
+                </div>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">"SetuGeo's accuracy is unmatched. We switched from a competitor and haven't looked back."</p>
+                <div class="flex items-center gap-3 border-t border-white/5 pt-4">
+                    <div class="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-white text-xs font-bold">JD</div>
+                    <div>
+                        <p class="text-white text-xs font-bold">James Dalton</p>
+                        <p class="text-gray-600 text-[11px]">CTO, Global Logistics</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-7 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
+                <div class="flex mb-3 gap-0.5">
+                    @for($s=0; $s<5; $s++)<i class="fas fa-star text-amber-500 text-xs"></i>@endfor
+                </div>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">"Integration took 15 minutes. The docs are clear and the sub-50ms latency is real."</p>
+                <div class="flex items-center gap-3 border-t border-white/5 pt-4">
+                    <div class="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-white text-xs font-bold">SK</div>
+                    <div>
+                        <p class="text-white text-xs font-bold">Sarah Koenig</p>
+                        <p class="text-gray-600 text-[11px]">Sr. Dev, SaaS Travel</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-7 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
+                <div class="flex mb-3 gap-0.5">
+                    @for($s=0; $s<5; $s++)<i class="fas fa-star text-amber-500 text-xs"></i>@endfor
+                </div>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6 font-medium">"The pincode API alone saved us 200+ engineering hours. 3M lookups/month, zero issues."</p>
+                <div class="flex items-center gap-3 border-t border-white/5 pt-4">
+                    <div class="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center text-white text-xs font-bold">RM</div>
+                    <div>
+                        <p class="text-white text-xs font-bold">Ravi Mehta</p>
+                        <p class="text-gray-600 text-[11px]">VP Eng, FinServ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  FAQ                                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="relative py-14 sm:py-20 border-t border-white/5" x-data="{ active: null }">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-10">
+            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">FAQ</h2>
+            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Common questions.</p>
+        </div>
+
+        <div class="space-y-3">
+            @forelse($faqs as $i => $item)
+            <div class="bg-white/[0.03] rounded-2xl border border-white/5 overflow-hidden hover:border-amber-500/20 transition-all group">
+                <button @click="active = (active === {{ $i }} ? null : {{ $i }})" class="w-full flex items-center justify-between px-6 sm:px-8 py-5 text-left">
+                    <span class="text-sm font-bold text-white group-hover:text-amber-400 transition-colors pr-4">{{ $item->question }}</span>
+                    <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-chevron-down text-amber-500 text-[10px] transition-transform duration-300" :class="active === {{ $i }} ? 'rotate-180' : ''"></i>
+                    </div>
+                </button>
+                <div x-show="active === {{ $i }}" x-collapse class="px-6 sm:px-8 pb-5 text-gray-400 font-medium leading-relaxed text-sm">
+                    {{ $item->answer }}
+                </div>
+            </div>
+            @empty
+            <div class="text-center py-12">
+                <p class="text-gray-500">No FAQs available at the moment.</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  FINAL CTA                                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="relative py-16 sm:py-24 border-t border-white/5">
+    <div class="absolute inset-0 bg-gradient-to-t from-amber-500/[0.03] to-transparent"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <div class="mb-8">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs font-bold tracking-widest uppercase text-emerald-400">All systems operational</span>
+            </div>
+        </div>
+
+        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">
+            Ship faster with <span class="hero-gradient-text">SetuGeo</span>.
+        </h2>
+        <p class="text-lg text-gray-400 mb-8 font-medium max-w-2xl mx-auto">
+            Get your API keys in 60 seconds. Start with a generous free tier — upgrade when your product takes off.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{{ route('register') }}" class="group inline-flex justify-center items-center px-10 py-4 text-base font-bold rounded-2xl text-white bg-amber-600 hover:bg-amber-500 shadow-lg shadow-amber-600/20 transform hover:-translate-y-0.5 transition-all duration-300">
+                Create Free Account
+                <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+            <a href="{{ route('docs') }}" class="inline-flex justify-center items-center px-10 py-4 text-base font-bold rounded-2xl text-gray-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300">
+                <i class="fas fa-book-open mr-2 text-amber-500"></i>
+                Read Documentation
+            </a>
+        </div>
+    </div>
+</section>
+@endsection

@@ -22,6 +22,7 @@ class Pincode extends Model
         'latitude',
         'longitude',
         'accuracy',
+        'area',
     ];
 
     public function country()

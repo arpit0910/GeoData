@@ -28,7 +28,8 @@ class SetuGeoController extends Controller
             $query->where('name', 'LIKE', '%' . $request->query('name') . '%');
         }
 
-        $regions = $query->paginate($request->query('limit', 100));
+        $limit = max(1, intval($request->query('limit', 100)));
+        $regions = $query->paginate($limit);
 
         return response()->json([
             'success' => true,
@@ -60,7 +61,8 @@ class SetuGeoController extends Controller
             });
         }
 
-        $subregions = $query->paginate($request->query('limit', 100));
+        $limit = max(1, intval($request->query('limit', 100)));
+        $subregions = $query->paginate($limit);
 
         return response()->json([
             'success' => true,
@@ -86,7 +88,8 @@ class SetuGeoController extends Controller
             $query->where('zone_name', 'LIKE', '%' . $request->query('name') . '%');
         }
 
-        $timezones = $query->paginate($request->query('limit', 100));
+        $limit = max(1, intval($request->query('limit', 100)));
+        $timezones = $query->paginate($limit);
 
         return response()->json([
             'success' => true,
@@ -122,7 +125,8 @@ class SetuGeoController extends Controller
             $query->where('subregion_id', $request->query('subregion_id'));
         }
             
-        $countries = $query->paginate($request->query('limit', 100));
+        $limit = max(1, intval($request->query('limit', 100)));
+        $countries = $query->paginate($limit);
             
         return response()->json([
             'success' => true,
@@ -154,7 +158,8 @@ class SetuGeoController extends Controller
             });
         }
 
-        $states = $query->paginate($request->query('limit', 100));
+        $limit = max(1, intval($request->query('limit', 100)));
+        $states = $query->paginate($limit);
 
         return response()->json([
             'success' => true,
@@ -196,7 +201,8 @@ class SetuGeoController extends Controller
             });
         }
 
-        $cities = $query->paginate($request->query('limit', 100));
+        $limit = max(1, intval($request->query('limit', 100)));
+        $cities = $query->paginate($limit);
 
         return response()->json([
             'success' => true,
@@ -247,7 +253,8 @@ class SetuGeoController extends Controller
             });
         }
 
-        $pincodes = $query->paginate($request->query('limit', 100));
+        $limit = max(1, intval($request->query('limit', 100)));
+        $pincodes = $query->paginate($limit);
 
         return response()->json([
             'success' => true,
@@ -445,7 +452,9 @@ class SetuGeoController extends Controller
      */
     public function countryBanks(Country $country, Request $request)
     {
-        $bankIds = BankBranch::where('country_id', $country->id)->pluck('bank_id')->unique();
+        $bankIds = BankBranch::whereHas('city', function($q) use ($country) {
+            $q->where('country_id', $country->id);
+        })->pluck('bank_id')->unique();
         $banks = Bank::whereIn('id', $bankIds)->paginate($request->query('limit', 100));
 
         return response()->json([
@@ -575,7 +584,7 @@ class SetuGeoController extends Controller
                     'id' => $country->SubRegion->id,
                     'name' => $country->SubRegion->name,
                 ] : null,
-                'timezones' => $country->timezones->map(fn($tz) => [
+                'timezones' => $country->timezones()->get()->map(fn($tz) => [
                     'zone_name' => $tz->zone_name,
                     'gmt_offset_name' => $tz->gmt_offset_name,
                     'abbreviation' => $tz->abbreviation,
