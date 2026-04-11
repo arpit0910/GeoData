@@ -195,6 +195,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pricing/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
         Route::post('/pricing/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
         Route::post('/pricing/validate-coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.validate-coupon');
+        Route::post('/pricing/topup/order', [SubscriptionController::class, 'createTopupOrder'])->name('pricing.topup.order');
+        Route::post('/pricing/topup/verify', [SubscriptionController::class, 'verifyTopupPayment'])->name('pricing.topup.verify');
 
         Route::middleware(['subscribed'])->group(function () {
             Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

@@ -252,6 +252,13 @@ class SubscriptionController extends Controller
                         return response()->json(['success' => true]);
                     }
 
+                    // 1. Handle Top-up Payment (One-time credit purchase)
+                    if (isset($payment['notes']['type']) && $payment['notes']['type'] === 'topup') {
+                        $this->processTopup($payment);
+                        return response()->json(['success' => true]);
+                    }
+
+                    // 2. Handle Plan Subscription Payment
                     $user = User::where('email', $payment['email'])->first();
                     if ($user && isset($payment['notes']['plan_id'])) {
                         $plan = Plan::find($payment['notes']['plan_id']);
@@ -488,6 +495,109 @@ class SubscriptionController extends Controller
         return view('subscriptions.transactions', compact('transactions'));
     }
 
+    public function createTopupOrder(Request $request)
+    {
+        $user = Auth::user();
+        $subscription = $user->subscriptions()->where('status', 'active')->latest()->first();
+        
+        // Validation: Only if credits are 0
+        if ($subscription && $subscription->available_credits > 0) {
+            return response()->json(['success' => false, 'message' => 'Top-up is only available when credits are exhausted.'], 400);
+        }
+
+        $keyId = env('RAZORPAY_KEY', 'rzp_test_dummy');
+        $keySecret = env('RAZORPAY_SECRET', 'dummy_secret');
+
+        $api = new Api($keyId, $keySecret);
+        
+        $amount = 100; // Rs. 100
+        $amountPaise = $amount * 100;
+
+        $orderData = [
+            'receipt'         => 'topup_' . Auth::id() . '_' . time(),
+            'amount'          => $amountPaise,
+            'currency'        => 'INR',
+            'payment_capture' => 1,
+            'notes'           => [
+                'type' => 'topup',
+                'user_id' => $user->id,
+                'credits' => 20000
+            ]
+        ];
+
+        try {
+            $razorpayOrder = $api->order->create($orderData);
+            return response()->json([
+                'order_id' => $razorpayOrder['id'],
+                'amount' => $amountPaise,
+                'key' => $keyId
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function verifyTopupPayment(Request $request)
+    {
+        $keyId = env('RAZORPAY_KEY', 'rzp_test_dummy');
+        $keySecret = env('RAZORPAY_SECRET', 'dummy_secret');
+        
+        $orderId = $request->razorpay_order_id;
+        $paymentId = $request->razorpay_payment_id;
+        $signature = $request->razorpay_signature;
+
+        $api = new Api($keyId, $keySecret);
+        try {
+            $attributes = [
+                'razorpay_order_id' => $orderId,
+                'razorpay_payment_id' => $paymentId,
+                'razorpay_signature' => $signature
+            ];
+            $api->utility->verifyPaymentSignature($attributes);
+        } catch (SignatureVerificationError $e) {
+            return response()->json(['success' => false, 'message' => 'Payment verification failed: ' . $e->getMessage()], 400);
+        }
+
+        try {
+            DB::transaction(function() use ($orderId, $paymentId) {
+                $user = Auth::user();
+                $subscription = $user->subscriptions()->where('status', 'active')->latest()->first();
+                
+                if (!$subscription) {
+                    throw new \Exception('No active subscription found to top up.');
+                }
+
+                $creditsToAdd = 20000;
+                
+                // Update subscription
+                $subscription->increment('available_credits', $creditsToAdd);
+                $subscription->increment('total_credits', $creditsToAdd);
+
+                // Update user
+                $user->increment('available_credits', $creditsToAdd);
+
+                // Record transaction
+                TransactionHistory::create([
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
+                    'plan_id' => $subscription->plan_id,
+                    'razorpay_payment_id' => $paymentId,
+                    'razorpay_order_id' => $orderId,
+                    'amount' => 100,
+                    'plan_name' => 'Credit Top-up',
+                    'billing_cycle' => 'one-time',
+                    'status' => 'success',
+                    'type' => 'topup',
+                    'credits' => $creditsToAdd
+                ]);
+            });
+
+            return response()->json(['success' => true, 'message' => 'Top-up successful! 20,000 credits added.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function downloadReceipt($id)
     {
         $transaction = TransactionHistory::where('id', $id)
@@ -498,5 +608,45 @@ class SubscriptionController extends Controller
         $user = Auth::user();
         
         return view('subscriptions.receipt', compact('transaction', 'user'));
+    }
+
+    private function processTopup($payment)
+    {
+        DB::transaction(function() use ($payment) {
+            $user = User::where('email', $payment['email'])->first();
+            if (!$user) return;
+
+            $subscription = $user->subscriptions()->where('status', 'active')->latest()->first();
+            if (!$subscription) return;
+
+            // Check if this top-up was already processed
+            if (TransactionHistory::where('razorpay_payment_id', $payment['id'])->exists()) {
+                return;
+            }
+
+            $creditsToAdd = $payment['notes']['credits'] ?? 20000;
+            
+            // Update subscription
+            $subscription->increment('available_credits', $creditsToAdd);
+            $subscription->increment('total_credits', $creditsToAdd);
+
+            // Update user
+            $user->increment('available_credits', $creditsToAdd);
+
+            // Record transaction
+            TransactionHistory::create([
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'plan_id' => $subscription->plan_id,
+                'razorpay_payment_id' => $payment['id'],
+                'razorpay_order_id' => $payment['order_id'],
+                'amount' => $payment['amount'] / 100,
+                'plan_name' => 'Credit Top-up',
+                'billing_cycle' => 'one-time',
+                'status' => 'success',
+                'type' => 'topup',
+                'credits' => $creditsToAdd
+            ]);
+        });
     }
 }
