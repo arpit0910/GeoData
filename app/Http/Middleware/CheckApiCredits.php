@@ -16,28 +16,54 @@ class CheckApiCredits
             return response()->json(['status' => false, 'message' => 'Unauthenticated.'], 401);
         }
 
-        // Identify an active subscription possessing non-zero credits mapping properly to the user entity
+        // Identify an active subscription
         $subscription = $user->subscriptions()
             ->where('status', 'active')
             ->where('expires_at', '>', now())
-            ->where('available_credits', '>', 0)
             ->latest()
             ->first();
 
         if (!$subscription) {
             return response()->json([
                 'status' => false, 
-                'message' => 'Payment Required. You do not have an active subscription or have exhausted your API credits.'
+                'message' => 'Payment Required. You do not have an active subscription.'
             ], 402);
         }
 
-        // Process request to resolution inherently mapping exactly to our post-flight logic
+        $plan = $subscription->plan;
+        
+        // 1. Handle Unlimited (api_hits_limit is null)
+        $isUnlimited = is_null($plan->api_hits_limit);
+
+        // 2. Yearly Refresh Logic (Refresh credits every month)
+        if (!$isUnlimited && $plan->billing_cycle === 'yearly') {
+            $lastRefresh = $subscription->last_credit_refresh ?? $subscription->created_at;
+            
+            // If at least one full month has passed since last refresh (tenure-based), reset the credits
+            if (now()->greaterThanOrEqualTo($lastRefresh->copy()->addMonth())) {
+                $subscription->update([
+                    'available_credits' => $plan->api_hits_limit,
+                    'last_credit_refresh' => now()
+                ]);
+                $subscription->refresh(); // Load fresh credits from DB into memory
+            }
+        }
+
+        // 3. Exhaustion Check
+        if (!$isUnlimited && $subscription->available_credits <= 0) {
+            return response()->json([
+                'status' => false, 
+                'message' => 'API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.'
+            ], 402);
+        }
+
+        // Process request
         $response = $next($request);
 
-        // Deduct natively only on total global resolution success explicitly yielding HTTP 200 OK
+        // Deduct only on success (200 OK) and if NOT unlimited
         $success = $response->status() == 200;
 
-        if ($success) {
+        if ($success && !$isUnlimited) {
             $subscription->decrement('available_credits');
             $subscription->increment('used_credits');
         }

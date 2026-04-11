@@ -162,6 +162,26 @@ trait CreatesTestData
         $user = $this->createUser();
         $plan = $this->createPlan();
         $subscription = $this->createActiveSubscription($user, $plan);
+        $user->update(['plan_id' => $plan->id]);
+        $token = $user->createToken('setugeo-auth-token')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'plan' => $plan,
+            'subscription' => $subscription,
+            'token' => $token,
+        ];
+    }
+
+    /**
+     * Create a Sanctum-authenticated user with a free plan.
+     */
+    protected function createFreeApiUser(): array
+    {
+        $user = $this->createUser();
+        $plan = $this->createPlan(['amount' => 0, 'name' => 'Free Plan']);
+        $subscription = $this->createActiveSubscription($user, $plan);
+        $user->update(['plan_id' => $plan->id]);
         $token = $user->createToken('setugeo-auth-token')->plainTextToken;
 
         return [

@@ -17,6 +17,7 @@ class GeoAnalysisApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
         $this->authData = $this->createAuthenticatedApiUser();
         $this->geoData = $this->createGeoHierarchy();
         $this->headers = ['Authorization' => 'Bearer ' . $this->authData['token']];

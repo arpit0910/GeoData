@@ -59,10 +59,18 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             $user = $request->user();
 
+            // Sanctum Fallback: If auth middleware hasn't successfully resolved the user yet (e.g. Throttle runs first)
+            if (!$user && $token = $request->bearerToken()) {
+                $accessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+                if ($accessToken && $accessToken->tokenable) {
+                    $user = $accessToken->tokenable;
+                }
+            }
+
             if ($user && $user->plan) {
                 $plan = $user->plan;
                 // Calculate actual cost
-                $cost = $plan->amount - ($plan->discount_amount ?? 0);
+                $cost = (float)($plan->amount - ($plan->discount_amount ?? 0));
 
                 if ($cost > 0) {
                     // Paid tier: 300 hits per minute (5 per second on average)

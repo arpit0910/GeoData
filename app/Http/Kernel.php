@@ -42,6 +42,7 @@ class Kernel extends HttpKernel
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
+            \App\Http\Middleware\ApiPriorityMiddleware::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -68,5 +69,6 @@ class Kernel extends HttpKernel
         'profile.complete.check' => \App\Http\Middleware\EnsureProfileComplete::class,
         'api.credits' => \App\Http\Middleware\CheckApiCredits::class,
         'subscribed' => \App\Http\Middleware\EnsureSubscribed::class,
+        'priority' => \App\Http\Middleware\ApiPriorityMiddleware::class,
     ];
 }

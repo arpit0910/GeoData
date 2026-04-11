@@ -54,6 +54,7 @@ class User extends Authenticatable
         'active_access_token',
         'token_expires_at',
         'plan_id',
+        'available_credits',
         'timezone',
     ];
 

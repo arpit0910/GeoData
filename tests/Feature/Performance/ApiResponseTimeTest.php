@@ -23,6 +23,7 @@ class ApiResponseTimeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
         $this->authData = $this->createAuthenticatedApiUser();
         $this->createBankData();
         $this->createCurrencyData();

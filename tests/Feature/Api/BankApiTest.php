@@ -17,6 +17,7 @@ class BankApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
         $this->authData = $this->createAuthenticatedApiUser();
         $this->bankData = $this->createBankData();
         $this->headers = ['Authorization' => 'Bearer ' . $this->authData['token']];

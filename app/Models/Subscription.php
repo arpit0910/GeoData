@@ -15,6 +15,7 @@ class Subscription extends Model
         'razorpay_order_id',
         'razorpay_payment_id',
         'razorpay_signature',
+        'razorpay_subscription_id',
         'amount_paid',
         'status',
         'expires_at',
@@ -24,10 +25,12 @@ class Subscription extends Model
         'coupon_id',
         'discount_amount',
         'remaining_discount_cycles',
+        'last_credit_refresh',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
+        'last_credit_refresh' => 'datetime',
     ];
 
     public function user()

@@ -307,6 +307,7 @@ class SetuGeoController extends Controller
                 'longitude' => $pincode->longitude,
                 'county' => $pincode->county,
                 'accuracy' => $pincode->accuracy,
+                'area' => $pincode->area,
             ];
         });
 
