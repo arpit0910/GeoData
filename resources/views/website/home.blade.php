@@ -211,7 +211,7 @@
         <div class="grid lg:grid-cols-5 gap-12 items-start">
             <div class="lg:col-span-2 lg:sticky lg:top-28">
                 <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">API Reference</h2>
-                <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Complete endpoint directory.</p>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4 break-words">Complete endpoint directory.</p>
                 <p class="text-gray-400 font-medium leading-relaxed mb-8">
                     Well-documented RESTful endpoints returning clean JSON. Integrate with any language or framework using standard HTTP calls.
                 </p>
@@ -222,92 +222,123 @@
             </div>
 
             <div class="lg:col-span-3 space-y-3">
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default">
+                    <span class="px-2 sm:px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/countries</p>
-                        <p class="text-gray-600 text-xs truncate">List all countries with ISO codes, dial codes, regions, flags</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5">/v1/countries</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">List all countries with ISO codes, dial codes, regions, flags</p>
                     </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~15ms</span>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~15ms</span>
                 </div>
 
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default">
+                    <span class="px-2 sm:px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/countries/{iso}/states</p>
-                        <p class="text-gray-600 text-xs truncate">States/provinces by country with coordinates</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5">/v1/countries/{iso}/states</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">States/provinces by country with coordinates</p>
                     </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~18ms</span>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~18ms</span>
                 </div>
 
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default">
+                    <span class="px-2 sm:px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/states/{id}/cities</p>
-                        <p class="text-gray-600 text-xs truncate">Cities by state with lat/lng coordinates</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5">/v1/states/{id}/cities</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Cities by state with lat/lng coordinates</p>
                     </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~25ms</span>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~25ms</span>
                 </div>
 
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default">
+                    <span class="px-2 sm:px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/pincodes/{code}</p>
-                        <p class="text-gray-600 text-xs truncate">Pincode lookup with city, state, area, coordinates</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5">/v1/pincodes/{code}</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Pincode lookup with city, state, area, coordinates</p>
                     </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~12ms</span>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~12ms</span>
                 </div>
 
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default">
+                    <span class="px-2 sm:px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/timezones/{country}</p>
-                        <p class="text-gray-600 text-xs truncate">Timezone data with GMT offset, abbreviation, DST</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5">/v1/timezones/{country}</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Timezone data with GMT offset, abbreviation, DST</p>
                     </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~8ms</span>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~8ms</span>
                 </div>
 
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default">
+                    <span class="px-2 sm:px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/currencies/{code}</p>
-                        <p class="text-gray-600 text-xs truncate">Real-time exchange rates vs USD & INR</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5">/v1/currencies/{code}</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Real-time exchange rates vs USD & INR</p>
                     </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~22ms</span>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~22ms</span>
                 </div>
 
-                <div class="api-endpoint-row flex items-center gap-4 bg-white/[0.03] rounded-xl p-5 border border-white/5 cursor-default">
-                    <span class="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-wider flex-shrink-0 w-16 text-center">GET</span>
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default">
+                    <span class="px-2 sm:px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm truncate">/v1/banks/{ifsc}</p>
-                        <p class="text-gray-600 text-xs truncate">Bank branch details via IFSC code lookup</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5">/v1/banks/{ifsc}</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Bank branch details via IFSC code lookup</p>
                     </div>
-                    <span class="text-amber-500/50 text-xs font-mono flex-shrink-0">~10ms</span>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~10ms</span>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  WHY SetuGeo — Comparison Strip                                    -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <section class="relative py-14 sm:py-20 border-t border-white/5">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center max-w-3xl mx-auto mb-10">
             <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Why SetuGeo</h2>
             <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">The unfair advantage for your stack.</p>
         </div>
+        <div class="grid gap-4 md:hidden">
+            @php
+                $features = [
+                    ['title' => 'Response Time', 'sg' => '<50ms', 'others' => '200-500ms'],
+                    ['title' => 'Data Freshness', 'sg' => 'Weekly Updates', 'others' => 'Monthly/Manual'],
+                    ['title' => 'Coverage', 'sg' => '200+ Countries', 'others' => '50-100 Countries'],
+                    ['title' => 'Pincode Data', 'sg' => 'Full Coverage', 'others' => 'Limited', 'sg_icon' => 'fa-check text-emerald-500', 'o_icon' => 'fa-times text-red-500/50'],
+                    ['title' => 'Currency Rates', 'sg' => 'Built-in', 'others' => 'Separate API', 'sg_icon' => 'fa-check text-emerald-500', 'o_icon' => 'fa-times text-red-500/50'],
+                    ['title' => 'Free Tier', 'sg' => 'Yes', 'others' => 'Paid Only', 'sg_icon' => 'fa-check text-emerald-500', 'o_icon' => '']
+                ];
+            @endphp
 
-        <div class="bg-white/[0.02] rounded-3xl border border-white/5 overflow-x-auto">
-            <div class="min-w-[600px]">
-            <!-- Table Header -->
+            @foreach($features as $f)
+            <div class="bg-white/[0.03] border border-white/5 rounded-3xl p-5 hover:border-amber-500/20 transition-all duration-300">
+                <h3 class="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="w-1 h-1 bg-amber-500 rounded-full"></span>
+                    {{ $f['title'] }}
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-amber-500/[0.07] rounded-2xl p-4 border border-amber-500/10">
+                        <p class="text-amber-500 text-[9px] font-black uppercase tracking-tight mb-2">SetuGeo</p>
+                        <p class="text-white font-bold text-sm flex items-center gap-2">
+                            @if(isset($f['sg_icon'])) <i class="fas {{ $f['sg_icon'] }} text-[10px]"></i> @endif
+                            {{ $f['sg'] }}
+                        </p>
+                    </div>
+                    <div class="bg-white/[0.02] rounded-2xl p-4 border border-white/5">
+                        <p class="text-gray-600 text-[9px] font-black uppercase tracking-tight mb-2">Others</p>
+                        <p class="text-gray-400 font-bold text-sm flex items-center gap-2">
+                            @if(isset($f['o_icon'])) <i class="fas {{ $f['o_icon'] }} text-[10px]"></i> @endif
+                            {{ $f['others'] }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <div class="hidden md:block bg-white/[0.02] rounded-3xl border border-white/5 overflow-hidden">
             <div class="grid grid-cols-3 text-center border-b border-white/5 bg-white/[0.02]">
                 <div class="py-5 px-4 text-sm font-bold text-gray-500 uppercase tracking-wider">Feature</div>
                 <div class="py-5 px-4 text-sm font-bold text-amber-500 uppercase tracking-wider border-x border-white/5">SetuGeo</div>
                 <div class="py-5 px-4 text-sm font-bold text-gray-600 uppercase tracking-wider">Others</div>
             </div>
-            <!-- Rows -->
             <div class="comparison-row grid grid-cols-3 text-center border-b border-white/5 transition-colors">
                 <div class="py-4 px-4 text-sm text-gray-400 font-medium">Response Time</div>
                 <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5">&lt;50ms</div>
@@ -338,14 +369,10 @@
                 <div class="py-4 px-4 text-sm text-white font-bold border-x border-white/5"><i class="fas fa-check text-emerald-500"></i> Yes</div>
                 <div class="py-4 px-4 text-sm text-gray-600 font-medium">Paid Only</div>
             </div>
-            </div>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  PRICING PREVIEW                                                   -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <section class="relative py-14 sm:py-20 border-t border-white/5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center max-w-3xl mx-auto mb-10">
@@ -425,9 +452,6 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  TESTIMONIALS — Stacked Cards                                      -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <section class="relative py-14 sm:py-20 border-t border-white/5 overflow-hidden">
     <div class="absolute top-1/2 left-0 w-[400px] h-[400px] bg-amber-600/5 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/2"></div>
 
@@ -481,9 +505,6 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  FAQ                                                               -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <section class="relative py-14 sm:py-20 border-t border-white/5" x-data="{ active: null }">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center mb-10">
@@ -513,9 +534,6 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!--  FINAL CTA                                                         -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <section class="relative py-16 sm:py-24 border-t border-white/5">
     <div class="absolute inset-0 bg-gradient-to-t from-amber-500/[0.03] to-transparent"></div>
 

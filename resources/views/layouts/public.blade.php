@@ -138,10 +138,13 @@
                 </div>
                 
                 <div class="flex items-center md:hidden">
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-500">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                            type="button" 
+                            class="inline-flex items-center justify-center p-2 rounded-md transition-all duration-300 focus:outline-none"
+                            :class="mobileMenuOpen ? 'text-amber-500 rotate-90' : 'text-gray-400 hover:text-white'">
                         <span class="sr-only">Open main menu</span>
-                        <i class="fas fa-bars text-xl" x-show="!mobileMenuOpen"></i>
-                        <i class="fas fa-times text-xl" x-show="mobileMenuOpen" x-cloak></i>
+                        <i class="fas fa-bars text-2xl" x-show="!mobileMenuOpen"></i>
+                        <i class="fas fa-times text-2xl" x-show="mobileMenuOpen" x-cloak></i>
                     </button>
                 </div>
             </div>
