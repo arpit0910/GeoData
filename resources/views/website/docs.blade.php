@@ -247,8 +247,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                 <div id="regions" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /regions</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -288,8 +288,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="sub-regions" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /sub-regions</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -329,8 +329,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="timezones" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /timezones</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -369,8 +369,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="countries" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -414,8 +414,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="states" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /states</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -446,8 +446,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /cities</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -479,8 +479,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="pincode-search" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes/search</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -519,8 +519,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="pincodes" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -547,8 +547,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                 <div id="currency-exchange" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /currency/exchange</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -591,8 +591,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                 <div id="banks" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -613,8 +613,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="bank-branches" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks/{bank_id}/branches</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -642,8 +642,9 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="branch-info" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/{ifsc}</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                </span>
                             </div>
                         </div>
 
@@ -656,8 +657,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                 <div id="banks" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -690,8 +691,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="bank-branches" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks/{bank_id}/branches</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -728,8 +729,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="branch-info" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/{ifsc}</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -765,8 +766,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="banks-in-city" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /cities/{city_id}/banks</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -794,8 +795,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="banks-in-state" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{state_id}/banks</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -823,8 +824,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="currency-convert" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /currency/convert</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -860,8 +861,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="timezones-convert" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                              <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /timezones/convert</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -884,8 +885,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="branch-search" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/search</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -906,8 +907,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="bank-coverage" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks/{bank_id}/coverage</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -928,8 +929,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="banks-in-pincode" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes/{pincode}/banks</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -953,8 +954,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                 <div id="country-detail" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden mt-12 block">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -975,8 +976,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="country-states" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/states</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -997,8 +998,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="country-cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/cities</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1019,8 +1020,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="country-timezones" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/timezones</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1041,8 +1042,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="country-banks" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/banks</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1063,8 +1064,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="country-neighbors" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/neighbors</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1085,8 +1086,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="countries-compare" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/compare</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1108,8 +1109,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="state-detail" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{state_id}</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1130,8 +1131,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="state-cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{state_id}/cities</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1152,8 +1153,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="city-detail" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /cities/{city_id}</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1176,8 +1177,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                 <div id="address-autocomplete" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden mt-12 block">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /address/autocomplete</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1198,8 +1199,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="address-validate" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /address/validate</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1230,8 +1231,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="geo-stats" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden relative">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/statistics</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1265,8 +1266,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="geo-distance" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/distance</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1356,8 +1357,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="geo-nearby" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/nearby</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1393,8 +1394,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="geo-geocode" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/geocode</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1416,8 +1417,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="geo-boundary" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/boundary</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1442,8 +1443,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="geo-cluster" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/cluster</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins mr-2 text-amber-400"></i> Credits Required
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
                             </div>
                             <div class="p-6">
@@ -1501,6 +1502,17 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
     ::-webkit-scrollbar-track { background: #020617; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+    /* Mobile Responsive Tables */
+    @media (max-width: 1024px) {
+        .lg\:col-span-9 div[class*="p-"] {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        .lg\:col-span-9 table {
+            min-width: 600px;
+        }
+    }
 </style>
 
 <script>
