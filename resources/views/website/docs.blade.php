@@ -118,6 +118,25 @@
                 <section id="account-api" class="pt-8">
                     <h2 class="text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Account & Usage API</h2>
                 </section>
+                <div id="user-usage" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                    <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                        <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /user/usage</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="mb-4">Monitor your real-time credit balance and API consumption metrics.</p>
+                        <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                        <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
+<pre class="text-gray-400">{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"total_credits"</span>: <span class="text-blue-400">100000</span>,
+    <span class="text-blue-400">"available_credits"</span>: <span class="text-blue-400">89540</span>,
+    <span class="text-blue-400">"usage_this_month"</span>: <span class="text-blue-400">10460</span>
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
                 <div id="get-token" class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800">
                             <div class="px-6 py-4 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center">
                                 <span class="text-sm font-bold text-green-400 uppercase">POST /auth/token</span>
@@ -729,7 +748,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Branch Info -->
                         <div id="branch-info" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/{ifsc}</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /bank/ifsc/{ifsc}</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -766,7 +785,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Banks in City -->
                         <div id="banks-in-city" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /cities/{city_id}/banks</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /city/{city_id}/banks</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -795,7 +814,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Banks in State -->
                         <div id="banks-in-state" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{state_id}/banks</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /state/{state_id}/banks</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -861,7 +880,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Timezones Convert -->
                         <div id="timezones-convert" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                              <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /timezones/convert</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /timezone/convert</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -885,7 +904,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Branch Search -->
                         <div id="branch-search" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/search</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /bank/branches/search</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -907,7 +926,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Bank Coverage Map -->
                         <div id="bank-coverage" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks/{bank_id}/coverage</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /bank/{bank_id}/coverage</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -929,7 +948,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Banks in Pincode -->
                         <div id="banks-in-pincode" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincodes/{pincode}/banks</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /pincode/{pincode}/banks</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -1059,6 +1078,28 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             </div>
                         </div>
 
+                        <!-- Equity Detail -->
+                        <div id="equity-detail" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /equity/{isin}</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Fetch comprehensive profile details for a specific equity using its ISIN or Symbol.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Route Parameters</h4>
+                                <table class="w-full text-sm mb-6">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                        <tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        <tr><td class="py-3 font-mono text-amber-500">isin</td><td class="py-3 text-gray-400">The unique identifier (e.g. <code class="text-amber-400">INE002A01018</code>)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         <!-- Price History -->
                         <div id="equity-history" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
@@ -1151,7 +1192,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Country Cities -->
                         <div id="country-cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/cities</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /country/{country_id}/cities</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -1173,7 +1214,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Country Timezones -->
                         <div id="country-timezones" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/timezones</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /country/{country_id}/timezones</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -1195,7 +1236,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Country Banks -->
                         <div id="country-banks" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/banks</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /country/{country_id}/banks</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -1217,7 +1258,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Country Neighbors -->
                         <div id="country-neighbors" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/neighbors</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /country/{country_id}/neighbors</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -1262,7 +1303,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- State Detail -->
                         <div id="state-detail" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{state_id}</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /state/{state_id}</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -1284,7 +1325,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- State Cities -->
                         <div id="state-cities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /states/{state_id}/cities</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /state/{state_id}/cities</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -1306,7 +1347,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- City Detail -->
                         <div id="city-detail" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /cities/{city_id}</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /city/{city_id}</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -1385,8 +1426,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <div id="geo-stats" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden relative">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                 <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /geospatial/statistics</h3>
-                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
-                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                <span class="bg-green-600/20 text-green-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-green-600/30 ring-4 ring-green-600/5">
+                                    <i class="fas fa-check-circle sm:mr-2 text-green-400"></i> <span class="hidden sm:inline">Free API</span>
                                 </span>
                             </div>
                             <div class="p-6">
