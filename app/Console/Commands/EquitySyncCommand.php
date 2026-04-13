@@ -45,7 +45,7 @@ class EquitySyncCommand extends Command
         foreach ($pythonPaths as $path) {
             $testOutput = [];
             $testReturn = 0;
-            exec("{$path} --version 2>&1", $testOutput, $testReturn);
+            \exec("{$path} --version 2>&1", $testOutput, $testReturn);
             if ($testReturn === 0) {
                 $pythonPath = $path;
                 break;
@@ -67,7 +67,7 @@ class EquitySyncCommand extends Command
             if ($pythonPath) {
                 $output = [];
                 $returnVar = 0;
-                exec("{$pythonPath} \"{$scriptPath}\" {$date} " . ($exchange ?: "") . " 2>&1", $output, $returnVar);
+                \exec("{$pythonPath} \"{$scriptPath}\" {$date} " . ($exchange ?: "") . " 2>&1", $output, $returnVar);
 
                 $jsonData = '';
                 foreach ($output as $line) {

@@ -1544,6 +1544,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
         <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
         <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
         <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+        <span class="text-blue-400">"bse_symbol"</span>: <span class="text-green-400">"500325"</span>,
         <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Oil & Gas"</span>,
         <span class="text-blue-400">"market_cap"</span>: <span class="text-green-400">"Large Cap"</span>
       }
@@ -1612,7 +1613,9 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   <span class="text-blue-400">"data"</span>: [
     {
       <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
-      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"RELIANCE"</span>
+      <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE"</span>,
+      <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+      <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Oil & Gas"</span>
     }
   ]
 }</pre>
@@ -1665,7 +1668,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   <span class="text-blue-400">"data"</span>: [
     {
       <span class="text-blue-400">"equity_id"</span>: <span class="text-blue-400">1</span>,
-      <span class="text-blue-400">"nse_chg_1d"</span>: <span class="text-blue-400">5.2</span>
+      <span class="text-blue-400">"nse_chg_1d"</span>: <span class="text-blue-400">5.2</span>,
+      <span class="text-blue-400">"equity"</span>: {
+        <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE"</span>,
+        <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>
+      }
     }
   ]
 }</pre>
@@ -1714,8 +1721,14 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
   <span class="text-blue-400">"data"</span>: {
     <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
-    <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE"</span>,
-    <span class="text-blue-400">"market_cap"</span>: <span class="text-green-400">"Large Cap"</span>
+    <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
+    <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+    <span class="text-blue-400">"bse_symbol"</span>: <span class="text-green-400">"500325"</span>,
+    <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Oil & Gas"</span>,
+    <span class="text-blue-400">"market_cap"</span>: <span class="text-green-400">"2098450.50"</span>,
+    <span class="text-blue-400">"market_cap_category"</span>: <span class="text-green-400">"Large Cap"</span>,
+    <span class="text-blue-400">"face_value"</span>: <span class="text-blue-400">10.00</span>,
+    <span class="text-blue-400">"listing_date"</span>: <span class="text-green-400">"1977-01-01"</span>
   }
 }</pre>
                                             </div>
@@ -1749,7 +1762,9 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   <span class="text-blue-400">"data"</span>: [
     {
       <span class="text-blue-400">"traded_date"</span>: <span class="text-green-400">"2026-04-13"</span>,
-      <span class="text-blue-400">"close_price"</span>: <span class="text-blue-400">2950.45</span>
+      <span class="text-blue-400">"nse_close"</span>: <span class="text-blue-400">2950.45</span>,
+      <span class="text-blue-400">"bse_close"</span>: <span class="text-blue-400">2950.10</span>,
+      <span class="text-blue-400">"nse_volume"</span>: <span class="text-blue-400">1254890</span>
     }
   ]
 }</pre>
