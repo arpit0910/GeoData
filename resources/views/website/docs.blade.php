@@ -35,6 +35,7 @@
                             <li><a href="#core-api" class="text-sm font-medium hover:text-amber-500 transition-colors">Core Geographic Data</a></li>
                             <li><a href="#utilities-api" class="text-sm font-medium hover:text-amber-500 transition-colors">Intelligent Utilities</a></li>
                             <li><a href="#banking-api" class="text-sm font-medium hover:text-amber-500 transition-colors">Banking & Finance</a></li>
+                            <li><a href="#equity-api" class="text-sm font-medium hover:text-amber-500 transition-colors">Equity Intelligence</a></li>
                             <li><a href="#hierarchical-data" class="text-sm font-medium hover:text-amber-500 transition-colors">Hierarchical Drill-Downs</a></li>
                             <li><a href="#smart-addressing" class="text-sm font-medium hover:text-amber-500 transition-colors">Smart Addressing</a></li>
                             <li><a href="#geospatial-analysis" class="text-sm font-medium hover:text-amber-500 transition-colors">Geospatial Analysis</a></li>

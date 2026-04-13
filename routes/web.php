@@ -180,9 +180,26 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/sync', [AdminCurrencyConversionController::class, 'sync'])->name('sync');
     });
 
+    // Equity Management
+    Route::prefix('equities')->name('equities.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\EquityController::class, 'index'])->name('index');
+        Route::get('/prices', [App\Http\Controllers\Admin\EquityController::class, 'prices'])->name('prices');
+        Route::get('/prices/data', [App\Http\Controllers\Admin\EquityController::class, 'pricesData'])->name('prices.data');
+        Route::get('/export', [App\Http\Controllers\Admin\EquityController::class, 'export'])->name('export');
+        Route::post('/import', [App\Http\Controllers\Admin\EquityController::class, 'import'])->name('import');
+        Route::post('/sync', [App\Http\Controllers\Admin\EquityController::class, 'sync'])->name('sync');
+        
+        Route::get('/{equity}/edit', [App\Http\Controllers\Admin\EquityController::class, 'edit'])->name('edit');
+        Route::put('/{equity}', [App\Http\Controllers\Admin\EquityController::class, 'update'])->name('update');
+        Route::get('/{equity}', [App\Http\Controllers\Admin\EquityController::class, 'show'])->name('show');
+    });
+
     // Server Logs
     Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->name('admin.logs');
 
+    Route::fallback(function() {
+        return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);
+    });
 });
 
 Route::middleware(['auth'])->group(function () {

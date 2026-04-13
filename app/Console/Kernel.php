@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('currency:fetch-rates')->dailyAt('20:30');
+        $schedule->command('equities:sync')->dailyAt('19:00')->timezone('Asia/Kolkata');
     }
 
     /**

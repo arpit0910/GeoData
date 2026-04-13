@@ -209,6 +209,10 @@
                         <i class="fas fa-code-branch mr-3 w-5"></i>
                         Bank Branches
                     </a>
+                    <a href="{{ route('equities.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('equities.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-chart-line mr-3 w-5"></i>
+                        Equities
+                    </a>
                     <a href="{{ route('plans.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('plans.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-credit-card mr-3 w-5"></i>
                         Plans

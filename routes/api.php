@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\SetuGeoController;
 use App\Http\Controllers\Api\V1\GeoAnalysisController;
+use App\Http\Controllers\Api\V1\EquityApiController;
 use App\Http\Controllers\SubscriptionController;
 
 /*
@@ -83,6 +84,11 @@ Route::prefix('v1')->group(function() {
         Route::get('/geospatial/geocode', [GeoAnalysisController::class, 'geocode']);
         Route::get('/geospatial/boundary', [GeoAnalysisController::class, 'boundary']);
         Route::get('/geospatial/cluster', [GeoAnalysisController::class, 'cluster']);
+
+        // Equity Analytical APIs
+        Route::get('/equities', [EquityApiController::class, 'index']);
+        Route::get('/equities/{isin}', [EquityApiController::class, 'show']);
+        Route::get('/metrics/{isin}', [EquityApiController::class, 'metrics']);
 
         Route::fallback(function() {
             return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);
