@@ -45,7 +45,7 @@ class EquitySyncCommand extends Command
         foreach ($pythonPaths as $path) {
             $testOutput = [];
             $testReturn = 0;
-            \exec("{$path} --version 2>&1", $testOutput, $testReturn);
+            exec("{$path} --version 2>&1", $testOutput, $testReturn);
             if ($testReturn === 0) {
                 $pythonPath = $path;
                 break;
@@ -67,7 +67,7 @@ class EquitySyncCommand extends Command
             if ($pythonPath) {
                 $output = [];
                 $returnVar = 0;
-                \exec("{$pythonPath} \"{$scriptPath}\" {$date} " . ($exchange ?: "") . " 2>&1", $output, $returnVar);
+                exec("{$pythonPath} \"{$scriptPath}\" {$date} " . ($exchange ?: "") . " 2>&1", $output, $returnVar);
 
                 $jsonData = '';
                 foreach ($output as $line) {
@@ -253,6 +253,10 @@ class EquitySyncCommand extends Command
         $isZip = str_ends_with(strtolower($url), '.zip');
 
         if ($isZip) {
+            if (!class_exists('ZipArchive')) {
+                $this->error("PHP ZipArchive class not found. Please enable the zip extension.");
+                return [];
+            }
             $tempFile = tempnam(sys_get_temp_dir(), 'bhav');
             file_put_contents($tempFile, $content);
             $zip = new \ZipArchive();
@@ -296,7 +300,7 @@ class EquitySyncCommand extends Command
             'volume'   => ['TtlTradgVol', 'TOTTRDQTY', 'NO_SHARES', 'TOT_TR_QTY', 'TRADE_QTY'],
             'turnover' => ['TtlTradgVal', 'TOTTRDVAL', 'NET_TURNOV'],
             'trades'   => ['TtlNbOfTradesExecuted', 'TOTALTRADES', 'NO_OF_TRDS'],
-            'avg_price'=> ['WghtdAvgPric', 'AVG_PRICE', 'AVG_PRC']
+            'avg_price' => ['WghtdAvgPric', 'AVG_PRICE', 'AVG_PRC']
         ];
 
         for ($i = 1; $i < count($lines); $i++) {
@@ -418,7 +422,7 @@ class EquitySyncCommand extends Command
                     ->whereIn('equity_id', $idChunk)
                     ->get()
                     ->groupBy('equity_id');
-                
+
                 foreach ($batch as $eqId => $items) {
                     if (!$historicalData->has($eqId)) {
                         $historicalData->put($eqId, $items);
@@ -535,7 +539,7 @@ class EquitySyncCommand extends Command
 
         // Step 6: Single Bulk Upsert (Small chunks for SQLite variable limits)
         $this->info("Upserting " . count($consolidatedPrices) . " records with performance metrics...");
-        $chunks = array_chunk($consolidatedPrices, 20); 
+        $chunks = array_chunk($consolidatedPrices, 20);
         foreach ($chunks as $chunk) {
             EquityPrice::upsert($chunk, ['isin', 'traded_date'], [
                 'nse_open',
