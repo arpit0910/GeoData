@@ -32,8 +32,9 @@ class EquitySyncHistoryCommand extends Command
      */
     public function handle()
     {
+        ini_set('memory_limit', '512M');
         $months = $this->argument('months');
-        $startDate = now()->subMonths($months)->startOfDay();
+        $startDate = now()->subMonths($months)->startOfMonth();
         $endDate = now()->startOfDay();
 
         $this->info("Starting historical sync for the last {$months} months...");
@@ -64,6 +65,8 @@ class EquitySyncHistoryCommand extends Command
                         } else {
                             $this->warn("No data found for {$dateString}.");
                         }
+                        unset($phpData);
+                        gc_collect_cycles();
                     }
                 } catch (\Exception $e) {
                     $this->error("\nFailed to sync for {$dateString}: " . $e->getMessage());
@@ -330,10 +333,19 @@ class EquitySyncHistoryCommand extends Command
         $targetDates = collect($dateMap)->filter()->unique()->values()->toArray();
         $historicalData = collect();
         if (!empty($targetDates)) {
+            $this->info("  Fetching historical price metrics...");
             foreach ($isinToId->values()->chunk(500) as $idChunk) {
-                $batch = EquityPrice::whereIn('traded_date', $targetDates)->whereIn('equity_id', $idChunk)->get()->groupBy('equity_id');
+                // Use Query Builder for lower memory footprint instead of Eloquent models
+                $batch = \Illuminate\Support\Facades\DB::table('equity_prices')
+                    ->whereIn('traded_date', $targetDates)
+                    ->whereIn('equity_id', $idChunk)
+                    ->select('equity_id', 'traded_date', 'nse_close', 'bse_close')
+                    ->get()
+                    ->groupBy('equity_id');
+
                 foreach ($batch as $eqId => $items) {
-                    $historicalData->put($eqId, $historicalData->has($eqId) ? $historicalData->get($eqId)->merge($items) : $items);
+                    $existing = $historicalData->get($eqId, collect());
+                    $historicalData->put($eqId, $existing->merge($items));
                 }
             }
         }
