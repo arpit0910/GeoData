@@ -51,10 +51,17 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Market Cap</label>
-                    <input type="text" name="market_cap" value="{{ old('market_cap', $equity->market_cap) }}" placeholder="e.g. Large Cap"
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Market Cap Value</label>
+                    <input type="text" name="market_cap" value="{{ old('market_cap', $equity->market_cap) }}" placeholder="e.g. ₹ 1,23,456 Cr"
                         class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
                     @error('market_cap') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Market Cap Category</label>
+                    <input type="text" name="market_cap_category" value="{{ old('market_cap_category', $equity->market_cap_category) }}" placeholder="e.g. Large Cap"
+                        class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    @error('market_cap_category') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
@@ -62,6 +69,13 @@
                     <input type="number" step="0.01" name="face_value" value="{{ old('face_value', $equity->face_value) }}"
                         class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
                     @error('face_value') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Listing Date</label>
+                    <input type="date" name="listing_date" value="{{ old('listing_date', $equity->listing_date ? $equity->listing_date->format('Y-m-d') : '') }}"
+                        class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    @error('listing_date') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="md:col-span-2">

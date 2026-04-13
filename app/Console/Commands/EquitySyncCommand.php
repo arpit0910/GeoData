@@ -37,11 +37,11 @@ class EquitySyncCommand extends Command
         $currentDateObj = \Carbon\Carbon::parse($startDate);
         $attempts = 0;
         $maxAttempts = 10;
-        
+
         $scriptPath = base_path('app/Scripts/fetch_bhavcopy.py');
         $pythonPaths = ['python', 'python3', 'py', 'C:\Python312\python.exe', 'C:\Python311\python.exe'];
         $pythonPath = null;
-        
+
         foreach ($pythonPaths as $path) {
             $testOutput = [];
             $testReturn = 0;
@@ -110,7 +110,7 @@ class EquitySyncCommand extends Command
     {
         $data = [];
         $dateObj = \Carbon\Carbon::parse($date);
-        
+
         if (!$exchange || strtolower($exchange) === 'nse') {
             $this->info("  Fetching NSE data via PHP for {$date}...");
             $nseData = $this->fetchNseData($dateObj);
@@ -133,7 +133,7 @@ class EquitySyncCommand extends Command
     {
         $data = [];
         $dateObj = \Carbon\Carbon::parse($date);
-        
+
         // Process NSE
         if (!$exchange || strtolower($exchange) === 'nse') {
             $this->info("Fetching NSE data via PHP...");
@@ -175,7 +175,7 @@ class EquitySyncCommand extends Command
         $year = $dateObj->format('Y');
         $date = $dateObj->format('Y-m-d');
         $dateTrad = strtoupper($dateObj->format('dMY')); // 13APR2026
-        
+
         $urls = [
             // UDiFF Pattern (New)
             "https://nsearchives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_{$dateUnderscore}_F_0000.csv.zip",
@@ -183,7 +183,7 @@ class EquitySyncCommand extends Command
             "https://archives.nseindia.com/content/historical/EQUITIES/{$year}/{$month}/cm{$dateTrad}bhav.csv.zip",
             "https://www.nseindia.com/content/historical/EQUITIES/{$year}/{$month}/cm{$dateTrad}bhav.csv.zip"
         ];
-        
+
         foreach ($urls as $url) {
             try {
                 $this->info("Trying NSE URL: $url");
@@ -192,9 +192,9 @@ class EquitySyncCommand extends Command
                     'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
                     'Referer' => 'https://www.nseindia.com/all-reports'
                 ])
-                ->timeout(30)
-                ->withoutVerifying()
-                ->get($url);
+                    ->timeout(30)
+                    ->withoutVerifying()
+                    ->get($url);
 
                 if ($response->successful() && strlen($response->body()) > 500) {
                     $path = "equities/bhavcopies/{$date}/NSE_" . basename($url);
@@ -215,7 +215,7 @@ class EquitySyncCommand extends Command
         $dateStr = $dateObj->format('dmy');           // 100426
         $dateUnderscore = $dateObj->format('Ymd');     // 20260410
         $date = $dateObj->format('Y-m-d');
-        
+
         $urls = [
             // UDiFF Pattern (New)
             "https://www.bseindia.com/download/BhavCopy/Equity/BhavCopy_BSE_CM_0_0_0_{$dateUnderscore}_F_0000.CSV",
@@ -230,9 +230,9 @@ class EquitySyncCommand extends Command
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                     'Referer' => 'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx'
                 ])
-                ->timeout(30)
-                ->withoutVerifying()
-                ->get($url);
+                    ->timeout(30)
+                    ->withoutVerifying()
+                    ->get($url);
 
                 if ($response->successful() && strlen($response->body()) > 500) {
                     $path = "equities/bhavcopies/{$date}/BSE_" . basename($url);
@@ -251,7 +251,7 @@ class EquitySyncCommand extends Command
     protected function parseFileContent($content, $exchange, $url)
     {
         $isZip = str_ends_with(strtolower($url), '.zip');
-        
+
         if ($isZip) {
             $tempFile = tempnam(sys_get_temp_dir(), 'bhav');
             file_put_contents($tempFile, $content);
@@ -293,15 +293,18 @@ class EquitySyncCommand extends Command
             'close'   => ['ClsPric', 'CLOSE', 'CLOSE_PRC', 'LAST_PRC', 'LAST'],
             'last'    => ['LastPric', 'LAST', 'LTP', 'LAST_PRC'],
             'prev'    => ['PrvsClsgPric', 'PREVCLOSE', 'PREV_CLOSE', 'PREV_CLSG_PRC'],
-            'volume'  => ['TtlTradgVol', 'TOTTRDQTY', 'NO_SHARES', 'TOT_TR_QTY', 'TRADE_QTY']
+            'volume'   => ['TtlTradgVol', 'TOTTRDQTY', 'NO_SHARES', 'TOT_TR_QTY', 'TRADE_QTY'],
+            'turnover' => ['TtlTradgVal', 'TOTTRDVAL', 'NET_TURNOV'],
+            'trades'   => ['TtlNbOfTradesExecuted', 'TOTALTRADES', 'NO_OF_TRDS'],
+            'avg_price'=> ['WghtdAvgPric', 'AVG_PRICE', 'AVG_PRC']
         ];
 
         for ($i = 1; $i < count($lines); $i++) {
             $line = trim($lines[$i]);
             if (empty($line)) continue;
-            
+
             $row = str_getcsv($line);
-            
+
             // NSE UDiFF files often have a trailing comma in the header but not the rows (or vice-versa)
             // We'll take the minimum count to allow array_combine to work robustly
             $count = min(count($headers), count($row));
@@ -332,6 +335,9 @@ class EquitySyncCommand extends Command
                 'last' => (float)($mapped['last'] ?? 0),
                 'prev_close' => (float)($mapped['prev'] ?? 0),
                 'volume' => (int)($mapped['volume'] ?? 0),
+                'turnover' => (float)($mapped['turnover'] ?? 0),
+                'trades' => (int)($mapped['trades'] ?? 0),
+                'avg_price' => (float)($mapped['avg_price'] ?? 0),
                 'exchange' => $exchange
             ];
         }
@@ -341,16 +347,16 @@ class EquitySyncCommand extends Command
     protected function processData($data, $date)
     {
         $this->info('Syncing unique equities...');
-        
+
         $isins = collect($data)->pluck('isin')->unique();
         $existingEquities = Equity::whereIn('isin', $isins)->get()->keyBy('isin');
 
         $now = now();
-        $equitiesToUpsert = collect($data)->groupBy('isin')->map(function($group, $isin) use ($existingEquities, $now) {
+        $equitiesToUpsert = collect($data)->groupBy('isin')->map(function ($group, $isin) use ($existingEquities, $now) {
             $nse = $group->where('exchange', 'NSE')->first();
             $bse = $group->where('exchange', 'BSE')->first();
             $existing = $existingEquities->get($isin);
-            
+
             // Priority for name: UDiFF Name > Existing Name > Ticker Symbol
             $name = ($nse && !empty($nse['name'])) ? $nse['name'] : (($bse && !empty($bse['name'])) ? $bse['name'] : ($existing ? $existing->company_name : ($nse ? $nse['symbol'] : ($bse ? $bse['symbol'] : ''))));
 
@@ -359,32 +365,87 @@ class EquitySyncCommand extends Command
                 'company_name' => $name,
                 'nse_symbol' => $nse ? $nse['symbol'] : ($existing ? $existing->nse_symbol : null),
                 'bse_symbol' => $bse ? $bse['symbol'] : ($existing ? $existing->bse_symbol : null),
+                'industry' => $existing ? $existing->industry : null,
                 'market_cap' => $existing ? $existing->market_cap : null,
+                'market_cap_category' => $existing ? $existing->market_cap_category : null,
+                'face_value' => $existing ? $existing->face_value : null,
+                'listing_date' => $existing ? $existing->listing_date : null,
                 'is_active' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
         })->values()->toArray();
-        
-        $chunks = array_chunk($equitiesToUpsert, 500);
+
+        $chunks = array_chunk($equitiesToUpsert, 50);
         foreach ($chunks as $chunk) {
-            Equity::upsert($chunk, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'market_cap', 'is_active', 'updated_at']);
+            Equity::upsert($chunk, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'face_value', 'listing_date', 'is_active', 'updated_at']);
         }
-        
-        // Step 2: Map ISIN to ID
-        $isinToId = Equity::whereIn('isin', $isins)->pluck('id', 'isin');
 
-        // Step 3: Fetch existing prices for these ISINs on this specific date to enable additive sync
-        $this->info('Merging with existing price data...');
-        $existingPrices = EquityPrice::whereIn('isin', $isins)->where('traded_date', $date)->get()->keyBy('isin');
+        // Step 2: Map ISIN to ID (Chunked fetch to avoid SQL variable limit)
+        $isinToId = collect();
+        foreach ($isins->chunk(500) as $isinChunk) {
+            $isinToId = $isinToId->merge(Equity::whereIn('isin', $isinChunk)->pluck('id', 'isin'));
+        }
 
-        // Step 4: Consolidate and merge
-        $consolidatedPrices = collect($data)->groupBy('isin')->map(function($group, $isin) use ($isinToId, $date, $now, $existingPrices) {
+        // Step 3: Identify historical dates for performance metrics
+        $previousDates = EquityPrice::where('traded_date', '<', $date)
+            ->select('traded_date')
+            ->distinct()
+            ->orderBy('traded_date', 'desc')
+            ->limit(300)
+            ->pluck('traded_date')
+            ->map(fn($d) => $d instanceof \Carbon\Carbon ? $d->format('Y-m-d') : $d);
+
+        $dateMap = [
+            '1d' => $previousDates->get(0),
+            '3d' => $previousDates->get(2),
+            '7d' => $previousDates->get(6),
+            '1m' => $previousDates->get(20),
+            '3m' => $previousDates->get(62),
+            '6m' => $previousDates->get(125),
+            '9m' => $previousDates->get(188),
+            '12m' => $previousDates->get(251),
+        ];
+
+        $targetDates = collect($dateMap)->filter()->unique()->values()->toArray();
+
+        $historicalData = collect();
+        if (!empty($targetDates)) {
+            $this->info("Fetching historical data for " . count($targetDates) . " target dates...");
+            // Chunked fetch for historical data to avoid variable limits
+            foreach ($isinToId->values()->chunk(500) as $idChunk) {
+                $batch = EquityPrice::whereIn('traded_date', $targetDates)
+                    ->whereIn('equity_id', $idChunk)
+                    ->get()
+                    ->groupBy('equity_id');
+                
+                foreach ($batch as $eqId => $items) {
+                    if (!$historicalData->has($eqId)) {
+                        $historicalData->put($eqId, $items);
+                    } else {
+                        $historicalData->put($eqId, $historicalData->get($eqId)->merge($items));
+                    }
+                }
+            }
+        }
+
+        // Step 4: Fetch existing prices for these ISINs on this specific date to enable additive sync
+        $this->info('Merging and calculating metrics...');
+        $existingPrices = collect();
+        foreach ($isins->chunk(500) as $isinChunk) {
+            $existingPrices = $existingPrices->merge(EquityPrice::whereIn('isin', $isinChunk)->where('traded_date', $date)->get()->keyBy('isin'));
+        }
+
+        // Step 5: Consolidate, merge and calculate metrics in one pass
+        $consolidatedPrices = collect($data)->groupBy('isin')->map(function ($group, $isin) use ($isinToId, $date, $now, $existingPrices, $dateMap, $historicalData) {
             $nse = $group->where('exchange', 'NSE')->first();
             $bse = $group->where('exchange', 'BSE')->first();
             $existing = $existingPrices->get($isin);
-            
-            // NSE Data (Use new if exists, otherwise keep existing)
+
+            $equity_id = $isinToId[$isin] ?? null;
+            if (!$equity_id) return null;
+
+            // Price Data
             $nse_open = $nse ? $nse['open'] : ($existing ? $existing->nse_open : 0);
             $nse_high = $nse ? $nse['high'] : ($existing ? $existing->nse_high : 0);
             $nse_low = $nse ? $nse['low'] : ($existing ? $existing->nse_low : 0);
@@ -392,8 +453,10 @@ class EquitySyncCommand extends Command
             $nse_last = $nse ? $nse['last'] : ($existing ? $existing->nse_last : 0);
             $nse_prev = $nse ? $nse['prev_close'] : ($existing ? $existing->nse_prev_close : 0);
             $nse_vol = $nse ? $nse['volume'] : ($existing ? $existing->nse_volume : 0);
+            $nse_turnover = $nse ? $nse['turnover'] : ($existing ? $existing->nse_turnover : 0);
+            $nse_trades = $nse ? $nse['trades'] : ($existing ? $existing->nse_trades : 0);
+            $nse_avg_price = $nse ? $nse['avg_price'] : ($existing ? $existing->nse_avg_price : 0);
 
-            // BSE Data
             $bse_open = $bse ? $bse['open'] : ($existing ? $existing->bse_open : 0);
             $bse_high = $bse ? $bse['high'] : ($existing ? $existing->bse_high : 0);
             $bse_low = $bse ? $bse['low'] : ($existing ? $existing->bse_low : 0);
@@ -401,11 +464,18 @@ class EquitySyncCommand extends Command
             $bse_last = $bse ? $bse['last'] : ($existing ? $existing->bse_last : 0);
             $bse_prev = $bse ? $bse['prev_close'] : ($existing ? $existing->bse_prev_close : 0);
             $bse_vol = $bse ? $bse['volume'] : ($existing ? $existing->bse_volume : 0);
+            $bse_turnover = $bse ? $bse['turnover'] : ($existing ? $existing->bse_turnover : 0);
+            $bse_trades = $bse ? $bse['trades'] : ($existing ? $existing->bse_trades : 0);
+            $bse_avg_price = $bse ? $bse['avg_price'] : ($existing ? $existing->bse_avg_price : 0);
 
             $spread = ($nse_close && $bse_close) ? abs($nse_close - $bse_close) : 0;
 
-            return [
-                'equity_id' => $isinToId[$isin] ?? null,
+            // Metrics Calculation
+            $history = $historicalData->get($equity_id);
+            $historyByDate = $history ? $history->keyBy(fn($item) => $item->traded_date instanceof \Carbon\Carbon ? $item->traded_date->format('Y-m-d') : $item->traded_date) : null;
+
+            $record = [
+                'equity_id' => $equity_id,
                 'isin' => $isin,
                 'traded_date' => $date,
                 'nse_open' => $nse_open,
@@ -415,6 +485,9 @@ class EquitySyncCommand extends Command
                 'nse_last' => $nse_last,
                 'nse_prev_close' => $nse_prev,
                 'nse_volume' => $nse_vol,
+                'nse_turnover' => $nse_turnover,
+                'nse_trades' => $nse_trades,
+                'nse_avg_price' => $nse_avg_price,
                 'bse_open' => $bse_open,
                 'bse_high' => $bse_high,
                 'bse_low' => $bse_low,
@@ -422,78 +495,91 @@ class EquitySyncCommand extends Command
                 'bse_last' => $bse_last,
                 'bse_prev_close' => $bse_prev,
                 'bse_volume' => $bse_vol,
+                'bse_turnover' => $bse_turnover,
+                'bse_trades' => $bse_trades,
+                'bse_avg_price' => $bse_avg_price,
+                'nse_chg_1d' => null,
+                'nse_chg_3d' => null,
+                'nse_chg_7d' => null,
+                'nse_chg_1m' => null,
+                'nse_chg_3m' => null,
+                'nse_chg_6m' => null,
+                'nse_chg_9m' => null,
+                'nse_chg_12m' => null,
+                'bse_chg_1d' => null,
+                'bse_chg_3d' => null,
+                'bse_chg_7d' => null,
+                'bse_chg_1m' => null,
+                'bse_chg_3m' => null,
+                'bse_chg_6m' => null,
+                'bse_chg_9m' => null,
+                'bse_chg_12m' => null,
                 'spread' => $spread,
                 'created_at' => $existing ? $existing->created_at : $now,
                 'updated_at' => $now,
             ];
-        })->filter(fn($p) => $p['equity_id'] !== null)->values()->toArray();
 
-        // Process in chunks to avoid memory issues and SQL limits
-        $chunks = array_chunk($consolidatedPrices, 1000);
+            if ($historyByDate) {
+                foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '12m'] as $period) {
+                    $prevDate = $dateMap[$period] ?? null;
+                    $prev = $prevDate ? $historyByDate->get($prevDate) : null;
+                    if ($prev) {
+                        if ($nse_close && (float)$prev->nse_close > 0) $record["nse_chg_{$period}"] = (($nse_close - $prev->nse_close) / $prev->nse_close) * 100;
+                        if ($bse_close && (float)$prev->bse_close > 0) $record["bse_chg_{$period}"] = (($bse_close - $prev->bse_close) / $prev->bse_close) * 100;
+                    }
+                }
+            }
+
+            return $record;
+        })->filter()->values()->toArray();
+
+        // Step 6: Single Bulk Upsert (Small chunks for SQLite variable limits)
+        $this->info("Upserting " . count($consolidatedPrices) . " records with performance metrics...");
+        $chunks = array_chunk($consolidatedPrices, 20); 
         foreach ($chunks as $chunk) {
             EquityPrice::upsert($chunk, ['isin', 'traded_date'], [
-                'nse_open', 'nse_high', 'nse_low', 'nse_close', 'nse_last', 'nse_prev_close', 'nse_volume',
-                'bse_open', 'bse_high', 'bse_low', 'bse_close', 'bse_last', 'bse_prev_close', 'bse_volume',
-                'nse_chg_1d', 'nse_chg_3d', 'nse_chg_7d', 'nse_chg_1m',
-                'bse_chg_1d', 'bse_chg_3d', 'bse_chg_7d', 'bse_chg_1m',
-                'spread', 'updated_at'
+                'nse_open',
+                'nse_high',
+                'nse_low',
+                'nse_close',
+                'nse_last',
+                'nse_prev_close',
+                'nse_volume',
+                'nse_turnover',
+                'nse_trades',
+                'nse_avg_price',
+                'bse_open',
+                'bse_high',
+                'bse_low',
+                'bse_close',
+                'bse_last',
+                'bse_prev_close',
+                'bse_volume',
+                'bse_turnover',
+                'bse_trades',
+                'bse_avg_price',
+                'nse_chg_1d',
+                'nse_chg_3d',
+                'nse_chg_7d',
+                'nse_chg_1m',
+                'nse_chg_3m',
+                'nse_chg_6m',
+                'nse_chg_9m',
+                'nse_chg_12m',
+                'bse_chg_1d',
+                'bse_chg_3d',
+                'bse_chg_7d',
+                'bse_chg_1m',
+                'bse_chg_3m',
+                'bse_chg_6m',
+                'bse_chg_9m',
+                'bse_chg_12m',
+                'spread',
+                'updated_at'
             ]);
         }
 
-        $this->info("Calculating performance metrics for {$date}...");
-        $this->calculateMetrics($date);
-
         $this->info("Sync completed successfully for {$date}.");
         return Command::SUCCESS;
-    }
-
-    /**
-     * Calculate 1d, 3d, 7d, 1m performance percentage changes for all stocks on a given date.
-     */
-    protected function calculateMetrics($date)
-    {
-        $currentPrices = EquityPrice::where('traded_date', $date)->get();
-        if ($currentPrices->isEmpty()) return;
-
-        // For each stock, fetch previous records to compute changes
-        foreach ($currentPrices as $p) {
-            $history = EquityPrice::where('equity_id', $p->equity_id)
-                ->where('traded_date', '<', $date)
-                ->orderBy('traded_date', 'desc')
-                ->limit(25) // Up to 1 month of trading days
-                ->get();
-
-            if ($history->isEmpty()) continue;
-
-            // 1 Day Change
-            $prev1 = $history->get(0);
-            if ($prev1) {
-                if ($p->nse_close && $prev1->nse_close) $p->nse_chg_1d = (($p->nse_close - $prev1->nse_close) / $prev1->nse_close) * 100;
-                if ($p->bse_close && $prev1->bse_close) $p->bse_chg_1d = (($p->bse_close - $prev1->bse_close) / $prev1->bse_close) * 100;
-            }
-
-            // 3 Day Change
-            $prev3 = $history->get(2);
-            if ($prev3) {
-                if ($p->nse_close && $prev3->nse_close) $p->nse_chg_3d = (($p->nse_close - $prev3->nse_close) / $prev3->nse_close) * 100;
-                if ($p->bse_close && $prev3->bse_close) $p->bse_chg_3d = (($p->bse_close - $prev3->bse_close) / $prev3->bse_close) * 100;
-            }
-
-            // 7 Day Change
-            $prev7 = $history->get(6);
-            if ($prev7) {
-                if ($p->nse_close && $prev7->nse_close) $p->nse_chg_7d = (($p->nse_close - $prev7->nse_close) / $prev7->nse_close) * 100;
-                if ($p->bse_close && $prev7->bse_close) $p->bse_chg_7d = (($p->bse_close - $prev7->bse_close) / $prev7->bse_close) * 100;
-            }
-
-            // 1 Month Change (approx 21 trading days)
-            $prev1M = $history->get(20);
-            if ($prev1M) {
-                if ($p->nse_close && $prev1M->nse_close) $p->nse_chg_1m = (($p->nse_close - $prev1M->nse_close) / $prev1M->nse_close) * 100;
-                if ($p->bse_close && $prev1M->bse_close) $p->bse_chg_1m = (($p->bse_close - $prev1M->bse_close) / $prev1M->bse_close) * 100;
-            }
-
-            $p->save();
-        }
     }
 }

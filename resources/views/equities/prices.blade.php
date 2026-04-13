@@ -8,7 +8,7 @@
     </div>
     <div class="flex items-center gap-3">
         <button type="button" onclick="document.getElementById('syncModal').classList.remove('hidden')"
-            class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
+            class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
             <i class="fas fa-sync-alt mr-2"></i> Sync Equity Prices
         </button>
     </div>
@@ -20,17 +20,17 @@
         <div>
             <label class="block text-xs font-bold text-gray-400 mb-2">Date From</label>
             <input type="date" id="filter_date_from" 
-                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700 dark:text-gray-300">
+                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-700 dark:text-gray-300">
         </div>
         <div>
             <label class="block text-xs font-bold text-gray-400 mb-2">Date To</label>
             <input type="date" id="filter_date_to" 
-                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700 dark:text-gray-300">
+                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-700 dark:text-gray-300">
         </div>
         <div>
             <label class="block text-xs font-bold text-gray-400 mb-2">Stock / ISIN</label>
             <input type="text" id="filter_isin" placeholder="Search Name, Symbol or ISIN..."
-                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700 dark:text-gray-300">
+                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-700 dark:text-gray-300">
         </div>
         <div class="flex gap-2">
             <button id="applyFilters" class="flex-1 bg-gray-900 dark:bg-white/10 text-white px-4 py-2.5 text-sm font-bold rounded-xl hover:bg-black dark:hover:bg-white/20 transition-all">
@@ -61,11 +61,11 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-400 mb-2">Sync Date</label>
                             <input type="date" id="sync_date" value="{{ date('Y-m-d') }}" required
-                                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold">
+                                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all font-bold">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-400 mb-2">Exchange</label>
-                            <select id="sync_exchange" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold">
+                            <select id="sync_exchange" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all font-bold">
                                 <option value="">Both NSE & BSE</option>
                                 <option value="NSE">NSE Only</option>
                                 <option value="BSE">BSE Only</option>
@@ -74,7 +74,7 @@
                     </div>
 
                     <div id="syncStatus" class="hidden mt-6 text-center">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 animate-bounce mb-3">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-bounce mb-3">
                             <i class="fas fa-spinner fa-spin"></i>
                         </div>
                         <p class="text-sm font-bold text-gray-900 dark:text-white">Syncing Data...</p>
@@ -87,7 +87,7 @@
                             Cancel
                         </button>
                         <button type="submit"
-                            class="flex-1 px-4 py-3 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg shadow-indigo-500/30 transition-all">
+                            class="flex-1 px-4 py-3 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-lg shadow-amber-500/30 transition-all">
                             Start Sync
                         </button>
                     </div>
@@ -126,40 +126,44 @@
 <div id="priceDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen px-4 py-8">
         <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="document.getElementById('priceDetailModal').classList.add('hidden')"></div>
-        <div class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl p-6 z-10">
-            <div class="flex items-center justify-between mb-6">
+        <div class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-5xl p-5 z-10">
+            <div class="flex items-center justify-between mb-5">
                 <div>
                     <h3 id="modalStockName" class="text-xl font-bold text-gray-900 dark:text-white">Stock Details</h3>
-                    <p id="modalStockMeta" class="text-xs text-gray-400 mt-1"></p>
+                    <p id="modalStockMeta" class="text-xs text-gray-400 mt-1 font-medium"></p>
                 </div>
                 <button onclick="document.getElementById('priceDetailModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {{-- NSE Panel --}}
-                <div class="bg-indigo-50/50 dark:bg-indigo-500/5 rounded-2xl p-5 border border-indigo-100 dark:border-indigo-500/10">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold font-sans">NSE</span>
-                        <h4 class="text-sm font-bold text-indigo-600 dark:text-indigo-400">National Stock Exchange</h4>
-                    </div>
-                    <div class="space-y-3" id="nseDetails"></div>
+            {{-- Equity Metadata Bar --}}
+            <div id="equityMetaBar" class="hidden mb-6 grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Industry</label>
+                    <p id="metaIndustry" class="text-xs font-bold text-gray-700 dark:text-gray-300"></p>
                 </div>
-
-                {{-- BSE Panel --}}
-                <div class="bg-amber-50/50 dark:bg-amber-500/5 rounded-2xl p-5 border border-amber-100 dark:border-amber-500/10">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white text-xs font-bold font-sans">BSE</span>
-                        <h4 class="text-sm font-bold text-amber-600 dark:text-amber-400">Bombay Stock Exchange</h4>
-                    </div>
-                    <div class="space-y-3" id="bseDetails"></div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Market Category</label>
+                    <p id="metaCategory" class="text-xs font-bold text-gray-700 dark:text-gray-300"></p>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Market Cap</label>
+                    <p id="metaCap" class="text-xs font-bold text-gray-700 dark:text-gray-300"></p>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Listing Date</label>
+                    <p id="metaListingDate" class="text-xs font-bold text-gray-700 dark:text-gray-300"></p>
                 </div>
             </div>
 
-            <div class="mt-8 flex justify-end">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="modalContent">
+                {{-- Content injected via JS --}}
+            </div>
+
+            <div class="mt-5 flex justify-end">
                 <button onclick="document.getElementById('priceDetailModal').classList.add('hidden')"
-                    class="px-6 py-2.5 text-sm font-bold text-white bg-gray-900 dark:bg-white/10 hover:bg-black dark:hover:bg-white/20 rounded-xl transition-all">
+                    class="px-5 py-2 text-xs font-bold text-white bg-gray-900 dark:bg-white/10 hover:bg-black dark:hover:bg-white/20 rounded-xl transition-all">
                     Close Details
                 </button>
             </div>
@@ -262,7 +266,7 @@
                     searchable: false,
                     className: 'text-right',
                     render: function(data) {
-                        return `<button onclick='showPriceDetail(${JSON.stringify(data)})' class="p-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors" title="View Details">
+                        return `<button onclick="showPriceDetail(${data.id})" class="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg transition-colors" title="View Details">
                             <i class="fas fa-eye text-sm"></i>
                         </button>`;
                     }
@@ -342,71 +346,111 @@
         }, 300);
     }
 
-    function showPriceDetail(data) {
-        $('#modalStockName').text(data.equity ? data.equity.company_name : 'N/A');
-        const date = new Date(data.traded_date).toLocaleDateString('en-GB');
-        $('#modalStockMeta').text(`ISIN: ${data.isin} | Traded Date: ${date} | Spread: ${data.spread}`);
+    function showPriceDetail(id) {
+        const modal = document.getElementById('priceDetailModal');
+        modal.classList.remove('hidden');
+        
+        $('#nseDetails, #bseDetails').html(`
+            <div class="col-span-2 flex justify-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+            </div>
+        `);
 
-        const fmt = (val) => val && val > 0 ? parseFloat(val).toFixed(2) : '<span class="text-gray-400 italic">N/A</span>';
-        const volFmt = (val) => val && val > 0 ? val.toLocaleString() : '<span class="text-gray-400 italic">N/A</span>';
+        const url = "{{ route('equities.prices.show', ':id') }}".replace(':id', id);
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                $('#modalStockName').text(data.equity ? data.equity.company_name : 'N/A');
+                const date = new Date(data.traded_date).toLocaleDateString('en-GB');
+                $('#modalStockMeta').text(`ISIN: ${data.isin} | Traded Date: ${date} | Spread: ${data.spread}`);
 
-        const nseHtml = `
-            <div class="flex justify-between items-center py-1 border-b border-indigo-100/30">
-                <span class="text-xs text-gray-500">Open Price</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">₹${fmt(data.nse_open)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1 border-b border-indigo-100/30">
-                <span class="text-xs text-gray-500">Day High Price</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">₹${fmt(data.nse_high)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1 border-b border-indigo-100/30">
-                <span class="text-xs text-gray-500">Day Low Price</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">₹${fmt(data.nse_low)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1 border-b border-indigo-100/30">
-                <span class="text-xs text-gray-500">Closing Price</span>
-                <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">₹${fmt(data.nse_close)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1 border-b border-indigo-100/30">
-                <span class="text-xs text-gray-500">Last Traded (LTP)</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">₹${fmt(data.nse_last)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1">
-                <span class="text-xs text-gray-500">Volume</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">${volFmt(data.nse_volume)}</span>
-            </div>
-        `;
+                if (data.equity) {
+                    $('#equityMetaBar').removeClass('hidden');
+                    $('#metaIndustry').text(data.equity.industry || 'N/A');
+                    $('#metaCategory').text(data.equity.market_cap_category || 'N/A');
+                    $('#metaCap').text(data.equity.market_cap || 'N/A');
+                    const listingDate = data.equity.listing_date ? new Date(data.equity.listing_date).toLocaleDateString('en-GB') : 'N/A';
+                    $('#metaListingDate').text(listingDate);
+                } else {
+                    $('#equityMetaBar').addClass('hidden');
+                }
 
-        const bseHtml = `
-            <div class="flex justify-between items-center py-1 border-b border-amber-100/30">
-                <span class="text-xs text-gray-500">Open Price</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">₹${fmt(data.bse_open)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1 border-b border-amber-100/30">
-                <span class="text-xs text-gray-500">Day High Price</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">₹${fmt(data.bse_high)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1 border-b border-amber-100/30">
-                <span class="text-xs text-gray-500">Day Low Price</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">₹${fmt(data.bse_low)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1 border-b border-amber-100/30">
-                <span class="text-xs text-gray-500">Closing Price</span>
-                <span class="text-sm font-bold text-amber-600 dark:text-amber-400">₹${fmt(data.bse_close)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1 border-b border-amber-100/30">
-                <span class="text-xs text-gray-500">Last Traded (LTP)</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">₹${fmt(data.bse_last)}</span>
-            </div>
-            <div class="flex justify-between items-center py-1">
-                <span class="text-xs text-gray-500">Volume</span>
-                <span class="text-xs font-bold dark:text-gray-300 text-gray-700">${volFmt(data.bse_volume)}</span>
-            </div>
-        `;
+                const fmt = (val) => val && val > 0 ? parseFloat(val).toFixed(2) : '<span class="text-gray-400 italic">N/A</span>';
+                const volFmt = (val) => val && val > 0 ? val.toLocaleString() : '<span class="text-gray-400 italic">N/A</span>';
+                
+                const returnFmt = (val) => {
+                    if (val === null || val === undefined) return '<span class="text-gray-400 italic">N/A</span>';
+                    const num = parseFloat(val);
+                    const color = num >= 0 ? 'text-emerald-500' : 'text-rose-500';
+                    const icon = num >= 0 ? '<i class="fas fa-caret-up mr-1"></i>' : '<i class="fas fa-caret-down mr-1"></i>';
+                    return `<span class="text-[11px] font-black ${color}">${icon}${Math.abs(num).toFixed(2)}%</span>`;
+                };
 
-        $('#nseDetails').html(nseHtml);
-        $('#bseDetails').html(bseHtml);
-        $('#priceDetailModal').removeClass('hidden');
+                const generateExchangeHtml = (exchange, priceData, colorClass, borderClass, bgClass, badgeClass) => {
+                    const prefix = exchange.toLowerCase();
+                    return `
+                        <div class="${bgClass} rounded-2xl p-4 border ${borderClass} h-full">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-black text-white ${badgeClass}">${exchange}</span>
+                                <h4 class="text-[10px] font-bold ${colorClass} uppercase tracking-widest">${exchange === 'NSE' ? 'National Stock' : 'Bombay Stock'} Exchange</h4>
+                            </div>
+                            
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                    <span class="text-[11px] text-gray-500">Open Price</span>
+                                    <span class="text-[11px] font-bold dark:text-gray-300 text-gray-700">₹${fmt(priceData[prefix + '_open'])}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                    <span class="text-[11px] text-gray-500">Day High</span>
+                                    <span class="text-[11px] font-bold dark:text-gray-300 text-gray-700">₹${fmt(priceData[prefix + '_high'])}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                    <span class="text-[11px] text-gray-500">Day Low</span>
+                                    <span class="text-[11px] font-bold dark:text-gray-300 text-gray-700">₹${fmt(priceData[prefix + '_low'])}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                    <span class="text-[11px] text-gray-500">Closing Price</span>
+                                    <span class="text-xs font-bold ${colorClass}">₹${fmt(priceData[prefix + '_close'])}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                    <span class="text-[11px] text-gray-500">Avg. Price (VWAP)</span>
+                                    <span class="text-[11px] font-bold dark:text-gray-300 text-gray-700">₹${fmt(priceData[prefix + '_avg_price'])}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                    <span class="text-[11px] text-gray-500">Volume</span>
+                                    <span class="text-[11px] font-bold dark:text-gray-300 text-gray-700">${volFmt(priceData[prefix + '_volume'])}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                    <span class="text-[11px] text-gray-500">Turnover</span>
+                                    <span class="text-[11px] font-bold dark:text-gray-300 text-gray-700">₹${volFmt(priceData[prefix + '_turnover'])}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-0.5">
+                                    <span class="text-[11px] text-gray-500">Total Trades</span>
+                                    <span class="text-[11px] font-bold dark:text-gray-300 text-gray-700">${volFmt(priceData[prefix + '_trades'])}</span>
+                                </div>
+                                
+                                <div class="mt-4 pt-4 border-t ${borderClass}">
+                                    <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Performance Returns</p>
+                                    <div class="grid grid-cols-4 gap-2">
+                                        ${['1d', '3d', '7d', '1m', '3m', '6m', '9m', '12m'].map(p => `
+                                            <div class="bg-white dark:bg-white/5 rounded-lg p-1.5 border border-gray-100 dark:border-white/5 text-center">
+                                                <p class="text-[8px] font-bold text-gray-400 mb-0.5 uppercase">${p}</p>
+                                                ${returnFmt(priceData[prefix + '_chg_' + p])}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                };
+
+                const nseHtml = generateExchangeHtml('NSE', data, 'text-indigo-600 dark:text-indigo-400', 'border-indigo-100/30 dark:border-indigo-500/10', 'bg-indigo-50/50 dark:bg-indigo-500/5', 'bg-indigo-600');
+                const bseHtml = generateExchangeHtml('BSE', data, 'text-amber-600 dark:text-amber-400', 'border-amber-100/30 dark:border-amber-500/10', 'bg-amber-50/50 dark:bg-amber-500/5', 'bg-amber-600');
+
+                $('#modalContent').html(nseHtml + bseHtml);
+            });
     }
 </script>
 @endpush

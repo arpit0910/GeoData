@@ -144,6 +144,15 @@ class EquityController extends Controller
     }
 
     /**
+     * Display a specific price record (AJAX).
+     */
+    public function priceDetail(EquityPrice $price)
+    {
+        $price->load('equity:id,company_name,isin,nse_symbol,bse_symbol');
+        return response()->json($price);
+    }
+
+    /**
      * Show the form for editing the specified equity.
      */
     public function edit(Equity $equity)
@@ -162,7 +171,9 @@ class EquityController extends Controller
             'bse_symbol' => 'nullable|string|max:50',
             'industry' => 'nullable|string|max:255',
             'market_cap' => 'nullable|string|max:100',
+            'market_cap_category' => 'nullable|string|max:100',
             'face_value' => 'nullable|numeric',
+            'listing_date' => 'nullable|date',
             'is_active' => 'required|boolean',
         ]);
 
@@ -259,7 +270,7 @@ class EquityController extends Controller
             "Expires"             => "0"
         ];
 
-        $columns = ['isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'is_active'];
+        $columns = ['isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'face_value', 'listing_date', 'is_active'];
 
         $callback = function() use($columns) {
             $file = fopen('php://output', 'w');
@@ -274,6 +285,9 @@ class EquityController extends Controller
                         $equity->bse_symbol,
                         $equity->industry,
                         $equity->market_cap,
+                        $equity->market_cap_category,
+                        $equity->face_value,
+                        $equity->listing_date ? $equity->listing_date->format('Y-m-d') : '',
                         $equity->is_active ? '1' : '0',
                     ]);
                 }
@@ -294,54 +308,84 @@ class EquityController extends Controller
             'file' => 'required|file|mimes:csv,txt'
         ]);
 
-        $file = $request->file('file');
-        $handle = fopen($file->getRealPath(), 'r');
-        $header = fgetcsv($handle);
+        try {
+            $file = $request->file('file');
+            $handle = fopen($file->getRealPath(), 'r');
+            $header = fgetcsv($handle);
 
-        // Normalize header
-        $header = array_map('strtolower', array_map('trim', $header));
-        
-        $now = now();
-        $records = [];
-        $count = 0;
-
-        while (($row = fgetcsv($handle)) !== FALSE) {
-            if (count($row) < 2) continue; // Skip empty rows
-
-            $data = array_combine(array_slice($header, 0, count($row)), $row);
-            $isin = trim($data['isin'] ?? '');
-            
-            if (empty($isin)) continue;
-
-            $records[] = [
-                'isin' => $isin,
-                'company_name' => trim($data['company_name'] ?? $data['name'] ?? ''),
-                'nse_symbol' => trim($data['nse_symbol'] ?? $data['symbol'] ?? ''),
-                'bse_symbol' => trim($data['bse_symbol'] ?? ''),
-                'industry' => trim($data['industry'] ?? ''),
-                'market_cap' => trim($data['market_cap'] ?? ''),
-                'is_active' => (isset($data['is_active']) && $data['is_active'] == '0') ? false : true,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-
-            if (count($records) >= 500) {
-                Equity::upsert($records, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'is_active', 'updated_at']);
-                $count += count($records);
-                $records = [];
+            if (!$header) {
+                return response()->json(['success' => false, 'message' => 'Empty CSV file.'], 400);
             }
+
+            // Normalize header
+            $header = array_map('strtolower', array_map('trim', $header));
+            $headerCount = count($header);
+            
+            $now = now();
+            $records = [];
+            $count = 0;
+
+            while (($row = fgetcsv($handle)) !== FALSE) {
+                if (count($row) < 2) continue; // Skip empty rows
+
+                // Balance row and header count if they mismatch
+                $rowCount = count($row);
+                if ($rowCount > $headerCount) {
+                    $row = array_slice($row, 0, $headerCount);
+                } elseif ($rowCount < $headerCount) {
+                    $row = array_pad($row, $headerCount, null);
+                }
+
+                $data = array_combine($header, $row);
+                $isin = trim($data['isin'] ?? '');
+                
+                if (empty($isin)) continue;
+
+                $records[] = [
+                    'isin' => $isin,
+                    'company_name' => trim($data['company_name'] ?? $data['name'] ?? ''),
+                    'nse_symbol' => trim($data['nse_symbol'] ?? $data['symbol'] ?? ''),
+                    'bse_symbol' => trim($data['bse_symbol'] ?? ''),
+                    'industry' => trim($data['industry'] ?? ''),
+                    'market_cap' => trim($data['market_cap'] ?? ''),
+                    'market_cap_category' => trim($data['market_cap_category'] ?? ''),
+                    'face_value' => !empty($data['face_value']) ? (float)$data['face_value'] : null,
+                    'listing_date' => (function() use ($data) {
+                        if (empty($data['listing_date'])) return null;
+                        try {
+                            return \Carbon\Carbon::parse($data['listing_date'])->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            return null;
+                        }
+                    })(),
+                    'is_active' => (isset($data['is_active']) && ($data['is_active'] === '0' || strtolower($data['is_active']) === 'false' || strtolower($data['is_active']) === 'no')) ? false : true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+
+                if (count($records) >= 200) {
+                    Equity::upsert($records, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'face_value', 'listing_date', 'is_active', 'updated_at']);
+                    $count += count($records);
+                    $records = [];
+                }
+            }
+
+            if (count($records) > 0) {
+                Equity::upsert($records, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'face_value', 'listing_date', 'is_active', 'updated_at']);
+                $count += count($records);
+            }
+
+            fclose($handle);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully imported/updated {$count} equity records."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Import failed: ' . $e->getMessage()
+            ], 500);
         }
-
-        if (count($records) > 0) {
-            Equity::upsert($records, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'is_active', 'updated_at']);
-            $count += count($records);
-        }
-
-        fclose($handle);
-
-        return response()->json([
-            'success' => true,
-            'message' => "Successfully imported/updated {$count} equity records."
-        ]);
     }
 }

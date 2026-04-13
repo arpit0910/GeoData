@@ -16,13 +16,16 @@ class Equity extends Model
         'bse_symbol',
         'industry',
         'market_cap',
+        'market_cap_category',
         'face_value',
+        'listing_date',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'face_value' => 'decimal:2',
+        'listing_date' => 'date',
     ];
 
     public function prices()

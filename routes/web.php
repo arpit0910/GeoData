@@ -185,6 +185,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\EquityController::class, 'index'])->name('index');
         Route::get('/prices', [App\Http\Controllers\Admin\EquityController::class, 'prices'])->name('prices');
         Route::get('/prices/data', [App\Http\Controllers\Admin\EquityController::class, 'pricesData'])->name('prices.data');
+        Route::get('/prices/{price}', [App\Http\Controllers\Admin\EquityController::class, 'priceDetail'])->name('prices.show');
         Route::get('/export', [App\Http\Controllers\Admin\EquityController::class, 'export'])->name('export');
         Route::post('/import', [App\Http\Controllers\Admin\EquityController::class, 'import'])->name('import');
         Route::post('/sync', [App\Http\Controllers\Admin\EquityController::class, 'sync'])->name('sync');

@@ -47,12 +47,20 @@ class EquityService
                         '3d_chg' => $currentPrice->nse_chg_3d ? round($currentPrice->nse_chg_3d, 2) . '%' : null,
                         '7d_chg' => $currentPrice->nse_chg_7d ? round($currentPrice->nse_chg_7d, 2) . '%' : null,
                         '1m_chg' => $currentPrice->nse_chg_1m ? round($currentPrice->nse_chg_1m, 2) . '%' : null,
+                        '3m_chg' => $currentPrice->nse_chg_3m ? round($currentPrice->nse_chg_3m, 2) . '%' : null,
+                        '6m_chg' => $currentPrice->nse_chg_6m ? round($currentPrice->nse_chg_6m, 2) . '%' : null,
+                        '9m_chg' => $currentPrice->nse_chg_9m ? round($currentPrice->nse_chg_9m, 2) . '%' : null,
+                        '12m_chg' => $currentPrice->nse_chg_12m ? round($currentPrice->nse_chg_12m, 2) . '%' : null,
                     ],
                     'bse' => [
                         '1d_chg' => $currentPrice->bse_chg_1d ? round($currentPrice->bse_chg_1d, 2) . '%' : null,
                         '3d_chg' => $currentPrice->bse_chg_3d ? round($currentPrice->bse_chg_3d, 2) . '%' : null,
                         '7d_chg' => $currentPrice->bse_chg_7d ? round($currentPrice->bse_chg_7d, 2) . '%' : null,
                         '1m_chg' => $currentPrice->bse_chg_1m ? round($currentPrice->bse_chg_1m, 2) . '%' : null,
+                        '3m_chg' => $currentPrice->bse_chg_3m ? round($currentPrice->bse_chg_3m, 2) . '%' : null,
+                        '6m_chg' => $currentPrice->bse_chg_6m ? round($currentPrice->bse_chg_6m, 2) . '%' : null,
+                        '9m_chg' => $currentPrice->bse_chg_9m ? round($currentPrice->bse_chg_9m, 2) . '%' : null,
+                        '12m_chg' => $currentPrice->bse_chg_12m ? round($currentPrice->bse_chg_12m, 2) . '%' : null,
                     ]
                 ]
             ];

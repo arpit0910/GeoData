@@ -21,7 +21,9 @@ return new class extends Migration
             $table->string('bse_symbol')->nullable()->index();
             $table->string('industry')->nullable();
             $table->string('market_cap')->nullable();
+            $table->string('market_cap_category')->nullable()->index();
             $table->decimal('face_value', 10, 2)->nullable();
+            $table->date('listing_date')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
