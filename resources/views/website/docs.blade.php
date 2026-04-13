@@ -613,7 +613,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Bank Branches -->
                         <div id="bank-branches" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks/{bank_id}/branches</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /bank/{bank_id}/branches</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -642,7 +642,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Branch Info -->
                         <div id="branch-info" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /branch/{ifsc}</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /bank/ifsc/{ifsc}</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -691,7 +691,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Bank Branches -->
                         <div id="bank-branches" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /banks/{bank_id}/branches</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /bank/{bank_id}/branches</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -949,12 +949,165 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         </div>
 
 
+                <section id="equity-api" class="pt-8">
+                    <h2 class="text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Equity Intelligence</h2>
+                    
+                    <div class="space-y-12">
+                        <!-- List Equities -->
+                        <div id="list-equities" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /equities</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Get a paginated list of all active equities. Supports discovery by industry or specific symbols.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                <table class="w-full text-sm mb-8">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                        <tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        <tr><td class="py-3 font-mono text-amber-500">industry</td><td class="py-3 text-gray-400">Filter by industry (e.g. "Banking", "Automobiles")</td></tr>
+                                        <tr><td class="py-3 font-mono text-amber-500">symbol</td><td class="py-3 text-gray-400">Search by symbol (Partial match)</td></tr>
+                                        <tr><td class="py-3 font-mono text-amber-500">market_cap</td><td class="py-3 text-gray-400">Filter by market capitalization (e.g. <code class="text-amber-400">Large Cap</code>, <code class="text-amber-400">Mid Cap</code>)</td></tr>
+                                    </tbody>
+                                </table>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
+<pre class="text-gray-400">{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"current_page"</span>: 1,
+    <span class="text-blue-400">"data"</span>: [
+      {
+        <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
+        <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
+        <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+        <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Oil & Gas"</span>,
+        <span class="text-blue-400">"market_cap"</span>: <span class="text-green-400">"Large Cap"</span>
+      }
+    ]
+  }
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Market Cap Filter -->
+                        <div id="equity-market-cap" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /equities/filter/market-cap/{cap}</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Fetch complete segments of the market based on capitalization categorization. Our algorithm groups stocks into four distinct institutional levels.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Route Parameters</h4>
+                                <table class="w-full text-sm mb-8">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                        <tr><th class="pb-2">Field</th><th class="pb-2">Type</th><th class="pb-2">Description / Allowed Values</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        <tr>
+                                            <td class="py-3 font-mono text-amber-500">cap</td>
+                                            <td class="py-3 text-gray-400 font-mono">string</td>
+                                            <td class="py-3 text-gray-400 leading-relaxed">
+                                                Accepted segments:
+                                                <ul class="mt-2 list-disc list-inside text-amber-500/80">
+                                                    <li><span class="font-bold font-mono">Large Cap</span> (Top 100 Companies)</li>
+                                                    <li><span class="font-bold font-mono">Mid Cap</span> (101 - 250 Rank)</li>
+                                                    <li><span class="font-bold font-mono">Small Cap</span> (251 Rank onwards)</li>
+                                                    <li><span class="font-bold font-mono">Micro Cap</span> (Smallest market size)</li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example (Large Cap)</h4>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
+<pre class="text-gray-400">{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"category"</span>: <span class="text-green-400">"Large Cap"</span>,
+  <span class="text-blue-400">"data"</span>: [ { <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>, <span class="text-blue-400">"name"</span>: <span class="text-green-400">"RELIANCE"</span> } ]
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Gainers / Losers -->
+                        <div id="equity-rankings" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /equities/analysis/top-gainers</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4">Fetch the day's top 10 performance leaders. Same pattern exists for <code class="text-white">/equities/analysis/top-losers</code> and <code class="text-white">/equities/analysis/high-volume</code>.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                <table class="w-full text-sm mb-6">
+                                    <thead class="text-gray-500 text-left border-b border-gray-800">
+                                        <tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        <tr><td class="py-3 font-mono text-amber-500">exchange</td><td class="py-3 text-gray-400">NSE or BSE ranking (default: <code class="text-white">nse</code>)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Price History -->
+                        <div id="equity-history" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /equity/{isin}/history</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-4 text-gray-400">Retrieve time-series pricing data for the last 30 trading days. Perfect for building dynamic interactive charts.</p>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics -->
+                        <div id="equity-metrics" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /equity/{isin}/metrics</h3>
+                                <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                    <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                </span>
+                            </div>
+                            <div class="p-6">
+                                <p class="mb-8">Access pre-calculated performance analytics, including percentage changes for 1D, 3D, 7D, and 1-Month windows.</p>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto">
+<pre class="text-gray-400">{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
+    <span class="text-blue-400">"metrics"</span>: {
+      <span class="text-blue-400">"1d_chg"</span>: <span class="text-blue-400">1.25</span>,
+      <span class="text-blue-400">"3d_chg"</span>: <span class="text-blue-400">-0.45</span>,
+      <span class="text-blue-400">"7d_chg"</span>: <span class="text-blue-400">2.10</span>,
+      <span class="text-blue-400">"1m_chg"</span>: <span class="text-blue-400">5.60</span>
+    }
+  }
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="hierarchical-data" class="pt-8">
                     <h2 class="text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Hierarchical Drill-Downs</h2>
                 </section>
                 <div id="country-detail" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden mt-12 block">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /country/{country_id}</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>
@@ -976,7 +1129,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                         <!-- Country States -->
                         <div id="country-states" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                             <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
-                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /countries/{country_id}/states</h3>
+                                <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /country/{country_id}/states</h3>
                                 <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
                                     <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
                                 </span>

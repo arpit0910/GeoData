@@ -51,6 +51,13 @@
                 </div>
 
                 <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Market Cap</label>
+                    <input type="text" name="market_cap" value="{{ old('market_cap', $equity->market_cap) }}" placeholder="e.g. Large Cap"
+                        class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    @error('market_cap') <p class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Face Value</label>
                     <input type="number" step="0.01" name="face_value" value="{{ old('face_value', $equity->face_value) }}"
                         class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">

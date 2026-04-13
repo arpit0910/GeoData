@@ -48,33 +48,33 @@ Route::prefix('v1')->group(function() {
         
         // Bank APIs
         Route::get('/banks', [SetuGeoController::class, 'banks']);
-        Route::get('/banks/{bank}/branches', [SetuGeoController::class, 'bankBranches']);
-        Route::get('/banks/{bank}/coverage', [SetuGeoController::class, 'bankCoverage']);
-        Route::get('/branch/search', [SetuGeoController::class, 'branchSearch']);
-        Route::get('/branch/{ifsc}', [SetuGeoController::class, 'branchInfo']);
-        Route::get('/cities/{city}/banks', [SetuGeoController::class, 'banksInCity']);
-        Route::get('/states/{state}/banks', [SetuGeoController::class, 'banksInState']);
+        Route::get('/bank/{bank}/branches', [SetuGeoController::class, 'bankBranches']);
+        Route::get('/bank/{bank}/coverage', [SetuGeoController::class, 'bankCoverage']);
+        Route::get('/bank/branches/search', [SetuGeoController::class, 'branchSearch']);
+        Route::get('/bank/ifsc/{ifsc}', [SetuGeoController::class, 'branchInfo']);
+        Route::get('/city/{city}/banks', [SetuGeoController::class, 'banksInCity']);
+        Route::get('/state/{state}/banks', [SetuGeoController::class, 'banksInState']);
 
         // Hierarchical Drill-Down APIs
         Route::get('/countries/compare', [SetuGeoController::class, 'countriesCompare']);
-        Route::get('/countries/{country}', [SetuGeoController::class, 'countryDetail']);
-        Route::get('/countries/{country}/states', [SetuGeoController::class, 'countryStates']);
-        Route::get('/countries/{country}/cities', [SetuGeoController::class, 'countryCities']);
-        Route::get('/countries/{country}/timezones', [SetuGeoController::class, 'countryTimezones']);
-        Route::get('/countries/{country}/banks', [SetuGeoController::class, 'countryBanks']);
-        Route::get('/countries/{country}/neighbors', [SetuGeoController::class, 'countryNeighbors']);
+        Route::get('/country/{country}', [SetuGeoController::class, 'countryDetail']);
+        Route::get('/country/{country}/states', [SetuGeoController::class, 'countryStates']);
+        Route::get('/country/{country}/cities', [SetuGeoController::class, 'countryCities']);
+        Route::get('/country/{country}/timezones', [SetuGeoController::class, 'countryTimezones']);
+        Route::get('/country/{country}/banks', [SetuGeoController::class, 'countryBanks']);
+        Route::get('/country/{country}/neighbors', [SetuGeoController::class, 'countryNeighbors']);
         
-        Route::get('/states/{state}', [SetuGeoController::class, 'stateDetail']);
-        Route::get('/states/{state}/cities', [SetuGeoController::class, 'stateCities']);
+        Route::get('/state/{state}', [SetuGeoController::class, 'stateDetail']);
+        Route::get('/state/{state}/cities', [SetuGeoController::class, 'stateCities']);
         
-        Route::get('/cities/{city}', [SetuGeoController::class, 'cityDetail']);
-        Route::get('/pincodes/{pincode}/banks', [SetuGeoController::class, 'pincodeBanks']);
+        Route::get('/city/{city}', [SetuGeoController::class, 'cityDetail']);
+        Route::get('/pincode/{pincode}/banks', [SetuGeoController::class, 'pincodeBanks']);
 
         // Address & Currency Utility APIs
         Route::get('/currency/convert', [SetuGeoController::class, 'currencyConvert']);
         Route::get('/address/validate', [SetuGeoController::class, 'addressValidate']);
         Route::get('/address/autocomplete', [SetuGeoController::class, 'addressAutocomplete']);
-        Route::get('/timezones/convert', [SetuGeoController::class, 'timezoneConvert']);
+        Route::get('/timezone/convert', [SetuGeoController::class, 'timezoneConvert']);
         
         Route::get('/user/usage', [SetuGeoController::class, 'usage']);
 
@@ -87,8 +87,13 @@ Route::prefix('v1')->group(function() {
 
         // Equity Analytical APIs
         Route::get('/equities', [EquityApiController::class, 'index']);
-        Route::get('/equities/{isin}', [EquityApiController::class, 'show']);
-        Route::get('/metrics/{isin}', [EquityApiController::class, 'metrics']);
+        Route::get('/equities/analysis/top-gainers', [EquityApiController::class, 'topGainers']);
+        Route::get('/equities/analysis/top-losers', [EquityApiController::class, 'topLosers']);
+        Route::get('/equities/analysis/high-volume', [EquityApiController::class, 'highVolume']);
+        Route::get('/equities/filter/market-cap/{cap}', [EquityApiController::class, 'byMarketCap']);
+        Route::get('/equity/{isin}', [EquityApiController::class, 'show']);
+        Route::get('/equity/{isin}/history', [EquityApiController::class, 'history']);
+        Route::get('/equity/{isin}/metrics', [EquityApiController::class, 'metrics']);
 
         Route::fallback(function() {
             return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);

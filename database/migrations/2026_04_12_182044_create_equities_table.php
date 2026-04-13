@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('nse_symbol')->nullable()->index();
             $table->string('bse_symbol')->nullable()->index();
             $table->string('industry')->nullable();
+            $table->string('market_cap')->nullable();
             $table->decimal('face_value', 10, 2)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

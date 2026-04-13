@@ -359,6 +359,7 @@ class EquitySyncCommand extends Command
                 'company_name' => $name,
                 'nse_symbol' => $nse ? $nse['symbol'] : ($existing ? $existing->nse_symbol : null),
                 'bse_symbol' => $bse ? $bse['symbol'] : ($existing ? $existing->bse_symbol : null),
+                'market_cap' => $existing ? $existing->market_cap : null,
                 'is_active' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -367,7 +368,7 @@ class EquitySyncCommand extends Command
         
         $chunks = array_chunk($equitiesToUpsert, 500);
         foreach ($chunks as $chunk) {
-            Equity::upsert($chunk, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'is_active', 'updated_at']);
+            Equity::upsert($chunk, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'market_cap', 'is_active', 'updated_at']);
         }
         
         // Step 2: Map ISIN to ID

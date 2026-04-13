@@ -41,7 +41,7 @@
                     <label class="block text-xs font-bold text-gray-400 mb-2">Select CSV File</label>
                     <input type="file" name="file" id="import_file" required accept=".csv"
                         class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-                    <p class="mt-2 text-xs text-gray-400">Headers: isin, company_name, nse_symbol, bse_symbol, industry, is_active</p>
+                    <p class="mt-2 text-xs text-gray-400">Headers: isin, company_name, nse_symbol, bse_symbol, industry, market_cap, is_active</p>
                 </div>
 
                 <div id="importStatus" class="hidden mb-6 p-4 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20">
@@ -76,6 +76,7 @@
                     <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">NSE</th>
                     <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">BSE</th>
                     <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">Industry</th>
+                    <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">Market Cap</th>
                     <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4 text-center">Active</th>
                     <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4 text-right">Actions</th>
                 </tr>
@@ -116,6 +117,13 @@
                     name: 'industry',
                     render: function(data) {
                         return data ? data : '<span class="text-gray-400 italic">N/A</span>';
+                    }
+                },
+                { 
+                    data: 'market_cap', 
+                    name: 'market_cap',
+                    render: function(data) {
+                        return data ? `<span class="px-2 py-1 text-[10px] font-black uppercase tracking-tight bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 rounded-lg">${data}</span>` : '<span class="text-gray-400 italic">N/A</span>';
                     }
                 },
                 { 

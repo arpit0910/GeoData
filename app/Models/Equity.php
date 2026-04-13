@@ -15,6 +15,7 @@ class Equity extends Model
         'nse_symbol',
         'bse_symbol',
         'industry',
+        'market_cap',
         'face_value',
         'is_active',
     ];

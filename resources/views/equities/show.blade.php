@@ -9,8 +9,14 @@
         <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ $equity->company_name }}</h1>
         <div class="flex items-center gap-3 mt-1">
             <span class="px-2 py-0.5 text-[10px] font-black bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded uppercase tracking-wider">{{ $equity->isin }}</span>
-            <span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/10"></span>
-            <span class="text-sm text-gray-500 dark:text-gray-400 font-bold">{{ $equity->industry ?: 'Uncategorized Industry' }}</span>
+            @if($equity->industry)
+                <span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/10"></span>
+                <span class="text-sm text-gray-500 dark:text-gray-400 font-bold">{{ $equity->industry }}</span>
+            @endif
+            @if($equity->market_cap)
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500/30"></span>
+                <span class="px-2 py-0.5 text-[10px] font-black bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded uppercase tracking-wider">{{ $equity->market_cap }}</span>
+            @endif
         </div>
     </div>
     <div class="flex items-center gap-2">

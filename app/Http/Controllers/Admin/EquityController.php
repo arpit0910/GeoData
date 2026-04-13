@@ -27,7 +27,8 @@ class EquityController extends Controller
                       ->orWhere('company_name', 'like', "%{$search}%")
                       ->orWhere('nse_symbol', 'like', "%{$search}%")
                       ->orWhere('bse_symbol', 'like', "%{$search}%")
-                      ->orWhere('industry', 'like', "%{$search}%");
+                      ->orWhere('industry', 'like', "%{$search}%")
+                      ->orWhere('market_cap', 'like', "%{$search}%");
                 });
             }
 
@@ -62,7 +63,7 @@ class EquityController extends Controller
      */
     public function pricesData(Request $request)
     {
-        $query = EquityPrice::with('equity:id,company_name,nse_symbol,bse_symbol');
+        $query = EquityPrice::with('equity:id,company_name,nse_symbol,bse_symbol,market_cap');
 
         // Handle Search (Global)
         if ($request->has('search') && !empty($request->search['value'])) {
@@ -160,6 +161,7 @@ class EquityController extends Controller
             'nse_symbol' => 'nullable|string|max:50',
             'bse_symbol' => 'nullable|string|max:50',
             'industry' => 'nullable|string|max:255',
+            'market_cap' => 'nullable|string|max:100',
             'face_value' => 'nullable|numeric',
             'is_active' => 'required|boolean',
         ]);
@@ -257,7 +259,7 @@ class EquityController extends Controller
             "Expires"             => "0"
         ];
 
-        $columns = ['isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'is_active'];
+        $columns = ['isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'is_active'];
 
         $callback = function() use($columns) {
             $file = fopen('php://output', 'w');
@@ -271,6 +273,7 @@ class EquityController extends Controller
                         $equity->nse_symbol,
                         $equity->bse_symbol,
                         $equity->industry,
+                        $equity->market_cap,
                         $equity->is_active ? '1' : '0',
                     ]);
                 }
@@ -316,20 +319,21 @@ class EquityController extends Controller
                 'nse_symbol' => trim($data['nse_symbol'] ?? $data['symbol'] ?? ''),
                 'bse_symbol' => trim($data['bse_symbol'] ?? ''),
                 'industry' => trim($data['industry'] ?? ''),
+                'market_cap' => trim($data['market_cap'] ?? ''),
                 'is_active' => (isset($data['is_active']) && $data['is_active'] == '0') ? false : true,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
 
             if (count($records) >= 500) {
-                Equity::upsert($records, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'is_active', 'updated_at']);
+                Equity::upsert($records, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'is_active', 'updated_at']);
                 $count += count($records);
                 $records = [];
             }
         }
 
         if (count($records) > 0) {
-            Equity::upsert($records, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'is_active', 'updated_at']);
+            Equity::upsert($records, ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'is_active', 'updated_at']);
             $count += count($records);
         }
 

@@ -166,18 +166,21 @@
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-clock text-emerald-500"></i>
+                                    <i class="fas fa-chart-line text-emerald-500"></i>
                                 </div>
                                 <div>
-                                    <p class="text-white text-sm font-bold">Timezone Data</p>
-                                    <p class="text-gray-400 text-xs font-mono">/v1/timezones/IN</p>
+                                    <p class="text-white text-sm font-bold">Equity Intelligence</p>
+                                    <p class="text-gray-400 text-xs font-mono">/v1/equities</p>
                                 </div>
                             </div>
                             <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded-lg">LIVE</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-300 font-medium">Asia/Kolkata → UTC+05:30</span>
-                            <span class="text-emerald-500 font-bold">8ms</span>
+                            <span class="text-gray-300 font-medium font-inter tracking-tight flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 
+                                Data by Market Cap & Industry
+                            </span>
+                            <span class="text-emerald-500 font-bold">14ms</span>
                         </div>
                     </div>
                 </div>
@@ -276,13 +279,22 @@
                     <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~22ms</span>
                 </div>
 
-                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default">
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default group/api">
                     <span class="px-2 sm:px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5">/v1/banks/{ifsc}</p>
-                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Bank branch details via IFSC code lookup</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5 group-hover/api:text-amber-500 transition-colors">/v1/equities</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Full directory with Industry & Market Cap categorization</p>
                     </div>
-                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~10ms</span>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~18ms</span>
+                </div>
+
+                <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default group/api">
+                    <span class="px-2 sm:px-3 py-1 rounded-lg bg-pink-500/10 text-pink-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0 text-center">GET</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5 group-hover/api:text-amber-500 transition-colors">/top-gainers / metrics</p>
+                        <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Analytical performance series & daily leaders</p>
+                    </div>
+                    <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~14ms</span>
                 </div>
             </div>
         </div>
@@ -303,6 +315,7 @@
                     ['title' => 'Coverage', 'sg' => '200+ Countries', 'others' => '50-100 Countries'],
                     ['title' => 'Pincode Data', 'sg' => 'Full Coverage', 'others' => 'Limited', 'sg_icon' => 'fa-check text-emerald-500', 'o_icon' => 'fa-times text-red-500/50'],
                     ['title' => 'Currency Rates', 'sg' => 'Built-in', 'others' => 'Separate API', 'sg_icon' => 'fa-check text-emerald-500', 'o_icon' => 'fa-times text-red-500/50'],
+                    ['title' => 'Equity Metrics', 'sg' => 'Real-time & Cap-wise', 'others' => 'Manual Scraping', 'sg_icon' => 'fa-check text-emerald-500', 'o_icon' => 'fa-times text-red-500/50'],
                     ['title' => 'Free Tier', 'sg' => 'Yes', 'others' => 'Paid Only', 'sg_icon' => 'fa-check text-emerald-500', 'o_icon' => '']
                 ];
             @endphp
