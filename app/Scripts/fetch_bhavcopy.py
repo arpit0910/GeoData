@@ -109,12 +109,17 @@ def main():
     mapper = {
         'isin': ['ISIN', 'FinInstrmId', 'ISIN_CODE'],
         'symbol': ['TckrSymb', 'SYMBOL', 'SC_NAME'],
+        'name': ['FinInstrmNm', 'COMPANY_NAME', 'FULL_NAME'],
         'open': ['OpnPric', 'OPEN', 'OPEN_PRC'],
         'high': ['HghPric', 'HIGH', 'HIGH_PRC'],
         'low': ['LwPric', 'LOW', 'LOW_PRC'],
-        'close': ['ClsPric', 'CLOSE', 'CLOSE_PRC', 'LAST_PRC'],
+        'close': ['ClsPric', 'CLOSE', 'CLOSE_PRC', 'LAST_PRC', 'LAST'],
+        'last': ['LastPric', 'LAST', 'LTP', 'LAST_PRC'],
         'prev': ['PrvsClsgPric', 'PREVCLOSE', 'PREV_CLOSE', 'PREV_CLSG_PRC'],
-        'volume': ['TtlTradgVol', 'TOTTRDQTY', 'NO_SHARES', 'TOT_TR_QTY', 'TRADE_QTY']
+        'volume': ['TtlTradgVol', 'TOTTRDQTY', 'NO_SHARES', 'TOT_TR_QTY', 'TRADE_QTY'],
+        'turnover': ['TtlTradgVal', 'TOTTRDVAL', 'NET_TURNOV'],
+        'trades': ['TtlNbOfTradesExecuted', 'TOTALTRADES', 'NO_OF_TRDS'],
+        'avg_price': ['WghtdAvgPric', 'AVG_PRICE', 'AVG_PRC']
     }
 
     results = []
@@ -130,12 +135,17 @@ def main():
                         results.append({
                             'isin': isin,
                             'symbol': get_mapped_value(row, mapper['symbol'], ''),
+                            'name': get_mapped_value(row, mapper['name'], ''),
                             'open': float(get_mapped_value(row, mapper['open'])),
                             'high': float(get_mapped_value(row, mapper['high'])),
                             'low': float(get_mapped_value(row, mapper['low'])),
                             'close': float(close),
+                            'last': float(get_mapped_value(row, mapper['last'])),
                             'prev_close': float(get_mapped_value(row, mapper['prev'])),
                             'volume': int(float(get_mapped_value(row, mapper['volume']))),
+                            'turnover': float(get_mapped_value(row, mapper['turnover'])),
+                            'trades': int(float(get_mapped_value(row, mapper['trades']))),
+                            'avg_price': float(get_mapped_value(row, mapper['avg_price'])),
                             'exchange': 'NSE'
                         })
                     except: continue
@@ -151,12 +161,17 @@ def main():
                         results.append({
                             'isin': isin,
                             'symbol': get_mapped_value(row, mapper['symbol'], ''),
+                            'name': get_mapped_value(row, mapper['name'], ''),
                             'open': float(get_mapped_value(row, mapper['open'])),
                             'high': float(get_mapped_value(row, mapper['high'])),
                             'low': float(get_mapped_value(row, mapper['low'])),
                             'close': float(close),
+                            'last': float(get_mapped_value(row, mapper['last'])),
                             'prev_close': float(get_mapped_value(row, mapper['prev'])),
                             'volume': int(float(get_mapped_value(row, mapper['volume']))),
+                            'turnover': float(get_mapped_value(row, mapper['turnover'])),
+                            'trades': int(float(get_mapped_value(row, mapper['trades']))),
+                            'avg_price': float(get_mapped_value(row, mapper['avg_price'])),
                             'exchange': 'BSE'
                         })
                     except: continue

@@ -39,6 +39,11 @@ class EquityService
                 'name'          => $equity->company_name,
                 'nse_symbol'    => $equity->nse_symbol,
                 'bse_symbol'    => $equity->bse_symbol,
+                'industry'      => $equity->industry,
+                'market_cap'    => $equity->market_cap,
+                'market_cap_category' => $equity->market_cap_category,
+                'listing_date'  => $equity->listing_date ? $equity->listing_date->format('Y-m-d') : null,
+                'face_value'    => $equity->face_value,
                 'current_price' => $currentClose,
                 'last_updated'  => $currentPrice->traded_date->format('Y-m-d'),
                 'metrics' => [

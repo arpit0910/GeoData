@@ -46,12 +46,12 @@ Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
 Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
 Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 
-Route::middleware('guest')->group(function() {
+Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-    
+
     Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
@@ -160,7 +160,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Ticketing System
     Route::resource('ticket-categories', TicketCategoryController::class, ['as' => 'admin']);
     Route::post('ticket-categories/{ticketCategory}/toggle-status', [TicketCategoryController::class, 'toggleStatus'])->name('admin.ticket-categories.toggle-status');
-    
+
     Route::resource('ticket-sub-categories', TicketSubCategoryController::class, ['as' => 'admin']);
     Route::post('ticket-sub-categories/{ticketSubCategory}/toggle-status', [TicketSubCategoryController::class, 'toggleStatus'])->name('admin.ticket-sub-categories.toggle-status');
 
@@ -189,7 +189,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/export', [App\Http\Controllers\Admin\EquityController::class, 'export'])->name('export');
         Route::post('/import', [App\Http\Controllers\Admin\EquityController::class, 'import'])->name('import');
         Route::post('/sync', [App\Http\Controllers\Admin\EquityController::class, 'sync'])->name('sync');
-        
+
         Route::get('/{equity}/edit', [App\Http\Controllers\Admin\EquityController::class, 'edit'])->name('edit');
         Route::put('/{equity}', [App\Http\Controllers\Admin\EquityController::class, 'update'])->name('update');
         Route::get('/{equity}', [App\Http\Controllers\Admin\EquityController::class, 'show'])->name('show');
@@ -198,9 +198,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Server Logs
     Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->name('admin.logs');
 
-    Route::fallback(function() {
+    // Admin End
+});
+
+Route::fallback(function () {
+    if (request()->is('api/*')) {
         return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);
-    });
+    }
+    return response()->view('errors.404', [], 404);
 });
 
 Route::middleware(['auth'])->group(function () {

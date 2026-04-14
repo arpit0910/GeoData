@@ -24,7 +24,7 @@ class EquityApiController extends Controller
         }
 
         if ($request->has('market_cap')) {
-            $query->where('market_cap', $request->market_cap);
+            $query->where('market_cap_category', $request->market_cap);
         }
 
         if ($request->has('symbol')) {
@@ -34,7 +34,7 @@ class EquityApiController extends Controller
             });
         }
 
-        $equities = $query->select('isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap')
+        $equities = $query->select('isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'listing_date', 'face_value')
             ->paginate(100);
 
         return response()->json([
@@ -105,12 +105,26 @@ class EquityApiController extends Controller
      */
     public function byMarketCap(string $cap)
     {
-        // Normalize: 'large-cap' -> 'Large Cap', 'midcap' -> 'Mid Cap'
-        $normalized = str_replace('-', ' ', ucwords(strtolower($cap)));
-        if (!str_contains($normalized, 'Cap')) $normalized .= ' Cap';
+        // Advanced Normalization: 
+        $input = strtolower(str_replace(['-', ' '], '', $cap)); // 'largecap', 'midcap', 'small'
+        
+        $map = [
+            'largecap' => 'Large Cap',
+            'midcap'   => 'Mid Cap',
+            'smallcap' => 'Small Cap',
+            'small'    => 'Small Cap',
+            'microcap' => 'Small/Micro Cap (Est.)',
+            'micro'    => 'Small/Micro Cap (Est.)',
+            'bond'     => 'Bond (SGB)',
+            'sgb'      => 'Bond (SGB)',
+            'debt'     => 'Debt Instrument'
+        ];
 
-        $equities = Equity::where('market_cap', $normalized)
+        $normalized = $map[$input] ?? str_replace('-', ' ', ucwords(strtolower($cap)));
+
+        $equities = Equity::where('market_cap_category', $normalized)
             ->where('is_active', true)
+            ->select('isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'listing_date', 'face_value')
             ->paginate(100);
 
         return response()->json([
@@ -118,6 +132,95 @@ class EquityApiController extends Controller
             'category' => $normalized,
             'data' => $equities
         ]);
+    }
+
+    /**
+     * Search equities by symbol or company name.
+     */
+    public function search(Request $request)
+    {
+        $query = $request->get('q');
+        if (empty($query)) return response()->json(['success' => false, 'message' => 'Query parameter q is required'], 400);
+
+        $equities = Equity::where('is_active', true)
+            ->where(function($q) use ($query) {
+                $q->where('company_name', 'LIKE', "%{$query}%")
+                  ->orWhere('nse_symbol', 'LIKE', "%{$query}%")
+                  ->orWhere('bse_symbol', 'LIKE', "%{$query}%")
+                  ->orWhere('isin', 'LIKE', "%{$query}%");
+            })
+            ->select('isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category')
+            ->limit(20)
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $equities]);
+    }
+
+    /**
+     * Get stocks with highest turnover (traded value).
+     */
+    public function topTurnover(Request $request)
+    {
+        $date = \App\Models\EquityPrice::max('traded_date');
+        $exchange = $request->get('exchange', 'nse'); 
+        $col = $exchange === 'bse' ? 'bse_turnover' : 'nse_turnover';
+
+        $stocks = \App\Models\EquityPrice::where('traded_date', $date)
+            ->whereNotNull($col)
+            ->orderBy($col, 'desc')
+            ->limit(10)
+            ->with('equity')
+            ->get();
+
+        return response()->json(['success' => true, 'traded_date' => $date, 'exchange' => strtoupper($exchange), 'data' => $stocks]);
+    }
+
+    /**
+     * Get recently listed equities.
+     */
+    public function newListings()
+    {
+        $equities = Equity::where('is_active', true)
+            ->whereNotNull('listing_date')
+            ->orderBy('listing_date', 'desc')
+            ->limit(20)
+            ->get(['isin', 'company_name', 'nse_symbol', 'bse_symbol', 'listing_date', 'industry']);
+
+        return response()->json(['success' => true, 'data' => $equities]);
+    }
+
+    /**
+     * Get peer equities (same industry).
+     */
+    public function peers(string $isin)
+    {
+        $equity = Equity::where('isin', $isin)->first();
+        if (!$equity || empty($equity->industry)) {
+            return response()->json(['success' => false, 'message' => 'Industry info not available for this ISIN'], 404);
+        }
+
+        $peers = Equity::where('industry', $equity->industry)
+            ->where('isin', '!=', $isin)
+            ->where('is_active', true)
+            ->orderBy('market_cap', 'desc')
+            ->limit(10)
+            ->get(['isin', 'company_name', 'nse_symbol', 'bse_symbol', 'market_cap', 'market_cap_category']);
+
+        return response()->json(['success' => true, 'industry' => $equity->industry, 'data' => $peers]);
+    }
+
+    /**
+     * Get market capitalization distribution summary.
+     */
+    public function marketCapDistribution()
+    {
+        $stats = Equity::where('is_active', true)
+            ->whereNotNull('market_cap_category')
+            ->groupBy('market_cap_category')
+            ->selectRaw('market_cap_category, count(*) as count')
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $stats]);
     }
 
     /**

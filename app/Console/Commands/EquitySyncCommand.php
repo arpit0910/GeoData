@@ -416,20 +416,19 @@ class EquitySyncCommand extends Command
 
         $historicalData = collect();
         if (!empty($targetDates)) {
-            $this->info("Fetching historical data for " . count($targetDates) . " target dates...");
-            // Chunked fetch for historical data to avoid variable limits
+            $this->info("Fetching historical price metrics for " . count($targetDates) . " target dates...");
             foreach ($isinToId->values()->chunk(500) as $idChunk) {
-                $batch = EquityPrice::whereIn('traded_date', $targetDates)
+                // Use Query Builder for lower memory footprint
+                $batch = \Illuminate\Support\Facades\DB::table('equity_prices')
+                    ->whereIn('traded_date', $targetDates)
                     ->whereIn('equity_id', $idChunk)
+                    ->select('equity_id', 'traded_date', 'nse_close', 'bse_close')
                     ->get()
                     ->groupBy('equity_id');
 
                 foreach ($batch as $eqId => $items) {
-                    if (!$historicalData->has($eqId)) {
-                        $historicalData->put($eqId, $items);
-                    } else {
-                        $historicalData->put($eqId, $historicalData->get($eqId)->merge($items));
-                    }
+                    $existingHistory = $historicalData->get($eqId, collect());
+                    $historicalData->put($eqId, $existingHistory->merge($items));
                 }
             }
         }
@@ -451,27 +450,27 @@ class EquitySyncCommand extends Command
             if (!$equity_id) return null;
 
             // Price Data
-            $nse_open = $nse ? $nse['open'] : ($existing ? $existing->nse_open : 0);
-            $nse_high = $nse ? $nse['high'] : ($existing ? $existing->nse_high : 0);
-            $nse_low = $nse ? $nse['low'] : ($existing ? $existing->nse_low : 0);
-            $nse_close = $nse ? $nse['close'] : ($existing ? $existing->nse_close : 0);
-            $nse_last = $nse ? $nse['last'] : ($existing ? $existing->nse_last : 0);
-            $nse_prev = $nse ? $nse['prev_close'] : ($existing ? $existing->nse_prev_close : 0);
-            $nse_vol = $nse ? $nse['volume'] : ($existing ? $existing->nse_volume : 0);
-            $nse_turnover = $nse ? $nse['turnover'] : ($existing ? $existing->nse_turnover : 0);
-            $nse_trades = $nse ? $nse['trades'] : ($existing ? $existing->nse_trades : 0);
-            $nse_avg_price = $nse ? $nse['avg_price'] : ($existing ? $existing->nse_avg_price : 0);
+            $nse_open = $nse ? ($nse['open'] ?? 0) : ($existing ? $existing->nse_open : 0);
+            $nse_high = $nse ? ($nse['high'] ?? 0) : ($existing ? $existing->nse_high : 0);
+            $nse_low = $nse ? ($nse['low'] ?? 0) : ($existing ? $existing->nse_low : 0);
+            $nse_close = $nse ? ($nse['close'] ?? 0) : ($existing ? $existing->nse_close : 0);
+            $nse_last = $nse ? ($nse['last'] ?? 0) : ($existing ? $existing->nse_last : 0);
+            $nse_prev = $nse ? ($nse['prev_close'] ?? 0) : ($existing ? $existing->nse_prev_close : 0);
+            $nse_vol = $nse ? ($nse['volume'] ?? 0) : ($existing ? $existing->nse_volume : 0);
+            $nse_turnover = $nse ? ($nse['turnover'] ?? 0) : ($existing ? $existing->nse_turnover : 0);
+            $nse_trades = $nse ? ($nse['trades'] ?? 0) : ($existing ? $existing->nse_trades : 0);
+            $nse_avg_price = $nse ? ($nse['avg_price'] ?? 0) : ($existing ? $existing->nse_avg_price : 0);
 
-            $bse_open = $bse ? $bse['open'] : ($existing ? $existing->bse_open : 0);
-            $bse_high = $bse ? $bse['high'] : ($existing ? $existing->bse_high : 0);
-            $bse_low = $bse ? $bse['low'] : ($existing ? $existing->bse_low : 0);
-            $bse_close = $bse ? $bse['close'] : ($existing ? $existing->bse_close : 0);
-            $bse_last = $bse ? $bse['last'] : ($existing ? $existing->bse_last : 0);
-            $bse_prev = $bse ? $bse['prev_close'] : ($existing ? $existing->bse_prev_close : 0);
-            $bse_vol = $bse ? $bse['volume'] : ($existing ? $existing->bse_volume : 0);
-            $bse_turnover = $bse ? $bse['turnover'] : ($existing ? $existing->bse_turnover : 0);
-            $bse_trades = $bse ? $bse['trades'] : ($existing ? $existing->bse_trades : 0);
-            $bse_avg_price = $bse ? $bse['avg_price'] : ($existing ? $existing->bse_avg_price : 0);
+            $bse_open = $bse ? ($bse['open'] ?? 0) : ($existing ? $existing->bse_open : 0);
+            $bse_high = $bse ? ($bse['high'] ?? 0) : ($existing ? $existing->bse_high : 0);
+            $bse_low = $bse ? ($bse['low'] ?? 0) : ($existing ? $existing->bse_low : 0);
+            $bse_close = $bse ? ($bse['close'] ?? 0) : ($existing ? $existing->bse_close : 0);
+            $bse_last = $bse ? ($bse['last'] ?? 0) : ($existing ? $existing->bse_last : 0);
+            $bse_prev = $bse ? ($bse['prev_close'] ?? 0) : ($existing ? $existing->bse_prev_close : 0);
+            $bse_vol = $bse ? ($bse['volume'] ?? 0) : ($existing ? $existing->bse_volume : 0);
+            $bse_turnover = $bse ? ($bse['turnover'] ?? 0) : ($existing ? $existing->bse_turnover : 0);
+            $bse_trades = $bse ? ($bse['trades'] ?? 0) : ($existing ? $existing->bse_trades : 0);
+            $bse_avg_price = $bse ? ($bse['avg_price'] ?? 0) : ($existing ? $existing->bse_avg_price : 0);
 
             $spread = ($nse_close && $bse_close) ? abs($nse_close - $bse_close) : 0;
 

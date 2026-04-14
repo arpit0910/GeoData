@@ -1,8 +1,10 @@
 @extends('layouts.public')
 @section('title', 'API Documentation - SetuGeo Geographic Data API Integration Guide')
-@section('meta_description', 'Comprehensive API documentation for SetuGeo. Learn how to integrate geographic data APIs
+@section('meta_description',
+    'Comprehensive API documentation for SetuGeo. Learn how to integrate geographic data APIs
     for countries, states, cities, pincodes, and banking details into your apps.')
-@section('meta_keywords', 'api documentation, setugeo api guide, geographic api integration, pincode api docs, bank ifsc
+@section('meta_keywords',
+    'api documentation, setugeo api guide, geographic api integration, pincode api docs, bank ifsc
     api documentation')
 
 @section('content')
@@ -695,7 +697,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             <tr>
                                                 <td class="py-3 font-mono text-amber-500">pincode</td>
                                                 <td class="py-3 text-gray-400">The postal code to search for (Alternative:
-                                                    <code class="text-amber-400">code</code>)</td>
+                                                    <code class="text-amber-400">code</code>)
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1623,6 +1626,42 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         </div>
                                     </div>
 
+                                    <!-- Search Equities -->
+                                    <div id="equity-search"
+                                        class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div
+                                            class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span
+                                                    class="text-blue-400 mr-2 uppercase">GET</span> /equities/search</h3>
+                                            <span
+                                                class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span
+                                                    class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4">Robust search engine for identifying equities. Supports
+                                                partial matches of Company Names, NSE/BSE Symbols, or ISINs.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters
+                                            </h4>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Field</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">q</td>
+                                                        <td class="py-3 text-gray-400">Search keyword (e.g. "Reliance",
+                                                            "INFY", "INE002A01018")</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
                                     <!-- Top Gainers / Losers -->
                                     <div id="equity-rankings"
                                         class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
@@ -1638,9 +1677,12 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             </span>
                                         </div>
                                         <div class="p-6">
-                                            <p class="mb-4">Fetch the day's top 10 performance leaders. Same pattern
-                                                exists for <code class="text-white">/equities/analysis/top-losers</code>
-                                                and <code class="text-white">/equities/analysis/high-volume</code>.</p>
+                                            <p class="mb-4">Fetch daily market performance leaders. Same pattern exists
+                                                for:
+                                                <code class="text-white">/equities/analysis/top-losers</code>,
+                                                <code class="text-white">/equities/analysis/high-volume</code>, and
+                                                <code class="text-white">/equities/analysis/top-turnover</code>.
+                                            </p>
                                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters
                                             </h4>
                                             <table class="w-full text-sm mb-6">
@@ -1658,25 +1700,36 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                                     </tr>
                                                 </tbody>
                                             </table>
-                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example
-                                            </h4>
-                                            <div
-                                                class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
-                                                <pre>{
-  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
-  <span class="text-blue-400">"exchange"</span>: <span class="text-green-400">"NSE"</span>,
-  <span class="text-blue-400">"data"</span>: [
-    {
-      <span class="text-blue-400">"equity_id"</span>: <span class="text-blue-400">1</span>,
-      <span class="text-blue-400">"nse_chg_1d"</span>: <span class="text-blue-400">5.2</span>,
-      <span class="text-blue-400">"equity"</span>: {
-        <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE"</span>,
-        <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>
-      }
-    }
-  ]
-}</pre>
-                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- New Listings & Stats -->
+                                    <div id="equity-discovery"
+                                        class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div
+                                            class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span
+                                                    class="text-blue-400 mr-2 uppercase">GET</span>
+                                                /equities/analysis/new-listings</h3>
+                                            <span
+                                                class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span
+                                                    class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6 border-b border-gray-800/50">
+                                            <p class="text-gray-400">Discover recently listed equities (IPOs) sorted by
+                                                listing date.</p>
+                                        </div>
+                                        <div
+                                            class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span
+                                                    class="text-blue-400 mr-2 uppercase">GET</span>
+                                                /equities/analysis/market-cap-stats</h3>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="text-gray-400">Retrieve global market distribution counts for Large,
+                                                Mid, and Small Cap categories.</p>
                                         </div>
                                     </div>
 
@@ -1786,34 +1839,19 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                                     class="hidden sm:inline">Credits Required</span>
                                             </span>
                                         </div>
-                                        <div class="p-6">
-                                            <p class="mb-8">Access pre-calculated performance analytics, including
+                                        <div class="p-6 border-b border-gray-800/50">
+                                            <p class="mb-4">Access pre-calculated performance analytics, including
                                                 percentage changes for 1D, 7D, 1-Month, 1-Year, and 3-Year windows.</p>
-                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example
-                                            </h4>
-                                            <div
-                                                class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
-                                                <pre>{
-  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
-  <span class="text-blue-400">"data"</span>: {
-    <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
-    <span class="text-blue-400">"metrics"</span>: {
-      "1d_chg": <span class="text-blue-400">1.25</span>,
-      "7d_chg": <span class="text-blue-400">2.10</span>,
-      "1m_chg": <span class="text-blue-400">5.60</span>,
-      "3m_chg": <span class="text-blue-400">8.10</span>,
-      "6m_chg": <span class="text-blue-400">12.45</span>,
-      "9m_chg": <span class="text-blue-400">14.20</span>,
-      "1y_chg": <span class="text-blue-400">15.40</span>,
-      "3y_chg": <span class="text-blue-400">45.20</span>,
-      "gap_pct": <span class="text-blue-400">0.50</span>,
-      "range_pct": <span class="text-blue-400">2.15</span>,
-      "intraday_chg_pct": <span class="text-blue-400">1.20</span>,
-      "avg_ticket_size": <span class="text-blue-400">4500.50</span>
-    }
-  }
-}</pre>
-                                            </div>
+                                        </div>
+                                        <div
+                                            class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span
+                                                    class="text-blue-400 mr-2 uppercase">GET</span> /equity/{isin}/peers
+                                            </h3>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="text-gray-400">Retrieve top peers in the same industry based on
+                                                market capitalization.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -2510,7 +2548,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                                         <td class="py-3 pr-4 text-red-400 font-bold">Yes</td>
                                                         <td class="py-3">Latitude of Point A &mdash; must be between
                                                             <code class="text-white">-90</code> and <code
-                                                                class="text-white">90</code></td>
+                                                                class="text-white">90</code>
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td class="py-3 pr-4 font-mono text-amber-500">lng1</td>
@@ -2518,7 +2557,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                                         <td class="py-3 pr-4 text-red-400 font-bold">Yes</td>
                                                         <td class="py-3">Longitude of Point A &mdash; must be between
                                                             <code class="text-white">-180</code> and <code
-                                                                class="text-white">180</code></td>
+                                                                class="text-white">180</code>
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td class="py-3 pr-4 font-mono text-amber-500">lat2</td>
@@ -2526,7 +2566,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                                         <td class="py-3 pr-4 text-red-400 font-bold">Yes</td>
                                                         <td class="py-3">Latitude of Point B &mdash; must be between
                                                             <code class="text-white">-90</code> and <code
-                                                                class="text-white">90</code></td>
+                                                                class="text-white">90</code>
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td class="py-3 pr-4 font-mono text-amber-500">lng2</td>
@@ -2534,7 +2575,8 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                                         <td class="py-3 pr-4 text-red-400 font-bold">Yes</td>
                                                         <td class="py-3">Longitude of Point B &mdash; must be between
                                                             <code class="text-white">-180</code> and <code
-                                                                class="text-white">180</code></td>
+                                                                class="text-white">180</code>
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td class="py-3 pr-4 font-mono text-amber-500">unit</td>

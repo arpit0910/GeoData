@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}?v=1.0.1">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/apple-touch-icon.png') }}?v=1.0.1">
     <title>@yield('title', 'Admin Dashboard') | {{ config('app.name', 'SetuGeo') }}</title>
 
     <!-- Tailwind CSS via CDN for instant visual improvement -->
@@ -120,7 +122,7 @@
             <nav :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}" class="-translate-x-full md:translate-x-0 transform fixed md:static inset-y-0 left-0 z-50 w-64 bg-amber-600 dark:bg-[#080c14] text-white flex-shrink-0 flex flex-col transition-transform duration-300 border-r dark:border-white/5 overflow-y-auto">
                 <div class="p-6">
                     <a href="{{ route('home') }}" class="flex items-center group">
-                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-20 w-auto">
+                        <img src="{{ asset('assets/img/logo.png') }}?v=1.0.1" alt="SetuGeo Logo" class="h-20 w-auto">
                     </a>
                 </div>
                 <div class="mt-4 px-4 pb-8 space-y-1.5">

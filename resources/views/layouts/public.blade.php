@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#d97706">
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('assets/img/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}?v=1.0.1">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/apple-touch-icon.png') }}?v=1.0.1">
     
     <title>@yield('title', 'SetuGeo - World-Class Geographic Data API Platform')</title>
     <meta name="description" content="@yield('meta_description', 'SetuGeo provides high-speed, accurate geographic data APIs for countries, states, cities, pincodes, timezones, and currency conversions. Build faster with reliable location data.')">
@@ -94,7 +94,7 @@
             <div class="flex justify-between h-20">
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="flex-shrink-0 flex items-center group">
-                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-14 w-auto transform transition-transform">
+                        <img src="{{ asset('assets/img/logo.png') }}?v=1.0.1" alt="SetuGeo Logo" class="h-14 w-auto transform transition-transform">
                     </a>
                     
                     <div class="hidden md:ml-12 md:flex md:space-x-8">
@@ -185,7 +185,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="col-span-1 md:col-span-2">
                     <a href="{{ route('home') }}" class="flex items-center mb-5 group">
-                        <img src="{{ asset('assets/img/logo.png') }}" alt="SetuGeo Logo" class="h-12 w-auto">
+                        <img src="{{ asset('assets/img/logo.png') }}?v=1.0.1" alt="SetuGeo Logo" class="h-12 w-auto">
                     </a>
                     <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6 font-medium">
                         Empowering applications with the most accurate, high-speed, and reliable geographic data APIs available globally through SetuGeo.

@@ -87,11 +87,16 @@ Route::prefix('v1')->group(function() {
 
         // Equity Analytical APIs
         Route::get('/equities', [EquityApiController::class, 'index']);
+        Route::get('/equities/search', [EquityApiController::class, 'search']);
         Route::get('/equities/analysis/top-gainers', [EquityApiController::class, 'topGainers']);
         Route::get('/equities/analysis/top-losers', [EquityApiController::class, 'topLosers']);
+        Route::get('/equities/analysis/top-turnover', [EquityApiController::class, 'topTurnover']);
         Route::get('/equities/analysis/high-volume', [EquityApiController::class, 'highVolume']);
+        Route::get('/equities/analysis/new-listings', [EquityApiController::class, 'newListings']);
+        Route::get('/equities/analysis/market-cap-stats', [EquityApiController::class, 'marketCapDistribution']);
         Route::get('/equities/filter/market-cap/{cap}', [EquityApiController::class, 'byMarketCap']);
         Route::get('/equity/{isin}', [EquityApiController::class, 'show']);
+        Route::get('/equity/{isin}/peers', [EquityApiController::class, 'peers']);
         Route::get('/equity/{isin}/history', [EquityApiController::class, 'history']);
         Route::get('/equity/{isin}/metrics', [EquityApiController::class, 'metrics']);
 

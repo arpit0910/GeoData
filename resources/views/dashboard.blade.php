@@ -5,47 +5,110 @@
 @section('content')
 @if(auth()->user()->is_admin)
 <div class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-200 dark:border-white/5 p-6 md:p-8 transition-all duration-500">
-    <div class="mb-8">
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Welcome to your <span class="text-amber-600 dark:text-amber-500">Admin Console</span></h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium">Real-time overview of the SetuGeo ecosystem.</p>
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Welcome to your <span class="text-amber-600 dark:text-amber-500">Admin Console</span></h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium">Real-time overview of the SetuGeo ecosystem.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="px-3 py-1.5 bg-green-500/10 text-green-600 dark:text-green-500 text-xs font-bold rounded-lg border border-green-500/20 flex items-center">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                System Operational
+            </span>
+            <a href="{{ route('user.create') }}" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-amber-600/20 inline-flex items-center">
+                <i class="fas fa-plus mr-2"></i> Add User
+            </a>
+        </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- Quick Stat Card 1 -->
-        <div class="group bg-amber-50 dark:bg-amber-600/5 rounded-2xl p-6 border border-amber-100 dark:border-amber-500/10 flex items-center transition-all hover:shadow-lg hover:-translate-y-1">
-            <div class="h-14 w-14 bg-amber-100 dark:bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-500 mr-5 transition-transform">
-                <i class="fas fa-users text-2xl"></i>
+    <!-- Analytics Sections -->
+    <div class="space-y-10">
+        <!-- 1. GeoData Analytics -->
+        <div>
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-globe-asia text-amber-600 dark:text-amber-500 text-sm"></i>
+                <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Global Geo-Infrastructure</h4>
             </div>
-            <div>
-                <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Total Users</p>
-                <h4 class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ \App\Models\User::count() }}</h4>
-            </div>
-        </div>
-        
-        <!-- Quick Action Card -->
-        <div class="group bg-green-50 dark:bg-green-600/5 rounded-2xl p-6 border border-green-100 dark:border-green-500/10 flex items-center transition-all hover:shadow-lg hover:-translate-y-1">
-            <div class="h-14 w-14 bg-green-100 dark:bg-green-500/20 rounded-xl flex items-center justify-center text-green-600 dark:text-green-500 mr-5 transition-transform">
-                <i class="fas fa-user-plus text-2xl"></i>
-            </div>
-            <div>
-                <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Quick Action</p>
-                <a href="{{ route('user.create') }}" class="text-green-700 dark:text-green-400 font-bold hover:underline mt-1 inline-flex items-center group/link">
-                    Add New User <i class="fas fa-arrow-right text-[10px] ml-1.5 transition-transform group-hover/link:translate-x-1"></i>
-                </a>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                @php
+                    $geoStats = [
+                        ['label' => 'Countries', 'count' => \App\Models\Country::count(), 'icon' => 'fa-globe', 'color' => 'blue'],
+                        ['label' => 'Regions', 'count' => \App\Models\Region::count(), 'icon' => 'fa-map-marked-alt', 'color' => 'indigo'],
+                        ['label' => 'Sub-Regions', 'count' => \App\Models\SubRegion::count(), 'icon' => 'fa-map-pin', 'color' => 'purple'],
+                        ['label' => 'States', 'count' => \App\Models\State::count(), 'icon' => 'fa-map', 'color' => 'pink'],
+                        ['label' => 'Cities', 'count' => \App\Models\City::count(), 'icon' => 'fa-city', 'color' => 'cyan'],
+                        ['label' => 'Pincodes', 'count' => \App\Models\Pincode::count(), 'icon' => 'fa-mail-bulk', 'color' => 'teal'],
+                        ['label' => 'Timezones', 'count' => \App\Models\Timezone::count(), 'icon' => 'fa-clock', 'color' => 'emerald'],
+                    ];
+                @endphp
+                @foreach($geoStats as $stat)
+                <div class="bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-xl p-4 transition-all hover:border-amber-500/30">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas {{ $stat['icon'] }} text-{{ $stat['color'] }}-500 opacity-80"></i>
+                    </div>
+                    <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter">{{ $stat['label'] }}</p>
+                    <h5 class="text-lg font-black text-gray-900 dark:text-white mt-0.5">{{ number_format($stat['count']) }}</h5>
+                </div>
+                @endforeach
             </div>
         </div>
 
-        <!-- System Info Card -->
-        <div class="group bg-blue-50 dark:bg-blue-600/5 rounded-2xl p-6 border border-blue-100 dark:border-blue-500/10 flex items-center transition-all hover:shadow-lg hover:-translate-y-1">
-            <div class="h-14 w-14 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-500 mr-5 transition-transform">
-                <i class="fas fa-server text-2xl"></i>
+        <!-- 2. Business & Monetization -->
+        <div>
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-chart-pie text-amber-600 dark:text-amber-500 text-sm"></i>
+                <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Ecosystem & Revenue</h4>
             </div>
-            <div>
-                <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">System Status</p>
-                <h4 class="text-xl font-extrabold text-blue-800 dark:text-blue-400 flex items-center">
-                    <span class="w-2.5 h-2.5 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                    Operational
-                </h4>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                @php
+                    $bizStats = [
+                        ['label' => 'Total Users', 'count' => \App\Models\User::count(), 'icon' => 'fa-users', 'color' => 'amber'],
+                        ['label' => 'Active Subs', 'count' => \App\Models\Subscription::where('status', 'active')->count(), 'icon' => 'fa-file-invoice-dollar', 'color' => 'green'],
+                        ['label' => 'Total Plans', 'count' => \App\Models\Plan::count(), 'icon' => 'fa-layer-group', 'color' => 'orange'],
+                        ['label' => 'Transactions', 'count' => \App\Models\TransactionHistory::count(), 'icon' => 'fa-history', 'color' => 'rose'],
+                        ['label' => 'Active Coupons', 'count' => \App\Models\Coupon::where('is_active', true)->count(), 'icon' => 'fa-ticket-alt', 'color' => 'pink'],
+                        ['label' => 'API Logs', 'count' => \App\Models\ApiLog::count(), 'icon' => 'fa-microchip', 'color' => 'blue'],
+                    ];
+                @endphp
+                @foreach($bizStats as $stat)
+                <div class="bg-{{ $stat['color'] }}-50/50 dark:bg-{{ $stat['color'] }}-500/5 border border-{{ $stat['color'] }}-100 dark:border-{{ $stat['color'] }}-500/10 rounded-xl p-4 transition-all hover:shadow-lg hover:-translate-y-0.5">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas {{ $stat['icon'] }} text-{{ $stat['color'] }}-600 dark:text-{{ $stat['color'] }}-500"></i>
+                    </div>
+                    <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter">{{ $stat['label'] }}</p>
+                    <h5 class="text-lg font-black text-gray-900 dark:text-white mt-0.5">{{ number_format($stat['count']) }}</h5>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- 3. Financial & Support -->
+        <div>
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-shield-alt text-amber-600 dark:text-amber-500 text-sm"></i>
+                <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Finance & Operations</h4>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                @php
+                    $opStats = [
+                        ['label' => 'Equities', 'count' => \App\Models\Equity::count(), 'icon' => 'fa-chart-line', 'color' => 'blue'],
+                        ['label' => 'Banks', 'count' => \App\Models\Bank::count(), 'icon' => 'fa-university', 'color' => 'indigo'],
+                        ['label' => 'Branches', 'count' => \App\Models\BankBranch::count(), 'icon' => 'fa-code-branch', 'color' => 'violet'],
+                        ['label' => 'Currencies', 'count' => \App\Models\CurrencyConversion::count(), 'icon' => 'fa-exchange-alt', 'color' => 'emerald'],
+                        ['label' => 'Tickets', 'count' => \App\Models\Ticket::count(), 'icon' => 'fa-headset', 'color' => 'orange'],
+                        ['label' => 'Queries', 'count' => \App\Models\WebsiteQuery::count(), 'icon' => 'fa-question-circle', 'color' => 'red'],
+                        ['label' => 'FAQs', 'count' => \App\Models\Faq::count(), 'icon' => 'fa-info-circle', 'color' => 'gray'],
+                    ];
+                @endphp
+                @foreach($opStats as $stat)
+                <div class="bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-xl p-4 transition-all hover:border-amber-500/30">
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="fas {{ $stat['icon'] }} text-{{ $stat['color'] }}-500 opacity-80"></i>
+                    </div>
+                    <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter">{{ $stat['label'] }}</p>
+                    <h5 class="text-lg font-black text-gray-900 dark:text-white mt-0.5">{{ number_format($stat['count']) }}</h5>
+                </div>
+                @endforeach
             </div>
         </div>
     </div>
