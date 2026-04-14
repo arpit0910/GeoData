@@ -396,7 +396,7 @@ class EquitySyncCommand extends Command
             ->select('traded_date')
             ->distinct()
             ->orderBy('traded_date', 'desc')
-            ->limit(300)
+            ->limit(1000)
             ->pluck('traded_date')
             ->map(fn($d) => $d instanceof \Carbon\Carbon ? $d->format('Y-m-d') : $d);
 
@@ -408,7 +408,8 @@ class EquitySyncCommand extends Command
             '3m' => $previousDates->get(62),
             '6m' => $previousDates->get(125),
             '9m' => $previousDates->get(188),
-            '12m' => $previousDates->get(251),
+            '1y' => $previousDates->get(251),
+            '3y' => $previousDates->get(755),
         ];
 
         $targetDates = collect($dateMap)->filter()->unique()->values()->toArray();
@@ -509,7 +510,8 @@ class EquitySyncCommand extends Command
                 'nse_chg_3m' => null,
                 'nse_chg_6m' => null,
                 'nse_chg_9m' => null,
-                'nse_chg_12m' => null,
+                'nse_chg_1y' => null,
+                'nse_chg_3y' => null,
                 'bse_chg_1d' => null,
                 'bse_chg_3d' => null,
                 'bse_chg_7d' => null,
@@ -517,14 +519,51 @@ class EquitySyncCommand extends Command
                 'bse_chg_3m' => null,
                 'bse_chg_6m' => null,
                 'bse_chg_9m' => null,
-                'bse_chg_12m' => null,
+                'bse_chg_1y' => null,
+                'bse_chg_3y' => null,
+                'nse_gap_pct' => null,
+                'bse_gap_pct' => null,
+                'nse_intraday_chg_pct' => null,
+                'bse_intraday_chg_pct' => null,
+                'nse_range_pct' => null,
+                'bse_range_pct' => null,
+                'nse_avg_ticket_size' => null,
+                'bse_avg_ticket_size' => null,
                 'spread' => $spread,
                 'created_at' => $existing ? $existing->created_at : $now,
                 'updated_at' => $now,
             ];
 
+            // NSE Analytical Calculations
+            if ($nse) {
+                if ($nse_prev > 0) {
+                    $record['nse_gap_pct'] = (($nse_open - $nse_prev) / $nse_prev) * 100;
+                    $record['nse_range_pct'] = (($nse_high - $nse_low) / $nse_prev) * 100;
+                }
+                if ($nse_open > 0) {
+                    $record['nse_intraday_chg_pct'] = (($nse_close - $nse_open) / $nse_open) * 100;
+                }
+                if ($nse_trades > 0) {
+                    $record['nse_avg_ticket_size'] = $nse_turnover / $nse_trades;
+                }
+            }
+
+            // BSE Analytical Calculations
+            if ($bse) {
+                if ($bse_prev > 0) {
+                    $record['bse_gap_pct'] = (($bse_open - $bse_prev) / $bse_prev) * 100;
+                    $record['bse_range_pct'] = (($bse_high - $bse_low) / $bse_prev) * 100;
+                }
+                if ($bse_open > 0) {
+                    $record['bse_intraday_chg_pct'] = (($bse_close - $bse_open) / $bse_open) * 100;
+                }
+                if ($bse_trades > 0) {
+                    $record['bse_avg_ticket_size'] = $bse_turnover / $bse_trades;
+                }
+            }
+
             if ($historyByDate) {
-                foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '12m'] as $period) {
+                foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'] as $period) {
                     $prevDate = $dateMap[$period] ?? null;
                     $prev = $prevDate ? $historyByDate->get($prevDate) : null;
                     if ($prev) {
@@ -569,7 +608,8 @@ class EquitySyncCommand extends Command
                 'nse_chg_3m',
                 'nse_chg_6m',
                 'nse_chg_9m',
-                'nse_chg_12m',
+                'nse_chg_1y',
+                'nse_chg_3y',
                 'bse_chg_1d',
                 'bse_chg_3d',
                 'bse_chg_7d',
@@ -577,7 +617,9 @@ class EquitySyncCommand extends Command
                 'bse_chg_3m',
                 'bse_chg_6m',
                 'bse_chg_9m',
-                'bse_chg_12m',
+                'bse_chg_1y',
+                'bse_chg_3y',
+                'nse_gap_pct', 'bse_gap_pct', 'nse_intraday_chg_pct', 'bse_intraday_chg_pct', 'nse_range_pct', 'bse_range_pct', 'nse_avg_ticket_size', 'bse_avg_ticket_size',
                 'spread',
                 'updated_at'
             ]);

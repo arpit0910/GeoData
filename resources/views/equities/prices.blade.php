@@ -433,12 +433,34 @@
                                 <div class="mt-4 pt-4 border-t ${borderClass}">
                                     <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Performance Returns</p>
                                     <div class="grid grid-cols-4 gap-2">
-                                        ${['1d', '3d', '7d', '1m', '3m', '6m', '9m', '12m'].map(p => `
+                                        ${['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'].map(p => `
                                             <div class="bg-white dark:bg-white/5 rounded-lg p-1.5 border border-gray-100 dark:border-white/5 text-center">
                                                 <p class="text-[8px] font-bold text-gray-400 mb-0.5 uppercase">${p}</p>
                                                 ${returnFmt(priceData[prefix + '_chg_' + p])}
                                             </div>
                                         `).join('')}
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 pt-4 border-t ${borderClass}">
+                                    <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Intraday Analytics</p>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                            <span class="text-[10px] text-gray-500">Gap %</span>
+                                            ${returnFmt(priceData[prefix + '_gap_pct'])}
+                                        </div>
+                                        <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                            <span class="text-[10px] text-gray-500">Day Range %</span>
+                                            <span class="text-[10px] font-bold dark:text-gray-300 text-gray-700">${priceData[prefix + '_range_pct'] ? parseFloat(priceData[prefix + '_range_pct']).toFixed(2) + '%' : 'N/A'}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                            <span class="text-[10px] text-gray-500">Intraday Chg %</span>
+                                            ${returnFmt(priceData[prefix + '_intraday_chg_pct'])}
+                                        </div>
+                                        <div class="flex justify-between items-center py-0.5 border-b ${borderClass}">
+                                            <span class="text-[10px] text-gray-500">Avg Ticket Size</span>
+                                            <span class="text-[10px] font-bold dark:text-gray-300 text-gray-700">₹${priceData[prefix + '_avg_ticket_size'] ? parseFloat(priceData[prefix + '_avg_ticket_size']).toLocaleString() : 'N/A'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -50,7 +50,12 @@ class EquityService
                         '3m_chg' => $currentPrice->nse_chg_3m ? round($currentPrice->nse_chg_3m, 2) . '%' : null,
                         '6m_chg' => $currentPrice->nse_chg_6m ? round($currentPrice->nse_chg_6m, 2) . '%' : null,
                         '9m_chg' => $currentPrice->nse_chg_9m ? round($currentPrice->nse_chg_9m, 2) . '%' : null,
-                        '12m_chg' => $currentPrice->nse_chg_12m ? round($currentPrice->nse_chg_12m, 2) . '%' : null,
+                        '1y_chg' => $currentPrice->nse_chg_1y ? round($currentPrice->nse_chg_1y, 2) . '%' : null,
+                        '3y_chg' => $currentPrice->nse_chg_3y ? round($currentPrice->nse_chg_3y, 2) . '%' : null,
+                        'gap_pct' => $currentPrice->nse_gap_pct ? round($currentPrice->nse_gap_pct, 2) . '%' : null,
+                        'range_pct' => $currentPrice->nse_range_pct ? round($currentPrice->nse_range_pct, 2) . '%' : null,
+                        'intraday_chg_pct' => $currentPrice->nse_intraday_chg_pct ? round($currentPrice->nse_intraday_chg_pct, 2) . '%' : null,
+                        'avg_ticket_size' => $currentPrice->nse_avg_ticket_size ? round($currentPrice->nse_avg_ticket_size, 2) : null,
                     ],
                     'bse' => [
                         '1d_chg' => $currentPrice->bse_chg_1d ? round($currentPrice->bse_chg_1d, 2) . '%' : null,
@@ -60,7 +65,12 @@ class EquityService
                         '3m_chg' => $currentPrice->bse_chg_3m ? round($currentPrice->bse_chg_3m, 2) . '%' : null,
                         '6m_chg' => $currentPrice->bse_chg_6m ? round($currentPrice->bse_chg_6m, 2) . '%' : null,
                         '9m_chg' => $currentPrice->bse_chg_9m ? round($currentPrice->bse_chg_9m, 2) . '%' : null,
-                        '12m_chg' => $currentPrice->bse_chg_12m ? round($currentPrice->bse_chg_12m, 2) . '%' : null,
+                        '1y_chg' => $currentPrice->bse_chg_1y ? round($currentPrice->bse_chg_1y, 2) . '%' : null,
+                        '3y_chg' => $currentPrice->bse_chg_3y ? round($currentPrice->bse_chg_3y, 2) . '%' : null,
+                        'gap_pct' => $currentPrice->bse_gap_pct ? round($currentPrice->bse_gap_pct, 2) . '%' : null,
+                        'range_pct' => $currentPrice->bse_range_pct ? round($currentPrice->bse_range_pct, 2) . '%' : null,
+                        'intraday_chg_pct' => $currentPrice->bse_intraday_chg_pct ? round($currentPrice->bse_intraday_chg_pct, 2) . '%' : null,
+                        'avg_ticket_size' => $currentPrice->bse_avg_ticket_size ? round($currentPrice->bse_avg_ticket_size, 2) : null,
                     ]
                 ]
             ];

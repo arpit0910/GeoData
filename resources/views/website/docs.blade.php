@@ -1788,7 +1788,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         </div>
                                         <div class="p-6">
                                             <p class="mb-8">Access pre-calculated performance analytics, including
-                                                percentage changes for 1D, 3D, 7D, and 1-Month windows.</p>
+                                                percentage changes for 1D, 7D, 1-Month, 1-Year, and 3-Year windows.</p>
                                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example
                                             </h4>
                                             <div
@@ -1798,10 +1798,18 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   <span class="text-blue-400">"data"</span>: {
     <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
     <span class="text-blue-400">"metrics"</span>: {
-      <span class="text-blue-400">"1d_chg"</span>: <span class="text-blue-400">1.25</span>,
-      <span class="text-blue-400">"3d_chg"</span>: <span class="text-blue-400">-0.45</span>,
-      <span class="text-blue-400">"7d_chg"</span>: <span class="text-blue-400">2.10</span>,
-      <span class="text-blue-400">"1m_chg"</span>: <span class="text-blue-400">5.60</span>
+      "1d_chg": <span class="text-blue-400">1.25</span>,
+      "7d_chg": <span class="text-blue-400">2.10</span>,
+      "1m_chg": <span class="text-blue-400">5.60</span>,
+      "3m_chg": <span class="text-blue-400">8.10</span>,
+      "6m_chg": <span class="text-blue-400">12.45</span>,
+      "9m_chg": <span class="text-blue-400">14.20</span>,
+      "1y_chg": <span class="text-blue-400">15.40</span>,
+      "3y_chg": <span class="text-blue-400">45.20</span>,
+      "gap_pct": <span class="text-blue-400">0.50</span>,
+      "range_pct": <span class="text-blue-400">2.15</span>,
+      "intraday_chg_pct": <span class="text-blue-400">1.20</span>,
+      "avg_ticket_size": <span class="text-blue-400">4500.50</span>
     }
   }
 }</pre>
