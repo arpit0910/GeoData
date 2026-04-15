@@ -30,6 +30,7 @@
         <div>
             <label class="block text-xs font-bold text-gray-400 mb-2">Stock / ISIN</label>
             <input type="text" id="filter_isin" placeholder="Search Name, Symbol or ISIN..."
+                value="{{ request('isin') }}"
                 class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-700 dark:text-gray-300">
         </div>
         <div class="flex gap-2">

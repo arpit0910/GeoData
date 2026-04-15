@@ -195,6 +195,19 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{equity}', [App\Http\Controllers\Admin\EquityController::class, 'show'])->name('show');
     });
 
+    // Index Management
+    Route::prefix('indices')->name('admin.indices.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\IndexController::class, 'index'])->name('index');
+        Route::get('/prices', [App\Http\Controllers\Admin\IndexController::class, 'prices'])->name('prices');
+        Route::post('/sync', [App\Http\Controllers\Admin\IndexController::class, 'sync'])->name('sync');
+        Route::get('/export', [App\Http\Controllers\Admin\IndexController::class, 'export'])->name('export');
+        Route::post('/import', [App\Http\Controllers\Admin\IndexController::class, 'import'])->name('import');
+        Route::get('/price/{price}', [App\Http\Controllers\Admin\IndexController::class, 'priceDetail'])->name('prices.show');
+        Route::get('/{index}/edit', [App\Http\Controllers\Admin\IndexController::class, 'edit'])->name('edit');
+        Route::put('/{index}', [App\Http\Controllers\Admin\IndexController::class, 'update'])->name('update');
+        Route::get('/{index}', [App\Http\Controllers\Admin\IndexController::class, 'show'])->name('show');
+    });
+
     // Server Logs
     Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->name('admin.logs');
 

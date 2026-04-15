@@ -92,6 +92,7 @@
                 @php
                     $opStats = [
                         ['label' => 'Equities', 'count' => \App\Models\Equity::count(), 'icon' => 'fa-chart-line', 'color' => 'blue'],
+                        ['label' => 'Indices', 'count' => \App\Models\Index::count(), 'icon' => 'fa-arrow-trend-up', 'color' => 'amber'],
                         ['label' => 'Banks', 'count' => \App\Models\Bank::count(), 'icon' => 'fa-university', 'color' => 'indigo'],
                         ['label' => 'Branches', 'count' => \App\Models\BankBranch::count(), 'icon' => 'fa-code-branch', 'color' => 'violet'],
                         ['label' => 'Currencies', 'count' => \App\Models\CurrencyConversion::count(), 'icon' => 'fa-exchange-alt', 'color' => 'emerald'],

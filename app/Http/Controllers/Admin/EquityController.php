@@ -204,7 +204,8 @@ class EquityController extends Controller
             ]);
         }
 
-        return view('equities.show', compact('equity'));
+        $prices = $equity->prices()->orderBy('traded_date', 'desc')->paginate(50);
+        return view('equities.show', compact('equity', 'prices'));
     }
 
     /**

@@ -91,7 +91,8 @@
                             Industry</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Category</th>
-                        <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4 text-center">
+                        <th
+                            class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4 text-center">
                             Active</th>
                         <th
                             class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4 text-right">
@@ -166,18 +167,22 @@
                         orderable: false,
                         searchable: false,
                         className: 'text-right whitespace-nowrap',
-                        render: function(data) {
+                        render: function(data, type, row) {
                             let viewUrl = "{{ route('equities.show', ':id') }}".replace(':id',
                                 data);
                             let editUrl = "{{ route('equities.edit', ':id') }}".replace(':id',
                                 data);
+                            let pricesUrl = "{{ route('equities.prices') }}?isin=" + row.isin;
                             return `
                             <div class="flex justify-end gap-1">
-                                <a href="${viewUrl}" class="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors" title="View History">
-                                    <i class="fas fa-history text-sm"></i>
+                                <a href="${viewUrl}" class="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors" title="View Details">
+                                    <i class="fas fa-eye text-sm"></i>
                                 </a>
-                                <a href="${editUrl}" class="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg transition-colors" title="Edit">
+                                <a href="${editUrl}" class="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg transition-colors" title="Edit Metadata">
                                     <i class="fas fa-edit text-sm"></i>
+                                </a>
+                                <a href="${pricesUrl}" class="p-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors" title="Price Records">
+                                    <i class="fas fa-list-ol text-sm"></i>
                                 </a>
                             </div>`;
                         }

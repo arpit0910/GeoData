@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\SetuGeoController;
 use App\Http\Controllers\Api\V1\GeoAnalysisController;
 use App\Http\Controllers\Api\V1\EquityApiController;
+use App\Http\Controllers\Api\V1\IndexApiController;
 use App\Http\Controllers\SubscriptionController;
 
 /*
@@ -99,6 +100,11 @@ Route::prefix('v1')->group(function() {
         Route::get('/equity/{isin}/peers', [EquityApiController::class, 'peers']);
         Route::get('/equity/{isin}/history', [EquityApiController::class, 'history']);
         Route::get('/equity/{isin}/metrics', [EquityApiController::class, 'metrics']);
+
+        // Index Analytical APIs
+        Route::get('/indices/snapshot', [IndexApiController::class, 'snapshot']);
+        Route::get('/indices/{index_code}/metrics', [IndexApiController::class, 'metrics']);
+        Route::get('/indices/{index_code}/history', [IndexApiController::class, 'history']);
 
         Route::fallback(function() {
             return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);

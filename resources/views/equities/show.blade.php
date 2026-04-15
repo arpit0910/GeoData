@@ -3,88 +3,201 @@
 @section('content')
     <div class="mb-8 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-            <a href="{{ route('equities.index') }}"
-                class="text-sm font-bold text-gray-500 hover:text-amber-600 transition-colors mb-2 inline-block">
-                <i class="fas fa-arrow-left mr-1"></i> Back to Equities
-            </a>
-            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ $equity->company_name }}</h1>
-            <div class="flex items-center gap-3 mt-1">
-                <span
-                    class="px-2 py-0.5 text-[10px] font-black bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded uppercase tracking-wider">{{ $equity->isin }}</span>
-                @if ($equity->industry)
-                    <span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/10"></span>
-                    <span class="text-sm text-gray-500 dark:text-gray-400 font-bold">{{ $equity->industry }}</span>
-                @endif
-                @if ($equity->market_cap)
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500/30"></span>
-                    <span
-                        class="px-2 py-0.5 text-[10px] font-black bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded uppercase tracking-wider">{{ $equity->market_cap }}</span>
-                @endif
+            <div class="flex items-center gap-3 mb-1">
+                <a href="{{ route('equities.index') }}" class="text-gray-400 hover:text-amber-500 transition-colors">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{{ $equity->company_name }}</h1>
+                <span class="px-2 py-0.5 text-[10px] font-black bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded uppercase tracking-wider border border-gray-200 dark:border-white/10">
+                    {{ $equity->isin }}
+                </span>
             </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium ml-7">
+                {{ $equity->industry ?? 'General Equity' }} • {{ $equity->market_cap ?: 'Stock Details' }}
+            </p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('equities.edit', $equity->id) }}"
-                class="px-5 py-2.5 text-sm font-bold rounded-xl border border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-all">
-                <i class="fas fa-edit mr-2"></i> Edit Details
+                class="px-5 py-2.5 text-sm font-bold rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-gray-50 transition-all">
+                <i class="fas fa-edit mr-2 text-amber-500"></i> Edit Metadata
             </a>
         </div>
     </div>
 
-    {{-- Stock Info Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-5">
-            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">NSE Symbol</p>
-            <p class="text-xl font-black text-indigo-600 dark:text-indigo-400">{{ $equity->nse_symbol ?: '—' }}</p>
+    @php
+        $latest = $prices->first();
+    @endphp
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">NSE Symbol</p>
+            <h4 class="text-2xl font-black text-indigo-600 dark:text-indigo-400">{{ $equity->nse_symbol ?: 'N/A' }}</h4>
         </div>
-        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-5">
-            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">BSE Symbol</p>
-            <p class="text-xl font-black text-amber-600 dark:text-amber-500">{{ $equity->bse_symbol ?: '—' }}</p>
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">BSE Symbol</p>
+            <h4 class="text-2xl font-black text-amber-600 dark:text-amber-500">{{ $equity->bse_symbol ?: 'N/A' }}</h4>
         </div>
-        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-5">
-            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Face Value</p>
-            <p class="text-xl font-black text-gray-900 dark:text-white">₹{{ number_format($equity->face_value, 2) }}</p>
-        </div>
-        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-5">
-            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Status</p>
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Listing Status</p>
             <div class="flex items-center gap-2">
-                @if ($equity->is_active)
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
-                    <span class="text-lg font-black text-emerald-600 dark:text-emerald-400">Active</span>
+                @if($equity->is_active)
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <h4 class="text-2xl font-black text-emerald-500">Active</h4>
                 @else
                     <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
-                    <span class="text-lg font-black text-gray-500">Inactive</span>
+                    <h4 class="text-2xl font-black text-gray-500">Inactive</h4>
                 @endif
+            </div>
+        </div>
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Face Value</p>
+            <h4 class="text-2xl font-black text-gray-900 dark:text-white">₹{{ number_format($equity->face_value, 2) }}</h4>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- Intraday & Volatility Analytics (NSE) -->
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-6 uppercase tracking-widest flex items-center justify-between">
+                <span class="flex items-center gap-2"><i class="fas fa-chart-line text-indigo-500"></i> NSE Analytics</span>
+                <span class="text-[10px] text-gray-400 font-bold">{{ $latest?->traded_date ? $latest->traded_date->format('d M Y') : 'No Data' }}</span>
+            </h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-white/5">
+                    <span class="text-xs text-gray-500">NSE Closing Price</span>
+                    <span class="text-xs font-bold text-gray-900 dark:text-white">₹{{ number_format($latest?->nse_close ?? 0, 2) }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-white/5">
+                    <span class="text-xs text-gray-500">Gap Percentage</span>
+                    <span class="text-xs font-bold {{ ($latest?->nse_gap_pct ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                        {{ number_format($latest?->nse_gap_pct ?? 0, 2) }}%
+                    </span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-white/5">
+                    <span class="text-xs text-gray-500">Intraday Change %</span>
+                    <span class="text-xs font-bold {{ ($latest?->nse_intraday_chg_pct ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                        {{ number_format($latest?->nse_intraday_chg_pct ?? 0, 2) }}%
+                    </span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-xs text-gray-500">Day Range %</span>
+                    <span class="text-xs font-bold text-gray-900 dark:text-white">
+                        {{ number_format($latest?->nse_range_pct ?? 0, 2) }}%
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Intraday & Volatility Analytics (BSE) -->
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-6 uppercase tracking-widest flex items-center justify-between">
+                <span class="flex items-center gap-2"><i class="fas fa-chart-line text-amber-500"></i> BSE Analytics</span>
+                <span class="text-[10px] text-gray-400 font-bold">{{ $latest?->traded_date ? $latest->traded_date->format('d M Y') : 'No Data' }}</span>
+            </h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-white/5">
+                    <span class="text-xs text-gray-500">BSE Closing Price</span>
+                    <span class="text-xs font-bold text-gray-900 dark:text-white">₹{{ number_format($latest?->bse_close ?? 0, 2) }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-white/5">
+                    <span class="text-xs text-gray-500">Gap Percentage</span>
+                    <span class="text-xs font-bold {{ ($latest?->bse_gap_pct ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                        {{ number_format($latest?->bse_gap_pct ?? 0, 2) }}%
+                    </span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-white/5">
+                    <span class="text-xs text-gray-500">Intraday Change %</span>
+                    <span class="text-xs font-bold {{ ($latest?->bse_intraday_chg_pct ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                        {{ number_format($latest?->bse_intraday_chg_pct ?? 0, 2) }}%
+                    </span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-xs text-gray-500">Day Range %</span>
+                    <span class="text-xs font-bold text-gray-900 dark:text-white">
+                        {{ number_format($latest?->bse_range_pct ?? 0, 2) }}%
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Performance Grid (NSE Based) -->
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-6 uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-calendar-alt text-indigo-500"></i> NSE Performance 
+            </h3>
+            <div class="grid grid-cols-3 gap-3">
+                @php
+                    $nseMetrics = [
+                        '1D' => 'nse_chg_1d', '3D' => 'nse_chg_3d', '7D' => 'nse_chg_7d',
+                        '1M' => 'nse_chg_1m', '3M' => 'nse_chg_3m', '6M' => 'nse_chg_6m',
+                        '9M' => 'nse_chg_9m', '1Y' => 'nse_chg_1y', '3Y' => 'nse_chg_3y'
+                    ];
+                @endphp
+                @foreach($nseMetrics as $label => $field)
+                    <div class="bg-gray-50 dark:bg-white/5 rounded-xl p-3 border border-gray-100 dark:border-white/5 text-center">
+                        <p class="text-[9px] font-bold text-gray-400 mb-1 uppercase">{{ $label }}</p>
+                        @php $val = $latest?->$field; @endphp
+                        @if($val !== null)
+                            <p class="text-xs font-black {{ $val >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                                {{ $val > 0 ? '+' : '' }}{{ number_format($val, 2) }}%
+                            </p>
+                        @else
+                            <p class="text-xs font-bold text-gray-400 italic">N/A</p>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Historical Performance Grid (BSE Based) -->
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-6 uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-calendar-alt text-amber-500"></i> BSE Performance 
+            </h3>
+            <div class="grid grid-cols-3 gap-3">
+                @php
+                    $bseMetrics = [
+                        '1D' => 'bse_chg_1d', '3D' => 'bse_chg_3d', '7D' => 'bse_chg_7d',
+                        '1M' => 'bse_chg_1m', '3M' => 'bse_chg_3m', '6M' => 'bse_chg_6m',
+                        '9M' => 'bse_chg_9m', '1Y' => 'bse_chg_1y', '3Y' => 'bse_chg_3y'
+                    ];
+                @endphp
+                @foreach($bseMetrics as $label => $field)
+                    <div class="bg-gray-50 dark:bg-white/5 rounded-xl p-3 border border-gray-100 dark:border-white/5 text-center">
+                        <p class="text-[9px] font-bold text-gray-400 mb-1 uppercase">{{ $label }}</p>
+                        @php $val = $latest?->$field; @endphp
+                        @if($val !== null)
+                            <p class="text-xs font-black {{ $val >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                                {{ $val > 0 ? '+' : '' }}{{ number_format($val, 2) }}%
+                            </p>
+                        @else
+                            <p class="text-xs font-bold text-gray-400 italic">N/A</p>
+                        @endif
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>
 
     <div class="mb-6">
         <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-            Price History
-            <span
-                class="px-2 py-1 text-[10px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">Real-time
-                Data</span>
+            <i class="fas fa-history text-amber-500"></i> Full Price History
+            <span class="px-2 py-1 text-[10px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">Consolidated (NSE/BSE)</span>
         </h2>
     </div>
 
     {{-- Price History Table --}}
-    <div
-        class="bg-white dark:bg-[#0f172a]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden text-xs">
+    <div class="bg-white dark:bg-[#0f172a]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden text-xs">
         <div class="p-6 overflow-x-auto">
             <table id="historyTable" class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-white/5">
                         <th rowspan="2" class="p-4 rounded-tl-xl border-b border-gray-200 dark:border-white/10">Date</th>
-                        <th colspan="2"
-                            class="p-2 text-center border-l border-b border-gray-200 dark:border-white/10 bg-indigo-500/5">
-                            NSE</th>
-                        <th colspan="2"
-                            class="p-2 text-center border-l border-b border-gray-200 dark:border-white/10 bg-amber-500/5">
-                            BSE</th>
-                        <th rowspan="2"
-                            class="p-4 border-l border-b border-gray-200 dark:border-white/10 bg-indigo-500/5">Spread</th>
-                        <th rowspan="2" class="p-4 rounded-tr-xl border-l border-b border-gray-200 dark:border-white/10">
-                            Actions</th>
+                        <th colspan="2" class="p-2 text-center border-l border-b border-gray-200 dark:border-white/10 bg-indigo-500/5">NSE</th>
+                        <th colspan="2" class="p-2 text-center border-l border-b border-gray-200 dark:border-white/10 bg-amber-500/5">BSE</th>
+                        <th rowspan="2" class="p-4 border-l border-b border-gray-200 dark:border-white/10 bg-indigo-500/5">Spread</th>
+                        <th rowspan="2" class="p-4 rounded-tr-xl border-l border-b border-gray-200 dark:border-white/10">Actions</th>
                     </tr>
                     <tr class="bg-gray-50 dark:bg-white/5">
                         <th class="p-2 border-l border-b border-gray-200 dark:border-white/10">Close</th>
@@ -95,6 +208,9 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-white/5"></tbody>
             </table>
+        </div>
+        <div class="px-6 pb-6">
+            {{ $prices->links() }}
         </div>
     </div>
 

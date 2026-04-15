@@ -219,6 +219,14 @@
                         <i class="fas fa-indian-rupee-sign mr-3 w-5"></i>
                         Equity Prices
                     </a>
+                    <a href="{{ route('admin.indices.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.indices.index') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-arrow-trend-up mr-3 w-5"></i>
+                        Indices
+                    </a>
+                    <a href="{{ route('admin.indices.prices') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.indices.prices') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-list-ol mr-3 w-5"></i>
+                        Index Prices
+                    </a>
                     <a href="{{ route('plans.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('plans.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-credit-card mr-3 w-5"></i>
                         Plans
