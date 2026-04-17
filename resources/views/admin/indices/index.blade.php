@@ -86,7 +86,7 @@
             const table = $('#indicesTable').DataTable({
                 processing: true,
                 serverSide: true,
-                pageLength: 25,
+                pageLength: 100,
                 ajax: "{{ route('admin.indices.index') }}",
                 columns: [
                     { data: 'index_code', name: 'index_code', className: 'text-xs' },

@@ -37,6 +37,15 @@ class IndexPrice extends Model
         'gap_pct',
         'intraday_chg_pct',
         'range_pct',
+        'val_1d',
+        'val_3d',
+        'val_7d',
+        'val_1m',
+        'val_3m',
+        'val_6m',
+        'val_9m',
+        'val_1y',
+        'val_3y',
     ];
 
     protected $casts = [
@@ -64,6 +73,15 @@ class IndexPrice extends Model
         'gap_pct'     => 'decimal:2',
         'intraday_chg_pct' => 'decimal:2',
         'range_pct'   => 'decimal:2',
+        'val_1d'      => 'decimal:2',
+        'val_3d'      => 'decimal:2',
+        'val_7d'      => 'decimal:2',
+        'val_1m'      => 'decimal:2',
+        'val_3m'      => 'decimal:2',
+        'val_6m'      => 'decimal:2',
+        'val_9m'      => 'decimal:2',
+        'val_1y'      => 'decimal:2',
+        'val_3y'      => 'decimal:2',
     ];
 
     public function index()

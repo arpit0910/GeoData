@@ -32,7 +32,7 @@ class IndexController extends Controller
 
             $total = Index::count();
             $filtered = $query->count();
-            $limit = $request->length ?? 25;
+            $limit = $request->length ?? 100;
             $start = $request->start ?? 0;
 
             $data = $query->skip($start)->take($limit)->get();
@@ -53,7 +53,7 @@ class IndexController extends Controller
      */
     public function show(Index $index)
     {
-        $prices = $index->prices()->orderBy('traded_date', 'desc')->paginate(50);
+        $prices = $index->prices()->orderBy('traded_date', 'desc')->paginate(100);
         return view('admin.indices.show', compact('index', 'prices'));
     }
 
@@ -114,7 +114,7 @@ class IndexController extends Controller
             $total = IndexPrice::count();
             $filtered = (clone $query)->count();
 
-            $limit = $request->length ?? 25;
+            $limit = $request->length ?? 100;
             $start = $request->start ?? 0;
 
             $data = $query->orderBy('traded_date', 'desc')

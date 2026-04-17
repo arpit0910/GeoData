@@ -24,17 +24,17 @@ class EquityController extends Controller
                 $search = $request->search['value'];
                 $query->where(function ($q) use ($search) {
                     $q->where('isin', 'like', "%{$search}%")
-                      ->orWhere('company_name', 'like', "%{$search}%")
-                      ->orWhere('nse_symbol', 'like', "%{$search}%")
-                      ->orWhere('bse_symbol', 'like', "%{$search}%")
-                      ->orWhere('industry', 'like', "%{$search}%")
-                      ->orWhere('market_cap', 'like', "%{$search}%");
+                        ->orWhere('company_name', 'like', "%{$search}%")
+                        ->orWhere('nse_symbol', 'like', "%{$search}%")
+                        ->orWhere('bse_symbol', 'like', "%{$search}%")
+                        ->orWhere('industry', 'like', "%{$search}%")
+                        ->orWhere('market_cap', 'like', "%{$search}%");
                 });
             }
 
             $total = Equity::count();
             $filtered = $query->count();
-            $limit = $request->length ?? 25;
+            $limit = $request->length ?? 100;
             $start = $request->start ?? 0;
 
             $data = $query->skip($start)->take($limit)->get();
@@ -70,15 +70,15 @@ class EquityController extends Controller
             $search = $request->search['value'];
             $query->where(function ($q) use ($search) {
                 $q->where('isin', 'like', "%{$search}%")
-                  ->orWhere('traded_date', 'like', "%{$search}%")
-                  ->orWhereHas('equity', function($eq) use ($search) {
-                      $eq->where('company_name', 'like', "%{$search}%")
-                         ->orWhere('nse_symbol', 'like', "%{$search}%")
-                         ->orWhere('bse_symbol', 'like', "%{$search}%");
-                  });
+                    ->orWhere('traded_date', 'like', "%{$search}%")
+                    ->orWhereHas('equity', function ($eq) use ($search) {
+                        $eq->where('company_name', 'like', "%{$search}%")
+                            ->orWhere('nse_symbol', 'like', "%{$search}%")
+                            ->orWhere('bse_symbol', 'like', "%{$search}%");
+                    });
             });
         }
- 
+
         // Handle Specific Filters
         if ($request->filled('date_from')) {
             $query->where('traded_date', '>=', $request->date_from);
@@ -88,13 +88,13 @@ class EquityController extends Controller
         }
         if ($request->filled('isin')) {
             $value = $request->isin;
-            $query->where(function($q) use ($value) {
+            $query->where(function ($q) use ($value) {
                 $q->where('isin', 'like', "%{$value}%")
-                  ->orWhereHas('equity', function($eq) use ($value) {
-                      $eq->where('company_name', 'like', "%{$value}%")
-                         ->orWhere('nse_symbol', 'like', "%{$value}%")
-                         ->orWhere('bse_symbol', 'like', "%{$value}%");
-                  });
+                    ->orWhereHas('equity', function ($eq) use ($value) {
+                        $eq->where('company_name', 'like', "%{$value}%")
+                            ->orWhere('nse_symbol', 'like', "%{$value}%")
+                            ->orWhere('bse_symbol', 'like', "%{$value}%");
+                    });
             });
         }
 
@@ -119,11 +119,11 @@ class EquityController extends Controller
             $colIdx = $request->order[0]['column'];
             $colDir = $request->order[0]['dir'];
             $colName = $columns[$colIdx] ?? 'traded_date';
-            
+
             if ($colName === 'name') {
                 $query->join('equities', 'equity_prices.equity_id', '=', 'equities.id')
-                      ->orderBy('equities.company_name', $colDir)
-                      ->select('equity_prices.*');
+                    ->orderBy('equities.company_name', $colDir)
+                    ->select('equity_prices.*');
             } else {
                 $query->orderBy($colName, $colDir);
             }
@@ -131,7 +131,7 @@ class EquityController extends Controller
             $query->orderBy('traded_date', 'desc');
         }
 
-        $limit = $request->length ?? 25;
+        $limit = $request->length ?? 100;
         $start = $request->start ?? 0;
         $data = $query->skip($start)->take($limit)->get();
 
@@ -189,9 +189,9 @@ class EquityController extends Controller
     {
         if ($request->ajax()) {
             $query = $equity->prices();
-            
+
             $total = $query->count();
-            $limit = $request->length ?? 25;
+            $limit = $request->length ?? 100;
             $start = $request->start ?? 0;
 
             $data = $query->orderBy('traded_date', 'desc')->skip($start)->take($limit)->get();
@@ -204,7 +204,7 @@ class EquityController extends Controller
             ]);
         }
 
-        $prices = $equity->prices()->orderBy('traded_date', 'desc')->paginate(50);
+        $prices = $equity->prices()->orderBy('traded_date', 'desc')->paginate(100);
         return view('equities.show', compact('equity', 'prices'));
     }
 
@@ -217,10 +217,10 @@ class EquityController extends Controller
             'date' => 'required|date',
             'exchange' => 'nullable|string|in:NSE,BSE',
         ]);
- 
+
         $date = $request->date;
         $exchange = $request->exchange;
- 
+
         set_time_limit(300); // Increase timeout to 5 minutes
 
         try {
@@ -229,7 +229,7 @@ class EquityController extends Controller
                 'date' => $date,
                 'exchange' => $exchange
             ]);
- 
+
             if ($exitCode === 0) {
                 // Return the actual success message from command output (e.g. Sync completed successfully for 2024-04-10)
                 $output = Artisan::output();
@@ -237,13 +237,13 @@ class EquityController extends Controller
                 $msg = end($lines) ?: "Equity data synced successfully.";
 
                 return response()->json([
-                    'success' => true, 
+                    'success' => true,
                     'message' => $msg
                 ]);
             } else {
                 $output = Artisan::output();
                 return response()->json([
-                    'success' => false, 
+                    'success' => false,
                     'message' => "Sync failed with exit code {$exitCode}.",
                     'debug' => $output
                 ], 500);
@@ -251,7 +251,7 @@ class EquityController extends Controller
         } catch (\Exception $e) {
             Log::error("Equity Sync Error: " . $e->getMessage());
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => "An error occurred: " . $e->getMessage()
             ], 500);
         }
@@ -273,7 +273,7 @@ class EquityController extends Controller
 
         $columns = ['isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'face_value', 'listing_date', 'is_active'];
 
-        $callback = function() use($columns) {
+        $callback = function () use ($columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
@@ -321,7 +321,7 @@ class EquityController extends Controller
             // Normalize header
             $header = array_map('strtolower', array_map('trim', $header));
             $headerCount = count($header);
-            
+
             $now = now();
             $records = [];
             $count = 0;
@@ -339,7 +339,7 @@ class EquityController extends Controller
 
                 $data = array_combine($header, $row);
                 $isin = trim($data['isin'] ?? '');
-                
+
                 if (empty($isin)) continue;
 
                 $records[] = [
@@ -351,7 +351,7 @@ class EquityController extends Controller
                     'market_cap' => trim($data['market_cap'] ?? ''),
                     'market_cap_category' => trim($data['market_cap_category'] ?? ''),
                     'face_value' => !empty($data['face_value']) ? (float)$data['face_value'] : null,
-                    'listing_date' => (function() use ($data) {
+                    'listing_date' => (function () use ($data) {
                         if (empty($data['listing_date'])) return null;
                         try {
                             return \Carbon\Carbon::parse($data['listing_date'])->format('Y-m-d');

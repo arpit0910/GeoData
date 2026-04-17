@@ -51,10 +51,16 @@ class EquitySyncHistoryCommand extends Command
             $this->info("\nProcessing {$dateString}...");
 
             try {
-                // Check if records already exist
-                if (EquityPrice::where('traded_date', $dateString)->exists()) {
-                    $this->info("Records already exist for {$dateString}. Skipping...");
+                // Check if both NSE and BSE data are present
+                $hasNse = EquityPrice::where('traded_date', $dateString)->where('nse_close', '>', 0)->exists();
+                $hasBse = EquityPrice::where('traded_date', $dateString)->where('bse_close', '>', 0)->exists();
+
+                if ($hasNse && $hasBse) {
+                    $this->info("Complete records (NSE & BSE) already exist for {$dateString}. Skipping...");
                 } else {
+                    if ($hasNse) {
+                        $this->info("NSE data exists but BSE might be missing for {$dateString}. Re-syncing...");
+                    }
                     // Directly use the PHP fetcher logic instead of calling 'equities:sync'
                     // because 'equities:sync' crashes on servers without exec()
                     $phpData = $this->handlePhpFetch($dateString, null);
@@ -417,15 +423,10 @@ class EquitySyncHistoryCommand extends Command
                 'nse_chg_9m' => null,
                 'nse_chg_1y' => null,
                 'nse_chg_3y' => null,
-                'bse_chg_1d' => null,
-                'bse_chg_3d' => null,
-                'bse_chg_7d' => null,
-                'bse_chg_1m' => null,
-                'bse_chg_3m' => null,
-                'bse_chg_6m' => null,
-                'bse_chg_9m' => null,
                 'bse_chg_1y' => null,
                 'bse_chg_3y' => null,
+                'nse_val_1d' => null, 'nse_val_3d' => null, 'nse_val_7d' => null, 'nse_val_1m' => null, 'nse_val_3m' => null, 'nse_val_6m' => null, 'nse_val_9m' => null, 'nse_val_1y' => null, 'nse_val_3y' => null,
+                'bse_val_1d' => null, 'bse_val_3d' => null, 'bse_val_7d' => null, 'bse_val_1m' => null, 'bse_val_3m' => null, 'bse_val_6m' => null, 'bse_val_9m' => null, 'bse_val_1y' => null, 'bse_val_3y' => null,
                 'nse_gap_pct' => null,
                 'bse_gap_pct' => null,
                 'nse_intraday_chg_pct' => null,
@@ -475,8 +476,14 @@ class EquitySyncHistoryCommand extends Command
                     $prevDate = $dateMap[$period] ?? null;
                     $prev = $prevDate ? $historyByDate->get($prevDate) : null;
                     if ($prev) {
-                        if ($nse_close && (float)$prev->nse_close > 0) $record["nse_chg_{$period}"] = (($nse_close - $prev->nse_close) / $prev->nse_close) * 100;
-                        if ($bse_close && (float)$prev->bse_close > 0) $record["bse_chg_{$period}"] = (($bse_close - $prev->bse_close) / $prev->bse_close) * 100;
+                        if ($prev->nse_close && (float)$prev->nse_close > 0) {
+                            $record["nse_val_{$period}"] = $prev->nse_close;
+                            if ($nse_close) $record["nse_chg_{$period}"] = (($nse_close - $prev->nse_close) / $prev->nse_close) * 100;
+                        }
+                        if ($prev->bse_close && (float)$prev->bse_close > 0) {
+                            $record["bse_val_{$period}"] = $prev->bse_close;
+                            if ($bse_close) $record["bse_chg_{$period}"] = (($bse_close - $prev->bse_close) / $prev->bse_close) * 100;
+                        }
                     }
                 }
             }
@@ -506,24 +513,10 @@ class EquitySyncHistoryCommand extends Command
                 'bse_turnover',
                 'bse_trades',
                 'bse_avg_price',
-                'nse_chg_1d',
-                'nse_chg_3d',
-                'nse_chg_7d',
-                'nse_chg_1m',
-                'nse_chg_3m',
-                'nse_chg_6m',
-                'nse_chg_9m',
-                'nse_chg_1y',
-                'nse_chg_3y',
-                'bse_chg_1d',
-                'bse_chg_3d',
-                'bse_chg_7d',
-                'bse_chg_1m',
-                'bse_chg_3m',
-                'bse_chg_6m',
-                'bse_chg_9m',
-                'bse_chg_1y',
-                'bse_chg_3y',
+                'nse_chg_1d', 'nse_chg_3d', 'nse_chg_7d', 'nse_chg_1m', 'nse_chg_3m', 'nse_chg_6m', 'nse_chg_9m', 'nse_chg_1y', 'nse_chg_3y',
+                'bse_chg_1d', 'bse_chg_3d', 'bse_chg_7d', 'bse_chg_1m', 'bse_chg_3m', 'bse_chg_6m', 'bse_chg_9m', 'bse_chg_1y', 'bse_chg_3y',
+                'nse_val_1d', 'nse_val_3d', 'nse_val_7d', 'nse_val_1m', 'nse_val_3m', 'nse_val_6m', 'nse_val_9m', 'nse_val_1y', 'nse_val_3y',
+                'bse_val_1d', 'bse_val_3d', 'bse_val_7d', 'bse_val_1m', 'bse_val_3m', 'bse_val_6m', 'bse_val_9m', 'bse_val_1y', 'bse_val_3y',
                 'nse_gap_pct',
                 'bse_gap_pct',
                 'nse_intraday_chg_pct',

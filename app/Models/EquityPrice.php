@@ -60,6 +60,8 @@ class EquityPrice extends Model
         'bse_range_pct',
         'nse_avg_ticket_size',
         'bse_avg_ticket_size',
+        'nse_val_1d', 'nse_val_3d', 'nse_val_7d', 'nse_val_1m', 'nse_val_3m', 'nse_val_6m', 'nse_val_9m', 'nse_val_1y', 'nse_val_3y',
+        'bse_val_1d', 'bse_val_3d', 'bse_val_7d', 'bse_val_1m', 'bse_val_3m', 'bse_val_6m', 'bse_val_9m', 'bse_val_1y', 'bse_val_3y',
     ];
 
     protected $casts = [
@@ -109,6 +111,8 @@ class EquityPrice extends Model
         'bse_range_pct' => 'decimal:2',
         'nse_avg_ticket_size' => 'decimal:2',
         'bse_avg_ticket_size' => 'decimal:2',
+        'nse_val_1d' => 'decimal:2', 'nse_val_3d' => 'decimal:2', 'nse_val_7d' => 'decimal:2', 'nse_val_1m' => 'decimal:2', 'nse_val_3m' => 'decimal:2', 'nse_val_6m' => 'decimal:2', 'nse_val_9m' => 'decimal:2', 'nse_val_1y' => 'decimal:2', 'nse_val_3y' => 'decimal:2',
+        'bse_val_1d' => 'decimal:2', 'bse_val_3d' => 'decimal:2', 'bse_val_7d' => 'decimal:2', 'bse_val_1m' => 'decimal:2', 'bse_val_3m' => 'decimal:2', 'bse_val_6m' => 'decimal:2', 'bse_val_9m' => 'decimal:2', 'bse_val_1y' => 'decimal:2', 'bse_val_3y' => 'decimal:2',
     ];
 
     public function equity()

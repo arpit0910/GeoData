@@ -386,7 +386,7 @@
             $('#historyTable').DataTable({
                 processing: true,
                 serverSide: true,
-                pageLength: 20,
+                pageLength: 100,
                 ajax: "{{ route('equities.show', $equity->id) }}",
                 columns: [{
                         data: 'traded_date',

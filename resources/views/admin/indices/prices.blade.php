@@ -270,7 +270,7 @@
             const table = $('#indicesPricesTable').DataTable({
                 processing: true,
                 serverSide: true,
-                pageLength: 25,
+                pageLength: 100,
                 ajax: {
                     url: "{{ route('admin.indices.prices') }}",
                     data: function(d) {
