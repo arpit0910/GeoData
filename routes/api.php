@@ -103,6 +103,9 @@ Route::prefix('v1')->group(function() {
 
         // Index Analytical APIs
         Route::get('/indices/snapshot', [IndexApiController::class, 'snapshot']);
+        Route::get('/indices/search', [IndexApiController::class, 'search']);
+        Route::get('/indices/analysis/top-gainers', [IndexApiController::class, 'topGainers']);
+        Route::get('/indices/analysis/top-losers', [IndexApiController::class, 'topLosers']);
         Route::get('/indices/{index_code}/metrics', [IndexApiController::class, 'metrics']);
         Route::get('/indices/{index_code}/history', [IndexApiController::class, 'history']);
 

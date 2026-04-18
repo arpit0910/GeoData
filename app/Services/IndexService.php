@@ -13,14 +13,19 @@ class IndexService
     /**
      * Get the latest market snapshot for all indices.
      */
-    public function getSnapshot(): Collection
+    public function getSnapshot(?string $exchange = null): Collection
     {
-        return Cache::remember('index_snapshot', 86400, function () {
+        return Cache::remember('index_snapshot_' . ($exchange ?? 'all'), 3600, function () use ($exchange) {
             $latestDate = IndexPrice::max('traded_date');
             
             if (!$latestDate) return collect();
 
-            return Index::with(['prices' => function($q) use ($latestDate) {
+            $query = Index::query();
+            if ($exchange) {
+                $query->where('exchange', strtoupper($exchange));
+            }
+
+            return $query->with(['prices' => function($q) use ($latestDate) {
                 $q->where('traded_date', $latestDate);
             }])->get()->map(function($idx) {
                 $latest = $idx->prices->first();
@@ -29,10 +34,15 @@ class IndexService
                     'name'           => $idx->index_name,
                     'exchange'       => $idx->exchange,
                     'category'       => $idx->category,
-                    'ltp'            => $latest?->close,
+                    'open'           => $latest?->open,
+                    'high'           => $latest?->high,
+                    'low'            => $latest?->low,
+                    'close'          => $latest?->close,
                     'prev_close'     => $latest?->prev_close,
                     'change'         => $latest?->close - $latest?->prev_close,
                     'change_percent' => $latest?->change_percent,
+                    'volume'         => $latest?->volume,
+                    'turnover'       => $latest?->turnover,
                     'updated_at'     => $latest?->traded_date->format('Y-m-d'),
                     'valuation' => [
                         'pe' => $latest?->pe_ratio,
@@ -42,6 +52,17 @@ class IndexService
                 ];
             });
         });
+    }
+
+    /**
+     * Search indices by name or code.
+     */
+    public function searchIndices(string $query): Collection
+    {
+        return Index::where('index_code', 'like', "%{$query}%")
+            ->orWhere('index_name', 'like', "%{$query}%")
+            ->limit(20)
+            ->get();
     }
 
     /**
@@ -55,35 +76,65 @@ class IndexService
 
         if (!$current) return [];
 
-        $currentClose = $current->close;
-        $date = $current->traded_date;
-
         return [
             'code'           => $code,
-            'current_close'  => $currentClose,
-            'last_updated'   => $date->format('Y-m-d'),
+            'current_close'  => $current->close,
+            'last_updated'   => $current->traded_date->format('Y-m-d'),
             'returns' => [
-                '7d'  => $this->calculateReturn($code, $currentClose, $date->copy()->subDays(7)),
-                '1m'  => $this->calculateReturn($code, $currentClose, $date->copy()->subMonth()),
-                '3m'  => $this->calculateReturn($code, $currentClose, $date->copy()->subMonths(3)),
-                '1y'  => $this->calculateReturn($code, $currentClose, $date->copy()->subYear()),
+                '1d' => $current->chg_1d,
+                '3d' => $current->chg_3d,
+                '7d' => $current->chg_7d,
+                '1m' => $current->chg_1m,
+                '3m' => $current->chg_3m,
+                '6m' => $current->chg_6m,
+                '9m' => $current->chg_9m,
+                '1y' => $current->chg_1y,
+                '3y' => $current->chg_3y,
+            ],
+            'historical_values' => [
+                '1d' => $current->val_1d,
+                '3d' => $current->val_3d,
+                '7d' => $current->val_7d,
+                '1m' => $current->val_1m,
+                '3m' => $current->val_3m,
+                '6m' => $current->val_6m,
+                '9m' => $current->val_9m,
+                '1y' => $current->val_1y,
+                '3y' => $current->val_3y,
             ]
         ];
     }
 
     /**
-     * Calculate return for a specific horizon.
+     * Get top movers (gainers/losers) based on a specific period.
      */
-    private function calculateReturn(string $code, float $currentClose, Carbon $targetDate): ?float
+    public function getTopMovers(string $period = '1d', string $direction = 'desc', int $limit = 10): Collection
     {
-        $historical = IndexPrice::where('index_code', $code)
-            ->where('traded_date', '<=', $targetDate)
-            ->orderBy('traded_date', 'desc')
-            ->first();
+        $latestDate = IndexPrice::max('traded_date');
+        if (!$latestDate) return collect();
 
-        if (!$historical || $historical->close <= 0) return null;
+        $column = "chg_{$period}";
+        // Validate column exists, fallback to chg_1d
+        if (!in_array($period, ['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'])) {
+            $column = 'chg_1d';
+        }
 
-        return (($currentClose - $historical->close) / $historical->close) * 100;
+        return IndexPrice::with('index')
+            ->where('traded_date', $latestDate)
+            ->whereNotNull($column)
+            ->orderBy($column, $direction)
+            ->limit($limit)
+            ->get()
+            ->map(function($price) use ($column) {
+                return [
+                    'code' => $price->index_code,
+                    'name' => $price->index->index_name,
+                    'exchange' => $price->index->exchange,
+                    'close' => $price->close,
+                    'change_pct' => $price->$column,
+                    'traded_date' => $price->traded_date->format('Y-m-d')
+                ];
+            });
     }
 
     /**

@@ -57,6 +57,9 @@
                                 <li><a href="#equity-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Equity
                                         Intelligence</a></li>
+                                <li><a href="#index-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Index
+                                        Intelligence</a></li>
                                 <li><a href="#hierarchical-data"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Hierarchical
                                         Drill-Downs</a></li>
@@ -1852,6 +1855,183 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         <div class="p-6">
                                             <p class="text-gray-400">Retrieve top peers in the same industry based on
                                                 market capitalization.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section id="index-api" class="pt-8">
+                                <h2
+                                    class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">
+                                    Index Intelligence</h2>
+
+                                <div class="space-y-12">
+                                    <!-- Index Snapshot -->
+                                    <div id="index-snapshot" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /indices/snapshot</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4">Get the latest market snapshot for all benchmark and sectoral indices. Supports filtering by exchange.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-8">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Field</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">exchange</td>
+                                                        <td class="py-3">Filter by exchange (e.g. <code class="text-white">NSE</code>, <code class="text-white">BSE</code>)</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                                <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"code"</span>: <span class="text-green-400">"NIFTY 50"</span>,
+      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"NIFTY 50"</span>,
+      <span class="text-blue-400">"exchange"</span>: <span class="text-green-400">"NSE"</span>,
+      <span class="text-blue-400">"close"</span>: <span class="text-blue-400">22453.20</span>,
+      <span class="text-blue-400">"change_percent"</span>: <span class="text-blue-400">0.85</span>,
+      <span class="text-blue-400">"updated_at"</span>: <span class="text-green-400">"2026-04-13"</span>
+    }
+  ]
+}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Index Search -->
+                                    <div id="index-search" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /indices/search</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4">Search for indices by name or code.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Field</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">q</td>
+                                                        <td class="py-3">Search keyword (e.g. "Nifty", "Sensex")</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Index Rankings -->
+                                    <div id="index-rankings" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /indices/analysis/top-gainers</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4">Fetch top-performing indices based on returns for a specific period. Same pattern exists for <code class="text-white">/indices/analysis/top-losers</code>.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Field</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">period</td>
+                                                        <td class="py-3">Period for returns: <code class="text-white">1d</code>, <code class="text-white">7d</code>, <code class="text-white">1m</code>, <code class="text-white">1y</code>, etc. (Default: 1d)</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">limit</td>
+                                                        <td class="py-3">Number of results (Default: 10)</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Index Metrics -->
+                                    <div id="index-metrics" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /indices/{index_code}/metrics</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Access comprehensive performance analytics for a specific index, including multi-horizon returns and underlying historical reference values.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                                <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"code"</span>: <span class="text-green-400">"NIFTY 50"</span>,
+    <span class="text-blue-400">"current_close"</span>: <span class="text-blue-400">22453.20</span>,
+    <span class="text-blue-400">"returns"</span>: {
+      <span class="text-blue-400">"1d"</span>: <span class="text-blue-400">0.85</span>,
+      <span class="text-blue-400">"7d"</span>: <span class="text-blue-400">1.20</span>,
+      <span class="text-blue-400">"1m"</span>: <span class="text-blue-400">3.45</span>,
+      <span class="text-blue-400">"1y"</span>: <span class="text-blue-400">18.20</span>
+    },
+    <span class="text-blue-400">"historical_values"</span>: {
+      <span class="text-blue-400">"1d"</span>: <span class="text-blue-400">22264.00</span>,
+      <span class="text-blue-400">"1m"</span>: <span class="text-blue-400">21704.50</span>
+    }
+  }
+}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Index History -->
+                                    <div id="index-history" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /indices/{index_code}/history</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Retrieve time-series pricing data for an index. Ideal for charting and trend analysis.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Field</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">start_date</td>
+                                                        <td class="py-3">Format: <code class="text-white">YYYY-MM-DD</code></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">end_date</td>
+                                                        <td class="py-3">Format: <code class="text-white">YYYY-MM-DD</code></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
