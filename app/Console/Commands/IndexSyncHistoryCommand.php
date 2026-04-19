@@ -78,16 +78,21 @@ class IndexSyncHistoryCommand extends Command
                 if ($exchange) {
                     $exists = ($exchange === 'NSE') ? $hasNse : $hasBse;
                     if ($exists) {
+                        $this->line("\n  <fg=gray>Skipping {$dateStr} — {$exchange} data already exists.</>");
                         $currentDate->addDay();
                         $bar->advance();
                         continue;
                     }
                 } elseif ($hasNse && $hasBse) {
+                    $this->line("\n  <fg=gray>Skipping {$dateStr} — NSE & BSE ({$bseCount} indices) already synced.</>");
                     $currentDate->addDay();
                     $bar->advance();
                     continue;
                 }
             }
+
+            $this->newLine();
+            $this->info("Syncing {$dateStr}...");
 
             try {
                 $exitCode = Artisan::call('indices:sync', [
@@ -96,11 +101,19 @@ class IndexSyncHistoryCommand extends Command
                     '--analytics-only' => $this->option('analytics-only'),
                 ]);
 
+                // Pass sub-command output through so progress is visible
+                $output = trim(Artisan::output());
+                if ($output) {
+                    foreach (explode("\n", $output) as $line) {
+                        $this->line("  " . $line);
+                    }
+                }
+
                 if ($exitCode !== 0) {
-                    $this->warn("\nSync failed for {$dateStr}. Moving to next date.");
+                    $this->warn("  Sync failed for {$dateStr}.");
                 }
             } catch (\Exception $e) {
-                $this->error("\nFatal error for {$dateStr}: " . $e->getMessage());
+                $this->error("  Fatal error for {$dateStr}: " . $e->getMessage());
             }
 
             $currentDate->addDay();
