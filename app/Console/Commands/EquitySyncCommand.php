@@ -15,7 +15,7 @@ class EquitySyncCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'equities:sync {date?} {exchange?}';
+    protected $signature = 'equities:sync {date?} {exchange?} {--force : Re-sync even if records already exist}';
 
     /**
      * The console command description.
@@ -56,11 +56,22 @@ class EquitySyncCommand extends Command
             $date = $currentDateObj->format('Y-m-d');
             $this->info("Checking sync for {$date}...");
 
-            // Check if we already have records for this date
-            // If we have records, we stop the subDay loop as per user request
-            if (EquityPrice::where('traded_date', $date)->exists()) {
-                $this->info("Records already exist for {$date}. Job complete.");
-                return Command::SUCCESS;
+            // Check if we already have records for this date (skip unless --force)
+            if (!$this->option('force')) {
+                $exchangeArg = strtolower($exchange ?? '');
+                $hasNse = EquityPrice::where('traded_date', $date)->where('nse_close', '>', 0)->exists();
+                $hasBse = EquityPrice::where('traded_date', $date)->where('bse_close', '>', 0)->exists();
+
+                $alreadySynced = match ($exchangeArg) {
+                    'nse'   => $hasNse,
+                    'bse'   => $hasBse,
+                    default => $hasNse && $hasBse,
+                };
+
+                if ($alreadySynced) {
+                    $this->info("Records already exist for {$date}. Job complete.");
+                    return Command::SUCCESS;
+                }
             }
 
             // Attempt to fetch data via Background Worker (Python)
@@ -223,28 +234,56 @@ class EquitySyncCommand extends Command
             "https://www.bseindia.com/download/BhavCopy/Equity/EQ{$dateStr}_CSV.ZIP"
         ];
 
-        foreach ($urls as $url) {
+        $warmupPages = [
+            'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx',
+            'https://www.bseindia.com/markets/equity/EQReports/BhavCopy.aspx',
+        ];
+
+        // Retry with fresh cookie warmup and increasing timeouts
+        $timeouts = [15, 30, 60];
+
+        foreach ($timeouts as $attempt => $timeout) {
+            if ($attempt > 0) {
+                $this->warn("  BSE retry attempt {$attempt} with {$timeout}s timeout...");
+                sleep(3);
+            }
+
+            $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
             try {
-                $this->info("Trying BSE URL: $url");
-                $response = \Illuminate\Support\Facades\Http::withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Referer' => 'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx'
-                ])
-                    ->timeout(30)
+                \Illuminate\Support\Facades\Http::withOptions(['cookies' => $cookieJar])
+                    ->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'])
+                    ->timeout(10)
                     ->withoutVerifying()
-                    ->get($url);
-
-                if ($response->successful() && strlen($response->body()) > 500) {
-                    $path = "equities/bhavcopies/{$date}/BSE_" . basename($url);
-                    \Illuminate\Support\Facades\Storage::put($path, $response->body());
-                    $this->info("Saved BSE data to $path");
-
-                    return $this->parseFileContent($response->body(), 'BSE', $url);
-                }
+                    ->get($warmupPages[$attempt % count($warmupPages)]);
             } catch (\Exception $e) {
-                $this->warn("BSE fetch failed for $url: " . $e->getMessage());
+                // Warmup failure is non-fatal
+            }
+
+            foreach ($urls as $url) {
+                try {
+                    $this->info("Trying BSE URL: $url (timeout: {$timeout}s)");
+                    $response = \Illuminate\Support\Facades\Http::withOptions(['cookies' => $cookieJar])
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Referer' => 'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx'
+                        ])
+                        ->timeout($timeout)
+                        ->withoutVerifying()
+                        ->get($url);
+
+                    if ($response->successful() && strlen($response->body()) > 500) {
+                        $path = "equities/bhavcopies/{$date}/BSE_" . basename($url);
+                        \Illuminate\Support\Facades\Storage::put($path, $response->body());
+                        $this->info("Saved BSE data to $path");
+                        return $this->parseFileContent($response->body(), 'BSE', $url);
+                    }
+                } catch (\Exception $e) {
+                    $this->warn("BSE fetch failed for $url: " . $e->getMessage());
+                }
             }
         }
+
+        $this->warn("BSE data unavailable for {$date} after all retries. NSE data (if any) will be saved.");
         return null;
     }
 
@@ -392,27 +431,43 @@ class EquitySyncCommand extends Command
         }
 
         // Step 3: Identify historical dates for performance metrics
-        $previousDates = EquityPrice::where('traded_date', '<', $date)
+        // Compute exact calendar targets for each period
+        $dateObj = \Carbon\Carbon::parse($date);
+        $periodCalendarTargets = [
+            '1d' => $dateObj->copy()->subDay(),
+            '3d' => $dateObj->copy()->subDays(3),
+            '7d' => $dateObj->copy()->subDays(7),
+            '1m' => $dateObj->copy()->subMonth(),
+            '3m' => $dateObj->copy()->subMonths(3),
+            '6m' => $dateObj->copy()->subMonths(6),
+            '9m' => $dateObj->copy()->subMonths(9),
+            '1y' => $dateObj->copy()->subYear(),
+            '3y' => $dateObj->copy()->subYears(3),
+        ];
+
+        // Fetch all trading dates before this date that are relevant (oldest target - 15 days buffer)
+        $oldestTarget = $dateObj->copy()->subYears(3)->subDays(15)->format('Y-m-d');
+        $tradingDates = EquityPrice::where('traded_date', '<', $date)
+            ->where('traded_date', '>=', $oldestTarget)
             ->select('traded_date')
             ->distinct()
             ->orderBy('traded_date', 'desc')
-            ->limit(1000)
             ->pluck('traded_date')
-            ->map(fn($d) => $d instanceof \Carbon\Carbon ? $d->format('Y-m-d') : $d);
+            ->map(fn($d) => \Carbon\Carbon::parse($d instanceof \Carbon\Carbon ? $d->format('Y-m-d') : $d));
 
-        $dateMap = [
-            '1d' => $previousDates->get(0),
-            '3d' => $previousDates->get(2),
-            '7d' => $previousDates->get(6),
-            '1m' => $previousDates->get(20),
-            '3m' => $previousDates->get(62),
-            '6m' => $previousDates->get(125),
-            '9m' => $previousDates->get(188),
-            '1y' => $previousDates->get(251),
-            '3y' => $previousDates->get(755),
-        ];
+        // For each period find trading dates within ±10 calendar days of the calendar target,
+        // sorted closest-first so the per-equity lookup always uses the most accurate date
+        $dateWindowMap = [];
+        foreach ($periodCalendarTargets as $period => $target) {
+            $dateWindowMap[$period] = $tradingDates
+                ->filter(fn($d) => abs($d->diffInDays($target)) <= 10)
+                ->sortBy(fn($d) => abs($d->diffInDays($target)))
+                ->map(fn($d) => $d->format('Y-m-d'))
+                ->values()
+                ->toArray();
+        }
 
-        $targetDates = collect($dateMap)->filter()->unique()->values()->toArray();
+        $targetDates = collect($dateWindowMap)->flatten()->filter()->unique()->values()->toArray();
 
         $historicalData = collect();
         if (!empty($targetDates)) {
@@ -441,7 +496,7 @@ class EquitySyncCommand extends Command
         }
 
         // Step 5: Consolidate, merge and calculate metrics in one pass
-        $consolidatedPrices = collect($data)->groupBy('isin')->map(function ($group, $isin) use ($isinToId, $date, $now, $existingPrices, $dateMap, $historicalData) {
+        $consolidatedPrices = collect($data)->groupBy('isin')->map(function ($group, $isin) use ($isinToId, $date, $now, $existingPrices, $dateWindowMap, $historicalData) {
             $nse = $group->where('exchange', 'NSE')->first();
             $bse = $group->where('exchange', 'BSE')->first();
             $existing = $existingPrices->get($isin);
@@ -511,6 +566,13 @@ class EquitySyncCommand extends Command
                 'nse_chg_9m' => null,
                 'nse_chg_1y' => null,
                 'nse_chg_3y' => null,
+                'bse_chg_1d' => null,
+                'bse_chg_3d' => null,
+                'bse_chg_7d' => null,
+                'bse_chg_1m' => null,
+                'bse_chg_3m' => null,
+                'bse_chg_6m' => null,
+                'bse_chg_9m' => null,
                 'bse_chg_1y' => null,
                 'bse_chg_3y' => null,
                 'nse_val_1d' => null, 'nse_val_3d' => null, 'nse_val_7d' => null, 'nse_val_1m' => null, 'nse_val_3m' => null, 'nse_val_6m' => null, 'nse_val_9m' => null, 'nse_val_1y' => null, 'nse_val_3y' => null,
@@ -558,8 +620,12 @@ class EquitySyncCommand extends Command
 
             if ($historyByDate) {
                 foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'] as $period) {
-                    $prevDate = $dateMap[$period] ?? null;
-                    $prev = $prevDate ? $historyByDate->get($prevDate) : null;
+                    // Walk the window (center-first) and use the first date this equity has data for
+                    $prev = null;
+                    foreach ($dateWindowMap[$period] ?? [] as $wd) {
+                        $candidate = $historyByDate->get($wd);
+                        if ($candidate) { $prev = $candidate; break; }
+                    }
                     if ($prev) {
                         if ($prev->nse_close && (float)$prev->nse_close > 0) {
                             $record["nse_val_{$period}"] = $prev->nse_close;

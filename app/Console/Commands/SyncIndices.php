@@ -16,7 +16,7 @@ class SyncIndices extends Command
      *
      * @var string
      */
-    protected $signature = 'indices:sync {date?} {exchange?}';
+    protected $signature = 'indices:sync {date?} {exchange?} {--analytics-only : Skip fetch, just recalculate analytics for existing data}';
 
     /**
      * The console command description.
@@ -31,25 +31,36 @@ class SyncIndices extends Command
     public function handle(): int
     {
         $startDate = $this->argument('date') ?: now()->format('Y-m-d');
-        $exchange = strtoupper($this->argument('exchange'));
-        
+        $exchange  = strtoupper($this->argument('exchange') ?? '');
         $currentDateObj = Carbon::parse($startDate);
-        $attempts = 0;
+
+        // Analytics-only mode: skip fetching, recalculate on existing data
+        if ($this->option('analytics-only')) {
+            $dateStr = $currentDateObj->format('Y-m-d');
+            $exists = IndexPrice::where('traded_date', $dateStr)->exists();
+            if (!$exists) {
+                $this->warn("No data found for {$dateStr}, skipping analytics.");
+                return Command::SUCCESS;
+            }
+            $this->info("Recalculating analytics for {$currentDateObj->format('d/m/Y')}...");
+            $this->calculateAnalytics($currentDateObj);
+            return Command::SUCCESS;
+        }
+
+        $attempts    = 0;
         $maxAttempts = 10;
 
         while ($attempts < $maxAttempts) {
             $dateStr = $currentDateObj->format('Y-m-d');
             $this->info("Checking sync for indices on: {$currentDateObj->format('d/m/Y')}");
 
-            // Check if we already have records for this date
-            // Logic similar to equities: if any data exists for this date, we stop
             $query = IndexPrice::where('traded_date', $dateStr);
             if ($exchange) {
                 $query->whereHas('index', function($q) use ($exchange) {
                     $q->where('exchange', $exchange);
                 });
             }
-            
+
             if ($query->exists()) {
                 $this->info("Indices data already exists for {$currentDateObj->format('d/m/Y')}. Job complete.");
                 return Command::SUCCESS;
@@ -76,7 +87,6 @@ class SyncIndices extends Command
                 $this->error("Error during sync for {$dateStr}: " . $e->getMessage());
             }
 
-            // If we are here, it means no data was found or synced
             $this->warn("No data available for {$dateStr}. Trying previous day...");
             $currentDateObj->subDay();
             $attempts++;
@@ -97,66 +107,63 @@ class SyncIndices extends Command
             return;
         }
 
-        // Pre-fetch all available unique dates DESC to find closest preceding dates for returns
-        $availableDates = IndexPrice::where('traded_date', '<=', $date->format('Y-m-d'))
+        // Exact calendar targets — subMonths/subYears are precise, subDays(270) is not 9 months
+        $periodCalendarTargets = [
+            '1d' => $date->copy()->subDay(),
+            '3d' => $date->copy()->subDays(3),
+            '7d' => $date->copy()->subDays(7),
+            '1m' => $date->copy()->subMonth(),
+            '3m' => $date->copy()->subMonths(3),
+            '6m' => $date->copy()->subMonths(6),
+            '9m' => $date->copy()->subMonths(9),
+            '1y' => $date->copy()->subYear(),
+            '3y' => $date->copy()->subYears(3),
+        ];
+
+        // Fetch all trading dates in the relevant range as Carbon objects
+        $oldestTarget = $date->copy()->subYears(3)->subDays(15)->format('Y-m-d');
+        $tradingDates = IndexPrice::where('traded_date', '<', $date->format('Y-m-d'))
+            ->where('traded_date', '>=', $oldestTarget)
             ->distinct()
             ->orderBy('traded_date', 'desc')
             ->pluck('traded_date')
-            ->map(fn($d) => $d instanceof Carbon ? $d->format('Y-m-d') : (string)$d)
-            ->toArray();
+            ->map(fn($d) => Carbon::parse($d instanceof Carbon ? $d->format('Y-m-d') : (string)$d));
 
-        // Calculate target calendar dates
-        $map = [
-            '1d' => 1,
-            '3d' => 3,
-            '7d' => 7,
-            '1m' => 30,
-            '3m' => 90,
-            '6m' => 180,
-            '9m' => 270,
-            '1y' => 365,
-            '3y' => 1095
-        ];
-
-        $resolvedDates = [];
-        foreach ($map as $key => $d) {
-            $target = $date->copy()->subDays($d)->format('Y-m-d');
-            // Find the closest available date in the DB that is <= target
-            foreach ($availableDates as $avail) {
-                if ($avail <= $target) {
-                    $resolvedDates[$key] = $avail;
-                    break;
-                }
-            }
+        // For each period build a window of ±10 calendar days around the target,
+        // sorted closest-first so each index uses the most accurate available date
+        $dateWindowMap = [];
+        foreach ($periodCalendarTargets as $period => $target) {
+            $dateWindowMap[$period] = $tradingDates
+                ->filter(fn($d) => abs($d->diffInDays($target)) <= 10)
+                ->sortBy(fn($d) => abs($d->diffInDays($target)))
+                ->map(fn($d) => $d->format('Y-m-d'))
+                ->values()
+                ->toArray();
         }
 
-        $historicalData = IndexPrice::whereIn('traded_date', array_unique(array_values($resolvedDates)))
+        $allTargetDates = collect($dateWindowMap)->flatten()->filter()->unique()->values()->toArray();
+
+        // Single bulk fetch — no per-index queries in the loop below
+        $historicalData = IndexPrice::whereIn('traded_date', $allTargetDates)
             ->get()
             ->groupBy('index_code');
 
         foreach ($prices as $price) {
-            $code = $price->index_code;
+            $code    = $price->index_code;
+            $history = $historicalData->get($code);
+            $historyByDate = $history
+                ? $history->keyBy(fn($item) => $item->traded_date instanceof Carbon ? $item->traded_date->format('Y-m-d') : (string)$item->traded_date)
+                : null;
 
-            // 0. Auto-fill prev_close if missing
-            if (!$price->prev_close) {
-                $lastDate = null;
-                foreach ($availableDates as $avail) {
-                    if ($avail < $date->format('Y-m-d')) {
-                        $lastDate = $avail;
-                        break;
-                    }
-                }
-                if ($lastDate) {
-                    $lastPrice = IndexPrice::where('index_code', $code)
-                        ->where('traded_date', $lastDate)
-                        ->first();
-                    if ($lastPrice) {
-                        $price->prev_close = $lastPrice->close;
-                    }
+            // 0. Auto-fill prev_close from the 1d window if missing
+            if (!$price->prev_close && $historyByDate) {
+                foreach ($dateWindowMap['1d'] as $pd) {
+                    $last = $historyByDate->get($pd);
+                    if ($last && $last->close > 0) { $price->prev_close = $last->close; break; }
                 }
             }
 
-            // 1. Core Analytics (Gap, Intraday, Range)
+            // 1. Core analytics
             if ($price->prev_close && $price->prev_close > 0) {
                 if ($price->open) {
                     $price->gap_pct = (($price->open - $price->prev_close) / $price->prev_close) * 100;
@@ -167,19 +174,17 @@ class SyncIndices extends Command
                 $price->intraday_chg_pct = (($price->close - $price->open) / $price->open) * 100;
             }
 
-            // 2. Historical Returns using pre-fetched data
-            $history = $historicalData->get($code);
-
-            if ($history) {
-                $historyByDate = $history->keyBy(fn($item) => $item->traded_date instanceof Carbon ? $item->traded_date->format('Y-m-d') : $item->traded_date);
-
-                foreach ($resolvedDates as $key => $targetDate) {
-                    $pastPrice = $historyByDate->get($targetDate);
-
-                    if ($pastPrice && $pastPrice->close > 0) {
-                        $price->{"val_{$key}"} = $pastPrice->close;
-                        if ($price->close > 0) {
-                            $price->{"chg_{$key}"} = (($price->close - $pastPrice->close) / $pastPrice->close) * 100;
+            // 2. Historical returns — walk window closest-first, stop at first hit
+            if ($historyByDate) {
+                foreach ($dateWindowMap as $key => $candidates) {
+                    foreach ($candidates as $candidateDate) {
+                        $pastPrice = $historyByDate->get($candidateDate);
+                        if ($pastPrice && $pastPrice->close > 0) {
+                            $price->{"val_{$key}"} = $pastPrice->close;
+                            if ($price->close > 0) {
+                                $price->{"chg_{$key}"} = (($price->close - $pastPrice->close) / $pastPrice->close) * 100;
+                            }
+                            break;
                         }
                     }
                 }
@@ -332,11 +337,12 @@ class SyncIndices extends Command
         $urls = [
             // Current format (since 2025)
             "https://www.bseindia.com/Downloads/AllIndices/AllIndices_" . $date->format('dmY') . ".csv",
-            // Historic formats (used in 2023/2024)
-            "https://www.bseindia.com/download/BhavCopy/Index/IndidexBhavCopy_" . $date->format('dmy') . ".zip",
+            // Historic zip format (2022-2024) — dmy = 2-digit year e.g. 010123
             "https://www.bseindia.com/download/BhavCopy/Index/IndexBhavCopy_" . $date->format('dmy') . ".zip",
+            // BSE Summary CSV variations
             "https://www.bseindia.com/bsedata/Index_Bhavcopy/INDEXSummary_" . $date->format('dmY') . ".csv",
             "https://www.bseindia.com/bsedata/Index_Bhavcopy/INDEXSummary_" . $date->format('dmy') . ".csv",
+            // Other historic patterns
             "https://www.bseindia.com/Downloads/MarketInfo/Indices_" . $date->format('dmy') . ".zip",
             "https://www.bseindia.com/download/BhavCopy/Index/indexbhavcopy" . $date->format('Ymd') . ".csv",
             "https://www.bseindia.com/download/BhavCopy/Index/Indexbhavcopy" . $date->format('Ymd') . ".csv",
@@ -344,41 +350,70 @@ class SyncIndices extends Command
             "https://www.bseindia.com/download/allindices/allindices_" . $date->format('dmY') . ".csv",
         ];
 
-        $csvData = null;
+        $headers = [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer'    => 'https://www.bseindia.com/markets/MarketInfo/DispMarkInfoStat.aspx',
+            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        ];
+
+        $warmupPages = [
+            'https://www.bseindia.com/markets/MarketInfo/DispMarkInfoStat.aspx',
+            'https://www.bseindia.com/markets/equity/EQReports/BhavCopy.aspx',
+        ];
+
+        $csvData    = null;
         $successUrl = null;
+        $timeouts   = [15, 30, 60];
 
-        foreach ($urls as $url) {
-            $this->info("Fetching BSE data from: {$url}");
+        foreach ($timeouts as $attempt => $timeout) {
+            if ($attempt > 0) {
+                $this->warn("  BSE retry attempt {$attempt} with {$timeout}s timeout...");
+                sleep(3);
+            }
+
+            // Fresh cookie jar + warmup on every attempt (different page each time)
+            $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
             try {
-                $response = Http::withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Referer' => 'https://www.bseindia.com/markets/MarketInfo/DispMarkInfoStat.aspx',
-                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                ])->timeout(10)->get($url);
-
-                if ($response->successful()) {
-                    $body = $response->body();
-                    if (
-                        !str_contains(strtolower($response->header('Content-Type')), 'text/html') &&
-                        !str_starts_with(trim($body), '<!DOCTYPE') &&
-                        !str_starts_with(trim($body), '<html')
-                    ) {
-                        $csvData = $body;
-                        $successUrl = $url;
-                        break;
-                    } else {
-                        $this->warn("  Received HTML instead of CSV from $url");
-                    }
-                } else {
-                    $this->warn("  HTTP Error {$response->status()} for $url");
-                }
+                Http::withOptions(['cookies' => $cookieJar])
+                    ->withHeaders($headers)
+                    ->timeout(10)
+                    ->get($warmupPages[$attempt % count($warmupPages)]);
             } catch (\Exception $e) {
-                $this->warn("  Exception for $url: " . $e->getMessage());
+                // Warmup failure is non-fatal
+            }
+
+            foreach ($urls as $url) {
+                $this->info("Fetching BSE data from: {$url} (timeout: {$timeout}s)");
+                try {
+                    $response = Http::withOptions(['cookies' => $cookieJar])
+                        ->withHeaders($headers)
+                        ->timeout($timeout)
+                        ->get($url);
+
+                    if ($response->successful()) {
+                        $body = $response->body();
+                        if (
+                            !str_contains(strtolower($response->header('Content-Type')), 'text/html') &&
+                            !str_starts_with(trim($body), '<!DOCTYPE') &&
+                            !str_starts_with(trim($body), '<html')
+                        ) {
+                            $csvData    = $body;
+                            $successUrl = $url;
+                            break 2; // break out of both loops
+                        } else {
+                            $this->warn("  Received HTML instead of data from $url");
+                        }
+                    } else {
+                        $this->warn("  HTTP {$response->status()} for $url");
+                    }
+                } catch (\Exception $e) {
+                    $this->warn("  Exception for $url: " . $e->getMessage());
+                }
             }
         }
 
         if (!$csvData) {
-            $this->warn("Could not fetch BSE bulk data for {$date->format('d/m/Y')}. Attempting Yahoo Finance fallback for major indices...");
+            $this->warn("Could not fetch BSE bulk data for {$date->format('d/m/Y')} after all retries. Falling back to Yahoo Finance...");
             return $this->syncBseViaYahoo($date);
         }
 
@@ -421,19 +456,20 @@ class SyncIndices extends Command
             $map = array_flip(array_map('trim', $header));
 
             // Support multiple column name variations (BSE changes these often)
+            // BSE changed column names across formats — cover all known variations
             $colMap = [
-                'name'    => ['Index Name', 'INDEX NAME', 'Index_Name', 'IndexName'],
-                'open'    => ['Open', 'OPEN', 'OPEN_INDEX_VAL', 'Opening'],
-                'high'    => ['High', 'HIGH', 'HIGH_INDEX_VAL', 'Highest'],
-                'low'     => ['Low', 'LOW', 'LOW_INDEX_VAL', 'Lowest'],
-                'close'   => ['Close', 'CLOSE', 'CLOSING_INDEX_VAL', 'Closing'],
-                'prev'    => ['Prev_Close', 'PREV_CLOSE', 'Previous Close', 'PREVCLOSE'],
-                'change'  => ['% Change', 'Chg %', 'Percentage Change', 'PERCENTAGE_CHANGE'],
-                'vol'     => ['Volume', 'Total Volume', 'VOLUME', 'TRADE_QTY'],
+                'name'     => ['Index Name', 'INDEX NAME', 'Index_Name', 'IndexName', 'I_name'],
+                'open'     => ['Open', 'OPEN', 'OPEN_INDEX_VAL', 'Opening', 'I_open'],
+                'high'     => ['High', 'HIGH', 'HIGH_INDEX_VAL', 'Highest', 'I_high'],
+                'low'      => ['Low', 'LOW', 'LOW_INDEX_VAL', 'Lowest', 'I_low'],
+                'close'    => ['Close', 'CLOSE', 'CLOSING_INDEX_VAL', 'Closing', 'I_close'],
+                'prev'     => ['Prev_Close', 'PREV_CLOSE', 'Previous Close', 'PREVCLOSE'],
+                'change'   => ['% Change', 'Chg %', 'Percentage Change', 'PERCENTAGE_CHANGE', 'ChgPer'],
+                'vol'      => ['Volume', 'Total Volume', 'VOLUME', 'TRADE_QTY'],
                 'turnover' => ['Turnover', 'Turnover Cr', 'TURNOVER', 'NET_TURNOV'],
-                'pe'      => ['PE', 'P/E', 'PE_RATIO'],
-                'pb'      => ['PB', 'P/B', 'PB_RATIO'],
-                'yield'   => ['Yield', 'Div Yield', 'DY', 'DIV_YIELD'],
+                'pe'       => ['PE', 'P/E', 'PE_RATIO', 'I_pe'],
+                'pb'       => ['PB', 'P/B', 'PB_RATIO', 'I_pb'],
+                'yield'    => ['Yield', 'Div Yield', 'DY', 'DIV_YIELD', 'I_yl'],
             ];
 
             // Resolve actual index column names from the CSV header
@@ -523,16 +559,28 @@ class SyncIndices extends Command
 
     private function syncBseViaYahoo(Carbon $date): int
     {
-        // Major BSE Indices to fetch from Yahoo Finance as fallback
+        // BSE indices available on Yahoo Finance — used as fallback when BSE bulk download fails
         $tickers = [
-            '^BSESN' => ['name' => 'S&P BSE SENSEX', 'code' => 'BSE_SENSEX', 'cat' => 'Broad-based'],
-            'BSE-100.BO' => ['name' => 'S&P BSE 100', 'code' => 'BSE_100', 'cat' => 'Broad-based'],
-            'BSE-200.BO' => ['name' => 'S&P BSE 200', 'code' => 'BSE_200', 'cat' => 'Broad-based'],
-            'BSE-500.BO' => ['name' => 'S&P BSE 500', 'code' => 'BSE_500', 'cat' => 'Broad-based'],
-            'BSE-MidCap.BO' => ['name' => 'S&P BSE MidCap', 'code' => 'BSE_MIDCAP', 'cat' => 'Broad-based'],
-            'BSE-SmlCap.BO' => ['name' => 'S&P BSE SmallCap', 'code' => 'BSE_SMALLCAP', 'cat' => 'Broad-based'],
-            'BSE-BANK.BO' => ['name' => 'S&P BSE BANKEX', 'code' => 'BSE_BANKEX', 'cat' => 'Sectoral'],
-            'BSE-IT.BO' => ['name' => 'S&P BSE IT', 'code' => 'BSE_IT', 'cat' => 'Sectoral'],
+            '^BSESN'          => ['name' => 'S&P BSE SENSEX',           'code' => 'BSE_SENSEX',    'cat' => 'Broad-based'],
+            'BSE-100.BO'      => ['name' => 'S&P BSE 100',               'code' => 'BSE_100',       'cat' => 'Broad-based'],
+            'BSE-200.BO'      => ['name' => 'S&P BSE 200',               'code' => 'BSE_200',       'cat' => 'Broad-based'],
+            'BSE-500.BO'      => ['name' => 'S&P BSE 500',               'code' => 'BSE_500',       'cat' => 'Broad-based'],
+            'BSE-MidCap.BO'   => ['name' => 'S&P BSE MidCap',            'code' => 'BSE_MIDCAP',    'cat' => 'Broad-based'],
+            'BSE-SmlCap.BO'   => ['name' => 'S&P BSE SmallCap',          'code' => 'BSE_SMALLCAP',  'cat' => 'Broad-based'],
+            'BSE-LargeCap.BO' => ['name' => 'S&P BSE LargeCap',          'code' => 'BSE_LARGECAP',  'cat' => 'Broad-based'],
+            'BSE-BANK.BO'     => ['name' => 'S&P BSE BANKEX',            'code' => 'BSE_BANKEX',    'cat' => 'Sectoral'],
+            'BSE-IT.BO'       => ['name' => 'S&P BSE IT',                'code' => 'BSE_IT',        'cat' => 'Sectoral'],
+            'BSE-AUTO.BO'     => ['name' => 'S&P BSE AUTO',              'code' => 'BSE_AUTO',      'cat' => 'Sectoral'],
+            'BSE-FMCG.BO'     => ['name' => 'S&P BSE FMCG',              'code' => 'BSE_FMCG',      'cat' => 'Sectoral'],
+            'BSE-HC.BO'       => ['name' => 'S&P BSE Healthcare',        'code' => 'BSE_HC',        'cat' => 'Sectoral'],
+            'BSE-METAL.BO'    => ['name' => 'S&P BSE Metal',             'code' => 'BSE_METAL',     'cat' => 'Sectoral'],
+            'BSE-OIL.BO'      => ['name' => 'S&P BSE Oil & Gas',         'code' => 'BSE_OIL',       'cat' => 'Sectoral'],
+            'BSE-PWR.BO'      => ['name' => 'S&P BSE Power',             'code' => 'BSE_PWR',       'cat' => 'Sectoral'],
+            'BSE-TECK.BO'     => ['name' => 'S&P BSE Teck',              'code' => 'BSE_TECK',      'cat' => 'Sectoral'],
+            'BSE-CD.BO'       => ['name' => 'S&P BSE Consumer Durables', 'code' => 'BSE_CD',        'cat' => 'Sectoral'],
+            'BSE-CG.BO'       => ['name' => 'S&P BSE Capital Goods',     'code' => 'BSE_CG',        'cat' => 'Sectoral'],
+            'BSE-Realty.BO'   => ['name' => 'S&P BSE Realty',            'code' => 'BSE_REALTY',    'cat' => 'Sectoral'],
+            'BSEALLCAP.BO'    => ['name' => 'S&P BSE AllCap',            'code' => 'BSE_ALLCAP',    'cat' => 'Broad-based'],
         ];
 
         $pricesData = [];
@@ -561,6 +609,13 @@ class SyncIndices extends Command
                     $quote = $result['indicators']['quote'][0] ?? null;
                     if (!$quote || empty($quote['close'][0])) continue;
 
+                    $meta2      = $result['meta'] ?? [];
+                    $prevClose  = isset($meta2['chartPreviousClose']) ? (float)$meta2['chartPreviousClose'] : null;
+                    $closeVal   = (float)($quote['close'][0] ?? 0);
+                    $changePct  = ($prevClose && $prevClose > 0)
+                        ? (($closeVal - $prevClose) / $prevClose) * 100
+                        : null;
+
                     $indicesData[] = [
                         'index_code' => $meta['code'],
                         'index_name' => $meta['name'],
@@ -576,9 +631,9 @@ class SyncIndices extends Command
                         'open'           => (float)($quote['open'][0] ?? 0),
                         'high'           => (float)($quote['high'][0] ?? 0),
                         'low'            => (float)($quote['low'][0] ?? 0),
-                        'close'          => (float)($quote['close'][0] ?? 0),
-                        'prev_close'     => null,
-                        'change_percent' => null,
+                        'close'          => $closeVal,
+                        'prev_close'     => $prevClose,
+                        'change_percent' => $changePct,
                         'volume'         => (float)($quote['volume'][0] ?? 0),
                         'created_at'     => $now,
                         'updated_at'     => $now,
@@ -596,6 +651,8 @@ class SyncIndices extends Command
                 'high',
                 'low',
                 'close',
+                'prev_close',
+                'change_percent',
                 'volume',
                 'updated_at'
             ]);

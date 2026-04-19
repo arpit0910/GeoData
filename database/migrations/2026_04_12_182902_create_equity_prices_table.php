@@ -51,7 +51,18 @@ return new class extends Migration
             $table->decimal('nse_chg_3m', 10, 2)->nullable();
             $table->decimal('nse_chg_6m', 10, 2)->nullable();
             $table->decimal('nse_chg_9m', 10, 2)->nullable();
-            $table->decimal('nse_chg_12m', 10, 2)->nullable();
+            $table->decimal('nse_chg_1y', 10, 2)->nullable();
+            $table->decimal('nse_chg_3y', 10, 2)->nullable();
+
+            $table->decimal('nse_val_1d', 20, 2)->nullable();
+            $table->decimal('nse_val_3d', 20, 2)->nullable();
+            $table->decimal('nse_val_7d', 20, 2)->nullable();
+            $table->decimal('nse_val_1m', 20, 2)->nullable();
+            $table->decimal('nse_val_3m', 20, 2)->nullable();
+            $table->decimal('nse_val_6m', 20, 2)->nullable();
+            $table->decimal('nse_val_9m', 20, 2)->nullable();
+            $table->decimal('nse_val_1y', 20, 2)->nullable();
+            $table->decimal('nse_val_3y', 20, 2)->nullable();
 
             $table->decimal('bse_chg_1d', 10, 2)->nullable();
             $table->decimal('bse_chg_3d', 10, 2)->nullable();
@@ -60,9 +71,36 @@ return new class extends Migration
             $table->decimal('bse_chg_3m', 10, 2)->nullable();
             $table->decimal('bse_chg_6m', 10, 2)->nullable();
             $table->decimal('bse_chg_9m', 10, 2)->nullable();
-            $table->decimal('bse_chg_12m', 10, 2)->nullable();
+            $table->decimal('bse_chg_1y', 10, 2)->nullable();
+            $table->decimal('bse_chg_3y', 10, 2)->nullable();
+            
+            $table->decimal('bse_val_1d', 20, 2)->nullable();
+            $table->decimal('bse_val_3d', 20, 2)->nullable();
+            $table->decimal('bse_val_7d', 20, 2)->nullable();
+            $table->decimal('bse_val_1m', 20, 2)->nullable();
+            $table->decimal('bse_val_3m', 20, 2)->nullable();
+            $table->decimal('bse_val_6m', 20, 2)->nullable();
+            $table->decimal('bse_val_9m', 20, 2)->nullable();
+            $table->decimal('bse_val_1y', 20, 2)->nullable();
+            $table->decimal('bse_val_3y', 20, 2)->nullable();
 
             $table->decimal('spread', 15, 2)->nullable();
+
+            // Gap Percentages
+            $table->decimal('nse_gap_pct', 10, 2)->nullable();
+            $table->decimal('bse_gap_pct', 10, 2)->nullable();
+
+            // Intraday Changes (Close vs Open)
+            $table->decimal('nse_intraday_chg_pct', 10, 2)->nullable();
+            $table->decimal('bse_intraday_chg_pct', 10, 2)->nullable();
+
+            // Daily Range Percentages ((High-Low)/PrevClose)
+            $table->decimal('nse_range_pct', 10, 2)->nullable();
+            $table->decimal('bse_range_pct', 10, 2)->nullable();
+
+            // Avg Ticket Size (Turnover/Trades)
+            $table->decimal('nse_avg_ticket_size', 20, 2)->nullable();
+            $table->decimal('bse_avg_ticket_size', 20, 2)->nullable();
 
             $table->timestamps();
 

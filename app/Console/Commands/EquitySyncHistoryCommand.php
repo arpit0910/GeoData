@@ -16,7 +16,12 @@ class EquitySyncHistoryCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'equities:sync-history {months=12 : Number of months to sync back}';
+    protected $signature = 'equities:sync-history
+                            {months=12 : Number of months to sync back (overridden by explicit date range)}
+                            {--exchange= : Filter by exchange (NSE or BSE)}
+                            {--from= : Explicit start date YYYY-MM-DD (overrides months)}
+                            {--to= : Explicit end date YYYY-MM-DD (defaults to today)}
+                            {--force : Re-sync even if records already exist}';
 
     /**
      * The console command description.
@@ -33,11 +38,21 @@ class EquitySyncHistoryCommand extends Command
     public function handle()
     {
         ini_set('memory_limit', '512M');
-        $months = $this->argument('months');
-        $startDate = now()->subMonths($months)->startOfMonth();
-        $endDate = now()->startOfDay();
+        $exchange = strtoupper($this->option('exchange') ?? '');
 
-        $this->info("Starting historical sync for the last {$months} months...");
+        if ($this->option('from')) {
+            $startDate = Carbon::parse($this->option('from'))->startOfDay();
+            $endDate   = $this->option('to')
+                ? Carbon::parse($this->option('to'))->startOfDay()
+                : now()->startOfDay();
+            $this->info("Starting historical equity sync (explicit range)...");
+        } else {
+            $months    = $this->argument('months');
+            $endDate   = now()->startOfDay();
+            $startDate = now()->subMonths($months)->startOfMonth();
+            $this->info("Starting historical equity sync for the last {$months} months...");
+        }
+
         $this->info("From: {$startDate->format('Y-m-d')} To: {$endDate->format('Y-m-d')}");
 
         $currentDate = clone $startDate;
@@ -46,24 +61,32 @@ class EquitySyncHistoryCommand extends Command
         $bar->start();
 
         while ($currentDate <= $endDate) {
-            // Skip weekends
+            if ($currentDate->isWeekend()) {
+                $currentDate->addDay();
+                $bar->advance();
+                continue;
+            }
+
             $dateString = $currentDate->format('Y-m-d');
             $this->info("\nProcessing {$dateString}...");
 
             try {
-                // Check if both NSE and BSE data are present
-                $hasNse = EquityPrice::where('traded_date', $dateString)->where('nse_close', '>', 0)->exists();
-                $hasBse = EquityPrice::where('traded_date', $dateString)->where('bse_close', '>', 0)->exists();
+                $shouldSkip = false;
+                if (!$this->option('force')) {
+                    $hasNse = EquityPrice::where('traded_date', $dateString)->where('nse_close', '>', 0)->exists();
+                    $hasBse = EquityPrice::where('traded_date', $dateString)->where('bse_close', '>', 0)->exists();
 
-                if ($hasNse && $hasBse) {
-                    $this->info("Complete records (NSE & BSE) already exist for {$dateString}. Skipping...");
+                    $shouldSkip = match ($exchange) {
+                        'NSE'   => $hasNse,
+                        'BSE'   => $hasBse,
+                        default => $hasNse && $hasBse,
+                    };
+                }
+
+                if ($shouldSkip) {
+                    $this->info("Records already exist for {$dateString}. Skipping...");
                 } else {
-                    if ($hasNse) {
-                        $this->info("NSE data exists but BSE might be missing for {$dateString}. Re-syncing...");
-                    }
-                    // Directly use the PHP fetcher logic instead of calling 'equities:sync'
-                    // because 'equities:sync' crashes on servers without exec()
-                    $phpData = $this->handlePhpFetch($dateString, null);
+                    $phpData = $this->handlePhpFetch($dateString, $exchange ?: null);
                     if (!empty($phpData)) {
                         $this->processData($phpData, $dateString);
                         $this->info("Successfully synced {$dateString}.");
@@ -150,8 +173,8 @@ class EquitySyncHistoryCommand extends Command
 
     protected function fetchBseData($dateObj)
     {
-        $dateStr = $dateObj->format('dmy');           // 100426
-        $dateUnderscore = $dateObj->format('Ymd');     // 20260410
+        $dateStr = $dateObj->format('dmy');
+        $dateUnderscore = $dateObj->format('Ymd');
         $date = $dateObj->format('Y-m-d');
 
         $urls = [
@@ -159,25 +182,55 @@ class EquitySyncHistoryCommand extends Command
             "https://www.bseindia.com/download/BhavCopy/Equity/EQ{$dateStr}_CSV.ZIP"
         ];
 
-        foreach ($urls as $url) {
-            try {
-                $response = Http::withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Referer' => 'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx'
-                ])
-                    ->timeout(30)
-                    ->withoutVerifying()
-                    ->get($url);
+        $warmupPages = [
+            'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx',
+            'https://www.bseindia.com/markets/equity/EQReports/BhavCopy.aspx',
+        ];
 
-                if ($response->successful() && strlen($response->body()) > 500) {
-                    $path = "equities/bhavcopies/{$date}/BSE_" . basename($url);
-                    Storage::put($path, $response->body());
-                    return $this->parseFileContent($response->body(), 'BSE', $url);
-                }
+        // Retry with fresh cookie warmup and increasing timeouts
+        $timeouts = [15, 30, 60];
+
+        foreach ($timeouts as $attempt => $timeout) {
+            if ($attempt > 0) {
+                $this->warn("  BSE retry attempt {$attempt} with {$timeout}s timeout...");
+                sleep(3);
+            }
+
+            $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
+            try {
+                Http::withOptions(['cookies' => $cookieJar])
+                    ->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'])
+                    ->timeout(10)
+                    ->withoutVerifying()
+                    ->get($warmupPages[$attempt % count($warmupPages)]);
             } catch (\Exception $e) {
-                $this->warn("BSE fetch failed for $url: " . $e->getMessage());
+                // Warmup failure is non-fatal
+            }
+
+            foreach ($urls as $url) {
+                try {
+                    $response = Http::withOptions(['cookies' => $cookieJar])
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Referer' => 'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx'
+                        ])
+                        ->timeout($timeout)
+                        ->withoutVerifying()
+                        ->get($url);
+
+                    if ($response->successful() && strlen($response->body()) > 500) {
+                        $path = "equities/bhavcopies/{$date}/BSE_" . basename($url);
+                        Storage::put($path, $response->body());
+                        $this->info("  BSE data fetched successfully from: " . basename($url));
+                        return $this->parseFileContent($response->body(), 'BSE', $url);
+                    }
+                } catch (\Exception $e) {
+                    $this->warn("BSE fetch failed for $url: " . $e->getMessage());
+                }
             }
         }
+
+        $this->warn("  BSE data unavailable for {$date} after all retries. NSE data (if any) will be saved.");
         return null;
     }
 
@@ -315,27 +368,43 @@ class EquitySyncHistoryCommand extends Command
             $isinToId = $isinToId->merge(Equity::whereIn('isin', $isinChunk)->pluck('id', 'isin'));
         }
 
-        $previousDates = EquityPrice::where('traded_date', '<', $date)
+        // Compute exact calendar targets for each period
+        $dateObj = Carbon::parse($date);
+        $periodCalendarTargets = [
+            '1d' => $dateObj->copy()->subDay(),
+            '3d' => $dateObj->copy()->subDays(3),
+            '7d' => $dateObj->copy()->subDays(7),
+            '1m' => $dateObj->copy()->subMonth(),
+            '3m' => $dateObj->copy()->subMonths(3),
+            '6m' => $dateObj->copy()->subMonths(6),
+            '9m' => $dateObj->copy()->subMonths(9),
+            '1y' => $dateObj->copy()->subYear(),
+            '3y' => $dateObj->copy()->subYears(3),
+        ];
+
+        // Fetch all trading dates before this date that are relevant (oldest target - 15 days buffer)
+        $oldestTarget = $dateObj->copy()->subYears(3)->subDays(15)->format('Y-m-d');
+        $tradingDates = EquityPrice::where('traded_date', '<', $date)
+            ->where('traded_date', '>=', $oldestTarget)
             ->select('traded_date')
             ->distinct()
             ->orderBy('traded_date', 'desc')
-            ->limit(1000)
             ->pluck('traded_date')
-            ->map(fn($d) => $d instanceof Carbon ? $d->format('Y-m-d') : $d);
+            ->map(fn($d) => Carbon::parse($d instanceof Carbon ? $d->format('Y-m-d') : $d));
 
-        $dateMap = [
-            '1d' => $previousDates->get(0),
-            '3d' => $previousDates->get(2),
-            '7d' => $previousDates->get(6),
-            '1m' => $previousDates->get(20),
-            '3m' => $previousDates->get(62),
-            '6m' => $previousDates->get(125),
-            '9m' => $previousDates->get(188),
-            '1y' => $previousDates->get(251),
-            '3y' => $previousDates->get(755),
-        ];
+        // For each period find trading dates within ±10 calendar days of the calendar target,
+        // sorted closest-first so the per-equity lookup always uses the most accurate date
+        $dateWindowMap = [];
+        foreach ($periodCalendarTargets as $period => $target) {
+            $dateWindowMap[$period] = $tradingDates
+                ->filter(fn($d) => abs($d->diffInDays($target)) <= 10)
+                ->sortBy(fn($d) => abs($d->diffInDays($target)))
+                ->map(fn($d) => $d->format('Y-m-d'))
+                ->values()
+                ->toArray();
+        }
 
-        $targetDates = collect($dateMap)->filter()->unique()->values()->toArray();
+        $targetDates = collect($dateWindowMap)->flatten()->filter()->unique()->values()->toArray();
         $historicalData = collect();
         if (!empty($targetDates)) {
             $this->info("  Fetching historical price metrics...");
@@ -360,7 +429,7 @@ class EquitySyncHistoryCommand extends Command
             $existingPrices = $existingPrices->merge(EquityPrice::whereIn('isin', $isinChunk)->where('traded_date', $date)->get()->keyBy('isin'));
         }
 
-        $consolidatedPrices = collect($data)->groupBy('isin')->map(function ($group, $isin) use ($isinToId, $date, $now, $existingPrices, $dateMap, $historicalData) {
+        $consolidatedPrices = collect($data)->groupBy('isin')->map(function ($group, $isin) use ($isinToId, $date, $now, $existingPrices, $dateWindowMap, $historicalData) {
             $nse = $group->where('exchange', 'NSE')->first();
             $bse = $group->where('exchange', 'BSE')->first();
             $existing = $existingPrices->get($isin);
@@ -423,6 +492,13 @@ class EquitySyncHistoryCommand extends Command
                 'nse_chg_9m' => null,
                 'nse_chg_1y' => null,
                 'nse_chg_3y' => null,
+                'bse_chg_1d' => null,
+                'bse_chg_3d' => null,
+                'bse_chg_7d' => null,
+                'bse_chg_1m' => null,
+                'bse_chg_3m' => null,
+                'bse_chg_6m' => null,
+                'bse_chg_9m' => null,
                 'bse_chg_1y' => null,
                 'bse_chg_3y' => null,
                 'nse_val_1d' => null, 'nse_val_3d' => null, 'nse_val_7d' => null, 'nse_val_1m' => null, 'nse_val_3m' => null, 'nse_val_6m' => null, 'nse_val_9m' => null, 'nse_val_1y' => null, 'nse_val_3y' => null,
@@ -473,8 +549,12 @@ class EquitySyncHistoryCommand extends Command
 
             if ($historyByDate) {
                 foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'] as $period) {
-                    $prevDate = $dateMap[$period] ?? null;
-                    $prev = $prevDate ? $historyByDate->get($prevDate) : null;
+                    // Walk the window (center-first) and use the first date this equity has data for
+                    $prev = null;
+                    foreach ($dateWindowMap[$period] ?? [] as $wd) {
+                        $candidate = $historyByDate->get($wd);
+                        if ($candidate) { $prev = $candidate; break; }
+                    }
                     if ($prev) {
                         if ($prev->nse_close && (float)$prev->nse_close > 0) {
                             $record["nse_val_{$period}"] = $prev->nse_close;
