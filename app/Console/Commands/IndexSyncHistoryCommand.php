@@ -15,12 +15,12 @@ class IndexSyncHistoryCommand extends Command
      * @var string
      */
     protected $signature = 'indices:sync-history
-                            {months=12 : Number of months to sync back (ignored when --from is set)}
-                            {exchange? : Optional exchange (NSE or BSE)}
+                            {months=12 : Number of months to sync back (overridden by explicit date range)}
+                            {--exchange= : Filter by exchange (NSE or BSE)}
                             {--from= : Explicit start date YYYY-MM-DD (overrides months)}
                             {--to= : Explicit end date YYYY-MM-DD (defaults to today)}
                             {--force : Re-sync even if data already exists}
-                            {--min-bse=20 : Re-sync BSE if it has fewer than this many indices (upgrades Yahoo-only days)}
+                            {--min-bse=20 : Re-sync BSE if it has fewer than this many indices}
                             {--analytics-only : Skip fetch, only recalculate analytics for existing data}';
 
     /**
@@ -36,7 +36,7 @@ class IndexSyncHistoryCommand extends Command
     public function handle(): int
     {
         ini_set('memory_limit', '512M');
-        $exchange = strtoupper($this->argument('exchange') ?? '');
+        $exchange = strtoupper($this->option('exchange') ?? '');
 
         if ($this->option('from')) {
             $startDate = Carbon::parse($this->option('from'))->startOfDay();
