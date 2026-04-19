@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\V1\SetuGeoController;
 use App\Http\Controllers\Api\V1\GeoAnalysisController;
 use App\Http\Controllers\Api\V1\EquityApiController;
 use App\Http\Controllers\Api\V1\IndexApiController;
+use App\Http\Controllers\Api\V1\MfApiController;
+use App\Http\Controllers\Api\V1\MarketApiController;
 use App\Http\Controllers\SubscriptionController;
 
 /*
@@ -86,28 +88,86 @@ Route::prefix('v1')->group(function() {
         Route::get('/geospatial/boundary', [GeoAnalysisController::class, 'boundary']);
         Route::get('/geospatial/cluster', [GeoAnalysisController::class, 'cluster']);
 
-        // Equity Analytical APIs
-        Route::get('/equities', [EquityApiController::class, 'index']);
-        Route::get('/equities/search', [EquityApiController::class, 'search']);
-        Route::get('/equities/analysis/top-gainers', [EquityApiController::class, 'topGainers']);
-        Route::get('/equities/analysis/top-losers', [EquityApiController::class, 'topLosers']);
-        Route::get('/equities/analysis/top-turnover', [EquityApiController::class, 'topTurnover']);
-        Route::get('/equities/analysis/high-volume', [EquityApiController::class, 'highVolume']);
-        Route::get('/equities/analysis/new-listings', [EquityApiController::class, 'newListings']);
-        Route::get('/equities/analysis/market-cap-stats', [EquityApiController::class, 'marketCapDistribution']);
-        Route::get('/equities/filter/market-cap/{cap}', [EquityApiController::class, 'byMarketCap']);
-        Route::get('/equity/{isin}', [EquityApiController::class, 'show']);
-        Route::get('/equity/{isin}/peers', [EquityApiController::class, 'peers']);
-        Route::get('/equity/{isin}/history', [EquityApiController::class, 'history']);
-        Route::get('/equity/{isin}/metrics', [EquityApiController::class, 'metrics']);
+        // Equity — List, Search, Filter
+        Route::get('/equities',                                   [EquityApiController::class, 'index']);
+        Route::get('/equities/search',                            [EquityApiController::class, 'search']);
+        Route::get('/equities/filter/market-cap/{cap}',           [EquityApiController::class, 'byMarketCap']);
 
-        // Index Analytical APIs
-        Route::get('/indices/snapshot', [IndexApiController::class, 'snapshot']);
-        Route::get('/indices/search', [IndexApiController::class, 'search']);
-        Route::get('/indices/analysis/top-gainers', [IndexApiController::class, 'topGainers']);
-        Route::get('/indices/analysis/top-losers', [IndexApiController::class, 'topLosers']);
-        Route::get('/indices/{index_code}/metrics', [IndexApiController::class, 'metrics']);
-        Route::get('/indices/{index_code}/history', [IndexApiController::class, 'history']);
+        // Equity — Rankings & Analysis
+        Route::get('/equities/analysis/top-gainers',              [EquityApiController::class, 'topGainers']);
+        Route::get('/equities/analysis/top-losers',               [EquityApiController::class, 'topLosers']);
+        Route::get('/equities/analysis/top-turnover',             [EquityApiController::class, 'topTurnover']);
+        Route::get('/equities/analysis/high-volume',              [EquityApiController::class, 'highVolume']);
+        Route::get('/equities/analysis/new-listings',             [EquityApiController::class, 'newListings']);
+        Route::get('/equities/analysis/market-cap-stats',         [EquityApiController::class, 'marketCapDistribution']);
+        Route::get('/equities/analysis/gap-movers',               [EquityApiController::class, 'gapMovers']);
+        Route::get('/equities/analysis/intraday-movers',          [EquityApiController::class, 'intradayMovers']);
+        Route::get('/equities/analysis/wide-range-stocks',        [EquityApiController::class, 'wideRangeStocks']);
+        Route::get('/equities/analysis/high-activity',            [EquityApiController::class, 'highActivity']);
+        Route::get('/equities/analysis/nse-bse-spread',          [EquityApiController::class, 'nseBseSpread']);
+        Route::get('/equities/analysis/consistent-performers',    [EquityApiController::class, 'consistentPerformers']);
+        Route::get('/equities/analysis/52-week-extremes',         [EquityApiController::class, 'weekExtremes']);
+        Route::get('/equities/analysis/sector-heatmap',           [EquityApiController::class, 'sectorHeatmap']);
+
+        // Equity — Per-Stock Detail
+        Route::get('/equity/{isin}',                              [EquityApiController::class, 'show']);
+        Route::get('/equity/{isin}/peers',                        [EquityApiController::class, 'peers']);
+        Route::get('/equity/{isin}/history',                      [EquityApiController::class, 'history']);
+        Route::get('/equity/{isin}/metrics',                      [EquityApiController::class, 'metrics']);
+        Route::get('/equity/{isin}/ohlc',                         [EquityApiController::class, 'ohlc']);
+        Route::get('/equity/{isin}/dual-exchange',                [EquityApiController::class, 'dualExchange']);
+        Route::get('/equity/{isin}/activity-metrics',             [EquityApiController::class, 'activityMetrics']);
+
+        // Index — List, Search, Snapshot
+        Route::get('/indices/snapshot',                           [IndexApiController::class, 'snapshot']);
+        Route::get('/indices/search',                             [IndexApiController::class, 'search']);
+        Route::get('/indices/analysis/top-gainers',               [IndexApiController::class, 'topGainers']);
+        Route::get('/indices/analysis/top-losers',                [IndexApiController::class, 'topLosers']);
+        Route::get('/indices/analysis/valuation-comparison',      [IndexApiController::class, 'valuationComparison']);
+        Route::get('/indices/analysis/ohlc-summary',              [IndexApiController::class, 'ohlcSummary']);
+
+        // Index — Per-Index Detail
+        Route::get('/indices/{index_code}/metrics',               [IndexApiController::class, 'metrics']);
+        Route::get('/indices/{index_code}/history',               [IndexApiController::class, 'history']);
+        Route::get('/indices/{index_code}/valuation',             [IndexApiController::class, 'valuation']);
+        Route::get('/indices/{index_code}/valuation-history',     [IndexApiController::class, 'valuationHistory']);
+
+        // Mutual Funds — List, Search, Filter, Compare
+        Route::get('/mf/list',                                    [MfApiController::class, 'list']);
+        Route::get('/mf/search',                                  [MfApiController::class, 'search']);
+        Route::get('/mf/filters',                                  [MfApiController::class, 'filters']);
+        Route::get('/mf/compare',                                  [MfApiController::class, 'compare']);
+
+        // Mutual Funds — Rankings & Analysis
+        Route::get('/mf/analysis/top-gainers',                    [MfApiController::class, 'topGainers']);
+        Route::get('/mf/analysis/top-losers',                     [MfApiController::class, 'topLosers']);
+        Route::get('/mf/analysis/category-returns',               [MfApiController::class, 'categoryReturns']);
+        Route::get('/mf/analysis/amc-performance',                [MfApiController::class, 'amcPerformance']);
+        Route::get('/mf/analysis/consistent-performers',          [MfApiController::class, 'consistentPerformers']);
+
+        // Mutual Funds — Per-Scheme Detail
+        Route::get('/mf/details/{isin}',                          [MfApiController::class, 'details']);
+        Route::get('/mf/history/{isin}',                          [MfApiController::class, 'history']);
+        Route::get('/mf/{isin}/similar-funds',                    [MfApiController::class, 'similarFunds']);
+
+        // Market — Cross-Asset
+        Route::get('/market/snapshot',                            [MarketApiController::class, 'snapshot']);
+        Route::get('/market/heatmap',                             [MarketApiController::class, 'heatmap']);
+        Route::get('/market/breadth',                             [MarketApiController::class, 'breadth']);
+
+        // Country — Economic Intelligence
+        Route::get('/countries/economic-profile',                 [SetuGeoController::class, 'economicProfile']);
+        Route::get('/countries/tax-data',                         [SetuGeoController::class, 'taxData']);
+        Route::get('/countries/analysis/regional-gdp',            [SetuGeoController::class, 'regionalGdp']);
+        Route::get('/country/{country}/economic-summary',         [SetuGeoController::class, 'economicSummary']);
+
+        // Banking — Capability Intelligence
+        Route::get('/banks/digital-coverage',                     [SetuGeoController::class, 'bankDigitalCoverage']);
+        Route::get('/bank/{bank}/swift-branches',                 [SetuGeoController::class, 'swiftBranches']);
+
+        // User — Usage Analytics
+        Route::get('/user/usage-breakdown',                       [SetuGeoController::class, 'usageBreakdown']);
+        Route::get('/user/usage-history',                         [SetuGeoController::class, 'usageHistory']);
 
         Route::fallback(function() {
             return response()->json(['success' => false, 'message' => 'API Endpoint not found.'], 404);

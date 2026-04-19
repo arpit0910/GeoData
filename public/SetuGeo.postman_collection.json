@@ -616,6 +616,1175 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "6. Equity Intelligence",
+            "item": [
+                {
+                    "name": "List Equities",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities?page=1&industry=Information Technology",
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "industry",
+                                    "value": "Information Technology"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Equities",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/search?q=HDFC",
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "HDFC"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Gainers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/top-gainers?exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Losers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/top-losers?exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "High Volume",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/high-volume?exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Turnover",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/top-turnover?exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "New Listings",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/new-listings"
+                        }
+                    }
+                },
+                {
+                    "name": "Market Cap Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/market-cap-stats"
+                        }
+                    }
+                },
+                {
+                    "name": "By Market Cap",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/filter/market-cap/largecap"
+                        }
+                    }
+                },
+                {
+                    "name": "Equity Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equity/INE040A01034"
+                        }
+                    }
+                },
+                {
+                    "name": "Equity History",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equity/INE040A01034/history"
+                        }
+                    }
+                },
+                {
+                    "name": "Equity Metrics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equity/INE040A01034/metrics"
+                        }
+                    }
+                },
+                {
+                    "name": "Equity Peers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equity/INE040A01034/peers"
+                        }
+                    }
+                },
+                {
+                    "name": "Gap Movers (Up)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/gap-movers?direction=up&min_pct=2&exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "direction",
+                                    "value": "up"
+                                },
+                                {
+                                    "key": "min_pct",
+                                    "value": "2"
+                                },
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Gap Movers (Down)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/gap-movers?direction=down&min_pct=1&exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "direction",
+                                    "value": "down"
+                                },
+                                {
+                                    "key": "min_pct",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Intraday Movers (Up)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/intraday-movers?direction=up&exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "direction",
+                                    "value": "up"
+                                },
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Wide Range Stocks",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/wide-range-stocks?exchange=NSE&limit=20",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "High Activity Stocks",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/high-activity?exchange=NSE&limit=20",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "NSE-BSE Spread (Arbitrage)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/nse-bse-spread?min_spread=1&limit=20",
+                            "query": [
+                                {
+                                    "key": "min_spread",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Consistent Performers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/consistent-performers?exchange=NSE&periods=1m%2C3m%2C6m%2C1y&limit=20",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                },
+                                {
+                                    "key": "periods",
+                                    "value": "1m,3m,6m,1y"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "52-Week Extremes (Near High)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/52-week-extremes?position=near_high&exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "position",
+                                    "value": "near_high"
+                                },
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "52-Week Extremes (Near Low)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/52-week-extremes?position=near_low&exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "position",
+                                    "value": "near_low"
+                                },
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Sector Heatmap (1M)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equities/analysis/sector-heatmap?period=1m&exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1m"
+                                },
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Equity OHLC (Latest)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equity/INE040A01034/ohlc"
+                        }
+                    }
+                },
+                {
+                    "name": "Equity OHLC (Date Range)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equity/INE040A01034/ohlc?from=2026-01-01&to=2026-04-17",
+                            "query": [
+                                {
+                                    "key": "from",
+                                    "value": "2026-01-01"
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2026-04-17"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "NSE vs BSE Dual Exchange",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equity/INE040A01034/dual-exchange?days=30",
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "30"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Activity Metrics (Institutional vs Retail)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/equity/INE040A01034/activity-metrics?days=30",
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "30"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "7. Index Intelligence",
+            "item": [
+                {
+                    "name": "Index Snapshot",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/snapshot?exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Indices",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/search?q=Nifty",
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "Nifty"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Gainers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/analysis/top-gainers?period=1d",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1d"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Losers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/analysis/top-losers?period=1d",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1d"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Index Metrics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/NIFTY 50/metrics"
+                        }
+                    }
+                },
+                {
+                    "name": "Index History",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/NIFTY 50/history?start_date=2026-01-01&end_date=2026-04-17",
+                            "query": [
+                                {
+                                    "key": "start_date",
+                                    "value": "2026-01-01"
+                                },
+                                {
+                                    "key": "end_date",
+                                    "value": "2026-04-17"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Index Valuation (PE/PB/Yield)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/NIFTY 50/valuation"
+                        }
+                    }
+                },
+                {
+                    "name": "Index Valuation History (12M)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/NIFTY 50/valuation-history?months=12",
+                            "query": [
+                                {
+                                    "key": "months",
+                                    "value": "12"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Valuation Comparison (All Indices)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/analysis/valuation-comparison?exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "OHLC Summary (All Indices)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/indices/analysis/ohlc-summary?exchange=NSE",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "8. Mutual Fund Intelligence",
+            "item": [
+                {
+                    "name": "List Mutual Funds",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/list?category=Equity&per_page=20&page=1",
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "Equity"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Mutual Funds",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/search?q=HDFC&limit=10",
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "HDFC"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "MF Filters",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/filters"
+                        }
+                    }
+                },
+                {
+                    "name": "Top Gainers (1Y)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/analysis/top-gainers?period=1y&category=Equity&limit=10",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1y"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "Equity"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Losers (1Y)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/analysis/top-losers?period=1y&category=Equity&limit=10",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1y"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "Equity"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Gainers (1M)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/analysis/top-gainers?period=1m&limit=10",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1m"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "MF Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/details/INF109K01VQ0"
+                        }
+                    }
+                },
+                {
+                    "name": "MF NAV History (12M)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/history/INF109K01VQ0?months=12",
+                            "query": [
+                                {
+                                    "key": "months",
+                                    "value": "12"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "MF NAV History (Custom Range)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/history/INF109K01VQ0?from=2024-01-01&to=2024-12-31&include_returns=true",
+                            "query": [
+                                {
+                                    "key": "from",
+                                    "value": "2024-01-01"
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2024-12-31"
+                                },
+                                {
+                                    "key": "include_returns",
+                                    "value": "true"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Compare Funds",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/compare?isins=INF109K01VQ0,INF204KB14I2,INF740K01678",
+                            "query": [
+                                {
+                                    "key": "isins",
+                                    "value": "INF109K01VQ0,INF204KB14I2,INF740K01678"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Category Returns (All Periods)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/analysis/category-returns"
+                        }
+                    }
+                },
+                {
+                    "name": "AMC Performance (1Y)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/analysis/amc-performance?period=1y&limit=20",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1y"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "AMC Performance by Category",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/analysis/amc-performance?period=1y&category=Equity",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1y"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "Equity"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Consistent Performers (Multi-Period)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/analysis/consistent-performers?periods=1m%2C3m%2C6m%2C1y&category=Equity",
+                            "query": [
+                                {
+                                    "key": "periods",
+                                    "value": "1m,3m,6m,1y"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "Equity"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Similar Funds Discovery",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/mf/INF109K01VQ0/similar-funds?limit=10",
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "9. Market Overview (Cross-Asset)",
+            "item": [
+                {
+                    "name": "Market Snapshot (Dashboard)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/market/snapshot"
+                        }
+                    }
+                },
+                {
+                    "name": "Market Heatmap (1M)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/market/heatmap?period=1m",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1m"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Market Heatmap (1Y)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/market/heatmap?period=1y",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "1y"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Market Breadth (NSE)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/market/breadth?exchange=NSE&period=1d",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "NSE"
+                                },
+                                {
+                                    "key": "period",
+                                    "value": "1d"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Market Breadth (BSE)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/market/breadth?exchange=BSE&period=1d",
+                            "query": [
+                                {
+                                    "key": "exchange",
+                                    "value": "BSE"
+                                },
+                                {
+                                    "key": "period",
+                                    "value": "1d"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "10. Country Economic Intelligence",
+            "item": [
+                {
+                    "name": "Economic Profile (High Income)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/economic-profile?income_level=High&sort_by=gdp",
+                            "query": [
+                                {
+                                    "key": "income_level",
+                                    "value": "High"
+                                },
+                                {
+                                    "key": "sort_by",
+                                    "value": "gdp"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Economic Profile (OECD Only)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/economic-profile?is_oecd=true&sort_by=gdp",
+                            "query": [
+                                {
+                                    "key": "is_oecd",
+                                    "value": "true"
+                                },
+                                {
+                                    "key": "sort_by",
+                                    "value": "gdp"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Tax Data (All Countries)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/tax-data"
+                        }
+                    }
+                },
+                {
+                    "name": "Tax Data (Territorial Systems)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/tax-data?tax_system=Territorial",
+                            "query": [
+                                {
+                                    "key": "tax_system",
+                                    "value": "Territorial"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Regional GDP (By Region)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/analysis/regional-gdp?group_by=region",
+                            "query": [
+                                {
+                                    "key": "group_by",
+                                    "value": "region"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Regional GDP (By Sub-Region)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/countries/analysis/regional-gdp?group_by=subregion",
+                            "query": [
+                                {
+                                    "key": "group_by",
+                                    "value": "subregion"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Country Economic Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/country/101/economic-summary"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "11. Banking Capability Intelligence",
+            "item": [
+                {
+                    "name": "Banks Digital Coverage (UPI)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/banks/digital-coverage?capability=upi",
+                            "query": [
+                                {
+                                    "key": "capability",
+                                    "value": "upi"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Banks Digital Coverage (SWIFT)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/banks/digital-coverage?capability=swift",
+                            "query": [
+                                {
+                                    "key": "capability",
+                                    "value": "swift"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Bank SWIFT Branches",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/bank/1/swift-branches"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "12. User Analytics",
+            "item": [
+                {
+                    "name": "Usage Breakdown by Category",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/user/usage-breakdown?days=30",
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "30"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Usage History (Daily Trend)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/user/usage-history?days=30",
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "30"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
         }
     ],
     "auth": {

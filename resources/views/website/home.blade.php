@@ -291,7 +291,7 @@
                 <div class="api-endpoint-row flex items-start sm:items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-4 sm:p-5 border border-white/5 cursor-default group/api">
                     <span class="px-2 sm:px-3 py-1 rounded-lg bg-pink-500/10 text-pink-400 text-[10px] sm:text-xs font-bold tracking-wider flex-shrink-0 w-12 sm:w-16 text-center mt-0.5 sm:mt-0 text-center">GET</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5 group-hover/api:text-amber-500 transition-colors">/top-gainers / metrics</p>
+                        <p class="text-white font-bold text-sm break-all leading-tight mb-0.5 group-hover/api:text-amber-500 transition-colors">/top-gainers/metrics</p>
                         <p class="text-gray-600 text-xs whitespace-normal leading-relaxed">Analytical performance series & daily leaders</p>
                     </div>
                     <span class="text-amber-500/50 text-[10px] sm:text-xs font-mono flex-shrink-0 mt-1 sm:mt-0">~14ms</span>

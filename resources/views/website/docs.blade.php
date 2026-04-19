@@ -60,6 +60,30 @@
                                 <li><a href="#index-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Index
                                         Intelligence</a></li>
+                                <li><a href="#mf-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Mutual Fund
+                                        Intelligence</a></li>
+                                <li><a href="#equity-advanced-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Equity Advanced
+                                        Analytics</a></li>
+                                <li><a href="#index-valuation-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Index Valuation
+                                        & OHLC</a></li>
+                                <li><a href="#mf-advanced-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">MF Advanced
+                                        Analytics</a></li>
+                                <li><a href="#market-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Market
+                                        Overview</a></li>
+                                <li><a href="#country-economic-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Country
+                                        Economic Data</a></li>
+                                <li><a href="#banking-capability-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Banking
+                                        Capabilities</a></li>
+                                <li><a href="#user-analytics-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">User
+                                        Analytics</a></li>
                                 <li><a href="#hierarchical-data"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Hierarchical
                                         Drill-Downs</a></li>
@@ -2034,6 +2058,660 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             </table>
                                         </div>
                                     </div>
+                                </div>
+                            </section>
+
+                            <section id="mf-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">
+                                    Mutual Fund Intelligence</h2>
+                                <p class="text-gray-400 mb-8">Access India's complete AMFI mutual fund universe — 13,000+ schemes with pre-computed multi-period returns (1D to 3Y), NAV history, and analytical rankings. All endpoints are prefixed with <code class="text-amber-400">/mf</code>.</p>
+
+                                <div class="space-y-12">
+
+                                    <!-- MF List -->
+                                    <div id="mf-list" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /mf/list</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Paginated list of all active AMFI mutual fund schemes with latest NAV and key return metrics. Supports filtering by category, AMC, and type.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-8">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800"><tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr></thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr><td class="py-3 font-mono text-amber-500">search</td><td class="py-3">Filter by scheme name, AMC, or ISIN</td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">category</td><td class="py-3">e.g. <code class="text-white">Equity</code>, <code class="text-white">Debt</code>, <code class="text-white">Hybrid</code>, <code class="text-white">ETF</code></td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">amc_name</td><td class="py-3">Full AMC name (use <code class="text-white">/mf/filters</code> for valid values)</td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">per_page</td><td class="py-3">Results per page (default: 20, max: 100)</td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">page</td><td class="py-3">Page number</td></tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                                <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INF109K01VQ0"</span>,
+      <span class="text-blue-400">"scheme_name"</span>: <span class="text-green-400">"Axis Bluechip Fund - Growth"</span>,
+      <span class="text-blue-400">"amc_name"</span>: <span class="text-green-400">"Axis Mutual Fund"</span>,
+      <span class="text-blue-400">"category"</span>: <span class="text-green-400">"Equity"</span>,
+      <span class="text-blue-400">"nav"</span>: <span class="text-blue-400">54.32</span>,
+      <span class="text-blue-400">"nav_date"</span>: <span class="text-green-400">"2026-04-17"</span>,
+      <span class="text-blue-400">"chg_1d"</span>: <span class="text-blue-400">0.42</span>,
+      <span class="text-blue-400">"chg_1y"</span>: <span class="text-blue-400">18.74</span>
+    }
+  ],
+  <span class="text-blue-400">"meta"</span>: { <span class="text-blue-400">"total"</span>: 13241, <span class="text-blue-400">"per_page"</span>: 20, <span class="text-blue-400">"current_page"</span>: 1, <span class="text-blue-400">"last_page"</span>: 663 }
+}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- MF Search -->
+                                    <div id="mf-search" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /mf/search</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Fast keyword search across scheme name, ISIN, AMC name, and scheme code. Returns up to 50 matches with latest NAV and 1D/1Y returns.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800"><tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr></thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr><td class="py-3 font-mono text-amber-500">q <span class="text-rose-400">*</span></td><td class="py-3">Search keyword (required)</td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">limit</td><td class="py-3">Max results (default: 20, max: 50)</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- MF Filters -->
+                                    <div id="mf-filters" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /mf/filters</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Returns all distinct categories, types, and AMC names — use this to populate filter dropdowns in your app before calling <code class="text-white">/mf/list</code>.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                                <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"categories"</span>: [<span class="text-green-400">"Debt"</span>, <span class="text-green-400">"ETF"</span>, <span class="text-green-400">"Equity"</span>, <span class="text-green-400">"FoF"</span>, <span class="text-green-400">"Hybrid"</span>, <span class="text-green-400">"Index"</span>],
+  <span class="text-blue-400">"amcs"</span>: [<span class="text-green-400">"Axis Mutual Fund"</span>, <span class="text-green-400">"HDFC Mutual Fund"</span>, <span class="text-green-400">"...</span>"]
+}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- MF Top Gainers / Losers -->
+                                    <div id="mf-rankings" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /mf/analysis/top-gainers</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Top-performing mutual funds ranked by pre-computed returns for any period. Same pattern applies to <code class="text-white">/mf/analysis/top-losers</code>.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-8">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800"><tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr></thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr><td class="py-3 font-mono text-amber-500">period</td><td class="py-3">Return period: <code class="text-white">1d</code>, <code class="text-white">3d</code>, <code class="text-white">7d</code>, <code class="text-white">1m</code>, <code class="text-white">3m</code>, <code class="text-white">6m</code>, <code class="text-white">9m</code>, <code class="text-white">1y</code>, <code class="text-white">3y</code> (default: <code class="text-white">1y</code>)</td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">category</td><td class="py-3">Filter by category (e.g. <code class="text-white">Equity</code>)</td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">amc_name</td><td class="py-3">Filter by AMC</td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">limit</td><td class="py-3">Number of results (default: 10, max: 50)</td></tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                                <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"period"</span>: <span class="text-green-400">"1y"</span>,
+  <span class="text-blue-400">"nav_date"</span>: <span class="text-green-400">"2026-04-17"</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INF204KB14I2"</span>,
+      <span class="text-blue-400">"scheme_name"</span>: <span class="text-green-400">"Nippon India Small Cap Fund - Growth"</span>,
+      <span class="text-blue-400">"category"</span>: <span class="text-green-400">"Equity"</span>,
+      <span class="text-blue-400">"nav"</span>: <span class="text-blue-400">178.43</span>,
+      <span class="text-blue-400">"return_pct"</span>: <span class="text-blue-400">54.82</span>,
+      <span class="text-blue-400">"ref_nav"</span>: <span class="text-blue-400">115.26</span>
+    }
+  ]
+}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- MF Details -->
+                                    <div id="mf-details" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /mf/details/{isin}</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Full scheme profile with latest NAV and pre-computed returns for all 9 periods (1D → 3Y). Returns are read directly from the database — zero computation overhead.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                                <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INF109K01VQ0"</span>,
+    <span class="text-blue-400">"scheme_name"</span>: <span class="text-green-400">"Axis Bluechip Fund - Growth"</span>,
+    <span class="text-blue-400">"amc_name"</span>: <span class="text-green-400">"Axis Mutual Fund"</span>,
+    <span class="text-blue-400">"category"</span>: <span class="text-green-400">"Equity"</span>,
+    <span class="text-blue-400">"latest_nav"</span>: <span class="text-blue-400">54.32</span>,
+    <span class="text-blue-400">"latest_nav_date"</span>: <span class="text-green-400">"2026-04-17"</span>,
+    <span class="text-blue-400">"returns"</span>: {
+      <span class="text-blue-400">"1d"</span>: { <span class="text-blue-400">"return_pct"</span>: <span class="text-blue-400">0.42</span>, <span class="text-blue-400">"ref_nav"</span>: <span class="text-blue-400">54.09</span> },
+      <span class="text-blue-400">"1m"</span>: { <span class="text-blue-400">"return_pct"</span>: <span class="text-blue-400">2.81</span>, <span class="text-blue-400">"ref_nav"</span>: <span class="text-blue-400">52.83</span> },
+      <span class="text-blue-400">"1y"</span>: { <span class="text-blue-400">"return_pct"</span>: <span class="text-blue-400">18.74</span>, <span class="text-blue-400">"ref_nav"</span>: <span class="text-blue-400">45.75</span> },
+      <span class="text-blue-400">"3y"</span>: { <span class="text-blue-400">"return_pct"</span>: <span class="text-blue-400">48.20</span>, <span class="text-blue-400">"ref_nav"</span>: <span class="text-blue-400">36.65</span> }
+    }
+  }
+}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- MF History -->
+                                    <div id="mf-history" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /mf/history/{isin}</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Time-series NAV data for a specific scheme — ideal for charting. Supports up to 10 years of data and optional return column inclusion.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-8">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800"><tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr></thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr><td class="py-3 font-mono text-amber-500">months</td><td class="py-3">Months of history (default: 12, max: 120). Ignored if <code class="text-white">from</code>/<code class="text-white">to</code> are set.</td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">from</td><td class="py-3">Start date <code class="text-white">YYYY-MM-DD</code></td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">to</td><td class="py-3">End date <code class="text-white">YYYY-MM-DD</code></td></tr>
+                                                    <tr><td class="py-3 font-mono text-amber-500">include_returns</td><td class="py-3">Set to <code class="text-white">true</code> to include chg_1d, chg_1m, chg_1y, etc. per row</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- MF Compare -->
+                                    <div id="mf-compare" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /mf/compare</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4 text-gray-400">Side-by-side comparison of 2–5 mutual funds across all return periods (1D to 3Y) in a single API call.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-8">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800"><tr><th class="pb-2">Field</th><th class="pb-2">Description</th></tr></thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr><td class="py-3 font-mono text-amber-500">isins <span class="text-rose-400">*</span></td><td class="py-3">Comma-separated ISINs (2–5 required). e.g. <code class="text-white">INF109K01VQ0,INF204KB14I2</code></td></tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                                <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"nav_date"</span>: <span class="text-green-400">"2026-04-17"</span>,
+  <span class="text-blue-400">"not_found"</span>: [],
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INF109K01VQ0"</span>,
+      <span class="text-blue-400">"scheme_name"</span>: <span class="text-green-400">"Axis Bluechip Fund - Growth"</span>,
+      <span class="text-blue-400">"chg_1d"</span>: <span class="text-blue-400">0.42</span>, <span class="text-blue-400">"chg_1m"</span>: <span class="text-blue-400">2.81</span>,
+      <span class="text-blue-400">"chg_1y"</span>: <span class="text-blue-400">18.74</span>, <span class="text-blue-400">"chg_3y"</span>: <span class="text-blue-400">48.20</span>
+    }
+  ]
+}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- EQUITY ADVANCED ANALYTICS                              -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="equity-advanced-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Equity Advanced Analytics</h2>
+                                <p class="text-gray-400 mb-8">Deep market microstructure data derived from existing price records — gap analysis, intraday moves, arbitrage signals, sector rotation, and per-stock dual-exchange comparison.</p>
+                                <div class="space-y-12">
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equities/analysis/gap-movers</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Stocks that gapped up or down at market open vs previous close. Essential signal for gap traders. <code class="text-white">direction=up|down</code>, <code class="text-white">min_pct</code> (default 1%), <code class="text-white">exchange=nse|bse</code>, <code class="text-white">limit</code> (max 50).</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equities/analysis/intraday-movers</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Stocks with the strongest intraday move from open to close (not day-over-day return). Useful for identifying momentum continuation vs reversal. <code class="text-white">direction=up|down</code>, <code class="text-white">exchange</code>, <code class="text-white">limit</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equities/analysis/wide-range-stocks</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Stocks with the widest high-to-low intraday range as a percentage of previous close. High-range = high volatility = trading opportunity. <code class="text-white">exchange</code>, <code class="text-white">limit</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equities/analysis/high-activity</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Stocks with the most number of trades — more meaningful than raw volume for detecting retail or institutional attention. Returns trades, volume, turnover, and avg price per stock. <code class="text-white">exchange</code>, <code class="text-white">limit</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equities/analysis/nse-bse-spread</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Stocks with a notable price difference between NSE and BSE on the same day. Unique arbitrage signal only available in dual-listed Indian markets. <code class="text-white">min_spread</code> (default ₹0.5), <code class="text-white">limit</code>. Returns absolute spread and spread as % of NSE close.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equities/analysis/consistent-performers</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Stocks that are positive across all requested return periods simultaneously — the steady compounders of the market. <code class="text-white">periods=1m,3m,6m,1y</code> (comma-separated), <code class="text-white">exchange</code>, <code class="text-white">limit</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equities/analysis/52-week-extremes</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Stocks near their 52-week high or low. <code class="text-white">position=near_high|near_low</code>, <code class="text-white">threshold</code> (% from extreme, default 5), <code class="text-white">exchange</code>, <code class="text-white">limit</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equities/analysis/sector-heatmap</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Average return by industry/sector for any period — the classic sector rotation signal. Returns avg return, stock count, gainers, losers, best and worst performer per sector. <code class="text-white">period=1d|1m|3m|1y</code>, <code class="text-white">exchange</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equity/{isin}/ohlc</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Full OHLC data for a specific stock — both NSE and BSE — for a date or date range. Includes spread, gap %, intraday %, and range %. <code class="text-white">date=YYYY-MM-DD</code> or <code class="text-white">from</code>/<code class="text-white">to</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equity/{isin}/dual-exchange</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">NSE vs BSE side-by-side price, volume, and spread for the same stock over time. Shows which exchange leads price discovery on each day. <code class="text-white">days</code> (default 30, max 365).</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /equity/{isin}/activity-metrics</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Trades, volume, turnover, and average ticket size trend over time. High avg ticket = institutional activity. Low avg ticket = retail-driven. <code class="text-white">days</code> (default 30, max 365).</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- INDEX VALUATION & OHLC                                 -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="index-valuation-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Index Valuation & OHLC</h2>
+                                <p class="text-gray-400 mb-8">PE ratio, PB ratio, dividend yield, and full OHLC data for market indices. This is premium valuation data used by professional investors for market timing and risk assessment.</p>
+                                <div class="space-y-12">
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /indices/{index_code}/valuation</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">PE ratio, PB ratio, and dividend yield for a specific index on the latest date or a historical date. Use this to determine if the market is overvalued or undervalued. <code class="text-white">date=YYYY-MM-DD</code> (optional, defaults to latest).</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"index_code"</span>: <span class="text-green-400">"NIFTY 50"</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"traded_date"</span>: <span class="text-green-400">"2026-04-17"</span>,
+    <span class="text-blue-400">"close"</span>: <span class="text-blue-400">22453.20</span>,
+    <span class="text-blue-400">"pe_ratio"</span>: <span class="text-blue-400">21.4</span>,
+    <span class="text-blue-400">"pb_ratio"</span>: <span class="text-blue-400">3.8</span>,
+    <span class="text-blue-400">"div_yield"</span>: <span class="text-blue-400">1.32</span>
+  }
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /indices/{index_code}/valuation-history</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">PE/PB/yield trend over time — the key tool for mean-reversion investors to identify valuation extremes. <code class="text-white">months</code> (default 12, max 120) or <code class="text-white">from</code>/<code class="text-white">to</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /indices/analysis/valuation-comparison</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">PE/PB/yield for all indices side by side — sorted from cheapest to most expensive. One call to answer "which index is cheap?". <code class="text-white">exchange=NSE|BSE</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /indices/analysis/ohlc-summary</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">OHLC, gap %, intraday %, and range % for all indices in a single call. Perfect for building a market overview dashboard. <code class="text-white">exchange=NSE|BSE</code>, <code class="text-white">date=YYYY-MM-DD</code>.</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- MF ADVANCED ANALYTICS                                  -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="mf-advanced-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">MF Advanced Analytics</h2>
+                                <p class="text-gray-400 mb-8">Aggregated analytics across the 13,000+ AMFI scheme universe — category-level benchmarking, AMC ranking, multi-period consistent performers, and fund discovery.</p>
+                                <div class="space-y-12">
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /mf/analysis/category-returns</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Average returns across all 9 periods (1D–3Y) grouped by fund category. One call to see if Equity is beating Debt, Hybrid, ETF, FoF, etc. No parameters required.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"category"</span>: <span class="text-green-400">"Equity"</span>,
+      <span class="text-blue-400">"fund_count"</span>: <span class="text-blue-400">4821</span>,
+      <span class="text-blue-400">"avg_return_1m"</span>: <span class="text-blue-400">3.42</span>,
+      <span class="text-blue-400">"avg_return_1y"</span>: <span class="text-blue-400">22.18</span>,
+      <span class="text-blue-400">"best_1y"</span>: <span class="text-blue-400">87.43</span>,
+      <span class="text-blue-400">"worst_1y"</span>: <span class="text-blue-400">-12.60</span>
+    }
+  ]
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /mf/analysis/amc-performance</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">AMC (fund house) ranking by average returns. Tells users which fund house is consistently delivering results. <code class="text-white">period=1y</code>, <code class="text-white">category=Equity</code>, <code class="text-white">limit=20</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /mf/analysis/consistent-performers</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Mutual funds positive across all requested periods simultaneously — the most reliable filter for steady compounders. <code class="text-white">periods=1m,3m,6m,1y</code>, <code class="text-white">category</code>, <code class="text-white">amc_name</code>, <code class="text-white">limit</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /mf/{isin}/similar-funds</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Funds in the same category with a similar 1-year return profile (±10% range), sorted by closest match. Fund discovery for users evaluating alternatives. <code class="text-white">limit</code> (max 30).</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- MARKET OVERVIEW (CROSS-ASSET)                          -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="market-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Market Overview</h2>
+                                <p class="text-gray-400 mb-8">Cross-asset endpoints that combine indices, equities, and mutual funds in a single response. Designed for dashboards, home screens, and portfolio widgets.</p>
+                                <div class="space-y-12">
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/snapshot</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">One-call market dashboard: major index levels (Nifty 50, Sensex, Bank Nifty, IT), top 5 equity gainers/losers (NSE), and top 5 MF performers for the day. No parameters required.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Structure</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"indices"</span>: [ ... ],
+  <span class="text-blue-400">"equity_gainers"</span>: [ ... ],
+  <span class="text-blue-400">"equity_losers"</span>: [ ... ],
+  <span class="text-blue-400">"mf_top_gainers"</span>: [ ... ]
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/heatmap</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Equity sector returns + MF category returns for any period in one response. The definitive sector rotation view — see which parts of the market are leading and lagging. <code class="text-white">period=1d|1m|3m|1y</code> (default 1m).</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/breadth</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Market breadth — total advancers, decliners, unchanged, advance/decline ratio, and a sentiment label (strongly_bullish → strongly_bearish). <code class="text-white">exchange=NSE|BSE</code>, <code class="text-white">period=1d|1m</code>.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"advancers"</span>: <span class="text-blue-400">3842</span>,
+  <span class="text-blue-400">"decliners"</span>: <span class="text-blue-400">1204</span>,
+  <span class="text-blue-400">"advance_decline_ratio"</span>: <span class="text-blue-400">3.19</span>,
+  <span class="text-blue-400">"sentiment"</span>: <span class="text-green-400">"strongly_bullish"</span>
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- COUNTRY ECONOMIC INTELLIGENCE                          -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="country-economic-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Country Economic Data</h2>
+                                <p class="text-gray-400 mb-8">Query countries by GDP, income level, OECD/EU membership, tax systems, and driving side. Rich economic data for fintech, compliance, and market research applications.</p>
+                                <div class="space-y-12">
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /countries/economic-profile</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Filter countries by economic indicators. Returns GDP, population, income level, OECD/EU membership, and area.</p>
+                                            <table class="w-full text-sm mb-6"><thead class="text-gray-500 text-left border-b border-gray-800"><tr><th class="pb-2">Parameter</th><th class="pb-2">Description</th></tr></thead>
+                                            <tbody class="divide-y divide-gray-800">
+                                                <tr><td class="py-2 font-mono text-amber-500">income_level</td><td class="py-2"><code class="text-white">High</code>, <code class="text-white">Upper-middle</code>, <code class="text-white">Lower-middle</code>, <code class="text-white">Low</code></td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">is_oecd</td><td class="py-2"><code class="text-white">true</code> — filter to OECD member countries only</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">is_eu</td><td class="py-2"><code class="text-white">true</code> — filter to European Union members only</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">gdp_min / gdp_max</td><td class="py-2">GDP range in USD billions</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">sort_by</td><td class="py-2"><code class="text-white">gdp</code>, <code class="text-white">population</code>, <code class="text-white">area_sq_km</code>, <code class="text-white">name</code></td></tr>
+                                            </tbody></table>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /countries/tax-data</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Tax system and standard tax rate for all countries. Returns a summary (total countries, system breakdown, avg rate) plus per-country detail. Filter by <code class="text-white">tax_system=Territorial|Worldwide</code> or <code class="text-white">region_id</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /countries/analysis/regional-gdp</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Total GDP, average GDP, and total population grouped by geographic region or sub-region. <code class="text-white">group_by=region|subregion</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /country/{country}/economic-summary</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Complete economic profile for one country — GDP, population, currency, tax system, OECD/EU status, area, driving side, measurement system, and nationality.</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- BANKING CAPABILITY INTELLIGENCE                        -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="banking-capability-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Banking Capabilities</h2>
+                                <p class="text-gray-400 mb-8">Query bank branches by digital payment capabilities — UPI, NEFT, RTGS, IMPS, and SWIFT. Rank banks by coverage and find SWIFT-enabled branches for international transfers.</p>
+                                <div class="space-y-12">
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /banks/digital-coverage</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">All banks ranked by the percentage of their branches supporting a specific digital payment method. <code class="text-white">capability=upi|neft|rtgs|imps|swift</code> (default: upi). Returns branch count per method plus coverage percentage.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /bank/{bank}/swift-branches</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">All branches of a specific bank that support SWIFT (international wire transfers). Filter by <code class="text-white">state_id</code>. Useful for cross-border payment routing and correspondent banking lookups.</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- USER ANALYTICS                                         -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="user-analytics-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">User Analytics</h2>
+                                <p class="text-gray-400 mb-8">Understand your API credit consumption — which categories consume the most and how your usage trends over time.</p>
+                                <div class="space-y-12">
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /user/usage-breakdown</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">API calls grouped by category (Geo, Banking, Equities, MF, Market, Currency, Geospatial, Address) for the last N days. <code class="text-white">days</code> (default 30, max 90).</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /user/usage-history</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Daily API call count trend — total calls and credit-consuming calls per day. Useful for quota planning and anomaly detection. <code class="text-white">days</code> (default 30, max 90).</p>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </section>
 

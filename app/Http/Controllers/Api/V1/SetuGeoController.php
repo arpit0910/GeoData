@@ -14,6 +14,8 @@ use App\Models\Timezone;
 use App\Models\Bank;
 use App\Models\BankBranch;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class SetuGeoController extends Controller
 {
@@ -1092,5 +1094,252 @@ class SetuGeoController extends Controller
             'success' => true,
             'data' => $cities->concat($states)->concat($countries)->take($limit),
         ], 200);
+    }
+
+    /**
+     * GET /countries/economic-profile
+     * Filter countries by economic indicators — income level, OECD membership, EU membership, GDP range.
+     * Useful for market research, expansion planning, and compliance screening.
+     * Query: income_level=High|Upper-middle|Lower-middle|Low, is_oecd=true, is_eu=true, region_id, sort_by=gdp|population
+     */
+    public function economicProfile(Request $request): JsonResponse
+    {
+        $query = Country::query()->select(
+            'id', 'name', 'iso2', 'iso3', 'capital', 'currency', 'currency_symbol',
+            'population', 'gdp', 'income_level', 'is_oecd', 'is_eu',
+            'area_sq_km', 'region_id', 'subregion_id'
+        );
+
+        if ($incomeLevel = $request->income_level) $query->where('income_level', $incomeLevel);
+        if ($request->boolean('is_oecd', false))   $query->where('is_oecd', true);
+        if ($request->boolean('is_eu', false))      $query->where('is_eu', true);
+        if ($regionId = $request->region_id)        $query->where('region_id', $regionId);
+        if ($gdpMin = $request->gdp_min)            $query->where('gdp', '>=', $gdpMin);
+        if ($gdpMax = $request->gdp_max)            $query->where('gdp', '<=', $gdpMax);
+
+        $sortBy = in_array($request->sort_by, ['gdp', 'population', 'area_sq_km', 'name']) ? $request->sort_by : 'gdp';
+        $query->orderBy($sortBy, 'desc');
+
+        return response()->json(['success' => true, 'data' => $query->get()]);
+    }
+
+    /**
+     * GET /countries/tax-data
+     * Tax system and standard tax rates for all countries.
+     * Useful for fintech, compliance, and cross-border payment applications.
+     * Query: tax_system=Territorial|Worldwide, region_id
+     */
+    public function taxData(Request $request): JsonResponse
+    {
+        $query = Country::query()
+            ->whereNotNull('tax_system')
+            ->select('id', 'name', 'iso2', 'iso3', 'currency', 'tax_system', 'standard_tax_rate', 'income_level', 'region_id');
+
+        if ($taxSystem = $request->tax_system) $query->where('tax_system', $taxSystem);
+        if ($regionId  = $request->region_id)  $query->where('region_id', $regionId);
+
+        $data = $query->orderBy('name')->get();
+
+        $summary = [
+            'total_countries' => $data->count(),
+            'systems'         => $data->groupBy('tax_system')->map->count(),
+            'avg_tax_rate'    => round($data->whereNotNull('standard_tax_rate')->avg('standard_tax_rate'), 2),
+        ];
+
+        return response()->json(['success' => true, 'summary' => $summary, 'data' => $data]);
+    }
+
+    /**
+     * GET /countries/analysis/regional-gdp
+     * Total and average GDP grouped by geographic region or sub-region.
+     * Understand which parts of the world concentrate economic output.
+     */
+    public function regionalGdp(Request $request): JsonResponse
+    {
+        $groupBy = $request->get('group_by', 'region');
+
+        if ($groupBy === 'subregion') {
+            $data = DB::table('countries as c')
+                ->join('sub_regions as sr', 'c.subregion_id', '=', 'sr.id')
+                ->whereNotNull('c.gdp')
+                ->groupBy('sr.id', 'sr.name')
+                ->orderBy('total_gdp', 'desc')
+                ->select(
+                    'sr.id as subregion_id', 'sr.name as subregion',
+                    DB::raw('COUNT(*) as country_count'),
+                    DB::raw('ROUND(SUM(c.gdp), 2) as total_gdp'),
+                    DB::raw('ROUND(AVG(c.gdp), 2) as avg_gdp'),
+                    DB::raw('ROUND(SUM(c.population), 0) as total_population')
+                )->get();
+        } else {
+            $data = DB::table('countries as c')
+                ->join('regions as r', 'c.region_id', '=', 'r.id')
+                ->whereNotNull('c.gdp')
+                ->groupBy('r.id', 'r.name')
+                ->orderBy('total_gdp', 'desc')
+                ->select(
+                    'r.id as region_id', 'r.name as region',
+                    DB::raw('COUNT(*) as country_count'),
+                    DB::raw('ROUND(SUM(c.gdp), 2) as total_gdp'),
+                    DB::raw('ROUND(AVG(c.gdp), 2) as avg_gdp'),
+                    DB::raw('ROUND(SUM(c.population), 0) as total_population')
+                )->get();
+        }
+
+        return response()->json(['success' => true, 'group_by' => $groupBy, 'data' => $data]);
+    }
+
+    /**
+     * GET /country/{country}/economic-summary
+     * Full economic profile for a single country — GDP, population, tax, currency, trade info.
+     */
+    public function economicSummary(Country $country): JsonResponse
+    {
+        $data = Country::with(['region', 'subRegion'])
+            ->where('id', $country->id)
+            ->select(
+                'id', 'name', 'iso2', 'iso3', 'capital', 'currency', 'currency_name', 'currency_symbol',
+                'population', 'gdp', 'income_level', 'is_oecd', 'is_eu',
+                'area_sq_km', 'tax_system', 'standard_tax_rate',
+                'driving_side', 'measurement_system',
+                'phonecode', 'tld', 'nationality', 'region_id', 'subregion_id'
+            )
+            ->first();
+
+        return response()->json(['success' => true, 'data' => $data]);
+    }
+
+    /**
+     * GET /banks/digital-coverage
+     * Banks ranked by percentage of branches supporting digital payment methods.
+     * Query: capability=upi|neft|rtgs|imps|swift — rank by a specific capability.
+     */
+    public function bankDigitalCoverage(Request $request): JsonResponse
+    {
+        $capability = strtolower($request->get('capability', 'upi'));
+        $validCaps  = ['upi', 'neft', 'rtgs', 'imps', 'swift'];
+        if (!in_array($capability, $validCaps)) {
+            return response()->json(['success' => false, 'message' => 'Invalid capability. Valid: ' . implode(', ', $validCaps)], 422);
+        }
+
+        $data = DB::table('bank_branches as bb')
+            ->join('banks as b', 'bb.bank_id', '=', 'b.id')
+            ->groupBy('b.id', 'b.name')
+            ->orderBy('coverage_pct', 'desc')
+            ->select(
+                'b.id as bank_id', 'b.name as bank_name',
+                DB::raw('COUNT(*) as total_branches'),
+                DB::raw("SUM(CASE WHEN bb.upi  = 1 THEN 1 ELSE 0 END) as upi_branches"),
+                DB::raw("SUM(CASE WHEN bb.neft = 1 THEN 1 ELSE 0 END) as neft_branches"),
+                DB::raw("SUM(CASE WHEN bb.rtgs = 1 THEN 1 ELSE 0 END) as rtgs_branches"),
+                DB::raw("SUM(CASE WHEN bb.imps = 1 THEN 1 ELSE 0 END) as imps_branches"),
+                DB::raw("SUM(CASE WHEN bb.swift= 1 THEN 1 ELSE 0 END) as swift_branches"),
+                DB::raw("ROUND(SUM(CASE WHEN bb.{$capability} = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as coverage_pct")
+            )
+            ->get();
+
+        return response()->json(['success' => true, 'ranked_by' => $capability . '_coverage_pct', 'data' => $data]);
+    }
+
+    /**
+     * GET /bank/{bank}/swift-branches
+     * All branches of a bank that support international wire transfers (SWIFT).
+     * Useful for cross-border payment routing.
+     */
+    public function swiftBranches(Bank $bank, Request $request): JsonResponse
+    {
+        $stateId = $request->get('state_id');
+
+        $query = BankBranch::where('bank_id', $bank->id)
+            ->where('swift', true)
+            ->with(['state', 'city']);
+
+        if ($stateId) $query->where('state_id', $stateId);
+
+        $branches = $query->select('id', 'ifsc', 'branch', 'address', 'city_id', 'state_id', 'micr', 'contact')
+            ->orderBy('branch')
+            ->get();
+
+        return response()->json(['success' => true, 'bank' => $bank->name, 'swift_branch_count' => $branches->count(), 'data' => $branches]);
+    }
+
+    /**
+     * GET /user/usage-breakdown
+     * API credit usage grouped by endpoint category (Geo, Banking, Equity, MF, etc.)
+     * Helps users understand where their credits are being consumed.
+     */
+    public function usageBreakdown(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $days = min((int)$request->get('days', 30), 90);
+        $from = now()->subDays($days)->startOfDay();
+
+        $logs = DB::table('api_logs')
+            ->where('user_id', $user->id)
+            ->where('created_at', '>=', $from)
+            ->where('credit_deducted', true)
+            ->select('endpoint', DB::raw('COUNT(*) as calls'))
+            ->groupBy('endpoint')
+            ->orderBy('calls', 'desc')
+            ->get();
+
+        $categories = [
+            'Mutual Funds' => '/mf/',
+            'Equities'     => ['/equit', '/equity'],
+            'Indices'      => '/indic',
+            'Market'       => '/market',
+            'Banking'      => ['/bank', '/banks'],
+            'Geography'    => ['/countr', '/state', '/city', '/region', '/pincode', '/timezone'],
+            'Currency'     => '/currency',
+            'Geospatial'   => '/geospatial',
+            'Address'      => '/address',
+        ];
+
+        $breakdown = [];
+        foreach ($categories as $name => $patterns) {
+            $patterns = (array)$patterns;
+            $count    = $logs->filter(fn($l) => collect($patterns)->some(fn($p) => str_contains($l->endpoint, $p)))->sum('calls');
+            if ($count > 0) $breakdown[] = ['category' => $name, 'calls' => $count];
+        }
+        usort($breakdown, fn($a, $b) => $b['calls'] - $a['calls']);
+
+        $total = $logs->sum('calls');
+
+        return response()->json([
+            'success'    => true,
+            'period_days' => $days,
+            'total_calls' => $total,
+            'breakdown'  => $breakdown,
+        ]);
+    }
+
+    /**
+     * GET /user/usage-history
+     * Daily API call count for the last N days — trend view of API consumption.
+     * Query: days=30 (max 90)
+     */
+    public function usageHistory(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $days = min((int)$request->get('days', 30), 90);
+        $from = now()->subDays($days)->startOfDay();
+
+        $data = DB::table('api_logs')
+            ->where('user_id', $user->id)
+            ->where('created_at', '>=', $from)
+            ->select(
+                DB::raw("DATE(created_at) as date"),
+                DB::raw('COUNT(*) as total_calls'),
+                DB::raw('SUM(CASE WHEN credit_deducted = 1 THEN 1 ELSE 0 END) as credited_calls')
+            )
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy('date')
+            ->get();
+
+        return response()->json([
+            'success'     => true,
+            'period_days' => $days,
+            'data'        => $data,
+        ]);
     }
 }

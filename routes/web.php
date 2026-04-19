@@ -208,6 +208,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{index}', [App\Http\Controllers\Admin\IndexController::class, 'show'])->name('show');
     });
 
+    // Mutual Funds Management
+    Route::prefix('mutual-funds')->name('mutual-funds.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\MfController::class, 'index'])->name('index');
+        Route::get('/prices', [App\Http\Controllers\Admin\MfController::class, 'prices'])->name('prices');
+        Route::get('/{isin}', [App\Http\Controllers\Admin\MfController::class, 'show'])->name('show');
+    });
+
     // Server Logs
     Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->name('admin.logs');
 
