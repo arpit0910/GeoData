@@ -190,9 +190,15 @@ class SyncIndices extends Command
                 $price->intraday_chg_pct = (($price->close - $price->open) / $price->open) * 100;
             }
 
-            // Historical period returns
+            // chg_1d — calculated from prev_close (val_1d column does not exist in schema)
+            if ($price->prev_close && $price->prev_close > 0 && $price->close > 0) {
+                $price->chg_1d = (($price->close - $price->prev_close) / $price->prev_close) * 100;
+            }
+
+            // Historical period returns (3d → 3y) — val_* and chg_* both exist for these
             if ($historyByDate) {
                 foreach ($dateWindowMap as $key => $candidates) {
+                    if ($key === '1d') continue; // handled above via prev_close
                     foreach ($candidates as $candidateDate) {
                         $pastPrice = $historyByDate->get($candidateDate);
                         if ($pastPrice && $pastPrice->close > 0) {
@@ -538,27 +544,16 @@ class SyncIndices extends Command
 
     private function syncBseViaYahoo(Carbon $date): int
     {
+        // Only tickers confirmed to return price data via Yahoo Finance.
+        // BSE sectoral tickers (BSE-BANK.BO, BSE-IT.BO, etc.) are listed on Yahoo
+        // but return zero rows for all dates — removed to avoid wasted requests.
         $tickers = [
-            '^BSESN'          => ['name' => 'S&P BSE SENSEX',           'code' => 'BSE_SENSEX',   'cat' => 'Broad-based'],
-            'BSE-100.BO'      => ['name' => 'S&P BSE 100',               'code' => 'BSE_100',      'cat' => 'Broad-based'],
-            'BSE-200.BO'      => ['name' => 'S&P BSE 200',               'code' => 'BSE_200',      'cat' => 'Broad-based'],
-            'BSE-500.BO'      => ['name' => 'S&P BSE 500',               'code' => 'BSE_500',      'cat' => 'Broad-based'],
-            'BSE-MidCap.BO'   => ['name' => 'S&P BSE MidCap',            'code' => 'BSE_MIDCAP',   'cat' => 'Broad-based'],
-            'BSE-SmlCap.BO'   => ['name' => 'S&P BSE SmallCap',          'code' => 'BSE_SMALLCAP', 'cat' => 'Broad-based'],
-            'BSE-LargeCap.BO' => ['name' => 'S&P BSE LargeCap',          'code' => 'BSE_LARGECAP', 'cat' => 'Broad-based'],
-            'BSEALLCAP.BO'    => ['name' => 'S&P BSE AllCap',            'code' => 'BSE_ALLCAP',   'cat' => 'Broad-based'],
-            'BSE-BANK.BO'     => ['name' => 'S&P BSE BANKEX',            'code' => 'BSE_BANKEX',   'cat' => 'Sectoral'],
-            'BSE-IT.BO'       => ['name' => 'S&P BSE IT',                'code' => 'BSE_IT',       'cat' => 'Sectoral'],
-            'BSE-AUTO.BO'     => ['name' => 'S&P BSE AUTO',              'code' => 'BSE_AUTO',     'cat' => 'Sectoral'],
-            'BSE-FMCG.BO'     => ['name' => 'S&P BSE FMCG',              'code' => 'BSE_FMCG',     'cat' => 'Sectoral'],
-            'BSE-HC.BO'       => ['name' => 'S&P BSE Healthcare',        'code' => 'BSE_HC',       'cat' => 'Sectoral'],
-            'BSE-METAL.BO'    => ['name' => 'S&P BSE Metal',             'code' => 'BSE_METAL',    'cat' => 'Sectoral'],
-            'BSE-OIL.BO'      => ['name' => 'S&P BSE Oil & Gas',         'code' => 'BSE_OIL',      'cat' => 'Sectoral'],
-            'BSE-PWR.BO'      => ['name' => 'S&P BSE Power',             'code' => 'BSE_PWR',      'cat' => 'Sectoral'],
-            'BSE-TECK.BO'     => ['name' => 'S&P BSE Teck',              'code' => 'BSE_TECK',     'cat' => 'Sectoral'],
-            'BSE-CD.BO'       => ['name' => 'S&P BSE Consumer Durables', 'code' => 'BSE_CD',       'cat' => 'Sectoral'],
-            'BSE-CG.BO'       => ['name' => 'S&P BSE Capital Goods',     'code' => 'BSE_CG',       'cat' => 'Sectoral'],
-            'BSE-Realty.BO'   => ['name' => 'S&P BSE Realty',            'code' => 'BSE_REALTY',   'cat' => 'Sectoral'],
+            '^BSESN'        => ['name' => 'S&P BSE SENSEX',   'code' => 'BSE_SENSEX',   'cat' => 'Broad-based'],
+            'BSE-100.BO'    => ['name' => 'S&P BSE 100',       'code' => 'BSE_100',      'cat' => 'Broad-based'],
+            'BSE-200.BO'    => ['name' => 'S&P BSE 200',       'code' => 'BSE_200',      'cat' => 'Broad-based'],
+            'BSE-500.BO'    => ['name' => 'S&P BSE 500',       'code' => 'BSE_500',      'cat' => 'Broad-based'],
+            'BSE-MidCap.BO' => ['name' => 'S&P BSE MidCap',   'code' => 'BSE_MIDCAP',   'cat' => 'Broad-based'],
+            'BSE-SmlCap.BO' => ['name' => 'S&P BSE SmallCap', 'code' => 'BSE_SMALLCAP', 'cat' => 'Broad-based'],
         ];
 
         $pricesData  = [];

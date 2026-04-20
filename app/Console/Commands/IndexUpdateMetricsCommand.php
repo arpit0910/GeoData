@@ -136,9 +136,15 @@ class IndexUpdateMetricsCommand extends Command
                 $price->intraday_chg_pct = (($price->close - $price->open) / $price->open) * 100;
             }
 
-            // Historical period returns — walk each window closest-first, stop on first hit.
+            // chg_1d — from prev_close (val_1d column does not exist in schema)
+            if ($price->prev_close && $price->prev_close > 0 && $price->close > 0) {
+                $price->chg_1d = (($price->close - $price->prev_close) / $price->prev_close) * 100;
+            }
+
+            // Historical period returns (3d → 3y) — val_* and chg_* both exist for these
             if ($historyByDate) {
                 foreach ($dateWindowMap as $key => $candidates) {
+                    if ($key === '1d') continue; // handled above via prev_close
                     foreach ($candidates as $candidateDate) {
                         $pastPrice = $historyByDate->get($candidateDate);
                         if ($pastPrice && $pastPrice->close > 0) {
