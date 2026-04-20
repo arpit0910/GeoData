@@ -17,8 +17,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('currency:fetch-rates')->dailyAt('20:30');
-        $schedule->command('equities:sync')->dailyAt('19:00')->timezone('Asia/Kolkata');
-        $schedule->command('indices:sync')->dailyAt('19:15')->timezone('Asia/Kolkata');
+        $schedule->command('equities:sync')->dailyAt('19:00')->timezone('Asia/Kolkata')->withoutOverlapping();
+        $schedule->command('indices:sync')->dailyAt('19:15')->timezone('Asia/Kolkata')->withoutOverlapping();
         // MF NAVs are published 21:00–23:00 IST; run at 21:30 to catch first publish
         $schedule->command('sync:mf-daily --force')->dailyAt('21:30')->timezone('Asia/Kolkata');
         // Re-run at 23:15 to pick up late corrections

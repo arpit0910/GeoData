@@ -3,56 +3,59 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use App\Models\IndexPrice;
 use Carbon\Carbon;
 
 class IndexUpdateMetricsCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'indices:update-metrics {--date= : Specific date to update}';
+    protected $signature = 'indices:update-metrics
+                            {--date= : Recalculate only this date (YYYY-MM-DD)}
+                            {--from= : Start of date range}
+                            {--to=   : End of date range (defaults to today)}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Re-calculate analytical metrics for existing index price records';
+    protected $description = 'Re-calculate analytical metrics (returns, gap, intraday, range) for existing index price records';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
         $this->info("Starting analytical metrics update for indices...");
 
-        $query = IndexPrice::query();
+        $query = IndexPrice::orderBy('traded_date', 'asc');
+
         if ($this->option('date')) {
             $query->where('traded_date', $this->option('date'));
+        } elseif ($this->option('from')) {
+            $from = $this->option('from');
+            $to   = $this->option('to') ?: now()->format('Y-m-d');
+            $query->whereBetween('traded_date', [$from, $to]);
         }
 
-        $dates = $query->orderBy('traded_date', 'asc')->pluck('traded_date')->unique();
+        $dates = $query->distinct()->pluck('traded_date')->unique()->values();
 
         if ($dates->isEmpty()) {
-            $this->warn("No index price records found to update.");
-            return 0;
+            $this->warn("No index price records found.");
+            return Command::SUCCESS;
         }
 
-        $bar = $this->output->createProgressBar(count($dates));
+        $this->info("Processing " . $dates->count() . " date(s)...");
+        $bar = $this->output->createProgressBar($dates->count());
         $bar->start();
 
         foreach ($dates as $date) {
+            // Reconnect before each date's DB work — this loop can run for hours
+            // and MySQL silently drops idle connections (wait_timeout).
+            try { DB::reconnect(); } catch (\Exception $e) {}
+
             $this->calculateForDate(Carbon::parse($date));
             $bar->advance();
+
+            if (Carbon::parse($date)->day % 7 === 0) gc_collect_cycles();
         }
 
         $bar->finish();
-        $this->newLine();
-        $this->info("Analytics update completed successfully.");
-        return 0;
+        $this->newLine(2);
+        $this->info("Analytics update complete.");
+        return Command::SUCCESS;
     }
 
     private function calculateForDate(Carbon $date): void
@@ -60,65 +63,69 @@ class IndexUpdateMetricsCommand extends Command
         $prices = IndexPrice::where('traded_date', $date->format('Y-m-d'))->get();
         if ($prices->isEmpty()) return;
 
-        // Pre-fetch all available unique dates DESC to find closest preceding dates for returns
-        $availableDates = IndexPrice::where('traded_date', '<=', $date->format('Y-m-d'))
+        // Accurate calendar targets — subMonths/subYears are precise;
+        // subDays(30) drifts by days over longer periods.
+        $periodTargets = [
+            '1d' => $date->copy()->subDay(),
+            '3d' => $date->copy()->subDays(3),
+            '7d' => $date->copy()->subDays(7),
+            '1m' => $date->copy()->subMonth(),
+            '3m' => $date->copy()->subMonths(3),
+            '6m' => $date->copy()->subMonths(6),
+            '9m' => $date->copy()->subMonths(9),
+            '1y' => $date->copy()->subYear(),
+            '3y' => $date->copy()->subYears(3),
+        ];
+
+        // Fetch all trading dates in the relevant range once — no per-index queries.
+        $oldestTarget = $date->copy()->subYears(3)->subDays(15)->format('Y-m-d');
+        $tradingDates = IndexPrice::where('traded_date', '<', $date->format('Y-m-d'))
+            ->where('traded_date', '>=', $oldestTarget)
             ->distinct()
             ->orderBy('traded_date', 'desc')
             ->pluck('traded_date')
-            ->map(fn($d) => $d instanceof Carbon ? $d->format('Y-m-d') : (string)$d)
-            ->toArray();
+            ->map(fn($d) => Carbon::parse($d instanceof Carbon ? $d->format('Y-m-d') : (string)$d));
 
-        // Calculate target calendar dates
-        $map = [
-            '1d' => 1,
-            '3d' => 3,
-            '7d' => 7,
-            '1m' => 30,
-            '3m' => 90,
-            '6m' => 180,
-            '9m' => 270,
-            '1y' => 365,
-            '3y' => 1095
-        ];
-
-        $resolvedDates = [];
-        foreach ($map as $key => $d) {
-            $target = $date->copy()->subDays($d)->format('Y-m-d');
-            foreach ($availableDates as $avail) {
-                if ($avail <= $target) {
-                    $resolvedDates[$key] = $avail;
-                    break;
-                }
-            }
+        // For each period, build a ±10-day window sorted by proximity so each
+        // index uses the closest available trading date.
+        $dateWindowMap = [];
+        foreach ($periodTargets as $period => $target) {
+            $dateWindowMap[$period] = $tradingDates
+                ->filter(fn($d) => abs($d->diffInDays($target)) <= 10)
+                ->sortBy(fn($d) => abs($d->diffInDays($target)))
+                ->map(fn($d) => $d->format('Y-m-d'))
+                ->values()
+                ->toArray();
         }
 
-        $historicalData = IndexPrice::whereIn('traded_date', array_unique(array_values($resolvedDates)))
+        $allTargetDates = collect($dateWindowMap)->flatten()->filter()->unique()->values()->toArray();
+
+        // Single bulk fetch covers all periods for all indices.
+        $historicalData = IndexPrice::whereIn('traded_date', $allTargetDates)
             ->get()
             ->groupBy('index_code');
 
         foreach ($prices as $price) {
-            $code = $price->index_code;
+            $code          = $price->index_code;
+            $history       = $historicalData->get($code);
+            $historyByDate = $history
+                ? $history->keyBy(fn($item) => $item->traded_date instanceof Carbon
+                    ? $item->traded_date->format('Y-m-d')
+                    : (string)$item->traded_date)
+                : null;
 
-            // 0. Auto-fill prev_close if missing
-            if (!$price->prev_close) {
-                $lastDate = null;
-                foreach ($availableDates as $avail) {
-                    if ($avail < $date->format('Y-m-d')) {
-                        $lastDate = $avail;
+            // Auto-fill prev_close from the 1d window — no extra query needed.
+            if (!$price->prev_close && $historyByDate) {
+                foreach ($dateWindowMap['1d'] as $pd) {
+                    $last = $historyByDate->get($pd);
+                    if ($last && $last->close > 0) {
+                        $price->prev_close = $last->close;
                         break;
-                    }
-                }
-                if ($lastDate) {
-                    $lastPrice = IndexPrice::where('index_code', $code)
-                        ->where('traded_date', $lastDate)
-                        ->first();
-                    if ($lastPrice) {
-                        $price->prev_close = $lastPrice->close;
                     }
                 }
             }
 
-            // 1. Core Analytics (Gap, Intraday, Range)
+            // Core analytics
             if ($price->prev_close && $price->prev_close > 0) {
                 if ($price->open) {
                     $price->gap_pct = (($price->open - $price->prev_close) / $price->prev_close) * 100;
@@ -129,16 +136,17 @@ class IndexUpdateMetricsCommand extends Command
                 $price->intraday_chg_pct = (($price->close - $price->open) / $price->open) * 100;
             }
 
-            // 2. Historical Returns using pre-fetched data
-            $history = $historicalData->get($code);
-            if ($history) {
-                $historyByDate = $history->keyBy(fn($item) => $item->traded_date instanceof Carbon ? $item->traded_date->format('Y-m-d') : $item->traded_date);
-                foreach ($resolvedDates as $key => $targetDate) {
-                    $pastPrice = $historyByDate->get($targetDate);
-                    if ($pastPrice && $pastPrice->close > 0) {
-                        $price->{"val_{$key}"} = $pastPrice->close;
-                        if ($price->close > 0) {
-                            $price->{"chg_{$key}"} = (($price->close - $pastPrice->close) / $pastPrice->close) * 100;
+            // Historical period returns — walk each window closest-first, stop on first hit.
+            if ($historyByDate) {
+                foreach ($dateWindowMap as $key => $candidates) {
+                    foreach ($candidates as $candidateDate) {
+                        $pastPrice = $historyByDate->get($candidateDate);
+                        if ($pastPrice && $pastPrice->close > 0) {
+                            $price->{"val_{$key}"} = $pastPrice->close;
+                            if ($price->close > 0) {
+                                $price->{"chg_{$key}"} = (($price->close - $pastPrice->close) / $pastPrice->close) * 100;
+                            }
+                            break;
                         }
                     }
                 }
