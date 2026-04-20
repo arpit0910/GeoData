@@ -13,14 +13,15 @@ class SyncMfHistoryCommand extends Command
     protected $signature = 'sync:mf-history
                             {months=12 : Months of history to fetch per scheme}
                             {--scheme= : Single scheme_code to sync (debug/backfill)}
-                            {--force : Re-insert even if records already exist}
-                            {--concurrency=10 : Parallel HTTP requests per batch}';
+                            {--force : Re-insert even if records already exist}';
 
     protected $description = 'Fetch historical NAVs + compute period returns from mfapi.in';
 
-    private const MFAPI_BASE = 'https://api.mfapi.in/mf';
-    private const NAV_CHUNK  = 500; // SQLite limit: 32766 vars / 21 cols = 1560 max; 500 is safe
-    private const SLEEP_US   = 800000; // 0.8 s between batches
+    private const MFAPI_BASE    = 'https://api.mfapi.in/mf';
+    private const NAV_CHUNK     = 500;
+    private const SLEEP_MS      = 300000; // 0.3 s between each scheme (avoid rate limiting)
+    private const HTTP_RETRIES  = 5;
+    private const HTTP_BACKOFF  = [1, 2, 4, 8, 16]; // seconds per retry attempt
 
     // [carbon-method, value]
     private const PERIODS = [
@@ -39,10 +40,9 @@ class SyncMfHistoryCommand extends Command
     {
         ini_set('memory_limit', '512M');
 
-        $months      = (int) $this->argument('months');
-        $concurrency = max(1, min((int) $this->option('concurrency'), 20));
-        $cutoff      = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
-        $singleCode  = $this->option('scheme');
+        $months     = (int) $this->argument('months');
+        $cutoff     = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
+        $singleCode = $this->option('scheme');
 
         $query = DB::table('mutual_funds')->select('isin', 'scheme_code')->where('is_active', 1);
         if ($singleCode) $query->where('scheme_code', $singleCode);
@@ -60,10 +60,9 @@ class SyncMfHistoryCommand extends Command
         }
 
         $this->info(sprintf(
-            'Syncing %d months of history + returns for %d schemes (concurrency=%d, cutoff=%s)...',
+            'Syncing %d months of history + returns for %d schemes (cutoff=%s)...',
             $months,
             $schemes->count(),
-            $concurrency,
             $cutoff
         ));
 
@@ -94,128 +93,152 @@ class SyncMfHistoryCommand extends Command
         $flushed = 0;
         $skipped = 0;
         $failed  = 0;
+        $failedSchemes = [];
 
-        foreach ($schemes->chunk($concurrency) as $batch) {
-            $batchArr = $batch->values()->all();
+        foreach ($schemes as $scheme) {
+            // Fetch with retries
+            $json        = null;
+            $httpSuccess = false;
+            for ($attempt = 0; $attempt < self::HTTP_RETRIES; $attempt++) {
+                if ($attempt > 0) {
+                    sleep(self::HTTP_BACKOFF[$attempt - 1]);
+                }
+                try {
+                    $response = Http::timeout(30)->withoutVerifying()
+                        ->get(self::MFAPI_BASE . '/' . $scheme->scheme_code);
 
-            try {
-                $responses = Http::pool(function ($pool) use ($batchArr) {
-                    $reqs = [];
-                    foreach ($batchArr as $i => $s) {
-                        $reqs[$i] = $pool->as($i)->timeout(20)->withoutVerifying()
-                            ->get(self::MFAPI_BASE . '/' . $s->scheme_code);
+                    if ($response->successful()) {
+                        $httpSuccess = true;
+                        $body = $response->json();
+                        if (!empty($body['data'])) {
+                            $json = $body;
+                        }
+                        break;
                     }
-                    return $reqs;
-                });
-            } catch (\Exception $e) {
-                $failed += count($batchArr);
-                $bar->advance(count($batchArr));
-                usleep(self::SLEEP_US);
+                    // Non-2xx: retry
+                } catch (\Exception $e) {
+                    // network error: retry
+                }
+            }
+
+            if (!$httpSuccess) {
+                $failed++;
+                $failedSchemes[] = $scheme->scheme_code;
+                $bar->advance();
+                usleep(self::SLEEP_MS);
                 continue;
             }
 
-            foreach ($batchArr as $i => $scheme) {
-                $response = $responses[$i] ?? null;
-                if (!$response || $response instanceof \Throwable || !$response->successful()) {
-                    $failed++;
-                    continue;
-                }
-
-                $json = $response->json();
-                if (empty($json['data'])) {
-                    $skipped++;
-                    continue;
-                }
-
-                // Fully covered: DB already has data from cutoff to ≥ recent threshold
-                $range = $existingRange[$scheme->isin] ?? null;
-                if (
-                    !$this->option('force') && $range
-                    && $range[0] <= $cutoff
-                    && $range[1] >= $recentThreshold
-                ) {
-                    $skipped++;
-                    continue;
-                }
-
-                // Parse NAVs within range, skipping dates already in DB
-                $navs = [];
-                foreach ($json['data'] as $entry) {
-                    $d = $this->parseMfApiDate($entry['date'] ?? '');
-                    if (!$d || $d < $cutoff) continue;
-
-                    // Skip dates within the already-covered range
-                    if (
-                        !$this->option('force') && $range
-                        && $d >= $range[0] && $d <= $range[1]
-                    ) {
-                        continue;
-                    }
-
-                    $v = (float)($entry['nav'] ?? 0);
-                    if ($v <= 0) continue;
-                    $navs[$d] = $v;
-                }
-
-                if (empty($navs)) {
-                    $skipped++;
-                    continue;
-                }
-
-                ksort($navs);
-                $dates      = array_keys($navs);
-                $navVals    = array_values($navs);
-                $timestamps = array_map('strtotime', $dates);
-                $count      = count($dates);
-
-                $schemeRows = [];
-                for ($j = 0; $j < $count; $j++) {
-                    $currentNav = $navVals[$j];
-                    $row = [
-                        'mf_id'    => (int) $scheme->scheme_code,
-                        'isin'     => $scheme->isin,
-                        'nav_date' => $dates[$j],
-                        'nav'      => $currentNav,
-                    ];
-
-                    foreach (self::PERIODS as $p => [$method, $val]) {
-                        $targetTs = $this->targetTs($dates[$j], $method, $val);
-                        $idx      = $this->closestIdx($timestamps, $j, $targetTs, 10);
-                        if ($idx !== null && $navVals[$idx] > 0) {
-                            $refNav        = $navVals[$idx];
-                            $row["chg_{$p}"] = round((($currentNav - $refNav) / $refNav) * 100, 4);
-                            $row["val_{$p}"] = $refNav;
-                        } else {
-                            $row["chg_{$p}"] = null;
-                            $row["val_{$p}"] = null;
-                        }
-                    }
-
-                    $schemeRows[] = $row;
-                }
-
-                // Reconnect before the write — the Http::pool() above can idle
-                // the connection for up to 20 s, causing MySQL "server has gone away".
-                $written = false;
-                for ($attempt = 1; $attempt <= 3; $attempt++) {
-                    try {
-                        try { DB::reconnect(); } catch (\Throwable $t) {}
-                        DB::beginTransaction();
-                        $this->flushBuffer($schemeRows);
-                        DB::commit();
-                        $flushed += count($schemeRows);
-                        $written = true;
-                        break;
-                    } catch (\Exception $e) {
-                        try { DB::rollBack(); } catch (\Throwable $t) {}
-                        if ($attempt < 3) usleep(500000);
-                    }
-                }
-                if (!$written) $failed++;
+            if (empty($json['data'])) {
+                $skipped++;
+                $bar->advance();
+                usleep(self::SLEEP_MS);
+                continue;
             }
 
-            $bar->advance(count($batchArr));
-            usleep(self::SLEEP_US);
+            // Fully covered: DB already has data from cutoff to ≥ recent threshold
+            $range = $existingRange[$scheme->isin] ?? null;
+            if (
+                !$this->option('force') && $range
+                && $range[0] <= $cutoff
+                && $range[1] >= $recentThreshold
+            ) {
+                $skipped++;
+                $bar->advance();
+                usleep(self::SLEEP_MS);
+                continue;
+            }
+
+            // Build full NAV map from API (all dates >= cutoff)
+            $allNavs = [];
+            foreach ($json['data'] as $entry) {
+                $d = $this->parseMfApiDate($entry['date'] ?? '');
+                if (!$d || $d < $cutoff) continue;
+                $v = (float)($entry['nav'] ?? 0);
+                if ($v <= 0) continue;
+                $allNavs[$d] = $v;
+            }
+
+            if (empty($allNavs)) {
+                $skipped++;
+                $bar->advance();
+                usleep(self::SLEEP_MS);
+                continue;
+            }
+
+            ksort($allNavs);
+            $allDates      = array_keys($allNavs);
+            $allNavVals    = array_values($allNavs);
+            $allTimestamps = array_map('strtotime', $allDates);
+
+            // Determine which dates need to be inserted/updated
+            $newDates = [];
+            foreach ($allDates as $idx => $d) {
+                if (
+                    !$this->option('force') && $range
+                    && $d >= $range[0] && $d <= $range[1]
+                ) {
+                    continue; // already in DB
+                }
+                $newDates[$idx] = $d;
+            }
+
+            if (empty($newDates)) {
+                $skipped++;
+                $bar->advance();
+                usleep(self::SLEEP_MS);
+                continue;
+            }
+
+            // Compute rows using the FULL nav array so period returns resolve correctly
+            $schemeRows = [];
+            foreach ($newDates as $j => $date) {
+                $currentNav = $allNavVals[$j];
+                $row = [
+                    'mf_id'    => (int) $scheme->scheme_code,
+                    'isin'     => $scheme->isin,
+                    'nav_date' => $date,
+                    'nav'      => $currentNav,
+                ];
+
+                foreach (self::PERIODS as $p => [$method, $val]) {
+                    $targetTs = $this->targetTs($date, $method, $val);
+                    $idx      = $this->closestIdx($allTimestamps, $j, $targetTs, 10);
+                    if ($idx !== null && $allNavVals[$idx] > 0) {
+                        $refNav          = $allNavVals[$idx];
+                        $row["chg_{$p}"] = round((($currentNav - $refNav) / $refNav) * 100, 4);
+                        $row["val_{$p}"] = $refNav;
+                    } else {
+                        $row["chg_{$p}"] = null;
+                        $row["val_{$p}"] = null;
+                    }
+                }
+
+                $schemeRows[] = $row;
+            }
+
+            $written = false;
+            for ($attempt = 1; $attempt <= 3; $attempt++) {
+                try {
+                    try { DB::reconnect(); } catch (\Throwable $t) {}
+                    DB::beginTransaction();
+                    $this->flushBuffer($schemeRows);
+                    DB::commit();
+                    $flushed += count($schemeRows);
+                    $written = true;
+                    break;
+                } catch (\Exception $e) {
+                    try { DB::rollBack(); } catch (\Throwable $t) {}
+                    if ($attempt < 3) usleep(500000);
+                }
+            }
+            if (!$written) {
+                $failed++;
+                $failedSchemes[] = $scheme->scheme_code;
+            }
+
+            $bar->advance();
+            usleep(self::SLEEP_MS);
         }
 
         $bar->finish();
@@ -226,6 +249,9 @@ class SyncMfHistoryCommand extends Command
             $skipped,
             $failed
         ));
+        if (!empty($failedSchemes)) {
+            $this->warn('Failed scheme codes: ' . implode(', ', $failedSchemes));
+        }
 
         return Command::SUCCESS;
     }

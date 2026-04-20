@@ -112,22 +112,28 @@ class SyncMfDateRangeCommand extends Command
 
     private function fetchAmfiForDate(Carbon $date): ?string
     {
-        $fmt = $date->format('d-M-Y'); // e.g. "01-Apr-2023"
+        $fmt     = $date->format('d-M-Y'); // e.g. "01-Apr-2023"
+        $backoff = [2, 5, 10];
 
-        try {
-            $response = Http::timeout(60)
-                ->withoutVerifying()
-                ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
-                ->get(self::AMFI_HIST_URL, ['frmdt' => $fmt, 'todt' => $fmt]);
-
-            if (!$response->successful() || strlen($response->body()) < 200) {
-                return null;
+        for ($attempt = 0; $attempt <= count($backoff); $attempt++) {
+            if ($attempt > 0) {
+                sleep($backoff[$attempt - 1]);
             }
-            return $response->body();
-        } catch (\Exception $e) {
-            $this->warn('  AMFI fetch error: ' . $e->getMessage());
-            return null;
+            try {
+                $response = Http::timeout(60)
+                    ->withoutVerifying()
+                    ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                    ->get(self::AMFI_HIST_URL, ['frmdt' => $fmt, 'todt' => $fmt]);
+
+                if ($response->successful() && strlen($response->body()) >= 200) {
+                    return $response->body();
+                }
+            } catch (\Exception $e) {
+                $this->warn("  AMFI fetch error (attempt " . ($attempt + 1) . "): " . $e->getMessage());
+            }
         }
+
+        return null;
     }
 
     private function parse(string $body, string $date): array
@@ -228,14 +234,15 @@ class SyncMfDateRangeCommand extends Command
 
     private function upsertNav(array $rows, string $date): void
     {
-        $knownIsins = DB::table('mutual_funds')->pluck('isin')->flip();
-        $rows = array_values(array_filter($rows, fn($r) => isset($knownIsins[$r['isin']])));
+        $isinToSchemeCode = DB::table('mutual_funds')->pluck('scheme_code', 'isin');
+        $rows = array_values(array_filter($rows, fn($r) => isset($isinToSchemeCode[$r['isin']])));
+        $rows = array_map(fn($r) => array_merge($r, ['mf_id' => (int) $isinToSchemeCode[$r['isin']]]), $rows);
 
         foreach (array_chunk($rows, self::NAV_CHUNK) as $chunk) {
             DB::table('mutual_fund_prices')->upsert(
                 $chunk,
                 ['isin', 'nav_date'],
-                ['nav']
+                ['mf_id', 'nav']
             );
         }
     }
