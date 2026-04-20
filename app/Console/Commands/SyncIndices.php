@@ -354,6 +354,8 @@ class SyncIndices extends Command
         // connect_timeout (5s) ensures blocked connections fail fast without
         // waiting for the full request timeout — critical on production servers
         // where BSE may block datacenter IPs at the TCP level.
+        // 404 responses are definitive — we skip retries if every URL returned 404.
+        // Only network errors or 5xx responses trigger a retry.
         $timeouts = [15, 30, 60];
 
         foreach ($timeouts as $attempt => $timeout) {
@@ -372,6 +374,8 @@ class SyncIndices extends Command
             } catch (\Exception $e) {
                 // Warmup failure is non-fatal — carry on
             }
+
+            $hadTransientError = false;
 
             foreach ($urls as $url) {
                 $this->info("  [BSE] Trying: {$url}");
@@ -394,18 +398,34 @@ class SyncIndices extends Command
                             break 2;
                         }
                         $this->warn("  [BSE] HTML response (not data) from: {$url}");
+                        $hadTransientError = true; // HTML may be a session/bot-check — worth retrying
+                    } elseif ($response->status() === 404) {
+                        $this->warn("  [BSE] HTTP 404 from: {$url}");
+                        // 404 = file definitively missing — don't count as transient
                     } else {
                         $this->warn("  [BSE] HTTP {$response->status()} from: {$url}");
+                        $hadTransientError = true; // 5xx or other — worth retrying
                     }
                 } catch (\Exception $e) {
                     $this->warn("  [BSE] {$url}: " . $e->getMessage());
+                    $hadTransientError = true; // connection error — worth retrying
                 }
+            }
+
+            // All URLs returned 404 — retrying will not help; bail out early.
+            if (!$hadTransientError) {
+                $this->warn("  [BSE] All URLs returned 404 — no retry needed.");
+                break;
             }
         }
 
         if (!$csvData) {
-            $this->warn("  [BSE] All direct URLs failed. Falling back to Yahoo Finance...");
-            return $this->syncBseViaYahoo($date);
+            $this->warn("  [BSE] All direct URLs failed. Trying Yahoo Finance...");
+            $count = $this->syncBseViaYahoo($date);
+            if ($count > 0) return $count;
+
+            $this->warn("  [BSE] Yahoo Finance returned no data. Trying Stooq...");
+            return $this->syncBseViaStooq($date);
         }
 
         return $this->parseBseCsv($csvData, $successUrl, $date);
@@ -560,16 +580,45 @@ class SyncIndices extends Command
         $indicesData = [];
         $now         = now();
         $dateStr     = $date->format('Y-m-d');
+        $tsStart     = $date->copy()->startOfDay()->timestamp;
+        $tsEnd       = $date->copy()->endOfDay()->timestamp;
 
-        $tsStart = $date->copy()->startOfDay()->timestamp;
-        $tsEnd   = $date->copy()->endOfDay()->timestamp;
+        // ── Connectivity check ───────────────────────────────────────────────
+        // query1 is often blocked on datacenter IPs. query2 is a mirror that may not be.
+        // We probe ONCE with the first ticker instead of testing per-ticker —
+        // if both hosts time out (5s each), we bail immediately rather than burning
+        // connect_timeout × 6 tickers = ~30–60s of wasted wait.
+        $yahooHosts  = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com'];
+        $workingHost = null;
+        $firstSymbol = array_key_first($tickers);
+        $probeUrl    = "https://%s/v8/finance/chart/{$firstSymbol}?period1={$tsStart}&period2={$tsEnd}&interval=1d";
 
-        foreach ($tickers as $ticker => $meta) {
+        foreach ($yahooHosts as $host) {
             try {
-                $url = "https://query1.finance.yahoo.com/v8/finance/chart/{$ticker}"
-                     . "?period1={$tsStart}&period2={$tsEnd}&interval=1d";
+                $probe = Http::withOptions(['connect_timeout' => 5])
+                    ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                    ->timeout(10)
+                    ->get(sprintf($probeUrl, $host));
+                // Any HTTP response (even 404) means the host is reachable
+                $workingHost = $host;
+                $this->info("  [Yahoo] Reachable via {$host}.");
+                break;
+            } catch (\Exception $e) {
+                $this->warn("  [Yahoo/{$host}] unreachable: " . $e->getMessage());
+            }
+        }
 
-                $this->info("  [Yahoo] {$meta['name']}...");
+        if (!$workingHost) {
+            $this->warn("  [Yahoo] Both endpoints unreachable — Yahoo Finance appears blocked on this server.");
+            return 0;
+        }
+
+        // ── Fetch all tickers via the confirmed reachable host ────────────────
+        foreach ($tickers as $ticker => $meta) {
+            $this->info("  [Yahoo] {$meta['name']}...");
+            try {
+                $url = "https://{$workingHost}/v8/finance/chart/{$ticker}"
+                     . "?period1={$tsStart}&period2={$tsEnd}&interval=1d";
 
                 $response = Http::withOptions(['connect_timeout' => 5])
                     ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
@@ -634,6 +683,120 @@ class SyncIndices extends Command
         ]);
 
         $this->info("  [Yahoo] Saved " . count($pricesData) . " BSE indices.");
+        return count($pricesData);
+    }
+
+    // ── BSE Stooq fallback ───────────────────────────────────────────────────
+
+    private function syncBseViaStooq(Carbon $date): int
+    {
+        // Stooq.com — free historical data, no auth, accessible from most servers.
+        // Each request returns a CSV with Date,Open,High,Low,Close,Volume.
+        // If the requested date is a holiday, Stooq returns the previous trading day —
+        // we check the returned date and skip if it doesn't match.
+        $tickers = [
+            '^bsesn'     => ['name' => 'S&P BSE SENSEX',   'code' => 'BSE_SENSEX',   'cat' => 'Broad-based'],
+            'bse100.in'  => ['name' => 'S&P BSE 100',       'code' => 'BSE_100',      'cat' => 'Broad-based'],
+            'bse200.in'  => ['name' => 'S&P BSE 200',       'code' => 'BSE_200',      'cat' => 'Broad-based'],
+            'bse500.in'  => ['name' => 'S&P BSE 500',       'code' => 'BSE_500',      'cat' => 'Broad-based'],
+            'bsemi.in'   => ['name' => 'S&P BSE MidCap',   'code' => 'BSE_MIDCAP',   'cat' => 'Broad-based'],
+            'bsesi.in'   => ['name' => 'S&P BSE SmallCap', 'code' => 'BSE_SMALLCAP', 'cat' => 'Broad-based'],
+        ];
+
+        $pricesData  = [];
+        $indicesData = [];
+        $now         = now();
+        $dateStr     = $date->format('Y-m-d');
+        $d1          = $date->format('Ymd');
+
+        foreach ($tickers as $symbol => $meta) {
+            $this->info("  [Stooq] {$meta['name']}...");
+            try {
+                $url = 'https://stooq.com/q/d/l/?s=' . urlencode($symbol)
+                     . "&d1={$d1}&d2={$d1}&i=d";
+
+                $response = Http::withOptions(['connect_timeout' => 5])
+                    ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                    ->timeout(10)
+                    ->get($url);
+
+                if (!$response->successful()) {
+                    $this->warn("  [Stooq] HTTP {$response->status()} for {$symbol}");
+                    continue;
+                }
+
+                $body = trim($response->body());
+
+                // Stooq returns plain text "No data" or a Polish error when symbol
+                // is unknown or the exchange is closed for the period requested.
+                if (
+                    stripos($body, 'No data') !== false ||
+                    stripos($body, 'Przekroczono') !== false ||
+                    strlen($body) < 10
+                ) {
+                    $this->warn("  [Stooq] No data for {$symbol} on {$dateStr}");
+                    continue;
+                }
+
+                $lines = explode("\n", str_replace("\r", '', $body));
+                if (count($lines) < 2) continue;
+
+                array_shift($lines); // skip header (Date,Open,High,Low,Close,Volume)
+                $row = str_getcsv(trim($lines[0] ?? ''));
+                if (count($row) < 5) continue;
+
+                [$rowDate, $open, $high, $low, $close] = $row;
+                $volume = $row[5] ?? 0;
+
+                // Stooq silently returns the nearest prior trading day when the
+                // requested date is a holiday — reject mismatched dates.
+                if (trim($rowDate) !== $dateStr) {
+                    $this->warn("  [Stooq] {$symbol}: returned {$rowDate}, expected {$dateStr} — likely a holiday.");
+                    continue;
+                }
+
+                $closeVal = (float)$close;
+                if ($closeVal <= 0) continue;
+
+                $indicesData[] = [
+                    'index_code' => $meta['code'],
+                    'index_name' => $meta['name'],
+                    'exchange'   => 'BSE',
+                    'category'   => $meta['cat'],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+
+                $pricesData[] = [
+                    'index_code'     => $meta['code'],
+                    'traded_date'    => $dateStr,
+                    'open'           => (float)$open,
+                    'high'           => (float)$high,
+                    'low'            => (float)$low,
+                    'close'          => $closeVal,
+                    'prev_close'     => null,
+                    'change_percent' => null,
+                    'volume'         => (float)$volume,
+                    'created_at'     => $now,
+                    'updated_at'     => $now,
+                ];
+
+            } catch (\Exception $e) {
+                $this->warn("  [Stooq] {$symbol}: " . $e->getMessage());
+            }
+        }
+
+        if (empty($indicesData)) {
+            $this->warn("  [Stooq] No BSE data retrieved.");
+            return 0;
+        }
+
+        Index::upsert($indicesData, ['index_code'], ['index_name', 'updated_at']);
+        IndexPrice::upsert($pricesData, ['index_code', 'traded_date'], [
+            'open', 'high', 'low', 'close', 'prev_close', 'change_percent', 'volume', 'updated_at',
+        ]);
+
+        $this->info("  [Stooq] Saved " . count($pricesData) . " BSE indices.");
         return count($pricesData);
     }
 
