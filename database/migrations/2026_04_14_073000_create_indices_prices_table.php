@@ -55,7 +55,6 @@ return new class extends Migration
             $table->decimal('chg_1y', 10, 4)->nullable();
             $table->decimal('chg_3y', 10, 4)->nullable();
 
-
             $table->timestamps();
 
             $table->foreign('index_code')->references('index_code')->on('indices')->onDelete('cascade');

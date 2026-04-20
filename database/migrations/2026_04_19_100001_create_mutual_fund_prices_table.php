@@ -9,6 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('mutual_fund_prices', function (Blueprint $table) {
+            $table->id();
             $table->string('isin', 12);
             $table->date('nav_date');
             $table->decimal('nav', 15, 4);

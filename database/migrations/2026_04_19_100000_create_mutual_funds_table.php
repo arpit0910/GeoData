@@ -10,6 +10,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('mutual_funds', function (Blueprint $table) {
+            $table->id();
             $table->string('isin', 12)->primary();
             $table->string('scheme_code', 20)->unique();          // mfapi.in lookup key
             $table->string('isin_reinvest', 12)->nullable();      // IDCW reinvestment ISIN from AMFI
