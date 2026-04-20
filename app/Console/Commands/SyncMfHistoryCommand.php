@@ -44,7 +44,7 @@ class SyncMfHistoryCommand extends Command
         $cutoff      = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
         $singleCode  = $this->option('scheme');
 
-        $query = DB::table('mutual_funds')->select('id', 'isin', 'scheme_code')->where('is_active', 1);
+        $query = DB::table('mutual_funds')->select('isin', 'scheme_code')->where('is_active', 1);
         if ($singleCode) $query->where('scheme_code', $singleCode);
         $schemes = $query->get();
 
@@ -172,7 +172,7 @@ class SyncMfHistoryCommand extends Command
                 for ($j = 0; $j < $count; $j++) {
                     $currentNav = $navVals[$j];
                     $row = [
-                        'mf_id'    => $scheme->id,
+                        'mf_id'    => (int) $scheme->scheme_code,
                         'isin'     => $scheme->isin,
                         'nav_date' => $dates[$j],
                         'nav'      => $currentNav,
@@ -194,17 +194,24 @@ class SyncMfHistoryCommand extends Command
                     $schemeRows[] = $row;
                 }
 
-                // Flush per-scheme inside explicit transaction — each commit writes directly
-                // to the main SQLite DB file (DELETE journal mode), so data survives any crash.
-                DB::beginTransaction();
-                try {
-                    $this->flushBuffer($schemeRows);
-                    DB::commit();
-                    $flushed += count($schemeRows);
-                } catch (\Exception $e) {
-                    DB::rollBack();
-                    $failed++;
+                // Reconnect before the write — the Http::pool() above can idle
+                // the connection for up to 20 s, causing MySQL "server has gone away".
+                $written = false;
+                for ($attempt = 1; $attempt <= 3; $attempt++) {
+                    try {
+                        try { DB::reconnect(); } catch (\Throwable $t) {}
+                        DB::beginTransaction();
+                        $this->flushBuffer($schemeRows);
+                        DB::commit();
+                        $flushed += count($schemeRows);
+                        $written = true;
+                        break;
+                    } catch (\Exception $e) {
+                        try { DB::rollBack(); } catch (\Throwable $t) {}
+                        if ($attempt < 3) usleep(500000);
+                    }
                 }
+                if (!$written) $failed++;
             }
 
             $bar->advance(count($batchArr));

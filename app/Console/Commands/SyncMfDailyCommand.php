@@ -213,10 +213,10 @@ class SyncMfDailyCommand extends Command
     {
         $this->info('Upserting mutual_fund_prices...');
 
-        // Load isin → id map for FK and to filter to known ISINs only
-        $isinToId = DB::table('mutual_funds')->pluck('id', 'isin');
-        $rows = array_filter($rows, fn($r) => isset($isinToId[$r['isin']]));
-        $rows = array_map(fn($r) => array_merge($r, ['mf_id' => $isinToId[$r['isin']]]), $rows);
+        // Load isin → scheme_code map; also filters to known ISINs (FK constraint)
+        $isinToSchemeCode = DB::table('mutual_funds')->pluck('scheme_code', 'isin');
+        $rows = array_filter($rows, fn($r) => isset($isinToSchemeCode[$r['isin']]));
+        $rows = array_map(fn($r) => array_merge($r, ['mf_id' => (int) $isinToSchemeCode[$r['isin']]]), $rows);
 
         $bar = $this->output->createProgressBar(count($rows));
         $bar->start();
