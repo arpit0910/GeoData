@@ -213,9 +213,10 @@ class SyncMfDailyCommand extends Command
     {
         $this->info('Upserting mutual_fund_prices...');
 
-        // Only insert for ISINs that exist in master (FK constraint)
-        $knownIsins = DB::table('mutual_funds')->pluck('isin')->flip();
-        $rows = array_filter($rows, fn($r) => isset($knownIsins[$r['isin']]));
+        // Load isin → id map for FK and to filter to known ISINs only
+        $isinToId = DB::table('mutual_funds')->pluck('id', 'isin');
+        $rows = array_filter($rows, fn($r) => isset($isinToId[$r['isin']]));
+        $rows = array_map(fn($r) => array_merge($r, ['mf_id' => $isinToId[$r['isin']]]), $rows);
 
         $bar = $this->output->createProgressBar(count($rows));
         $bar->start();
@@ -224,7 +225,7 @@ class SyncMfDailyCommand extends Command
             DB::table('mutual_fund_prices')->upsert(
                 $chunk,
                 ['isin', 'nav_date'],
-                ['nav']
+                ['mf_id', 'nav']
             );
             $bar->advance(count($chunk));
         }

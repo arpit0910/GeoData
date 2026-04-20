@@ -44,7 +44,7 @@ class SyncMfHistoryCommand extends Command
         $cutoff      = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
         $singleCode  = $this->option('scheme');
 
-        $query = DB::table('mutual_funds')->select('isin', 'scheme_code')->where('is_active', 1);
+        $query = DB::table('mutual_funds')->select('id', 'isin', 'scheme_code')->where('is_active', 1);
         if ($singleCode) $query->where('scheme_code', $singleCode);
         $schemes = $query->get();
 
@@ -172,6 +172,7 @@ class SyncMfHistoryCommand extends Command
                 for ($j = 0; $j < $count; $j++) {
                     $currentNav = $navVals[$j];
                     $row = [
+                        'mf_id'    => $scheme->id,
                         'isin'     => $scheme->isin,
                         'nav_date' => $dates[$j],
                         'nav'      => $currentNav,
@@ -227,6 +228,7 @@ class SyncMfHistoryCommand extends Command
     private function flushBuffer(array $rows): int
     {
         $updateCols = [
+            'mf_id',
             'nav',
             'chg_1d',
             'val_1d',

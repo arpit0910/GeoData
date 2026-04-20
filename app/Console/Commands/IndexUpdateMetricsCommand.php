@@ -18,6 +18,9 @@ class IndexUpdateMetricsCommand extends Command
 
     public function handle(): int
     {
+        ini_set('memory_limit', '-1');
+        DB::disableQueryLog();
+
         $this->info("Starting analytical metrics update for indices...");
 
         $query = IndexPrice::orderBy('traded_date', 'asc');
@@ -41,15 +44,15 @@ class IndexUpdateMetricsCommand extends Command
         $bar = $this->output->createProgressBar($dates->count());
         $bar->start();
 
-        foreach ($dates as $date) {
-            // Reconnect before each date's DB work — this loop can run for hours
-            // and MySQL silently drops idle connections (wait_timeout).
-            try { DB::reconnect(); } catch (\Exception $e) {}
-
+        foreach ($dates as $i => $date) {
             $this->calculateForDate(Carbon::parse($date));
             $bar->advance();
 
-            if (Carbon::parse($date)->day % 7 === 0) gc_collect_cycles();
+            if ($i % 50 === 0) {
+                gc_collect_cycles();
+                // Refresh connection only every 50 dates to avoid connection churn
+                try { DB::reconnect(); } catch (\Exception $e) {}
+            }
         }
 
         $bar->finish();
@@ -160,5 +163,7 @@ class IndexUpdateMetricsCommand extends Command
 
             $price->save();
         }
+
+        unset($prices, $tradingDates, $historicalData, $dateWindowMap, $allTargetDates);
     }
 }
