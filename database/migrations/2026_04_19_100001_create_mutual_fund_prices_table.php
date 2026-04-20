@@ -32,7 +32,6 @@ return new class extends Migration
             $table->decimal('chg_3y', 10, 4)->nullable();
             $table->decimal('val_3y', 15, 4)->nullable();
             $table->timestamp('created_at')->useCurrent();
-            $table->primary(['isin', 'nav_date']);
             $table->index('nav_date');
             $table->foreign('isin')->references('isin')->on('mutual_funds')->onDelete('cascade');
         });
