@@ -213,7 +213,7 @@ class SyncMfDailyCommand extends Command
     {
         $this->info('Upserting mutual_fund_prices...');
 
-        // Load isin → scheme_code map; also filters to known ISINs (FK constraint)
+        // Load isin → scheme_code map; mf_id stores scheme_code (not auto-increment id)
         $isinToSchemeCode = DB::table('mutual_funds')->pluck('scheme_code', 'isin');
         $rows = array_filter($rows, fn($r) => isset($isinToSchemeCode[$r['isin']]));
         $rows = array_map(fn($r) => array_merge($r, ['mf_id' => (int) $isinToSchemeCode[$r['isin']]]), $rows);

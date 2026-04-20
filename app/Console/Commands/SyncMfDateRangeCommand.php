@@ -95,6 +95,7 @@ class SyncMfDateRangeCommand extends Command
 
             } catch (\Exception $e) {
                 $this->error("  Failed {$date}: " . $e->getMessage());
+                $this->error("  At: " . $e->getFile() . ':' . $e->getLine());
             }
 
             $current->addDay();
@@ -235,6 +236,7 @@ class SyncMfDateRangeCommand extends Command
     private function upsertNav(array $rows, string $date): void
     {
         $isinToSchemeCode = DB::table('mutual_funds')->pluck('scheme_code', 'isin');
+
         $rows = array_values(array_filter($rows, fn($r) => isset($isinToSchemeCode[$r['isin']])));
         $rows = array_map(fn($r) => array_merge($r, ['mf_id' => (int) $isinToSchemeCode[$r['isin']]]), $rows);
 
