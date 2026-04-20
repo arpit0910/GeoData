@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('mutual_fund_prices', function (Blueprint $table) {
             $table->id();
-            $table->string('isin', 12);
+            $table->unsignedBigInteger('mf_id')->index();
+            $table->string('isin')->index();
             $table->date('nav_date');
             $table->decimal('nav', 15, 4);
             $table->decimal('chg_1d', 10, 4)->nullable();
@@ -33,7 +34,7 @@ return new class extends Migration
             $table->decimal('val_3y', 15, 4)->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->index('nav_date');
-            $table->foreign('isin')->references('isin')->on('mutual_funds')->onDelete('cascade');
+            $table->foreign('mf_id')->references('id')->on('mutual_funds')->onDelete('cascade');
         });
     }
 
