@@ -264,76 +264,44 @@ class SyncMfDailyCommand extends Command
             'chg_3y' => Carbon::parse($navDate)->subYears(3),
         ];
 
-        // Oldest date we need history from (3y - 10 days buffer)
-        $oldest = Carbon::parse($navDate)->subYears(3)->subDays(10)->format('Y-m-d');
+        // Run one UPDATE per period entirely inside MySQL — PHP never loads NAV history
+        // into memory, so this works within any memory_limit including 128 MB.
+        //
+        // For each period we find the closest available NAV within a ±10-day window
+        // using a self-join: the inner GROUP BY picks the minimum calendar distance per
+        // ISIN, the outer join retrieves that row's actual nav value, then we UPDATE
+        // today's record in place.
+        foreach ($periods as $chgCol => $targetDate) {
+            $valCol = str_replace('chg_', 'val_', $chgCol);
+            $target = $targetDate->format('Y-m-d');
+            $from   = $targetDate->copy()->subDays(10)->format('Y-m-d');
+            $to     = $targetDate->copy()->addDays(10)->format('Y-m-d');
 
-        // Today's NAVs
-        $todayNavs = DB::table('mutual_fund_prices')
-            ->where('nav_date', $navDate)
-            ->select('isin', 'nav')
-            ->get();
+            DB::statement("
+                UPDATE mutual_fund_prices p
+                JOIN (
+                    SELECT p2.isin, p2.nav AS ref_nav
+                    FROM mutual_fund_prices p2
+                    INNER JOIN (
+                        SELECT isin, MIN(ABS(DATEDIFF(nav_date, ?))) AS min_diff
+                        FROM mutual_fund_prices
+                        WHERE nav_date BETWEEN ? AND ?
+                        GROUP BY isin
+                    ) closest
+                        ON  p2.isin = closest.isin
+                        AND ABS(DATEDIFF(p2.nav_date, ?)) = closest.min_diff
+                    WHERE p2.nav_date BETWEEN ? AND ?
+                    GROUP BY p2.isin
+                ) ref ON p.isin = ref.isin
+                SET p.{$chgCol} = ROUND(((p.nav - ref.ref_nav) / ref.ref_nav) * 100, 4),
+                    p.{$valCol} = ref.ref_nav
+                WHERE p.nav_date = ?
+                  AND ref.ref_nav > 0
+            ", [$target, $from, $to, $target, $from, $to, $navDate]);
 
-        if ($todayNavs->isEmpty()) return;
-
-        $bar = $this->output->createProgressBar($todayNavs->count());
-        $bar->start();
-
-        // Process in chunks to limit memory usage (~500 schemes × ~650 rows = 325k rows)
-        foreach ($todayNavs->chunk(500) as $chunk) {
-            $isins = $chunk->pluck('isin')->all();
-
-            // Fetch all historical NAVs for these ISINs in one query
-            $hist = DB::table('mutual_fund_prices')
-                ->whereIn('isin', $isins)
-                ->where('nav_date', '>=', $oldest)
-                ->where('nav_date', '<', $navDate)
-                ->orderBy('nav_date')
-                ->select('isin', 'nav_date', 'nav')
-                ->get()
-                ->groupBy('isin')
-                ->map(fn($rows) => $rows->sortBy('nav_date')->values());
-
-            foreach ($chunk as $row) {
-                $currentNav = (float) $row->nav;
-                $schemeHist = $hist->get($row->isin, collect());
-
-                $updates = [];
-                foreach ($periods as $col => $targetCarbon) {
-                    $targetTs  = $targetCarbon->timestamp;
-                    $windowSec = 10 * 86400;
-
-                    $best = null;
-                    $bestDiff = PHP_INT_MAX;
-
-                    foreach ($schemeHist as $h) {
-                        $diff = abs(strtotime($h->nav_date) - $targetTs);
-                        if ($diff <= $windowSec && $diff < $bestDiff) {
-                            $bestDiff = $diff;
-                            $best     = $h;
-                        }
-                    }
-
-                    $refCol = str_replace('chg_', 'val_', $col);
-                    if ($best && (float)$best->nav > 0) {
-                        $refNav         = (float)$best->nav;
-                        $updates[$col]    = round((($currentNav - $refNav) / $refNav) * 100, 4);
-                        $updates[$refCol] = $refNav;
-                    } else {
-                        $updates[$col]    = null;
-                        $updates[$refCol] = null;
-                    }
-                }
-
-                DB::table('mutual_fund_prices')
-                    ->where('isin', $row->isin)
-                    ->where('nav_date', $navDate)
-                    ->update($updates);
-
-                $bar->advance();
-            }
+            $this->info("  {$chgCol} / {$valCol} updated.");
         }
 
-        $bar->finish();
-        $this->newLine();
+        $this->info('Returns computation complete.');
     }
 }

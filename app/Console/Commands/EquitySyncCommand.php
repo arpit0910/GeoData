@@ -42,13 +42,16 @@ class EquitySyncCommand extends Command
         $pythonPaths = ['python', 'python3', 'py', 'C:\Python312\python.exe', 'C:\Python311\python.exe'];
         $pythonPath = null;
 
-        foreach ($pythonPaths as $path) {
-            $testOutput = [];
-            $testReturn = 0;
-            exec("{$path} --version 2>&1", $testOutput, $testReturn);
-            if ($testReturn === 0) {
-                $pythonPath = $path;
-                break;
+        // exec() may be disabled on hardened servers — skip Python detection gracefully.
+        if (function_exists('exec')) {
+            foreach ($pythonPaths as $path) {
+                $testOutput = [];
+                $testReturn = 0;
+                exec("{$path} --version 2>&1", $testOutput, $testReturn);
+                if ($testReturn === 0) {
+                    $pythonPath = $path;
+                    break;
+                }
             }
         }
 
