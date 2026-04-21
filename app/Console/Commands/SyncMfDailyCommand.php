@@ -11,29 +11,33 @@ class SyncMfDailyCommand extends Command
 {
     protected $signature = 'sync:mf-daily
                             {--force : Bypass the 9 PM–11 PM IST window guard}
-                            {--dry-run : Parse and count rows without writing to DB}';
+                            {--dry-run : Parse and count rows without writing to DB}
+                            {--skip-returns : Skip percentage-return computation}';
 
     protected $description = 'Fetch AMFI NAVAll.txt and upsert mutual_funds + mutual_fund_prices';
 
-    // AMFI publishes updated NAVs between 21:00–23:00 IST.
-    // Running outside that window risks persisting stale afternoon NAVs.
     private const NAV_WINDOW_START = 21;
     private const NAV_WINDOW_END   = 23;
     private const AMFI_URL         = 'https://www.amfiindia.com/spages/NAVAll.txt';
     private const MASTER_CHUNK     = 500;
-    private const NAV_CHUNK        = 1000;
+    private const NAV_CHUNK        = 500;
 
     public function handle(): int
     {
+        // Remove all resource caps for CLI
+        @ini_set('memory_limit', '-1');
+        set_time_limit(0);
+        DB::disableQueryLog();
+
         if (!$this->option('force') && !$this->inNavWindow()) {
             $this->warn('Outside NAV update window (21:00–23:00 IST). Use --force to override.');
             return Command::FAILURE;
         }
 
+        // ── 1. Download ───────────────────────────────────────────────────────
         $this->info('Downloading NAVAll.txt from AMFI...');
-
         try {
-            $response = Http::timeout(60)
+            $response = Http::timeout(120)
                 ->withoutVerifying()
                 ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
                 ->get(self::AMFI_URL);
@@ -47,42 +51,61 @@ class SyncMfDailyCommand extends Command
             return Command::FAILURE;
         }
 
+        // ── 2. Parse ──────────────────────────────────────────────────────────
         $this->info('Parsing...');
-        [$masterRows, $navRows] = $this->parse($response->body());
+        $body = $response->body();
+        unset($response);
+        gc_collect_cycles();
 
-        $this->info(sprintf('Parsed %d schemes, %d NAV records.', count($masterRows), count($navRows)));
+        [$masterRows, $navRows] = $this->parse($body);
+        unset($body);
+        gc_collect_cycles();
+
+        $navDate = !empty($navRows) ? $navRows[0]['nav_date'] : null;
+        $this->info(sprintf('Parsed %d schemes, %d NAV records. NAV date: %s', count($masterRows), count($navRows), $navDate ?? 'none'));
 
         if ($this->option('dry-run')) {
             $this->info('[Dry-run] No writes performed.');
             return Command::SUCCESS;
         }
 
-        $this->upsertMaster($masterRows);
-        $this->upsertNav($navRows);
+        // ── 3. Upsert master ──────────────────────────────────────────────────
+        try {
+            $this->upsertMaster($masterRows);
+        } catch (\Exception $e) {
+            $this->error('upsertMaster failed: ' . $e->getMessage());
+            return Command::FAILURE;
+        }
+        unset($masterRows);
+        gc_collect_cycles();
 
-        // Compute returns for today's NAV date against existing history
-        $navDate = !empty($navRows) ? $navRows[0]['nav_date'] : null;
-        if ($navDate) {
-            $this->computeReturnsForDate($navDate);
+        // ── 4. Upsert prices ──────────────────────────────────────────────────
+        try {
+            $this->upsertNav($navRows);
+        } catch (\Exception $e) {
+            $this->error('upsertNav failed: ' . $e->getMessage());
+            return Command::FAILURE;
+        }
+        unset($navRows);
+        gc_collect_cycles();
+
+        // ── 5. Compute returns ────────────────────────────────────────────────
+        if ($navDate && !$this->option('skip-returns')) {
+            try {
+                $this->computeReturnsForDate($navDate);
+            } catch (\Exception $e) {
+                $this->error('computeReturns failed: ' . $e->getMessage());
+                // Non-fatal — prices are already saved
+                $this->warn('Prices saved. Returns were not computed. Re-run with the same date or fix the error above.');
+            }
         }
 
         $this->info('sync:mf-daily complete.');
         return Command::SUCCESS;
     }
 
-    // -------------------------------------------------------------------------
-    // Parsing
-    // -------------------------------------------------------------------------
+    // ── Parsing ───────────────────────────────────────────────────────────────
 
-    /**
-     * NAVAll.txt format (semicolon-delimited, no quotes):
-     *   Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date
-     *
-     * Category header lines look like:
-     *   Open Ended Schemes(Equity Scheme - Large Cap Fund)
-     * AMC header lines have no semicolons.
-     * Data rows always have exactly 6 fields.
-     */
     private function parse(string $body): array
     {
         $lines      = explode("\n", str_replace("\r", '', $body));
@@ -91,27 +114,19 @@ class SyncMfDailyCommand extends Command
 
         $currentAmc      = null;
         $currentCategory = null;
-        $currentType     = null;
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if ($line === '' || $line === 'Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date') {
+            if ($line === '' || str_starts_with($line, 'Scheme Code;')) {
                 continue;
             }
 
             $fields = explode(';', $line);
 
-            // AMC name line — no semicolons, not a data row
             if (count($fields) === 1) {
-                // Detect category lines like "Open Ended Schemes(Equity Scheme - Large Cap Fund)"
-                if (preg_match('/Open Ended Schemes\((.+)\)/i', $line, $m)) {
-                    [$currentCategory, $currentType] = $this->parseCategory($m[1]);
-                } elseif (preg_match('/Close Ended Schemes\((.+)\)/i', $line, $m)) {
-                    [$currentCategory, $currentType] = $this->parseCategory($m[1]);
-                } elseif (preg_match('/Interval Fund Schemes\((.+)\)/i', $line, $m)) {
-                    [$currentCategory, $currentType] = $this->parseCategory($m[1]);
+                if (preg_match('/(?:Open Ended|Close Ended|Interval Fund) Schemes\((.+)\)/i', $line, $m)) {
+                    $currentCategory = $this->parseCategory($m[1]);
                 } else {
-                    // AMC name
                     $currentAmc = $line;
                 }
                 continue;
@@ -121,10 +136,7 @@ class SyncMfDailyCommand extends Command
 
             [$schemeCode, $isinGrowth, $isinReinvest, $schemeName, $nav, $navDate] = array_map('trim', $fields);
 
-            // Skip rows with no valid ISIN or non-numeric scheme code
             if (!is_numeric($schemeCode) || strlen($isinGrowth) !== 12) continue;
-
-            // Skip N/A NAVs (NFOs not yet launched, etc.)
             if (!is_numeric($nav) || (float)$nav <= 0) continue;
 
             $navDateParsed = $this->parseDate($navDate);
@@ -138,7 +150,7 @@ class SyncMfDailyCommand extends Command
                 'amc_name'      => $currentAmc,
                 'category'      => $currentCategory,
                 'sub_category'  => null,
-                'type'          => $currentType,
+                'type'          => null,
                 'is_active'     => 1,
                 'created_at'    => now(),
                 'updated_at'    => now(),
@@ -154,10 +166,8 @@ class SyncMfDailyCommand extends Command
         return [array_values($masterRows), $navRows];
     }
 
-    private function parseCategory(string $raw): array
+    private function parseCategory(string $raw): string
     {
-        $raw = trim($raw);
-        // "Equity Scheme - Large Cap Fund" → category=Equity, sub comes from full string
         $map = [
             'equity'   => 'Equity',
             'debt'     => 'Debt',
@@ -167,32 +177,26 @@ class SyncMfDailyCommand extends Command
             'etf'      => 'ETF',
             'fof'      => 'FoF',
         ];
-        $category = 'Other';
         foreach ($map as $key => $label) {
-            if (stripos($raw, $key) !== false) { $category = $label; break; }
+            if (stripos($raw, $key) !== false) return $label;
         }
-        // Derive Growth/IDCW from scheme name context — set at master level later;
-        // file-level category block tells us fund type, not plan type
-        return [$category, null];
+        return 'Other';
     }
 
     private function parseDate(string $d): ?string
     {
         try {
-            // AMFI uses DD-Mon-YYYY e.g. "16-Apr-2026"
             return Carbon::createFromFormat('d-M-Y', $d)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;
         }
     }
 
-    // -------------------------------------------------------------------------
-    // DB writes
-    // -------------------------------------------------------------------------
+    // ── DB writes ─────────────────────────────────────────────────────────────
 
     private function upsertMaster(array $rows): void
     {
-        $this->info('Upserting mutual_funds...');
+        $this->info('Upserting mutual_funds (' . count($rows) . ' rows)...');
         $bar = $this->output->createProgressBar(count($rows));
         $bar->start();
 
@@ -211,32 +215,42 @@ class SyncMfDailyCommand extends Command
 
     private function upsertNav(array $rows): void
     {
-        $this->info('Upserting mutual_fund_prices...');
+        $this->info('Upserting mutual_fund_prices (' . count($rows) . ' rows)...');
 
-        // Load isin → scheme_code map; mf_id stores scheme_code (not auto-increment id)
-        $isinToSchemeCode = DB::table('mutual_funds')->pluck('scheme_code', 'isin');
-        $rows = array_filter($rows, fn($r) => isset($isinToSchemeCode[$r['isin']]));
-        $rows = array_map(fn($r) => array_merge($r, ['mf_id' => (int) $isinToSchemeCode[$r['isin']]]), $rows);
+        // Plain PHP array — no Collection object in memory
+        $isinToId = DB::table('mutual_funds')->pluck('id', 'isin')->all();
 
         $bar = $this->output->createProgressBar(count($rows));
         $bar->start();
 
-        foreach (array_chunk(array_values($rows), self::NAV_CHUNK) as $chunk) {
-            DB::table('mutual_fund_prices')->upsert(
-                $chunk,
-                ['isin', 'nav_date'],
-                ['mf_id', 'nav']
-            );
+        foreach (array_chunk($rows, self::NAV_CHUNK) as $chunk) {
+            $insert = [];
+            foreach ($chunk as $r) {
+                if (!isset($isinToId[$r['isin']])) continue;
+                $insert[] = [
+                    'isin'     => $r['isin'],
+                    'nav_date' => $r['nav_date'],
+                    'nav'      => $r['nav'],
+                    'mf_id'    => (int) $isinToId[$r['isin']],
+                ];
+            }
+            if ($insert) {
+                DB::table('mutual_fund_prices')->upsert(
+                    $insert,
+                    ['isin', 'nav_date'],
+                    ['mf_id', 'nav']
+                );
+            }
             $bar->advance(count($chunk));
+            unset($insert);
         }
 
+        unset($isinToId);
         $bar->finish();
         $this->newLine();
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function inNavWindow(): bool
     {
@@ -244,13 +258,19 @@ class SyncMfDailyCommand extends Command
         return $hour >= self::NAV_WINDOW_START && $hour < self::NAV_WINDOW_END;
     }
 
-    // -------------------------------------------------------------------------
-    // Returns computation for today's NAV date
-    // -------------------------------------------------------------------------
+    // ── Returns computation — pure SQL, zero PHP memory overhead ──────────────
 
     private function computeReturnsForDate(string $navDate): void
     {
         $this->info('Computing returns for ' . $navDate . '...');
+
+        // Disable MySQL query-level timeout for this session so the UPDATE JOINs
+        // are not killed on slow shared-hosting servers.
+        try {
+            DB::statement('SET SESSION max_execution_time = 0');
+        } catch (\Exception $e) {
+            // Older MySQL / MariaDB — ignore, keep going
+        }
 
         $periods = [
             'chg_1d' => Carbon::parse($navDate)->subDay(),
@@ -264,22 +284,17 @@ class SyncMfDailyCommand extends Command
             'chg_3y' => Carbon::parse($navDate)->subYears(3),
         ];
 
-        // Run one UPDATE per period entirely inside MySQL — PHP never loads NAV history
-        // into memory, so this works within any memory_limit including 128 MB.
-        //
-        // For each period we find the closest available NAV within a ±10-day window
-        // using a self-join: the inner GROUP BY picks the minimum calendar distance per
-        // ISIN, the outer join retrieves that row's actual nav value, then we UPDATE
-        // today's record in place.
-        foreach ($periods as $chgCol => $targetDate) {
+        foreach ($periods as $chgCol => $targetCarbon) {
             $valCol = str_replace('chg_', 'val_', $chgCol);
-            $target = $targetDate->format('Y-m-d');
-            $from   = $targetDate->copy()->subDays(10)->format('Y-m-d');
-            $to     = $targetDate->copy()->addDays(10)->format('Y-m-d');
+            $target = $targetCarbon->format('Y-m-d');
+            $from   = $targetCarbon->copy()->subDays(10)->format('Y-m-d');
+            $to     = $targetCarbon->copy()->addDays(10)->format('Y-m-d');
+
+            $this->line("  Computing {$chgCol} (ref window {$from} → {$to})...");
 
             DB::statement("
                 UPDATE mutual_fund_prices p
-                JOIN (
+                INNER JOIN (
                     SELECT p2.isin, p2.nav AS ref_nav
                     FROM mutual_fund_prices p2
                     INNER JOIN (
@@ -288,18 +303,18 @@ class SyncMfDailyCommand extends Command
                         WHERE nav_date BETWEEN ? AND ?
                         GROUP BY isin
                     ) closest
-                        ON  p2.isin = closest.isin
-                        AND ABS(DATEDIFF(p2.nav_date, ?)) = closest.min_diff
+                        ON p2.isin = closest.isin
+                       AND ABS(DATEDIFF(p2.nav_date, ?)) = closest.min_diff
                     WHERE p2.nav_date BETWEEN ? AND ?
                     GROUP BY p2.isin
                 ) ref ON p.isin = ref.isin
-                SET p.{$chgCol} = ROUND(((p.nav - ref.ref_nav) / ref.ref_nav) * 100, 4),
-                    p.{$valCol} = ref.ref_nav
+                SET p.`{$chgCol}` = ROUND(((p.nav - ref.ref_nav) / ref.ref_nav) * 100, 4),
+                    p.`{$valCol}` = ref.ref_nav
                 WHERE p.nav_date = ?
                   AND ref.ref_nav > 0
             ", [$target, $from, $to, $target, $from, $to, $navDate]);
 
-            $this->info("  {$chgCol} / {$valCol} updated.");
+            $this->info("  {$chgCol} / {$valCol} done.");
         }
 
         $this->info('Returns computation complete.');
