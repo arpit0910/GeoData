@@ -80,7 +80,7 @@
         var table = $('#subscriptionsTable').DataTable({
             processing: true,
             serverSide: true,
-            pageLength: 25,
+            pageLength: 100,
             ajax: "{{ route('admin.subscriptions.index') }}",
             language: {
                 emptyTable: "No subscriptions found",

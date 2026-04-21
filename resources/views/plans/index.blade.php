@@ -56,7 +56,7 @@
         var table = $('#plansTable').DataTable({
             processing: true,
             serverSide: true,
-            pageLength: 25,
+            pageLength: 100,
             ajax: "{{ route('plans.index') }}",
             language: {
                 emptyTable: "No records found",

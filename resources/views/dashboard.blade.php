@@ -170,6 +170,7 @@
                         <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Finance &
                             Operations</h4>
                     </div>
+
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                         @php
                             $opStats = [

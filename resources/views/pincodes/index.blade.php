@@ -102,7 +102,7 @@
         $('#pincodesTable').DataTable({
             processing: true,
             serverSide: true,
-            pageLength: 25,
+            pageLength: 100,
             ajax: "{{ route('pincodes.index') }}",
             columns: [
                 { data: 'id',           name: 'id' },

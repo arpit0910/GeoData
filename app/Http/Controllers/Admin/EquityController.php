@@ -79,12 +79,15 @@ class EquityController extends Controller
             });
         }
 
-        // Handle Specific Filters
+        // Date filters — default to today when neither is provided to avoid full-table scans.
         if ($request->filled('date_from')) {
             $query->where('traded_date', '>=', $request->date_from);
         }
         if ($request->filled('date_to')) {
             $query->where('traded_date', '<=', $request->date_to);
+        }
+        if (!$request->filled('date_from') && !$request->filled('date_to')) {
+            $query->where('traded_date', now()->toDateString());
         }
         if ($request->filled('isin')) {
             $value = $request->isin;

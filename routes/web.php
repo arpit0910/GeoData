@@ -215,6 +215,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{isin}', [App\Http\Controllers\Admin\MfController::class, 'show'])->name('show');
     });
 
+    // Cron Management
+    Route::prefix('crons')->name('admin.crons.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\CronController::class, 'index'])->name('index');
+        Route::post('/run', [App\Http\Controllers\Admin\CronController::class, 'run'])->name('run');
+        Route::get('/logs', [App\Http\Controllers\Admin\CronController::class, 'logs'])->name('logs');
+    });
+
     // Server Logs
     Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->name('admin.logs');
 
