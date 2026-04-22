@@ -218,7 +218,11 @@ class SyncMfDailyCommand extends Command
         $this->info('Upserting mutual_fund_prices (' . count($rows) . ' rows)...');
 
         // Plain PHP array — no Collection object in memory
-        $isinToId = DB::table('mutual_funds')->pluck('id', 'isin')->all();
+        $isinToSchemeCode = DB::table('mutual_funds')
+            ->select('isin', 'scheme_code')
+            ->get()
+            ->mapWithKeys(fn($row) => [$row->isin => $row->scheme_code])
+            ->all();
 
         $bar = $this->output->createProgressBar(count($rows));
         $bar->start();
@@ -226,12 +230,12 @@ class SyncMfDailyCommand extends Command
         foreach (array_chunk($rows, self::NAV_CHUNK) as $chunk) {
             $insert = [];
             foreach ($chunk as $r) {
-                if (!isset($isinToId[$r['isin']])) continue;
+                if (!isset($isinToSchemeCode[$r['isin']])) continue;
                 $insert[] = [
                     'isin'     => $r['isin'],
                     'nav_date' => $r['nav_date'],
                     'nav'      => $r['nav'],
-                    'mf_id'    => (int) $isinToId[$r['isin']],
+                    'mf_id'    => (int) $isinToSchemeCode[$r['isin']],
                 ];
             }
             if ($insert) {
@@ -245,7 +249,7 @@ class SyncMfDailyCommand extends Command
             unset($insert);
         }
 
-        unset($isinToId);
+        unset($isinToSchemeCode);
         $bar->finish();
         $this->newLine();
     }
@@ -264,14 +268,6 @@ class SyncMfDailyCommand extends Command
     {
         $this->info('Computing returns for ' . $navDate . '...');
 
-        // Disable MySQL query-level timeout for this session so the UPDATE JOINs
-        // are not killed on slow shared-hosting servers.
-        try {
-            DB::statement('SET SESSION max_execution_time = 0');
-        } catch (\Exception $e) {
-            // Older MySQL / MariaDB — ignore, keep going
-        }
-
         $periods = [
             'chg_1d' => Carbon::parse($navDate)->subDay(),
             'chg_3d' => Carbon::parse($navDate)->subDays(3),
@@ -284,39 +280,76 @@ class SyncMfDailyCommand extends Command
             'chg_3y' => Carbon::parse($navDate)->subYears(3),
         ];
 
-        foreach ($periods as $chgCol => $targetCarbon) {
-            $valCol = str_replace('chg_', 'val_', $chgCol);
-            $target = $targetCarbon->format('Y-m-d');
-            $from   = $targetCarbon->copy()->subDays(10)->format('Y-m-d');
-            $to     = $targetCarbon->copy()->addDays(10)->format('Y-m-d');
+        $oldest = Carbon::parse($navDate)->subYears(3)->subDays(10)->format('Y-m-d');
+        $total = DB::table('mutual_fund_prices')->where('nav_date', $navDate)->count();
+        $bar = $this->output->createProgressBar($total);
+        $bar->start();
 
-            $this->line("  Computing {$chgCol} (ref window {$from} → {$to})...");
+        DB::table('mutual_fund_prices')
+            ->where('nav_date', $navDate)
+            ->orderBy('isin')
+            ->select('isin', 'nav', 'nav_date')
+            ->chunk(500, function ($todayRows) use ($navDate, $oldest, $periods, $bar) {
+                $isins = $todayRows->pluck('isin')->unique()->values()->all();
 
-            DB::statement("
-                UPDATE mutual_fund_prices p
-                INNER JOIN (
-                    SELECT p2.isin, p2.nav AS ref_nav
-                    FROM mutual_fund_prices p2
-                    INNER JOIN (
-                        SELECT isin, MIN(ABS(DATEDIFF(nav_date, ?))) AS min_diff
-                        FROM mutual_fund_prices
-                        WHERE nav_date BETWEEN ? AND ?
-                        GROUP BY isin
-                    ) closest
-                        ON p2.isin = closest.isin
-                       AND ABS(DATEDIFF(p2.nav_date, ?)) = closest.min_diff
-                    WHERE p2.nav_date BETWEEN ? AND ?
-                    GROUP BY p2.isin
-                ) ref ON p.isin = ref.isin
-                SET p.`{$chgCol}` = ROUND(((p.nav - ref.ref_nav) / ref.ref_nav) * 100, 4),
-                    p.`{$valCol}` = ref.ref_nav
-                WHERE p.nav_date = ?
-                  AND ref.ref_nav > 0
-            ", [$target, $from, $to, $target, $from, $to, $navDate]);
+                $history = DB::table('mutual_fund_prices')
+                    ->whereIn('isin', $isins)
+                    ->where('nav_date', '>=', $oldest)
+                    ->where('nav_date', '<', $navDate)
+                    ->orderBy('nav_date')
+                    ->select('isin', 'nav_date', 'nav')
+                    ->get()
+                    ->groupBy('isin')
+                    ->map(fn($rows) => $rows->values());
 
-            $this->info("  {$chgCol} / {$valCol} done.");
-        }
+                foreach ($todayRows as $todayRow) {
+                    $updates = [];
+                    $schemeHistory = $history->get($todayRow->isin, collect());
+
+                    foreach ($periods as $chgCol => $targetCarbon) {
+                        $valCol = str_replace('chg_', 'val_', $chgCol);
+                        $best = $this->closestNav($schemeHistory, $targetCarbon);
+
+                        if ($best && (float) $best->nav > 0) {
+                            $refNav = (float) $best->nav;
+                            $updates[$chgCol] = round((((float) $todayRow->nav - $refNav) / $refNav) * 100, 4);
+                            $updates[$valCol] = $refNav;
+                        } else {
+                            $updates[$chgCol] = null;
+                            $updates[$valCol] = null;
+                        }
+                    }
+
+                    DB::table('mutual_fund_prices')
+                        ->where('isin', $todayRow->isin)
+                        ->where('nav_date', $todayRow->nav_date)
+                        ->update($updates);
+                }
+
+                $bar->advance($todayRows->count());
+            });
+
+        $bar->finish();
+        $this->newLine();
 
         $this->info('Returns computation complete.');
+    }
+
+    private function closestNav($rows, Carbon $targetCarbon): ?object
+    {
+        $targetTs = $targetCarbon->timestamp;
+        $windowSec = 10 * 86400;
+        $best = null;
+        $bestDiff = PHP_INT_MAX;
+
+        foreach ($rows as $row) {
+            $diff = abs(strtotime($row->nav_date) - $targetTs);
+            if ($diff <= $windowSec && $diff < $bestDiff) {
+                $bestDiff = $diff;
+                $best = $row;
+            }
+        }
+
+        return $best;
     }
 }
