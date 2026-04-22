@@ -89,8 +89,18 @@ class CronController extends Controller
         }
 
         try {
-            Artisan::call($cron['command'], $cron['args']);
+            $exitCode = Artisan::call($cron['command'], $cron['args']);
             $output = Artisan::output();
+
+            $this->logCronRun($cron['title']);
+
+            if ($exitCode !== 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Command `{$cron['command']}` exited with code {$exitCode}.",
+                    'output'  => trim($output) ?: 'Command finished with no output.',
+                ], 500);
+            }
 
             return response()->json([
                 'success' => true,
@@ -98,6 +108,8 @@ class CronController extends Controller
                 'output'  => trim($output) ?: 'Command finished with no output.',
             ]);
         } catch (\Throwable $e) {
+            $this->logCronRun($cron['title']);
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -141,5 +153,14 @@ class CronController extends Controller
         $titles = collect($this->cronDefinitions())->pluck('title');
 
         return view('admin.crons.logs', compact('titles'));
+    }
+
+    private function logCronRun(string $title): void
+    {
+        CronLog::create([
+            'title' => $title,
+            'ip' => gethostbyname(gethostname()),
+            'ran_at' => now('Asia/Kolkata'),
+        ]);
     }
 }

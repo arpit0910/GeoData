@@ -82,6 +82,20 @@ class EquitySyncCommand extends Command
      */
     protected function processData($data, $date)
     {
+        $data = collect($data)
+            ->filter(fn($row) => is_array($row) && isset($row['isin']) && is_scalar($row['isin']) && trim((string) $row['isin']) !== '')
+            ->map(function ($row) {
+                $row['isin'] = trim((string) $row['isin']);
+                return $row;
+            })
+            ->values()
+            ->all();
+
+        if (empty($data)) {
+            $this->warn("No valid equity records found after filtering malformed ISIN rows.");
+            return Command::SUCCESS;
+        }
+
         $this->info("Starting memory-efficient processing for " . count($data) . " records...");
         $now = now();
         $dateObj = Carbon::parse($date);
@@ -106,8 +120,12 @@ class EquitySyncCommand extends Command
         $chunks = $isinGroups->chunk(200);
 
         foreach ($chunks as $index => $isinBatch) {
-            $batchIsins = $isinBatch->keys();
-            $batchIds = $isinToId->only($batchIsins)->values();
+            $batchIsins = $isinBatch->keys()
+                ->filter(fn($isin) => is_scalar($isin) && trim((string) $isin) !== '')
+                ->map(fn($isin) => (string) $isin)
+                ->values();
+            $batchIsinsArray = $batchIsins->all();
+            $batchIds = $isinToId->only($batchIsinsArray)->values()->filter()->all();
 
             // Fetch historical prices ONLY for this batch
             $historicalBatch = DB::table('equity_prices')
@@ -118,7 +136,7 @@ class EquitySyncCommand extends Command
                 ->groupBy('equity_id');
 
             // Fetch existing prices for today ONLY for this batch (additive sync)
-            $existingPricesBatch = EquityPrice::whereIn('isin', $batchIsins)
+            $existingPricesBatch = EquityPrice::whereIn('isin', $batchIsinsArray)
                 ->where('traded_date', $date)
                 ->get()
                 ->keyBy('isin');
@@ -126,7 +144,12 @@ class EquitySyncCommand extends Command
             $upsertData = [];
 
             foreach ($isinBatch as $isin => $records) {
-                $equityId = $isinToId[$isin] ?? null;
+                if (!is_scalar($isin)) {
+                    continue;
+                }
+
+                $isin = (string) $isin;
+                $equityId = $isinToId->get($isin);
                 if (!$equityId) continue;
 
                 $upsertData[] = $this->calculateMetrics(
@@ -214,10 +237,21 @@ class EquitySyncCommand extends Command
      */
     protected function syncEquities($data, $now)
     {
-        $isins = collect($data)->pluck('isin')->unique();
-        $existing = Equity::whereIn('isin', $isins)->get()->keyBy('isin');
+        $isins = collect($data)
+            ->pluck('isin')
+            ->filter(fn($isin) => is_scalar($isin) && trim((string) $isin) !== '')
+            ->map(fn($isin) => (string) $isin)
+            ->unique()
+            ->values();
+
+        $existing = Equity::whereIn('isin', $isins->all())->get()->keyBy('isin');
 
         $equities = collect($data)->groupBy('isin')->map(function ($group, $isin) use ($existing, $now) {
+            if (!is_scalar($isin)) {
+                return null;
+            }
+
+            $isin = (string) $isin;
             $nse = $group->where('exchange', 'NSE')->first();
             $bse = $group->where('exchange', 'BSE')->first();
             $ext = $existing->get($isin);
@@ -233,7 +267,7 @@ class EquitySyncCommand extends Command
                 'created_at' => $ext ? $ext->created_at : $now,
                 'updated_at' => $now,
             ];
-        })->values()->chunk(500);
+        })->filter()->values()->chunk(500);
 
         foreach ($equities as $chunk) {
             Equity::upsert($chunk->toArray(), ['isin'], ['company_name', 'nse_symbol', 'bse_symbol', 'updated_at']);

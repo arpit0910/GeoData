@@ -13,7 +13,7 @@ class ApiLoadTest extends Command
     protected $signature = 'api:load-test 
                             {endpoint : The relative URI to test (e.g. /api/v1/countries)}
                             {--c|concurrency=10 : Number of concurrent requests}
-                            {--n|requests=100 : Total number of requests}
+                            {--requests=100 : Total number of requests}
                             {--token= : Bearer token for authentication}
                             {--url=http://localhost:8000 : Base URL of the application}';
 

@@ -10,29 +10,35 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule)
     {
-        $ip = gethostbyname(gethostname());
-
         $schedule->command('currency:fetch-rates')
             ->dailyAt('20:30')
-            ->after(fn() => CronLog::create(['title' => 'currency:fetch-rates', 'ip' => $ip, 'ran_at' => now()]));
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping(120)
+            ->after(fn() => $this->logCronRun('currency:fetch-rates'));
 
         $schedule->command('equities:sync')
-            ->dailyAt('19:00')->timezone('Asia/Kolkata')->withoutOverlapping()
-            ->after(fn() => CronLog::create(['title' => 'equities:sync', 'ip' => $ip, 'ran_at' => now()]));
+            ->dailyAt('19:00')
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping(120)
+            ->after(fn() => $this->logCronRun('equities:sync'));
 
         $schedule->command('indices:sync')
-            ->dailyAt('19:15')->timezone('Asia/Kolkata')->withoutOverlapping()
-            ->after(fn() => CronLog::create(['title' => 'indices:sync', 'ip' => $ip, 'ran_at' => now()]));
+            ->dailyAt('19:15')
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping(120)
+            ->after(fn() => $this->logCronRun('indices:sync'));
 
-        // MF NAVs are published 21:00–23:00 IST; run at 21:30 to catch first publish
         $schedule->command('sync:mf-daily --force')
-            ->dailyAt('21:30')->timezone('Asia/Kolkata')
-            ->after(fn() => CronLog::create(['title' => 'sync:mf-daily (21:30)', 'ip' => $ip, 'ran_at' => now()]));
+            ->dailyAt('21:30')
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping(180)
+            ->after(fn() => $this->logCronRun('sync:mf-daily (21:30)'));
 
-        // Re-run at 23:15 to pick up late corrections
         $schedule->command('sync:mf-daily --force')
-            ->dailyAt('23:15')->timezone('Asia/Kolkata')
-            ->after(fn() => CronLog::create(['title' => 'sync:mf-daily (23:15)', 'ip' => $ip, 'ran_at' => now()]));
+            ->dailyAt('23:15')
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping(180)
+            ->after(fn() => $this->logCronRun('sync:mf-daily (23:15)'));
     }
 
     protected function commands()
@@ -40,5 +46,14 @@ class Kernel extends ConsoleKernel
         $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
+    }
+
+    private function logCronRun(string $title): void
+    {
+        CronLog::create([
+            'title' => $title,
+            'ip' => gethostbyname(gethostname()),
+            'ran_at' => now('Asia/Kolkata'),
+        ]);
     }
 }
