@@ -62,3 +62,60 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## SetuGeo OCR Microservice Integration
+
+This Laravel app can proxy OCR requests to the sibling Python project at `D:\xampp\htdocs\setuGeoOCR`.
+
+### Laravel `.env`
+
+Set these values in [`.env`](./.env):
+
+```env
+OCR_SERVICE_URL=http://localhost:8001
+OCR_SERVICE_API_KEY=your-secret-api-key-change-this
+OCR_SERVICE_TIMEOUT=30
+OCR_SERVICE_CONNECT_TIMEOUT=5
+```
+
+### Python `.env`
+
+Set the same API key in `D:\xampp\htdocs\setuGeoOCR\.env`:
+
+```env
+HOST=0.0.0.0
+PORT=8001
+API_KEY=your-secret-api-key-change-this
+TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
+```
+
+### Start the OCR microservice
+
+From `D:\xampp\htdocs\setuGeoOCR`:
+
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+The FastAPI service will listen on `http://localhost:8001`.
+
+### Laravel OCR endpoints
+
+- `GET /api/v1/ocr/health`
+- `POST /api/v1/ocr/extract`
+
+`POST /api/v1/ocr/extract` expects:
+
+- `image` as a multipart file
+- `document_type` as optional `pan`, `aadhaar_front`, or `aadhaar_back`
+
+Example:
+
+```bash
+curl --request POST "http://localhost/GeoData/public/api/v1/ocr/extract" \
+  --header "Authorization: Bearer YOUR_SANCTUM_TOKEN" \
+  --header "Accept: application/json" \
+  --form "image=@C:/path/to/document.jpg" \
+  --form "document_type=pan"
+```

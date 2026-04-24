@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\IndexApiController;
 use App\Http\Controllers\Api\V1\MfApiController;
 use App\Http\Controllers\Api\V1\MarketApiController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\Api\V1\OcrController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,12 @@ Route::prefix('v1')->group(function() {
     
     Route::post('/auth/token', [AuthController::class, 'token']);
     Route::post('/webhooks/razorpay', [SubscriptionController::class, 'handleWebhook'])->name('api.razorpay.webhook');
+
+    // OCR APIs
+    Route::get('/ocr/health', [OcrController::class, 'health']);
+    Route::middleware(['auth:sanctum', 'api.credits'])->group(function() {
+        Route::post('/ocr/extract', [OcrController::class, 'extract']);
+    });
 
     // Free Analytical & System APIs (No credit deduction)
     Route::middleware('auth:sanctum')->group(function() {

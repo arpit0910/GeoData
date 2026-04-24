@@ -45,6 +45,9 @@
                                 <li><a href="#account-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Account & Usage
                                         API</a></li>
+                                <li><a href="#ocr-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">OCR API</a>
+                                </li>
                                 <li><a href="#core-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Core Geographic
                                         Data</a></li>
@@ -368,6 +371,155 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   "success": true,
   "data": [...]
 }</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="ocr-api" class="pt-8">
+                        <h2
+                            class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">
+                            OCR API</h2>
+                        <div class="bg-amber-600/10 border border-amber-600/30 rounded-2xl p-6 mb-10">
+                            <h3 class="text-lg font-bold text-amber-500 mb-3 flex items-center">
+                                <i class="fas fa-file-image mr-3"></i>
+                                Upload-Based OCR Extraction
+                            </h3>
+                            <p class="text-gray-300 leading-relaxed mb-4">
+                                Use the OCR API to upload a document image with a document type and get extracted values
+                                in JSON. Supported document types are <code class="text-white">pan</code>, <code
+                                    class="text-white">aadhaar_front</code>, and <code
+                                    class="text-white">aadhaar_back</code>.
+                            </p>
+                            <p class="text-gray-400 leading-relaxed">
+                                If the image is blurry, incomplete, badly cropped, or the required values cannot be
+                                extracted, the API returns a clear validation message telling the user to upload a
+                                clearer image.
+                            </p>
+                        </div>
+
+                        <div class="space-y-8">
+                            <div id="ocr-health"
+                                class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                <div
+                                    class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                    <h3 class="font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span>
+                                        /ocr/health</h3>
+                                    <span
+                                        class="bg-emerald-600/20 text-emerald-400 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-emerald-600/30">
+                                        No Credits
+                                    </span>
+                                </div>
+                                <div class="p-6">
+                                    <p class="mb-4">Check whether the OCR microservice is reachable before sending file
+                                        uploads.</p>
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                    <div
+                                        class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                        <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"status"</span>: <span class="text-green-400">"OCR service is online."</span>
+}</pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="ocr-extract"
+                                class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                <div
+                                    class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                    <h3 class="font-bold text-white"><span
+                                            class="text-green-400 mr-2 uppercase">POST</span> /ocr/extract</h3>
+                                    <span
+                                        class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                        <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span
+                                            class="hidden sm:inline">Credits Required</span>
+                                    </span>
+                                </div>
+                                <div class="p-6">
+                                    <p class="mb-4">Upload a document image and receive extracted values along with OCR
+                                        quality validation.</p>
+
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Form Data</h4>
+                                    <table class="w-full text-sm mb-8">
+                                        <thead class="text-gray-500 text-left border-b border-gray-800">
+                                            <tr>
+                                                <th class="pb-2">Field</th>
+                                                <th class="pb-2">Type</th>
+                                                <th class="pb-2">Required</th>
+                                                <th class="pb-2">Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-800">
+                                            <tr>
+                                                <td class="py-3 font-mono text-white">image</td>
+                                                <td class="py-3 text-gray-500">file</td>
+                                                <td class="py-3 text-amber-500 font-bold">Yes</td>
+                                                <td class="py-3 text-gray-400">JPEG, JPG, PNG, WEBP, BMP or TIFF image
+                                                    up to 10 MB</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-3 font-mono text-white">document_type</td>
+                                                <td class="py-3 text-gray-500">string</td>
+                                                <td class="py-3 text-gray-400">No</td>
+                                                <td class="py-3 text-gray-400">Use <code class="text-white">pan</code>,
+                                                    <code class="text-white">aadhaar_front</code>, or <code
+                                                        class="text-white">aadhaar_back</code>. Sending the type is
+                                                    recommended for best results.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL Example</h4>
+                                    <div
+                                        class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400 mb-8">
+                                        <pre>curl --request POST "{{ url('/api/v1/ocr/extract') }}" \
+  --header "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  --header "Accept: application/json" \
+  --form "image=@/path/to/document.png" \
+  --form "document_type=pan"</pre>
+                                    </div>
+
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Successful Response</h4>
+                                    <div
+                                        class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400 mb-8">
+                                        <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"message"</span>: <span class="text-green-400">"Values extracted successfully."</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"document_type"</span>: <span class="text-green-400">"pan"</span>,
+    <span class="text-blue-400">"extracted_fields"</span>: {
+      <span class="text-blue-400">"pan_number"</span>: <span class="text-green-400">"ABCDE1234F"</span>,
+      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"Rahul Sharma"</span>,
+      <span class="text-blue-400">"father_name"</span>: <span class="text-green-400">"Mohan Sharma"</span>,
+      <span class="text-blue-400">"dob"</span>: <span class="text-green-400">"01/01/1990"</span>
+    },
+    <span class="text-blue-400">"confidence"</span>: <span class="text-green-400">"high"</span>,
+    <span class="text-blue-400">"validation"</span>: {
+      <span class="text-blue-400">"is_valid"</span>: <span class="text-blue-400">true</span>,
+      <span class="text-blue-400">"missing_fields"</span>: []
+    }
+  }
+}</pre>
+                                    </div>
+
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Blurred / Invalid Image
+                                        Response</h4>
+                                    <div
+                                        class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                        <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">false</span>,
+  <span class="text-blue-400">"message"</span>: <span class="text-green-400">"We could not extract all required values. Please upload a clearer, properly aligned image. The current image may be blurry or incomplete."</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"document_type"</span>: <span class="text-green-400">"pan"</span>,
+    <span class="text-blue-400">"confidence"</span>: <span class="text-green-400">"low"</span>,
+    <span class="text-blue-400">"validation"</span>: {
+      <span class="text-blue-400">"is_valid"</span>: <span class="text-blue-400">false</span>,
+      <span class="text-blue-400">"missing_fields"</span>: [<span class="text-green-400">"pan_number"</span>, <span class="text-green-400">"name"</span>, <span class="text-green-400">"father_name"</span>, <span class="text-green-400">"dob"</span>]
+    }
+  }
+}</pre>
+                                    </div>
                                 </div>
                             </div>
                         </div>

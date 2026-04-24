@@ -37,6 +37,153 @@
                             "raw": "{{baseUrl}}/user/usage"
                         }
                     }
+                },
+                {
+                    "name": "Razorpay Webhook",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"event\": \"payment.captured\",\n    \"payload\": {\n        \"payment\": {\n            \"entity\": {\n                \"id\": \"pay_example\",\n                \"order_id\": \"order_example\"\n            }\n        }\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/webhooks/razorpay"
+                        },
+                        "description": "Webhook endpoint for Razorpay event delivery. This endpoint does not use bearer authentication."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "0A. OCR & Document Extraction",
+            "item": [
+                {
+                    "name": "OCR Health",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/ocr/health"
+                        },
+                        "description": "Check whether the OCR microservice bridge is reachable from GeoData."
+                    }
+                },
+                {
+                    "name": "OCR Extract - PAN",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "document_type",
+                                    "value": "pan",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ocr/extract"
+                        },
+                        "description": "Upload a document image and extract structured fields. Returns 422 with a blur/incomplete-image message when required values cannot be extracted."
+                    }
+                },
+                {
+                    "name": "OCR Extract - Aadhaar Front",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "document_type",
+                                    "value": "aadhaar_front",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ocr/extract"
+                        }
+                    }
+                },
+                {
+                    "name": "OCR Extract - Aadhaar Back",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "document_type",
+                                    "value": "aadhaar_back",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ocr/extract"
+                        }
+                    }
                 }
             ]
         },
@@ -164,7 +311,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/countries/101"
+                            "raw": "{{baseUrl}}/country/101"
                         }
                     }
                 },
@@ -174,7 +321,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/countries/101/states"
+                            "raw": "{{baseUrl}}/country/101/states"
                         }
                     }
                 },
@@ -184,7 +331,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/countries/101/cities"
+                            "raw": "{{baseUrl}}/country/101/cities"
                         }
                     }
                 },
@@ -194,7 +341,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/countries/101/timezones"
+                            "raw": "{{baseUrl}}/country/101/timezones"
                         }
                     }
                 },
@@ -204,7 +351,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/countries/101/banks"
+                            "raw": "{{baseUrl}}/country/101/banks"
                         }
                     }
                 },
@@ -214,7 +361,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/countries/101/neighbors"
+                            "raw": "{{baseUrl}}/country/101/neighbors"
                         }
                     }
                 },
@@ -244,7 +391,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/states/51"
+                            "raw": "{{baseUrl}}/state/51"
                         }
                     }
                 },
@@ -254,7 +401,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/states/51/cities"
+                            "raw": "{{baseUrl}}/state/51/cities"
                         }
                     }
                 },
@@ -264,7 +411,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/cities/1024"
+                            "raw": "{{baseUrl}}/city/1024"
                         }
                     }
                 }
@@ -289,7 +436,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/banks/1/branches"
+                            "raw": "{{baseUrl}}/bank/1/branches"
                         }
                     }
                 },
@@ -299,7 +446,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/banks/1/coverage"
+                            "raw": "{{baseUrl}}/bank/1/coverage"
                         }
                     }
                 },
@@ -309,7 +456,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/branch/search?search_query=HDFC Mumbai",
+                            "raw": "{{baseUrl}}/bank/branches/search?search_query=HDFC Mumbai",
                             "query": [
                                 {
                                     "key": "search_query",
@@ -325,7 +472,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/branch/HDFC0000060"
+                            "raw": "{{baseUrl}}/bank/ifsc/HDFC0000060"
                         }
                     }
                 },
@@ -335,7 +482,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/cities/1024/banks"
+                            "raw": "{{baseUrl}}/city/1024/banks"
                         }
                     }
                 },
@@ -345,7 +492,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/states/51/banks"
+                            "raw": "{{baseUrl}}/state/51/banks"
                         }
                     }
                 },
@@ -355,7 +502,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/pincodes/400001/banks"
+                            "raw": "{{baseUrl}}/pincode/400001/banks"
                         }
                     }
                 }
@@ -565,7 +712,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/timezones/convert?from=UTC&to=Asia/Kolkata",
+                            "raw": "{{baseUrl}}/timezone/convert?from=UTC&to=Asia/Kolkata",
                             "query": [
                                 {
                                     "key": "from",

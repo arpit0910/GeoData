@@ -30,4 +30,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'ocr' => [
+        'url' => env('OCR_SERVICE_URL', 'http://localhost:8001'),
+        'key' => env('OCR_SERVICE_API_KEY', 'your-secret-api-key-change-this'),
+        'timeout' => (int) env('OCR_SERVICE_TIMEOUT', 30),
+        'connect_timeout' => (int) env('OCR_SERVICE_CONNECT_TIMEOUT', 5),
+    ],
+
 ];

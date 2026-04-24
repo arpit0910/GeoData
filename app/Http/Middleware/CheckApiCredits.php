@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use App\Models\ApiLog;
 
@@ -76,10 +77,27 @@ class CheckApiCredits
             'method' => $request->method(),
             'status_code' => $response->status(),
             'ip_address' => $request->ip(),
-            'request_payload' => $request->all(),
+            'request_payload' => $this->sanitizePayload($request->all()),
             'credit_deducted' => $success, // Explicit boolean flags exactly recording the physical debit
         ]);
 
         return $response;
+    }
+
+    private function sanitizePayload(mixed $value): mixed
+    {
+        if ($value instanceof UploadedFile) {
+            return [
+                'original_name' => $value->getClientOriginalName(),
+                'mime_type' => $value->getMimeType(),
+                'size' => $value->getSize(),
+            ];
+        }
+
+        if (is_array($value)) {
+            return array_map(fn ($item) => $this->sanitizePayload($item), $value);
+        }
+
+        return $value;
     }
 }
