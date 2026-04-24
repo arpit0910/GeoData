@@ -18,7 +18,7 @@ class CronController extends Controller
                 'args'        => [],
                 'description' => 'Fetches latest USD/INR currency exchange rates via Frankfurt API.',
                 'schedule'    => 'Daily at 20:30',
-                'timezone'    => 'UTC',
+                'timezone'    => 'Asia/Kolkata',
                 'overlap'     => false,
             ],
             [

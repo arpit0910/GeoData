@@ -59,6 +59,7 @@ class EquitySyncCommand extends Command
                     $this->info("Successfully fetched data via Python worker.");
                     return $this->processData($pythonData, $date);
                 }
+                $this->warn("Python worker did not return usable data for {$date}; falling back to PHP fetcher.");
             }
 
             // Attempt 2: PHP Native Fallback
@@ -74,6 +75,11 @@ class EquitySyncCommand extends Command
         }
 
         $this->error("Failed to find any data after {$maxAttempts} attempts.");
+        Log::error('equities:sync exhausted all attempts without data', [
+            'start_date' => $startDate,
+            'exchange' => $exchange,
+            'max_attempts' => $maxAttempts,
+        ]);
         return Command::FAILURE;
     }
 
@@ -285,6 +291,17 @@ class EquitySyncCommand extends Command
 
         exec("{$pythonPath} \"{$scriptPath}\" {$date} {$exchangeParam} 2>&1", $output, $returnVar);
 
+        if ($returnVar !== 0) {
+            Log::warning('equities:sync python worker failed', [
+                'date' => $date,
+                'exchange' => $exchange,
+                'python_path' => $pythonPath,
+                'script_path' => $scriptPath,
+                'exit_code' => $returnVar,
+                'output' => $output,
+            ]);
+        }
+
         $jsonData = '';
         foreach ($output as $line) {
             if (strpos(trim($line), '[') === 0) {
@@ -293,7 +310,30 @@ class EquitySyncCommand extends Command
             }
         }
 
-        return !empty($jsonData) ? json_decode($jsonData, true) : null;
+        if (empty($jsonData)) {
+            if (!empty($output)) {
+                Log::warning('equities:sync python worker produced no JSON payload', [
+                    'date' => $date,
+                    'exchange' => $exchange,
+                    'output' => $output,
+                ]);
+            }
+
+            return null;
+        }
+
+        $decoded = json_decode($jsonData, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Log::warning('equities:sync python worker returned invalid JSON', [
+                'date' => $date,
+                'exchange' => $exchange,
+                'json_error' => json_last_error_msg(),
+                'payload_sample' => substr($jsonData, 0, 500),
+            ]);
+            return null;
+        }
+
+        return $decoded;
     }
 
     /**
@@ -342,6 +382,11 @@ class EquitySyncCommand extends Command
                     return $this->parseFileContent($response->body(), 'NSE', $url);
                 }
             } catch (\Exception $e) {
+                Log::warning('equities:sync NSE fetch failed', [
+                    'date' => $date,
+                    'url' => $url,
+                    'message' => $e->getMessage(),
+                ]);
             }
         }
         return null;
@@ -364,6 +409,11 @@ class EquitySyncCommand extends Command
                 return $this->parseFileContent($response->body(), 'BSE', $url);
             }
         } catch (\Exception $e) {
+            Log::warning('equities:sync BSE fetch failed', [
+                'date' => $date,
+                'url' => $url,
+                'message' => $e->getMessage(),
+            ]);
         }
         return null;
     }

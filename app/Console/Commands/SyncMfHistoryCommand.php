@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class SyncMfHistoryCommand extends Command
@@ -44,7 +45,7 @@ class SyncMfHistoryCommand extends Command
         $cutoff     = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
         $singleCode = $this->option('scheme');
 
-        $query = DB::table('mutual_funds')->select('isin', 'scheme_code')->where('is_active', 1);
+        $query = DB::table('mutual_funds')->where('is_active', 1);
         if ($singleCode) $query->where('scheme_code', $singleCode);
         $schemes = $query->get();
 
@@ -117,13 +118,21 @@ class SyncMfHistoryCommand extends Command
                     }
                     // Non-2xx: retry
                 } catch (\Exception $e) {
-                    // network error: retry
+                    Log::warning('sync:mf-history HTTP retry after exception', [
+                        'scheme_code' => $scheme->scheme_code,
+                        'attempt' => $attempt + 1,
+                        'message' => $e->getMessage(),
+                    ]);
                 }
             }
 
             if (!$httpSuccess) {
                 $failed++;
                 $failedSchemes[] = $scheme->scheme_code;
+                Log::error('sync:mf-history failed to fetch scheme data', [
+                    'scheme_code' => $scheme->scheme_code,
+                    'isin' => $scheme->isin,
+                ]);
                 $bar->advance();
                 usleep(self::SLEEP_MS);
                 continue;
@@ -195,7 +204,7 @@ class SyncMfHistoryCommand extends Command
             foreach ($newDates as $j => $date) {
                 $currentNav = $allNavVals[$j];
                 $row = [
-                    'mf_id'    => (int) $scheme->scheme_code,
+                    'mf_id'    => $this->resolveFundKey($scheme),
                     'isin'     => $scheme->isin,
                     'nav_date' => $date,
                     'nav'      => $currentNav,
@@ -235,6 +244,11 @@ class SyncMfHistoryCommand extends Command
             if (!$written) {
                 $failed++;
                 $failedSchemes[] = $scheme->scheme_code;
+                Log::error('sync:mf-history failed while writing scheme rows', [
+                    'scheme_code' => $scheme->scheme_code,
+                    'isin' => $scheme->isin,
+                    'row_count' => count($schemeRows),
+                ]);
             }
 
             $bar->advance();
@@ -253,7 +267,16 @@ class SyncMfHistoryCommand extends Command
             $this->warn('Failed scheme codes: ' . implode(', ', $failedSchemes));
         }
 
-        return Command::SUCCESS;
+        return $failed > 0 ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    private function resolveFundKey(object $scheme): int
+    {
+        if (isset($scheme->id) && is_numeric($scheme->id)) {
+            return (int) $scheme->id;
+        }
+
+        return (int) $scheme->scheme_code;
     }
 
     // -------------------------------------------------------------------------

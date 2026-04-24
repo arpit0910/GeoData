@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class SyncMfDateRangeCommand extends Command
@@ -35,7 +36,9 @@ class SyncMfDateRangeCommand extends Command
 
     public function handle(): int
     {
-        ini_set('memory_limit', '512M');
+        @ini_set('memory_limit', '-1');
+        set_time_limit(0);
+        DB::disableQueryLog();
 
         $from = Carbon::parse($this->option('from') ?? '2023-04-01')->startOfDay();
         $to   = Carbon::parse($this->option('to')   ?? now())->startOfDay();
@@ -96,6 +99,12 @@ class SyncMfDateRangeCommand extends Command
             } catch (\Exception $e) {
                 $this->error("  Failed {$date}: " . $e->getMessage());
                 $this->error("  At: " . $e->getFile() . ':' . $e->getLine());
+                Log::error('sync:mf-range failed for date', [
+                    'date' => $date,
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
             }
 
             $current->addDay();
@@ -235,10 +244,14 @@ class SyncMfDateRangeCommand extends Command
 
     private function upsertNav(array $rows, string $date): void
     {
-        $isinToSchemeCode = DB::table('mutual_funds')->pluck('scheme_code', 'isin');
+        $isinToFundId = DB::table('mutual_funds')
+            ->select('*')
+            ->get()
+            ->mapWithKeys(fn($row) => [$row->isin => $this->resolveFundKey($row)])
+            ->all();
 
-        $rows = array_values(array_filter($rows, fn($r) => isset($isinToSchemeCode[$r['isin']])));
-        $rows = array_map(fn($r) => array_merge($r, ['mf_id' => (int) $isinToSchemeCode[$r['isin']]]), $rows);
+        $rows = array_values(array_filter($rows, fn($r) => isset($isinToFundId[$r['isin']])));
+        $rows = array_map(fn($r) => array_merge($r, ['mf_id' => (int) $isinToFundId[$r['isin']]]), $rows);
 
         foreach (array_chunk($rows, self::NAV_CHUNK) as $chunk) {
             DB::table('mutual_fund_prices')->upsert(
@@ -323,5 +336,14 @@ class SyncMfDateRangeCommand extends Command
                     ->update($rowUpdates);
             }
         }
+    }
+
+    private function resolveFundKey(object $row): int
+    {
+        if (isset($row->id) && is_numeric($row->id)) {
+            return (int) $row->id;
+        }
+
+        return (int) $row->scheme_code;
     }
 }

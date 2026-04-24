@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class SyncMfDailyCommand extends Command
@@ -44,10 +45,16 @@ class SyncMfDailyCommand extends Command
 
             if (!$response->successful()) {
                 $this->error('AMFI download failed: HTTP ' . $response->status());
+                Log::error('sync:mf-daily AMFI download failed', [
+                    'status' => $response->status(),
+                ]);
                 return Command::FAILURE;
             }
         } catch (\Exception $e) {
             $this->error('AMFI download failed: ' . $e->getMessage());
+            Log::error('sync:mf-daily AMFI download exception', [
+                'message' => $e->getMessage(),
+            ]);
             return Command::FAILURE;
         }
 
@@ -74,6 +81,9 @@ class SyncMfDailyCommand extends Command
             $this->upsertMaster($masterRows);
         } catch (\Exception $e) {
             $this->error('upsertMaster failed: ' . $e->getMessage());
+            Log::error('sync:mf-daily upsertMaster failed', [
+                'message' => $e->getMessage(),
+            ]);
             return Command::FAILURE;
         }
         unset($masterRows);
@@ -84,6 +94,9 @@ class SyncMfDailyCommand extends Command
             $this->upsertNav($navRows);
         } catch (\Exception $e) {
             $this->error('upsertNav failed: ' . $e->getMessage());
+            Log::error('sync:mf-daily upsertNav failed', [
+                'message' => $e->getMessage(),
+            ]);
             return Command::FAILURE;
         }
         unset($navRows);
@@ -95,6 +108,10 @@ class SyncMfDailyCommand extends Command
                 $this->computeReturnsForDate($navDate);
             } catch (\Exception $e) {
                 $this->error('computeReturns failed: ' . $e->getMessage());
+                Log::error('sync:mf-daily computeReturns failed', [
+                    'nav_date' => $navDate,
+                    'message' => $e->getMessage(),
+                ]);
                 // Non-fatal — prices are already saved
                 $this->warn('Prices saved. Returns were not computed. Re-run with the same date or fix the error above.');
             }
@@ -218,24 +235,28 @@ class SyncMfDailyCommand extends Command
         $this->info('Upserting mutual_fund_prices (' . count($rows) . ' rows)...');
 
         // Plain PHP array — no Collection object in memory
-        $isinToSchemeCode = DB::table('mutual_funds')
-            ->select('isin', 'scheme_code')
+        $isinToFundId = DB::table('mutual_funds')
+            ->select('*')
             ->get()
-            ->mapWithKeys(fn($row) => [$row->isin => $row->scheme_code])
+            ->mapWithKeys(fn($row) => [$row->isin => $this->resolveFundKey($row)])
             ->all();
 
         $bar = $this->output->createProgressBar(count($rows));
         $bar->start();
+        $missingIsins = [];
 
         foreach (array_chunk($rows, self::NAV_CHUNK) as $chunk) {
             $insert = [];
             foreach ($chunk as $r) {
-                if (!isset($isinToSchemeCode[$r['isin']])) continue;
+                if (!isset($isinToFundId[$r['isin']])) {
+                    $missingIsins[] = $r['isin'];
+                    continue;
+                }
                 $insert[] = [
                     'isin'     => $r['isin'],
                     'nav_date' => $r['nav_date'],
                     'nav'      => $r['nav'],
-                    'mf_id'    => (int) $isinToSchemeCode[$r['isin']],
+                    'mf_id'    => $isinToFundId[$r['isin']],
                 ];
             }
             if ($insert) {
@@ -249,9 +270,27 @@ class SyncMfDailyCommand extends Command
             unset($insert);
         }
 
-        unset($isinToSchemeCode);
+        if (!empty($missingIsins)) {
+            $missingIsins = array_values(array_unique($missingIsins));
+            $this->warn('Skipped NAV rows for ' . count($missingIsins) . ' ISINs missing from mutual_funds.');
+            Log::warning('sync:mf-daily skipped NAV rows due to missing mutual_funds mapping', [
+                'missing_isin_count' => count($missingIsins),
+                'sample_isins' => array_slice($missingIsins, 0, 20),
+            ]);
+        }
+
+        unset($isinToFundId);
         $bar->finish();
         $this->newLine();
+    }
+
+    private function resolveFundKey(object $row): int
+    {
+        if (isset($row->id) && is_numeric($row->id)) {
+            return (int) $row->id;
+        }
+
+        return (int) $row->scheme_code;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
