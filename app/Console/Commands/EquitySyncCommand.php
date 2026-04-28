@@ -131,7 +131,9 @@ class EquitySyncCommand extends Command
                 ->map(fn($isin) => (string) $isin)
                 ->values();
             $batchIsinsArray = $batchIsins->all();
-            $batchIds = $isinToId->only($batchIsinsArray)->values()->filter()->all();
+
+            // Defensively filter for valid offset types
+            $batchIds = $isinToId->only($batchIsinsArray)->values()->filter(fn($id) => is_scalar($id))->all();
 
             // Fetch historical prices ONLY for this batch
             $historicalBatch = DB::table('equity_prices')
@@ -145,7 +147,7 @@ class EquitySyncCommand extends Command
             $existingPricesBatch = EquityPrice::whereIn('isin', $batchIsinsArray)
                 ->where('traded_date', $date)
                 ->get()
-                ->keyBy('isin');
+                ->keyBy(fn($item) => (string) $item->isin);
 
             $upsertData = [];
 
@@ -250,7 +252,7 @@ class EquitySyncCommand extends Command
             ->unique()
             ->values();
 
-        $existing = Equity::whereIn('isin', $isins->all())->get()->keyBy('isin');
+        $existing = Equity::whereIn('isin', $isins->all())->get()->keyBy(fn($item) => (string) $item->isin);
 
         $equities = collect($data)->groupBy('isin')->map(function ($group, $isin) use ($existing, $now) {
             if (!is_scalar($isin)) {

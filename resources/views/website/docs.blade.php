@@ -19,7 +19,7 @@
                         intelligence into your applications.</p>
                 </div>
                 <div class="mt-8 md:mt-0">
-                    <a href="{{ asset('SetuGeo.postman_collection.json') }}" download
+                    <a href="{{ asset('postman_collection.json') }}" download
                         class="inline-flex items-center px-6 py-3 border border-amber-600/30 text-base font-bold rounded-xl text-white bg-amber-600/10 hover:bg-amber-600 hover:border-amber-600 transition-all shadow-lg group">
                         <i class="fas fa-rocket mr-3 text-amber-500 group-hover:text-white"></i>
                         Postman Collection
