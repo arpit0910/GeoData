@@ -67,11 +67,21 @@ class BankSeeder extends Seeder
             // Header: BANK(0),IFSC(1),BRANCH(2),CENTRE(3),DISTRICT(4),STATE(5),ADDRESS(6),CONTACT(7),IMPS(8),RTGS(9),CITY(10),ISO3166(11),NEFT(12),MICR(13),UPI(14),SWIFT(15)
             
             $batch = [];
+            $processedIfscs = [];
+
             while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
                 if (empty($data)) continue;
 
                 $bankName = trim($data[0]);
+                $ifsc = trim($data[1]);
+
+                if (isset($processedIfscs[$ifsc])) {
+                    continue;
+                }
+                $processedIfscs[$ifsc] = true;
+
                 $slug = \Illuminate\Support\Str::slug($bankName);
+
                 $stateName = strtolower(trim($data[5]));
                 $cityName = strtolower(trim($data[10]));
 
@@ -96,7 +106,8 @@ class BankSeeder extends Seeder
 
                 $batch[] = [
                     'bank_id' => $bankId,
-                    'ifsc' => $data[1],
+                    'ifsc' => $ifsc,
+
                     'branch' => $data[2],
                     'micr' => $data[13] ?: null,
                     'address' => $data[6],
@@ -113,12 +124,18 @@ class BankSeeder extends Seeder
                 ];
 
                 if (count($batch) >= 1000) {
-                    \App\Models\BankBranch::insert($batch);
+                    \App\Models\BankBranch::upsert($batch, ['ifsc'], [
+                        'bank_id', 'branch', 'micr', 'address', 'contact', 'city_id', 'state_id', 
+                        'imps', 'rtgs', 'neft', 'upi', 'swift', 'updated_at'
+                    ]);
                     $batch = [];
                 }
             }
             if (!empty($batch)) {
-                \App\Models\BankBranch::insert($batch);
+                \App\Models\BankBranch::upsert($batch, ['ifsc'], [
+                    'bank_id', 'branch', 'micr', 'address', 'contact', 'city_id', 'state_id', 
+                    'imps', 'rtgs', 'neft', 'upi', 'swift', 'updated_at'
+                ]);
             }
             fclose($handle);
         }

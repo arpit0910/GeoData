@@ -1,1959 +1,1206 @@
 {
-    "info": {
-        "_postman_id": "c661300e-1800-4b74-9da3-c08a53831dd1",
-        "name": "SetuGeo Premium API - Full Suite",
-        "description": "The definitive Postman collection for SetuGeo. Includes recursive geographic drills, advanced banking analytics, geospatial clustering, and financial conversion tools. Designed for immediate production-ready testing.",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-    },
-    "item": [
-        {
-            "name": "0. Authentication & Account",
-            "item": [
-                {
-                    "name": "Get Bearer Token",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"client_key\": \"YOUR_KEY_HERE\",\n    \"client_secret\": \"YOUR_SECRET_HERE\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/auth/token"
-                        }
-                    }
-                },
-                {
-                    "name": "User Usage Statistics",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/user/usage"
-                        }
-                    }
-                },
-                {
-                    "name": "Razorpay Webhook",
-                    "request": {
-                        "auth": {
-                            "type": "noauth"
-                        },
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Accept",
-                                "value": "application/json"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"event\": \"payment.captured\",\n    \"payload\": {\n        \"payment\": {\n            \"entity\": {\n                \"id\": \"pay_example\",\n                \"order_id\": \"order_example\"\n            }\n        }\n    }\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/webhooks/razorpay"
-                        },
-                        "description": "Webhook endpoint for Razorpay event delivery. This endpoint does not use bearer authentication."
-                    }
-                }
-            ]
-        },
-        {
-            "name": "0A. OCR & Document Extraction",
-            "item": [
-                {
-                    "name": "OCR Health",
-                    "request": {
-                        "auth": {
-                            "type": "noauth"
-                        },
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Accept",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/ocr/health"
-                        },
-                        "description": "Check whether the OCR microservice bridge is reachable from GeoData."
-                    }
-                },
-                {
-                    "name": "OCR Extract - PAN",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Accept",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "formdata",
-                            "formdata": [
-                                {
-                                    "key": "image",
-                                    "type": "file",
-                                    "src": []
-                                },
-                                {
-                                    "key": "document_type",
-                                    "value": "pan",
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/ocr/extract"
-                        },
-                        "description": "Upload a document image and extract structured fields. Returns 422 with a blur/incomplete-image message when required values cannot be extracted."
-                    }
-                },
-                {
-                    "name": "OCR Extract - Aadhaar Front",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Accept",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "formdata",
-                            "formdata": [
-                                {
-                                    "key": "image",
-                                    "type": "file",
-                                    "src": []
-                                },
-                                {
-                                    "key": "document_type",
-                                    "value": "aadhaar_front",
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/ocr/extract"
-                        }
-                    }
-                },
-                {
-                    "name": "OCR Extract - Aadhaar Back",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Accept",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "formdata",
-                            "formdata": [
-                                {
-                                    "key": "image",
-                                    "type": "file",
-                                    "src": []
-                                },
-                                {
-                                    "key": "document_type",
-                                    "value": "aadhaar_back",
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/ocr/extract"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "1. Geographic Mastery",
-            "item": [
-                {
-                    "name": "Regions",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/regions"
-                        }
-                    }
-                },
-                {
-                    "name": "Sub-Regions",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/sub-regions"
-                        }
-                    }
-                },
-                {
-                    "name": "Timezones",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/timezones"
-                        }
-                    }
-                },
-                {
-                    "name": "Countries",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/countries?name=India",
-                            "query": [
-                                {
-                                    "key": "name",
-                                    "value": "India"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "States",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/states?country_id=101",
-                            "query": [
-                                {
-                                    "key": "country_id",
-                                    "value": "101"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Cities",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/cities?state_id=51",
-                            "query": [
-                                {
-                                    "key": "state_id",
-                                    "value": "51"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Pincodes",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/pincodes?city_id=1024",
-                            "query": [
-                                {
-                                    "key": "city_id",
-                                    "value": "1024"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Pincode Search",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/pincodes/search?pincode=400001",
-                            "query": [
-                                {
-                                    "key": "pincode",
-                                    "value": "400001"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "2. Hierarchical Drill-Downs",
-            "item": [
-                {
-                    "name": "Country Details",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/country/101"
-                        }
-                    }
-                },
-                {
-                    "name": "States of a Country",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/country/101/states"
-                        }
-                    }
-                },
-                {
-                    "name": "Cities of a Country",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/country/101/cities"
-                        }
-                    }
-                },
-                {
-                    "name": "Timezones of a Country",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/country/101/timezones"
-                        }
-                    }
-                },
-                {
-                    "name": "Banks of a Country",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/country/101/banks"
-                        }
-                    }
-                },
-                {
-                    "name": "Neighbors of a Country",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/country/101/neighbors"
-                        }
-                    }
-                },
-                {
-                    "name": "Compare Countries",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/countries/compare?c1_id=101&c2_id=233",
-                            "query": [
-                                {
-                                    "key": "c1_id",
-                                    "value": "101"
-                                },
-                                {
-                                    "key": "c2_id",
-                                    "value": "233"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "State Details",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/state/51"
-                        }
-                    }
-                },
-                {
-                    "name": "Cities of a State",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/state/51/cities"
-                        }
-                    }
-                },
-                {
-                    "name": "City Details",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/city/1024"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "3. Banking & Finance",
-            "item": [
-                {
-                    "name": "Banks List",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/banks"
-                        }
-                    }
-                },
-                {
-                    "name": "Bank Branches",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/bank/1/branches"
-                        }
-                    }
-                },
-                {
-                    "name": "Bank Coverage Analytics",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/bank/1/coverage"
-                        }
-                    }
-                },
-                {
-                    "name": "Branch Fuzzy Search",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/bank/branches/search?search_query=HDFC Mumbai",
-                            "query": [
-                                {
-                                    "key": "search_query",
-                                    "value": "HDFC Mumbai"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Branch Single Info",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/bank/ifsc/HDFC0000060"
-                        }
-                    }
-                },
-                {
-                    "name": "Banks in City",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/city/1024/banks"
-                        }
-                    }
-                },
-                {
-                    "name": "Banks in State",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/state/51/banks"
-                        }
-                    }
-                },
-                {
-                    "name": "Banks by Pincode",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/pincode/400001/banks"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "4. Geospatial Intelligence",
-            "item": [
-                {
-                    "name": "Data Statistics",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/geospatial/statistics"
-                        }
-                    }
-                },
-                {
-                    "name": "Distance Calculator",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/geospatial/distance?lat1=19.0&lng1=72.8&lat2=28.6&lng2=77.2&unit=km",
-                            "query": [
-                                {
-                                    "key": "lat1",
-                                    "value": "19.0"
-                                },
-                                {
-                                    "key": "lng1",
-                                    "value": "72.8"
-                                },
-                                {
-                                    "key": "lat2",
-                                    "value": "28.6"
-                                },
-                                {
-                                    "key": "lng2",
-                                    "value": "77.2"
-                                },
-                                {
-                                    "key": "unit",
-                                    "value": "km"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Radius Search (Nearby)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/geospatial/nearby?lat=19.0&lng=72.8&radius=100&type=city",
-                            "query": [
-                                {
-                                    "key": "lat",
-                                    "value": "19.0"
-                                },
-                                {
-                                    "key": "lng",
-                                    "value": "72.8"
-                                },
-                                {
-                                    "key": "radius",
-                                    "value": "100"
-                                },
-                                {
-                                    "key": "type",
-                                    "value": "city"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Reverse Geocode",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/geospatial/geocode?lat=18.921&lng=72.834",
-                            "query": [
-                                {
-                                    "key": "lat",
-                                    "value": "18.921"
-                                },
-                                {
-                                    "key": "lng",
-                                    "value": "72.834"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Boundary Map",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/geospatial/boundary?min_lat=18.9&max_lat=19.1&min_lng=72.8&max_lng=73.0&type=city",
-                            "query": [
-                                {
-                                    "key": "min_lat",
-                                    "value": "18.9"
-                                },
-                                {
-                                    "key": "max_lat",
-                                    "value": "19.1"
-                                },
-                                {
-                                    "key": "min_lng",
-                                    "value": "72.8"
-                                },
-                                {
-                                    "key": "max_lng",
-                                    "value": "73.0"
-                                },
-                                {
-                                    "key": "type",
-                                    "value": "city"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Grid Cluster",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/geospatial/cluster?lat=19.0&lng=72.8&radius=100&grid_size=0.5",
-                            "query": [
-                                {
-                                    "key": "lat",
-                                    "value": "19.0"
-                                },
-                                {
-                                    "key": "lng",
-                                    "value": "72.8"
-                                },
-                                {
-                                    "key": "radius",
-                                    "value": "100"
-                                },
-                                {
-                                    "key": "grid_size",
-                                    "value": "0.5"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "5. Intelligent Utilities",
-            "item": [
-                {
-                    "name": "Currency Exchange Rates",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/currency/exchange?currency=EUR",
-                            "query": [
-                                {
-                                    "key": "currency",
-                                    "value": "EUR"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Currency Converter",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/currency/convert?from=USD&to=INR&amount=100",
-                            "query": [
-                                {
-                                    "key": "from",
-                                    "value": "USD"
-                                },
-                                {
-                                    "key": "to",
-                                    "value": "INR"
-                                },
-                                {
-                                    "key": "amount",
-                                    "value": "100"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Timezone Converter",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/timezone/convert?from=UTC&to=Asia/Kolkata",
-                            "query": [
-                                {
-                                    "key": "from",
-                                    "value": "UTC"
-                                },
-                                {
-                                    "key": "to",
-                                    "value": "Asia/Kolkata"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Address Autocomplete",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/address/autocomplete?search_query=Mum",
-                            "query": [
-                                {
-                                    "key": "search_query",
-                                    "value": "Mum"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Address Validate",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/address/validate?pincode=400001&city_id=1024",
-                            "query": [
-                                {
-                                    "key": "pincode",
-                                    "value": "400001"
-                                },
-                                {
-                                    "key": "city_id",
-                                    "value": "1024"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "6. Equity Intelligence",
-            "item": [
-                {
-                    "name": "List Equities",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities?page=1&industry=Information Technology",
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "1"
-                                },
-                                {
-                                    "key": "industry",
-                                    "value": "Information Technology"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Search Equities",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/search?q=HDFC",
-                            "query": [
-                                {
-                                    "key": "q",
-                                    "value": "HDFC"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Top Gainers",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/top-gainers?exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Top Losers",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/top-losers?exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "High Volume",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/high-volume?exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Top Turnover",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/top-turnover?exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "New Listings",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/new-listings"
-                        }
-                    }
-                },
-                {
-                    "name": "Market Cap Stats",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/market-cap-stats"
-                        }
-                    }
-                },
-                {
-                    "name": "By Market Cap",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/filter/market-cap/largecap"
-                        }
-                    }
-                },
-                {
-                    "name": "Equity Detail",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equity/INE040A01034"
-                        }
-                    }
-                },
-                {
-                    "name": "Equity History",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equity/INE040A01034/history"
-                        }
-                    }
-                },
-                {
-                    "name": "Equity Metrics",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equity/INE040A01034/metrics"
-                        }
-                    }
-                },
-                {
-                    "name": "Equity Peers",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equity/INE040A01034/peers"
-                        }
-                    }
-                },
-                {
-                    "name": "Gap Movers (Up)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/gap-movers?direction=up&min_pct=2&exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "direction",
-                                    "value": "up"
-                                },
-                                {
-                                    "key": "min_pct",
-                                    "value": "2"
-                                },
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Gap Movers (Down)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/gap-movers?direction=down&min_pct=1&exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "direction",
-                                    "value": "down"
-                                },
-                                {
-                                    "key": "min_pct",
-                                    "value": "1"
-                                },
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Intraday Movers (Up)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/intraday-movers?direction=up&exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "direction",
-                                    "value": "up"
-                                },
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Wide Range Stocks",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/wide-range-stocks?exchange=NSE&limit=20",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "20"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "High Activity Stocks",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/high-activity?exchange=NSE&limit=20",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "20"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "NSE-BSE Spread (Arbitrage)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/nse-bse-spread?min_spread=1&limit=20",
-                            "query": [
-                                {
-                                    "key": "min_spread",
-                                    "value": "1"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "20"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Consistent Performers",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/consistent-performers?exchange=NSE&periods=1m%2C3m%2C6m%2C1y&limit=20",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                },
-                                {
-                                    "key": "periods",
-                                    "value": "1m,3m,6m,1y"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "20"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "52-Week Extremes (Near High)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/52-week-extremes?position=near_high&exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "position",
-                                    "value": "near_high"
-                                },
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "52-Week Extremes (Near Low)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/52-week-extremes?position=near_low&exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "position",
-                                    "value": "near_low"
-                                },
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Sector Heatmap (1M)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equities/analysis/sector-heatmap?period=1m&exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1m"
-                                },
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Equity OHLC (Latest)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equity/INE040A01034/ohlc"
-                        }
-                    }
-                },
-                {
-                    "name": "Equity OHLC (Date Range)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equity/INE040A01034/ohlc?from=2026-01-01&to=2026-04-17",
-                            "query": [
-                                {
-                                    "key": "from",
-                                    "value": "2026-01-01"
-                                },
-                                {
-                                    "key": "to",
-                                    "value": "2026-04-17"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "NSE vs BSE Dual Exchange",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equity/INE040A01034/dual-exchange?days=30",
-                            "query": [
-                                {
-                                    "key": "days",
-                                    "value": "30"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Activity Metrics (Institutional vs Retail)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/equity/INE040A01034/activity-metrics?days=30",
-                            "query": [
-                                {
-                                    "key": "days",
-                                    "value": "30"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "7. Index Intelligence",
-            "item": [
-                {
-                    "name": "Index Snapshot",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/snapshot?exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Search Indices",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/search?q=Nifty",
-                            "query": [
-                                {
-                                    "key": "q",
-                                    "value": "Nifty"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Top Gainers",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/analysis/top-gainers?period=1d",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1d"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Top Losers",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/analysis/top-losers?period=1d",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1d"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Index Metrics",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/NIFTY 50/metrics"
-                        }
-                    }
-                },
-                {
-                    "name": "Index History",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/NIFTY 50/history?start_date=2026-01-01&end_date=2026-04-17",
-                            "query": [
-                                {
-                                    "key": "start_date",
-                                    "value": "2026-01-01"
-                                },
-                                {
-                                    "key": "end_date",
-                                    "value": "2026-04-17"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Index Valuation (PE/PB/Yield)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/NIFTY 50/valuation"
-                        }
-                    }
-                },
-                {
-                    "name": "Index Valuation History (12M)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/NIFTY 50/valuation-history?months=12",
-                            "query": [
-                                {
-                                    "key": "months",
-                                    "value": "12"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Valuation Comparison (All Indices)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/analysis/valuation-comparison?exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "OHLC Summary (All Indices)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/indices/analysis/ohlc-summary?exchange=NSE",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "8. Mutual Fund Intelligence",
-            "item": [
-                {
-                    "name": "List Mutual Funds",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/list?category=Equity&per_page=20&page=1",
-                            "query": [
-                                {
-                                    "key": "category",
-                                    "value": "Equity"
-                                },
-                                {
-                                    "key": "per_page",
-                                    "value": "20"
-                                },
-                                {
-                                    "key": "page",
-                                    "value": "1"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Search Mutual Funds",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/search?q=HDFC&limit=10",
-                            "query": [
-                                {
-                                    "key": "q",
-                                    "value": "HDFC"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "MF Filters",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/filters"
-                        }
-                    }
-                },
-                {
-                    "name": "Top Gainers (1Y)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/analysis/top-gainers?period=1y&category=Equity&limit=10",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1y"
-                                },
-                                {
-                                    "key": "category",
-                                    "value": "Equity"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Top Losers (1Y)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/analysis/top-losers?period=1y&category=Equity&limit=10",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1y"
-                                },
-                                {
-                                    "key": "category",
-                                    "value": "Equity"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Top Gainers (1M)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/analysis/top-gainers?period=1m&limit=10",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1m"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "MF Details",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/details/INF109K01VQ0"
-                        }
-                    }
-                },
-                {
-                    "name": "MF NAV History (12M)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/history/INF109K01VQ0?months=12",
-                            "query": [
-                                {
-                                    "key": "months",
-                                    "value": "12"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "MF NAV History (Custom Range)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/history/INF109K01VQ0?from=2024-01-01&to=2024-12-31&include_returns=true",
-                            "query": [
-                                {
-                                    "key": "from",
-                                    "value": "2024-01-01"
-                                },
-                                {
-                                    "key": "to",
-                                    "value": "2024-12-31"
-                                },
-                                {
-                                    "key": "include_returns",
-                                    "value": "true"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Compare Funds",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/compare?isins=INF109K01VQ0,INF204KB14I2,INF740K01678",
-                            "query": [
-                                {
-                                    "key": "isins",
-                                    "value": "INF109K01VQ0,INF204KB14I2,INF740K01678"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Category Returns (All Periods)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/analysis/category-returns"
-                        }
-                    }
-                },
-                {
-                    "name": "AMC Performance (1Y)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/analysis/amc-performance?period=1y&limit=20",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1y"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "20"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "AMC Performance by Category",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/analysis/amc-performance?period=1y&category=Equity",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1y"
-                                },
-                                {
-                                    "key": "category",
-                                    "value": "Equity"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Consistent Performers (Multi-Period)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/analysis/consistent-performers?periods=1m%2C3m%2C6m%2C1y&category=Equity",
-                            "query": [
-                                {
-                                    "key": "periods",
-                                    "value": "1m,3m,6m,1y"
-                                },
-                                {
-                                    "key": "category",
-                                    "value": "Equity"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Similar Funds Discovery",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/mf/INF109K01VQ0/similar-funds?limit=10",
-                            "query": [
-                                {
-                                    "key": "limit",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "9. Market Overview (Cross-Asset)",
-            "item": [
-                {
-                    "name": "Market Snapshot (Dashboard)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/market/snapshot"
-                        }
-                    }
-                },
-                {
-                    "name": "Market Heatmap (1M)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/market/heatmap?period=1m",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1m"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Market Heatmap (1Y)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/market/heatmap?period=1y",
-                            "query": [
-                                {
-                                    "key": "period",
-                                    "value": "1y"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Market Breadth (NSE)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/market/breadth?exchange=NSE&period=1d",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "NSE"
-                                },
-                                {
-                                    "key": "period",
-                                    "value": "1d"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Market Breadth (BSE)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/market/breadth?exchange=BSE&period=1d",
-                            "query": [
-                                {
-                                    "key": "exchange",
-                                    "value": "BSE"
-                                },
-                                {
-                                    "key": "period",
-                                    "value": "1d"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "10. Country Economic Intelligence",
-            "item": [
-                {
-                    "name": "Economic Profile (High Income)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/countries/economic-profile?income_level=High&sort_by=gdp",
-                            "query": [
-                                {
-                                    "key": "income_level",
-                                    "value": "High"
-                                },
-                                {
-                                    "key": "sort_by",
-                                    "value": "gdp"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Economic Profile (OECD Only)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/countries/economic-profile?is_oecd=true&sort_by=gdp",
-                            "query": [
-                                {
-                                    "key": "is_oecd",
-                                    "value": "true"
-                                },
-                                {
-                                    "key": "sort_by",
-                                    "value": "gdp"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Tax Data (All Countries)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/countries/tax-data"
-                        }
-                    }
-                },
-                {
-                    "name": "Tax Data (Territorial Systems)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/countries/tax-data?tax_system=Territorial",
-                            "query": [
-                                {
-                                    "key": "tax_system",
-                                    "value": "Territorial"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Regional GDP (By Region)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/countries/analysis/regional-gdp?group_by=region",
-                            "query": [
-                                {
-                                    "key": "group_by",
-                                    "value": "region"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Regional GDP (By Sub-Region)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/countries/analysis/regional-gdp?group_by=subregion",
-                            "query": [
-                                {
-                                    "key": "group_by",
-                                    "value": "subregion"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Country Economic Summary",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/country/101/economic-summary"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "11. Banking Capability Intelligence",
-            "item": [
-                {
-                    "name": "Banks Digital Coverage (UPI)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/banks/digital-coverage?capability=upi",
-                            "query": [
-                                {
-                                    "key": "capability",
-                                    "value": "upi"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Banks Digital Coverage (SWIFT)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/banks/digital-coverage?capability=swift",
-                            "query": [
-                                {
-                                    "key": "capability",
-                                    "value": "swift"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Bank SWIFT Branches",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/bank/1/swift-branches"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "12. User Analytics",
-            "item": [
-                {
-                    "name": "Usage Breakdown by Category",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/user/usage-breakdown?days=30",
-                            "query": [
-                                {
-                                    "key": "days",
-                                    "value": "30"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Usage History (Daily Trend)",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/user/usage-history?days=30",
-                            "query": [
-                                {
-                                    "key": "days",
-                                    "value": "30"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        }
-    ],
-    "auth": {
-        "type": "bearer",
-        "bearer": [
-            {
-                "key": "token",
-                "value": "{{bearerToken}}",
-                "type": "string"
-            }
-        ]
-    },
-    "variable": [
-        {
-            "key": "baseUrl",
-            "value": "http://127.0.0.1:8000/api/v1",
-            "type": "string"
-        },
-        {
-            "key": "bearerToken",
-            "value": "YOUR_JWT_HERE",
-            "type": "string"
-        }
-    ]
+	"info": {
+		"_postman_id": "c661300e-1800-4b74-9da3-c08a53831dd1",
+		"name": "SetuGeo Premium API - Full Production Suite (Exhaustive)",
+		"description": "The definitive, production-ready Postman collection for SetuGeo. Includes recursive geographic drills, advanced banking analytics, equity intelligence, and geospatial clustering.\n\n**Production URL:** https://setugeo.com/api/v1\n**Local Development:** http://127.0.0.1:8000/api/v1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0. Authentication & Webhooks",
+			"item": [
+				{
+					"name": "Get Bearer Token (Live)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set(\"bearerToken\", jsonData.token); pm.collectionVariables.set(\"bearerToken\", jsonData.token); }"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"client_key\": \"YOUR_KEY_HERE\",\n    \"client_secret\": \"YOUR_SECRET_HERE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://setugeo.com/api/v1/auth/token"
+						}
+					},
+					"response": [
+						{
+							"name": "Token Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"success\": true,\n    \"token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"expires_at\": \"2026-12-31 23:59:59\"\n}"
+						}
+					]
+				},
+				{
+					"name": "User Usage Stats",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/user/usage"
+						}
+					},
+					"response": [
+						{
+							"name": "Usage Response",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"id\": 1,\n    \"name\": \"Admin\",\n    \"credits_remaining\": 4850,\n    \"last_used\": \"2026-04-28 12:00:00\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Razorpay Webhook",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"event\": \"payment.captured\",\n    \"payload\": {\n        \"payment\": {\n            \"entity\": {\n                \"id\": \"pay_example\",\n                \"amount\": 50000\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/webhooks/razorpay"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "0A. OCR Document Extraction",
+			"item": [
+				{
+					"name": "OCR Health Check",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/ocr/health"
+						}
+					},
+					"response": [
+						{
+							"name": "Health Status",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"status\":\"healthy\",\"bridge\":\"connected\"}"
+						}
+					]
+				},
+				{
+					"name": "Extract - PAN Card",
+					"request": {
+						"method": "POST",
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "document_type",
+									"value": "pan",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ocr/extract"
+						}
+					},
+					"response": [
+						{
+							"name": "PAN Data",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"pan_number\": \"ABCDE1234F\",\n        \"name\": \"JOHN DOE\",\n        \"father_name\": \"RICHARD DOE\",\n        \"dob\": \"1990-01-01\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Extract - Aadhaar Front",
+					"request": {
+						"method": "POST",
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "document_type",
+									"value": "aadhaar_front",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ocr/extract"
+						}
+					},
+					"response": [
+						{
+							"name": "Aadhaar Front Data",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"aadhaar_number\": \"1234 5678 9012\",\n        \"name\": \"JOHN DOE\",\n        \"gender\": \"MALE\",\n        \"dob\": \"1990-01-01\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Extract - Aadhaar Back",
+					"request": {
+						"method": "POST",
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "document_type",
+									"value": "aadhaar_back",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ocr/extract"
+						}
+					},
+					"response": [
+						{
+							"name": "Aadhaar Back Data",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"address\": \"123 Main St, Mumbai, Maharashtra 400001\",\n        \"pincode\": \"400001\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "1. Geographic Mastery - Global",
+			"item": [
+				{
+					"name": "List All Regions",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/regions"
+						}
+					},
+					"response": [
+						{
+							"name": "Regions List",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "[{\"id\":1,\"name\":\"Asia\"},{\"id\":2,\"name\":\"Europe\"}]"
+						}
+					]
+				},
+				{
+					"name": "List All Sub-Regions",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/sub-regions"
+						}
+					}
+				},
+				{
+					"name": "List All Timezones",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/timezones"
+						}
+					}
+				},
+				{
+					"name": "List All Countries",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/countries"
+						}
+					}
+				},
+				{
+					"name": "Search Country: India",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/countries?name=India"
+						}
+					}
+				},
+				{
+					"name": "Get States (Country ID: 101)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/states?country_id=101"
+						}
+					}
+				},
+				{
+					"name": "Get Cities (State ID: 51)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/cities?state_id=51"
+						}
+					}
+				},
+				{
+					"name": "Get Pincodes (City ID: 1024)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/pincodes?city_id=1024"
+						}
+					}
+				},
+				{
+					"name": "Pincode Exact Search (400001)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/pincodes/search?pincode=400001"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Hierarchical Drill-Downs",
+			"item": [
+				{
+					"name": "Country Details",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/country/101"
+						}
+					},
+					"response": [
+						{
+							"name": "Country Info",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"id\":101,\"name\":\"India\",\"iso3\":\"IND\",\"phone_code\":\"91\"}"
+						}
+					]
+				},
+				{
+					"name": "States of Country",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/country/101/states"
+						}
+					}
+				},
+				{
+					"name": "Cities of Country",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/country/101/cities"
+						}
+					}
+				},
+				{
+					"name": "Timezones of Country",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/country/101/timezones"
+						}
+					}
+				},
+				{
+					"name": "Banks of Country",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/country/101/banks"
+						}
+					}
+				},
+				{
+					"name": "Neighbors of Country",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/country/101/neighbors"
+						}
+					}
+				},
+				{
+					"name": "Compare India vs USA",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/countries/compare?c1_id=101&c2_id=233"
+						}
+					}
+				},
+				{
+					"name": "State Details",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/state/51"
+						}
+					}
+				},
+				{
+					"name": "Cities of State",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/state/51/cities"
+						}
+					}
+				},
+				{
+					"name": "City Details",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/city/1024"
+						}
+					}
+				},
+				{
+					"name": "Banks by Pincode",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/pincode/400001/banks"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Banking Intelligence",
+			"item": [
+				{
+					"name": "Banks Master List",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/banks"
+						}
+					}
+				},
+				{
+					"name": "Bank Branches (HDFC)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/bank/1/branches"
+						}
+					}
+				},
+				{
+					"name": "Coverage Analytics",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/bank/1/coverage"
+						}
+					}
+				},
+				{
+					"name": "Branch Search (Fuzzy)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/bank/branches/search?search_query=HDFC Mumbai"
+						}
+					}
+				},
+				{
+					"name": "IFSC Lookup (HDFC0000060)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/bank/ifsc/HDFC0000060"
+						}
+					},
+					"response": [
+						{
+							"name": "IFSC Data",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"bank\":\"HDFC BANK\",\"ifsc\":\"HDFC0000060\",\"branch\":\"FORT\",\"address\":\"123 Fort St, Mumbai\",\"city\":\"Mumbai\",\"state\":\"Maharashtra\"}"
+						}
+					]
+				},
+				{
+					"name": "Banks in City",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/city/1024/banks"
+						}
+					}
+				},
+				{
+					"name": "Banks in State",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/state/51/banks"
+						}
+					}
+				},
+				{
+					"name": "Digital Capability Map",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/banks/digital-coverage"
+						}
+					}
+				},
+				{
+					"name": "SWIFT Enabled Branches",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/bank/1/swift-branches"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Equity Intelligence - Listings",
+			"item": [
+				{
+					"name": "All Equities (Paginated)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities?page=1"
+						}
+					}
+				},
+				{
+					"name": "Search Equity (HDFC)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/search?q=HDFC"
+						}
+					}
+				},
+				{
+					"name": "Filter Market Cap - Large",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/filter/market-cap/large"
+						}
+					}
+				},
+				{
+					"name": "Filter Market Cap - Mid",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/filter/market-cap/mid"
+						}
+					}
+				},
+				{
+					"name": "Filter Market Cap - Small",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/filter/market-cap/small"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Equity Intelligence - Analysis",
+			"item": [
+				{
+					"name": "Top Gainers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/top-gainers"
+						}
+					}
+				},
+				{
+					"name": "Top Losers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/top-losers"
+						}
+					}
+				},
+				{
+					"name": "Highest Turnover",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/top-turnover"
+						}
+					}
+				},
+				{
+					"name": "Highest Volume",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/high-volume"
+						}
+					}
+				},
+				{
+					"name": "New Listings",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/new-listings"
+						}
+					}
+				},
+				{
+					"name": "Market Cap Stats",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/market-cap-stats"
+						}
+					}
+				},
+				{
+					"name": "Gap Movers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/gap-movers"
+						}
+					}
+				},
+				{
+					"name": "Intraday Movers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/intraday-movers"
+						}
+					}
+				},
+				{
+					"name": "Wide Range Stocks",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/wide-range-stocks"
+						}
+					}
+				},
+				{
+					"name": "High Activity",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/high-activity"
+						}
+					}
+				},
+				{
+					"name": "NSE vs BSE Spread",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/nse-bse-spread"
+						}
+					}
+				},
+				{
+					"name": "Consistent Performers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/consistent-performers"
+						}
+					}
+				},
+				{
+					"name": "52-Week Extremes",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/52-week-extremes"
+						}
+					}
+				},
+				{
+					"name": "Sectoral Heatmap",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/sector-heatmap"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Equity Intelligence - Stock Detail",
+			"item": [
+				{
+					"name": "Stock Detail (ISIN)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equity/INE002A01018"
+						}
+					}
+				},
+				{
+					"name": "Industry Peers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equity/INE002A01018/peers"
+						}
+					}
+				},
+				{
+					"name": "Historical Trends",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equity/INE002A01018/history"
+						}
+					}
+				},
+				{
+					"name": "Financial Metrics",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equity/INE002A01018/metrics"
+						}
+					}
+				},
+				{
+					"name": "OHLC Summary",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equity/INE002A01018/ohlc"
+						}
+					}
+				},
+				{
+					"name": "Dual Exchange Activity",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equity/INE002A01018/dual-exchange"
+						}
+					}
+				},
+				{
+					"name": "Activity Metrics",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/equity/INE002A01018/activity-metrics"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Index Intelligence",
+			"item": [
+				{
+					"name": "Market Snapshot",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/snapshot"
+						}
+					}
+				},
+				{
+					"name": "Search Indices",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/search?q=NIFTY"
+						}
+					}
+				},
+				{
+					"name": "Top Index Gainers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/analysis/top-gainers"
+						}
+					}
+				},
+				{
+					"name": "Top Index Losers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/analysis/top-losers"
+						}
+					}
+				},
+				{
+					"name": "Valuation Matrix",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/analysis/valuation-comparison"
+						}
+					}
+				},
+				{
+					"name": "OHLC Summary",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/analysis/ohlc-summary"
+						}
+					}
+				},
+				{
+					"name": "Index Metrics",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/NIFTY50/metrics"
+						}
+					}
+				},
+				{
+					"name": "Index Price History",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/NIFTY50/history"
+						}
+					}
+				},
+				{
+					"name": "Index Valuation",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/NIFTY50/valuation"
+						}
+					}
+				},
+				{
+					"name": "Valuation History",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/indices/NIFTY50/valuation-history"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Mutual Fund Suite",
+			"item": [
+				{
+					"name": "Scheme Master List",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/list"
+						}
+					}
+				},
+				{
+					"name": "Scheme Search",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/search?q=HDFC"
+						}
+					}
+				},
+				{
+					"name": "Filter Categories",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/filters"
+						}
+					}
+				},
+				{
+					"name": "Compare Schemes",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/compare?isins=INF179K01931,INF209K01643"
+						}
+					}
+				},
+				{
+					"name": "Top Performance",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/analysis/top-gainers"
+						}
+					}
+				},
+				{
+					"name": "AMC Performance",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/analysis/amc-performance"
+						}
+					}
+				},
+				{
+					"name": "Category Returns",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/analysis/category-returns"
+						}
+					}
+				},
+				{
+					"name": "Consistent Performers",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/analysis/consistent-performers"
+						}
+					}
+				},
+				{
+					"name": "Scheme Detail",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/details/INF179K01931"
+						}
+					}
+				},
+				{
+					"name": "NAV History",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/history/INF179K01931"
+						}
+					}
+				},
+				{
+					"name": "Similar Funds",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/mf/INF179K01931/similar-funds"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Market Cross-Asset Intelligence",
+			"item": [
+				{
+					"name": "Market Snapshot",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/market/snapshot"
+						}
+					}
+				},
+				{
+					"name": "Market Heatmap",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/market/heatmap"
+						}
+					}
+				},
+				{
+					"name": "Market Breadth",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/market/breadth"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "10. Geospatial & Analytics",
+			"item": [
+				{
+					"name": "Global Stats",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/geospatial/statistics"
+						}
+					}
+				},
+				{
+					"name": "Distance Calculation",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/geospatial/distance?lat1=19&lng1=72&lat2=28&lng2=77"
+						}
+					}
+				},
+				{
+					"name": "Nearby Search (Cities)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/geospatial/nearby?lat=19&lng=72&radius=100&type=city"
+						}
+					}
+				},
+				{
+					"name": "Reverse Geocode",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/geospatial/geocode?lat=18.921&lng=72.834"
+						}
+					}
+				},
+				{
+					"name": "Boundary Box Mapping",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/geospatial/boundary?min_lat=18.9&max_lat=19.1&min_lng=72.8&max_lng=73.0"
+						}
+					}
+				},
+				{
+					"name": "Grid Density Clustering",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/geospatial/cluster?lat=19.0&lng=72.8&radius=100&grid_size=0.5"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "11. Economic & Utilities",
+			"item": [
+				{
+					"name": "Economic Profile",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/countries/economic-profile"
+						}
+					}
+				},
+				{
+					"name": "Taxation Data",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/countries/tax-data"
+						}
+					}
+				},
+				{
+					"name": "Regional GDP",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/countries/analysis/regional-gdp"
+						}
+					}
+				},
+				{
+					"name": "Country Economic Summary",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/country/101/economic-summary"
+						}
+					}
+				},
+				{
+					"name": "Currency Exchange",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/currency/exchange?currency=EUR"
+						}
+					}
+				},
+				{
+					"name": "Currency Convert",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/currency/convert?from=USD&to=INR&amount=100"
+						}
+					}
+				},
+				{
+					"name": "Address Validate",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/address/validate?pincode=400001"
+						}
+					}
+				},
+				{
+					"name": "Address Autocomplete",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/address/autocomplete?search_query=Mum"
+						}
+					}
+				},
+				{
+					"name": "Timezone Convert",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/timezone/convert?from=UTC&to=Asia/Kolkata"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "12. User Usage Analytics",
+			"item": [
+				{
+					"name": "Usage Breakdown",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/user/usage-breakdown"
+						}
+					}
+				},
+				{
+					"name": "Usage History",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/user/usage-history"
+						}
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearerToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "{{liveUrl}}",
+			"type": "string"
+		},
+		{
+			"key": "liveUrl",
+			"value": "https://setugeo.com/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "localUrl",
+			"value": "http://127.0.0.1:8000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "bearerToken",
+			"value": "YOUR_TOKEN_HERE",
+			"type": "string"
+		}
+	]
 }

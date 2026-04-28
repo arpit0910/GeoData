@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             TicketCategorySeeder::class,
             FaqSeeder::class,
             PlanSeeder::class,
+            BankSeeder::class,
         ]);
     }
 }

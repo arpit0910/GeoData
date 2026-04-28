@@ -13,3 +13,4 @@ yarn-error.log
 /.vscode
 composer.lock
 /.claude
+package-lock.json
