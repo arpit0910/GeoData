@@ -29,7 +29,7 @@ class OcrController extends Controller
     {
         $request->validate([
             'image'         => 'required|file|mimes:jpeg,jpg,png,webp,bmp,tiff|max:10240',
-            'document_type' => 'nullable|string|in:pan,aadhaar_front,aadhaar_back',
+            'document_type' => 'nullable|string|in:pan,aadhaar_front,aadhaar_back,voter_id,driving_license,passport',
         ]);
 
         $result = $this->ocr->extract(

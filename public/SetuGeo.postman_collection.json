@@ -2,12 +2,12 @@
 	"info": {
 		"_postman_id": "c661300e-1800-4b74-9da3-c08a53831dd1",
 		"name": "SetuGeo Premium API - Full Production Suite (Exhaustive)",
-		"description": "The definitive, production-ready Postman collection for SetuGeo. Includes recursive geographic drills, advanced banking analytics, equity intelligence, and geospatial clustering.\n\n**Production URL:** https://setugeo.com/api/v1\n**Local Development:** http://127.0.0.1:8000/api/v1",
+		"description": "The definitive, production-ready Postman collection for SetuGeo. Includes recursive geographic drills, advanced banking analytics, equity intelligence, and geospatial clustering.\n\n**Production URL:** https://setugeo.com/api/v1\n**OCR API:** https://api.setugeo.com\n**Local Development:** http://127.0.0.1:8000/api/v1",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "0. Authentication & Webhooks",
+			"name": "0. Authentication & Account",
 			"item": [
 				{
 					"name": "Get Bearer Token (Live)",
@@ -16,7 +16,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set(\"bearerToken\", jsonData.token); pm.collectionVariables.set(\"bearerToken\", jsonData.token); }"
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.environment.set(\"bearerToken\", jsonData.token);",
+									"    pm.collectionVariables.set(\"bearerToken\", jsonData.token);",
+									"}"
 								],
 								"type": "text/javascript"
 							}
@@ -31,6 +35,10 @@
 							{
 								"key": "Accept",
 								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
 							}
 						],
 						"body": {
@@ -43,8 +51,20 @@
 							}
 						},
 						"url": {
-							"raw": "https://setugeo.com/api/v1/auth/token"
-						}
+							"raw": "https://setugeo.com/api/v1/auth/token",
+							"protocol": "https",
+							"host": [
+								"setugeo",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"token"
+							]
+						},
+						"description": "Exchange your production credentials for a JWT bearer token. This script automatically saves the token to your environment."
 					},
 					"response": [
 						{
@@ -57,43 +77,127 @@
 					]
 				},
 				{
-					"name": "User Usage Stats",
+					"name": "User Profile Details",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/user/usage"
+							"raw": "{{baseUrl}}/user",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user"
+							]
+						},
+						"description": "Fetch the profile information for the authenticated user, including available credits."
+					},
+					"response": [
+						{
+							"name": "Profile Response",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"id\": 1,\n    \"name\": \"Admin User\",\n    \"email\": \"admin@setugeo.com\",\n    \"plan\": \"enterprise\",\n    \"credits_available\": 5000\n}"
 						}
+					]
+				},
+				{
+					"name": "User Usage Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/user/usage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"usage"
+							]
+						},
+						"description": "Get a high-level summary of your credit consumption and remaining balance."
 					},
 					"response": [
 						{
 							"name": "Usage Response",
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": "json",
-							"body": "{\n    \"id\": 1,\n    \"name\": \"Admin\",\n    \"credits_remaining\": 4850,\n    \"last_used\": \"2026-04-28 12:00:00\"\n}"
+							"body": "{\n    \"credits_total\": 10000,\n    \"credits_used\": 150,\n    \"credits_remaining\": 9850\n}"
 						}
 					]
 				},
 				{
-					"name": "Razorpay Webhook",
+					"name": "Usage Breakdown (Service Wise)",
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"event\": \"payment.captured\",\n    \"payload\": {\n        \"payment\": {\n            \"entity\": {\n                \"id\": \"pay_example\",\n                \"amount\": 50000\n            }\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
 							}
-						},
+						],
 						"url": {
-							"raw": "{{baseUrl}}/webhooks/razorpay"
+							"raw": "{{baseUrl}}/user/usage-breakdown",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"usage-breakdown"
+							]
+						},
+						"description": "Detailed breakdown of credit usage across different service categories (OCR, Equity, Geo)."
+					},
+					"response": [
+						{
+							"name": "Breakdown Response",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"ocr\": 50,\n    \"equity\": 20,\n    \"geo\": 80\n}"
 						}
-					}
+					]
+				},
+				{
+					"name": "Usage History (Daily Trends)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/user/usage-history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"usage-history"
+							]
+						},
+						"description": "Historical consumption data grouped by date for trend analysis."
+					},
+					"response": [
+						{
+							"name": "History Response",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"date\": \"2026-04-27\", \"hits\": 120 },\n    { \"date\": \"2026-04-28\", \"hits\": 150 }\n]"
+						}
+					]
 				}
 			]
 		},
@@ -101,20 +205,32 @@
 			"name": "0A. OCR Document Extraction",
 			"item": [
 				{
-					"name": "OCR Health Check",
+					"name": "OCR Direct Health Check",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/ocr/health"
-						}
+							"raw": "{{ocrBaseUrl}}/health",
+							"host": [
+								"{{ocrBaseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Verify the status of the dedicated OCR microservice independently."
 					},
 					"response": [
 						{
 							"name": "Health Status",
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": "json",
-							"body": "{\"status\":\"healthy\",\"bridge\":\"connected\"}"
+							"body": "{\n    \"status\": \"healthy\",\n    \"bridge\": \"connected\",\n    \"version\": \"2.1.0\"\n}"
 						}
 					]
 				},
@@ -122,31 +238,50 @@
 					"name": "Extract - PAN Card",
 					"request": {
 						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
 						"body": {
 							"mode": "formdata",
 							"formdata": [
 								{
 									"key": "image",
 									"type": "file",
-									"src": []
+									"src": [],
+									"description": "Upload image file (JPG/PNG)"
 								},
 								{
 									"key": "document_type",
 									"value": "pan",
-									"type": "text"
+									"type": "text",
+									"description": "Explicitly set to 'pan'"
 								}
 							]
 						},
 						"url": {
-							"raw": "{{baseUrl}}/ocr/extract"
-						}
+							"raw": "{{ocrBaseUrl}}/ocr/extract",
+							"host": [
+								"{{ocrBaseUrl}}"
+							],
+							"path": [
+								"ocr",
+								"extract"
+							]
+						},
+						"description": "Extract structured data from a PAN card image."
 					},
 					"response": [
 						{
-							"name": "PAN Data",
+							"name": "PAN Extraction Example",
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": "json",
 							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"pan_number\": \"ABCDE1234F\",\n        \"name\": \"JOHN DOE\",\n        \"father_name\": \"RICHARD DOE\",\n        \"dob\": \"1990-01-01\"\n    }\n}"
 						}
 					]
@@ -155,6 +290,16 @@
 					"name": "Extract - Aadhaar Front",
 					"request": {
 						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
 						"body": {
 							"mode": "formdata",
 							"formdata": [
@@ -171,15 +316,22 @@
 							]
 						},
 						"url": {
-							"raw": "{{baseUrl}}/ocr/extract"
-						}
+							"raw": "{{ocrBaseUrl}}/ocr/extract",
+							"host": [
+								"{{ocrBaseUrl}}"
+							],
+							"path": [
+								"ocr",
+								"extract"
+							]
+						},
+						"description": "Extract Name, DOB, Gender, and Aadhaar number from the front side."
 					},
 					"response": [
 						{
-							"name": "Aadhaar Front Data",
+							"name": "Aadhaar Front Example",
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": "json",
 							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"aadhaar_number\": \"1234 5678 9012\",\n        \"name\": \"JOHN DOE\",\n        \"gender\": \"MALE\",\n        \"dob\": \"1990-01-01\"\n    }\n}"
 						}
 					]
@@ -188,6 +340,16 @@
 					"name": "Extract - Aadhaar Back",
 					"request": {
 						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
 						"body": {
 							"mode": "formdata",
 							"formdata": [
@@ -204,16 +366,218 @@
 							]
 						},
 						"url": {
-							"raw": "{{baseUrl}}/ocr/extract"
-						}
+							"raw": "{{ocrBaseUrl}}/ocr/extract",
+							"host": [
+								"{{ocrBaseUrl}}"
+							],
+							"path": [
+								"ocr",
+								"extract"
+							]
+						},
+						"description": "Extract address and pincode from the back side of Aadhaar."
 					},
 					"response": [
 						{
-							"name": "Aadhaar Back Data",
+							"name": "Aadhaar Back Example",
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": "json",
 							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"address\": \"123 Main St, Mumbai, Maharashtra 400001\",\n        \"pincode\": \"400001\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Extract - Voter ID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "document_type",
+									"value": "voter_id",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{ocrBaseUrl}}/ocr/extract",
+							"host": [
+								"{{ocrBaseUrl}}"
+							],
+							"path": [
+								"ocr",
+								"extract"
+							]
+						},
+						"description": "Extract EPIC number and personal details from Voter ID card."
+					},
+					"response": [
+						{
+							"name": "Voter ID Example",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"voter_id\": \"ABC1234567\",\n        \"name\": \"JOHN DOE\",\n        \"age\": 34\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Extract - Driving License",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "document_type",
+									"value": "driving_license",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{ocrBaseUrl}}/ocr/extract",
+							"host": [
+								"{{ocrBaseUrl}}"
+							],
+							"path": [
+								"ocr",
+								"extract"
+							]
+						},
+						"description": "Extract DL number, expiry, and class of vehicle."
+					},
+					"response": [
+						{
+							"name": "DL Example",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"dl_number\": \"MH0120101234567\",\n        \"valid_upto\": \"2035-12-31\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Extract - Passport",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "document_type",
+									"value": "passport",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{ocrBaseUrl}}/ocr/extract",
+							"host": [
+								"{{ocrBaseUrl}}"
+							],
+							"path": [
+								"ocr",
+								"extract"
+							]
+						},
+						"description": "Extract Passport number, expiry, and machine-readable zone data."
+					},
+					"response": [
+						{
+							"name": "Passport Example",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"passport_number\": \"Z1234567\",\n        \"expiry\": \"2030-01-01\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Extract - Auto Detect",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{ocrBaseUrl}}/ocr/extract",
+							"host": [
+								"{{ocrBaseUrl}}"
+							],
+							"path": [
+								"ocr",
+								"extract"
+							]
+						},
+						"description": "Send an image without document_type to let the engine auto-identify the document."
+					},
+					"response": [
+						{
+							"name": "Auto Detect Example",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"success\": true,\n    \"document_identified\": \"pan\",\n    \"data\": { \"pan_number\": \"ABCDE...\" }\n}"
 						}
 					]
 				}
@@ -226,17 +590,29 @@
 					"name": "List All Regions",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/regions"
-						}
+							"raw": "{{baseUrl}}/regions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"regions"
+							]
+						},
+						"description": "List primary geographic regions (Asia, Europe, etc.)"
 					},
 					"response": [
 						{
 							"name": "Regions List",
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": "json",
-							"body": "[{\"id\":1,\"name\":\"Asia\"},{\"id\":2,\"name\":\"Europe\"}]"
+							"body": "[\n    { \"id\": 1, \"name\": \"Asia\" }\n]"
 						}
 					]
 				},
@@ -244,73 +620,268 @@
 					"name": "List All Sub-Regions",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/sub-regions"
+							"raw": "{{baseUrl}}/sub-regions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sub-regions"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Sub-Regions Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 1, \"name\": \"Southern Asia\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "List All Timezones",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/timezones"
+							"raw": "{{baseUrl}}/timezones",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"timezones"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Timezones Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 1, \"name\": \"Asia/Kolkata\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "List All Countries",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/countries"
+							"raw": "{{baseUrl}}/countries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"countries"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Countries Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 101, \"name\": \"India\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Search Country: India",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/countries?name=India"
+							"raw": "{{baseUrl}}/countries?name=India",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"countries"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "India",
+									"description": "Fuzzy name search"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Search Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 101, \"name\": \"India\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Get States (Country ID: 101)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/states?country_id=101"
+							"raw": "{{baseUrl}}/states?country_id=101",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"states"
+							],
+							"query": [
+								{
+									"key": "country_id",
+									"value": "101",
+									"description": "Filter by Country"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "States List",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 51, \"name\": \"Rajasthan\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Get Cities (State ID: 51)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/cities?state_id=51"
+							"raw": "{{baseUrl}}/cities?state_id=51",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cities"
+							],
+							"query": [
+								{
+									"key": "state_id",
+									"value": "51",
+									"description": "Filter by State"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Cities List",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 1024, \"name\": \"Jaipur\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Get Pincodes (City ID: 1024)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/pincodes?city_id=1024"
+							"raw": "{{baseUrl}}/pincodes?city_id=1024",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pincodes"
+							],
+							"query": [
+								{
+									"key": "city_id",
+									"value": "1024",
+									"description": "Filter by City"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Pincodes List",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"pincode\": \"302001\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Pincode Exact Search (400001)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/pincodes/search?pincode=400001"
+							"raw": "{{baseUrl}}/pincodes/search?pincode=400001",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pincodes",
+								"search"
+							],
+							"query": [
+								{
+									"key": "pincode",
+									"value": "400001"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Pincode Result",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"pincode\": \"400001\", \"city\": \"Mumbai\" }\n]"
+						}
+					]
 				}
 			]
 		},
@@ -318,20 +889,32 @@
 			"name": "2. Hierarchical Drill-Downs",
 			"item": [
 				{
-					"name": "Country Details",
+					"name": "Country Details (India)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/country/101"
+							"raw": "{{baseUrl}}/country/101",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"country",
+								"101"
+							]
 						}
 					},
 					"response": [
 						{
-							"name": "Country Info",
+							"name": "Country Master Success",
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": "json",
-							"body": "{\"id\":101,\"name\":\"India\",\"iso3\":\"IND\",\"phone_code\":\"91\"}"
+							"body": "{\n    \"id\": 101,\n    \"name\": \"India\",\n    \"iso3\": \"IND\"\n}"
 						}
 					]
 				},
@@ -339,91 +922,318 @@
 					"name": "States of Country",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/country/101/states"
+							"raw": "{{baseUrl}}/country/101/states",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"country",
+								"101",
+								"states"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "States Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 51, \"name\": \"Rajasthan\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Cities of Country",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/country/101/cities"
+							"raw": "{{baseUrl}}/country/101/cities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"country",
+								"101",
+								"cities"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Cities Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 1, \"name\": \"Mumbai\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Timezones of Country",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/country/101/timezones"
+							"raw": "{{baseUrl}}/country/101/timezones",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"country",
+								"101",
+								"timezones"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Timezones Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"timezone\": \"Asia/Kolkata\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Banks of Country",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/country/101/banks"
+							"raw": "{{baseUrl}}/country/101/banks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"country",
+								"101",
+								"banks"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Banks Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"name\": \"HDFC BANK\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Neighbors of Country",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/country/101/neighbors"
+							"raw": "{{baseUrl}}/country/101/neighbors",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"country",
+								"101",
+								"neighbors"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Neighbors Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"name\": \"Nepal\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Compare India vs USA",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/countries/compare?c1_id=101&c2_id=233"
+							"raw": "{{baseUrl}}/countries/compare?c1_id=101&c2_id=233",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"countries",
+								"compare"
+							],
+							"query": [
+								{
+									"key": "c1_id",
+									"value": "101"
+								},
+								{
+									"key": "c2_id",
+									"value": "233"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Comparison Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"c1\": { \"name\": \"India\", \"pop\": \"1.4B\" },\n    \"c2\": { \"name\": \"USA\", \"pop\": \"330M\" }\n}"
+						}
+					]
 				},
 				{
-					"name": "State Details",
+					"name": "State Details (Rajasthan)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/state/51"
+							"raw": "{{baseUrl}}/state/51",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"state",
+								"51"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "State Master Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"id\": 51,\n    \"name\": \"Rajasthan\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Cities of State",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/state/51/cities"
+							"raw": "{{baseUrl}}/state/51/cities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"state",
+								"51",
+								"cities"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Cities Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 1, \"name\": \"Jaipur\" }\n]"
+						}
+					]
 				},
 				{
-					"name": "City Details",
+					"name": "City Details (Mumbai)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/city/1024"
+							"raw": "{{baseUrl}}/city/1024",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"city",
+								"1024"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "City Master Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"id\": 1024,\n    \"name\": \"Mumbai\"\n}"
+						}
+					]
 				},
 				{
-					"name": "Banks by Pincode",
+					"name": "Banks by Pincode (400001)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/pincode/400001/banks"
+							"raw": "{{baseUrl}}/pincode/400001/banks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pincode",
+								"400001",
+								"banks"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Banks Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"name\": \"State Bank of India\" }\n]"
+						}
+					]
 				}
 			]
 		},
@@ -434,44 +1244,150 @@
 					"name": "Banks Master List",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/banks"
+							"raw": "{{baseUrl}}/banks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"banks"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Banks List",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"id\": 1, \"name\": \"HDFC BANK\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Bank Branches (HDFC)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/bank/1/branches"
+							"raw": "{{baseUrl}}/bank/1/branches",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bank",
+								"1",
+								"branches"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Branches List",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"ifsc\": \"HDFC0000060\", \"branch\": \"FORT\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "Coverage Analytics",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/bank/1/coverage"
+							"raw": "{{baseUrl}}/bank/1/coverage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bank",
+								"1",
+								"coverage"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Coverage Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"total_branches\": 5400,\n    \"active_states\": 28\n}"
+						}
+					]
 				},
 				{
 					"name": "Branch Search (Fuzzy)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/bank/branches/search?search_query=HDFC Mumbai"
+							"raw": "{{baseUrl}}/bank/branches/search?search_query=HDFC Mumbai",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bank",
+								"branches",
+								"search"
+							],
+							"query": [
+								{
+									"key": "search_query",
+									"value": "HDFC Mumbai"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Search Results",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"ifsc\": \"HDFC0000060\", \"branch\": \"FORT\" }\n]"
+						}
+					]
 				},
 				{
 					"name": "IFSC Lookup (HDFC0000060)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/bank/ifsc/HDFC0000060"
+							"raw": "{{baseUrl}}/bank/ifsc/HDFC0000060",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bank",
+								"ifsc",
+								"HDFC0000060"
+							]
 						}
 					},
 					"response": [
@@ -479,694 +1395,963 @@
 							"name": "IFSC Data",
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": "json",
-							"body": "{\"bank\":\"HDFC BANK\",\"ifsc\":\"HDFC0000060\",\"branch\":\"FORT\",\"address\":\"123 Fort St, Mumbai\",\"city\":\"Mumbai\",\"state\":\"Maharashtra\"}"
+							"body": "{\n    \"bank\": \"HDFC BANK\",\n    \"ifsc\": \"HDFC0000060\",\n    \"branch\": \"FORT\",\n    \"city\": \"MUMBAI\"\n}"
 						}
 					]
-				},
-				{
-					"name": "Banks in City",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/city/1024/banks"
-						}
-					}
-				},
-				{
-					"name": "Banks in State",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/state/51/banks"
-						}
-					}
 				},
 				{
 					"name": "Digital Capability Map",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/banks/digital-coverage"
+							"raw": "{{baseUrl}}/banks/digital-coverage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"banks",
+								"digital-coverage"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Digital Map Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"digital_index\": 0.85,\n    \"leading_bank\": \"HDFC\"\n}"
+						}
+					]
 				},
 				{
 					"name": "SWIFT Enabled Branches",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/bank/1/swift-branches"
+							"raw": "{{baseUrl}}/bank/1/swift-branches",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bank",
+								"1",
+								"swift-branches"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "SWIFT List",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"swift_code\": \"HDFCINBB\", \"branch\": \"MAIN\" }\n]"
+						}
+					]
 				}
 			]
 		},
 		{
-			"name": "4. Equity Intelligence - Listings",
+			"name": "4. Equity Intelligence - Rankings",
 			"item": [
 				{
-					"name": "All Equities (Paginated)",
+					"name": "Top Gainers (NSE)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equities?page=1"
+							"raw": "{{baseUrl}}/equities/analysis/top-gainers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equities",
+								"analysis",
+								"top-gainers"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Gainers Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"symbol\": \"RELIANCE\", \"change\": 2.5 }\n]"
+						}
+					]
 				},
 				{
-					"name": "Search Equity (HDFC)",
+					"name": "Top Losers (NSE)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equities/search?q=HDFC"
+							"raw": "{{baseUrl}}/equities/analysis/top-losers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equities",
+								"analysis",
+								"top-losers"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Losers Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"symbol\": \"TCS\", \"change\": -1.8 }\n]"
+						}
+					]
 				},
 				{
-					"name": "Filter Market Cap - Large",
+					"name": "Highest Turnover Stocks",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equities/filter/market-cap/large"
+							"raw": "{{baseUrl}}/equities/analysis/top-turnover",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equities",
+								"analysis",
+								"top-turnover"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Turnover Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"symbol\": \"RELIANCE\", \"turnover\": \"500Cr\" }\n]"
+						}
+					]
 				},
 				{
-					"name": "Filter Market Cap - Mid",
+					"name": "Highest Volume Stocks",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equities/filter/market-cap/mid"
+							"raw": "{{baseUrl}}/equities/analysis/high-volume",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equities",
+								"analysis",
+								"high-volume"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Volume Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"symbol\": \"YESBANK\", \"vol\": \"10M\" }\n]"
+						}
+					]
 				},
 				{
-					"name": "Filter Market Cap - Small",
+					"name": "New Stock Listings",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equities/filter/market-cap/small"
+							"raw": "{{baseUrl}}/equities/analysis/new-listings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equities",
+								"analysis",
+								"new-listings"
+							]
 						}
-					}
-				}
-			]
-		},
-		{
-			"name": "5. Equity Intelligence - Analysis",
-			"item": [
-				{
-					"name": "Top Gainers",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/top-gainers"
+					},
+					"response": [
+						{
+							"name": "New Listings Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"symbol\": \"ZOMATO\", \"listed_on\": \"2024-01-01\" }\n]"
 						}
-					}
+					]
 				},
 				{
-					"name": "Top Losers",
+					"name": "Gap Movers (Opening)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/top-losers"
+							"raw": "{{baseUrl}}/equities/analysis/gap-movers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equities",
+								"analysis",
+								"gap-movers"
+							]
 						}
-					}
-				},
-				{
-					"name": "Highest Turnover",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/top-turnover"
+					},
+					"response": [
+						{
+							"name": "Gap Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"symbol\": \"INFY\", \"gap\": \"1.2%\" }\n]"
 						}
-					}
-				},
-				{
-					"name": "Highest Volume",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/high-volume"
-						}
-					}
-				},
-				{
-					"name": "New Listings",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/new-listings"
-						}
-					}
-				},
-				{
-					"name": "Market Cap Stats",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/market-cap-stats"
-						}
-					}
-				},
-				{
-					"name": "Gap Movers",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/gap-movers"
-						}
-					}
-				},
-				{
-					"name": "Intraday Movers",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/intraday-movers"
-						}
-					}
-				},
-				{
-					"name": "Wide Range Stocks",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/wide-range-stocks"
-						}
-					}
-				},
-				{
-					"name": "High Activity",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/high-activity"
-						}
-					}
-				},
-				{
-					"name": "NSE vs BSE Spread",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/nse-bse-spread"
-						}
-					}
-				},
-				{
-					"name": "Consistent Performers",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/consistent-performers"
-						}
-					}
-				},
-				{
-					"name": "52-Week Extremes",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/52-week-extremes"
-						}
-					}
+					]
 				},
 				{
 					"name": "Sectoral Heatmap",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equities/analysis/sector-heatmap"
+							"raw": "{{baseUrl}}/equities/analysis/sector-heatmap",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equities",
+								"analysis",
+								"sector-heatmap"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Heatmap Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"Banking\": 1.25,\n    \"IT\": -0.5\n}"
+						}
+					]
+				},
+				{
+					"name": "52-Week Highs/Lows",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/equities/analysis/52-week-extremes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equities",
+								"analysis",
+								"52-week-extremes"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Extremes Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"symbol\": \"RELIANCE\", \"type\": \"52W High\" }\n]"
+						}
+					]
 				}
 			]
 		},
 		{
-			"name": "6. Equity Intelligence - Stock Detail",
+			"name": "5. Equity Intelligence - Detailed",
 			"item": [
 				{
-					"name": "Stock Detail (ISIN)",
+					"name": "Master Detail (ISIN)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equity/INE002A01018"
+							"raw": "{{baseUrl}}/equity/INE002A01018",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equity",
+								"INE002A01018"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Detail Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"symbol\": \"RELIANCE\",\n    \"isin\": \"INE002A01018\",\n    \"sector\": \"Energy\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Industry Peers",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equity/INE002A01018/peers"
+							"raw": "{{baseUrl}}/equity/INE002A01018/peers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equity",
+								"INE002A01018",
+								"peers"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Peers Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"symbol\": \"BPCL\" },\n    { \"symbol\": \"IOC\" }\n]"
+						}
+					]
 				},
 				{
-					"name": "Historical Trends",
+					"name": "Price Trends (History)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equity/INE002A01018/history"
+							"raw": "{{baseUrl}}/equity/INE002A01018/history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equity",
+								"INE002A01018",
+								"history"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "History Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"date\": \"2026-04-28\", \"close\": 2500.5 }\n]"
+						}
+					]
 				},
 				{
-					"name": "Financial Metrics",
+					"name": "Financial Snapshot",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equity/INE002A01018/metrics"
+							"raw": "{{baseUrl}}/equity/INE002A01018/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equity",
+								"INE002A01018",
+								"metrics"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Metrics Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"pe\": 25.4,\n    \"pb\": 3.2\n}"
+						}
+					]
 				},
 				{
-					"name": "OHLC Summary",
+					"name": "OHLC Technicals",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/equity/INE002A01018/ohlc"
+							"raw": "{{baseUrl}}/equity/INE002A01018/ohlc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"equity",
+								"INE002A01018",
+								"ohlc"
+							]
 						}
-					}
-				},
-				{
-					"name": "Dual Exchange Activity",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equity/INE002A01018/dual-exchange"
+					},
+					"response": [
+						{
+							"name": "OHLC Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"open\": 2480,\n    \"high\": 2510,\n    \"low\": 2475,\n    \"close\": 2500\n}"
 						}
-					}
-				},
-				{
-					"name": "Activity Metrics",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/equity/INE002A01018/activity-metrics"
-						}
-					}
+					]
 				}
 			]
 		},
 		{
-			"name": "7. Index Intelligence",
+			"name": "6. Index Intelligence",
 			"item": [
 				{
 					"name": "Market Snapshot",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/indices/snapshot"
+							"raw": "{{baseUrl}}/indices/snapshot",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"indices",
+								"snapshot"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Snapshot Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"NIFTY50\": 22450.5,\n    \"SENSEX\": 74000.2\n}"
+						}
+					]
 				},
 				{
 					"name": "Search Indices",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/indices/search?q=NIFTY"
+							"raw": "{{baseUrl}}/indices/search?q=NIFTY",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"indices",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "NIFTY"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Search Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"name\": \"NIFTY 50\" }\n]"
+						}
+					]
 				},
 				{
-					"name": "Top Index Gainers",
+					"name": "Index Metrics (NIFTY50)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/indices/analysis/top-gainers"
+							"raw": "{{baseUrl}}/indices/NIFTY50/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"indices",
+								"NIFTY50",
+								"metrics"
+							]
 						}
-					}
-				},
-				{
-					"name": "Top Index Losers",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/indices/analysis/top-losers"
+					},
+					"response": [
+						{
+							"name": "Metrics Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"pe\": 22.5,\n    \"pb\": 3.8\n}"
 						}
-					}
-				},
-				{
-					"name": "Valuation Matrix",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/indices/analysis/valuation-comparison"
-						}
-					}
-				},
-				{
-					"name": "OHLC Summary",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/indices/analysis/ohlc-summary"
-						}
-					}
-				},
-				{
-					"name": "Index Metrics",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/indices/NIFTY50/metrics"
-						}
-					}
-				},
-				{
-					"name": "Index Price History",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/indices/NIFTY50/history"
-						}
-					}
-				},
-				{
-					"name": "Index Valuation",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/indices/NIFTY50/valuation"
-						}
-					}
-				},
-				{
-					"name": "Valuation History",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/indices/NIFTY50/valuation-history"
-						}
-					}
+					]
 				}
 			]
 		},
 		{
-			"name": "8. Mutual Fund Suite",
+			"name": "7. Mutual Fund Suite",
 			"item": [
 				{
 					"name": "Scheme Master List",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/mf/list"
+							"raw": "{{baseUrl}}/mf/list",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"mf",
+								"list"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "List Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"isin\": \"INF179K01931\", \"name\": \"HDFC NIFTY 50 INDEX FUND\" }\n]"
+						}
+					]
 				},
 				{
-					"name": "Scheme Search",
+					"name": "Compare Multi-Schemes",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/mf/search?q=HDFC"
+							"raw": "{{baseUrl}}/mf/compare?isins=INF179K01931,INF209K01643",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"mf",
+								"compare"
+							],
+							"query": [
+								{
+									"key": "isins",
+									"value": "INF179K01931,INF209K01643"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Compare Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"INF179K01931\": { \"returns_1y\": 18.5 }\n}"
+						}
+					]
 				},
 				{
-					"name": "Filter Categories",
+					"name": "Scheme Detailed Profile",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/mf/filters"
+							"raw": "{{baseUrl}}/mf/details/INF179K01931",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"mf",
+								"details",
+								"INF179K01931"
+							]
 						}
-					}
-				},
-				{
-					"name": "Compare Schemes",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/mf/compare?isins=INF179K01931,INF209K01643"
+					},
+					"response": [
+						{
+							"name": "Detail Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"name\": \"HDFC NIFTY 50 INDEX FUND\",\n    \"nav\": 185.45\n}"
 						}
-					}
-				},
-				{
-					"name": "Top Performance",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/mf/analysis/top-gainers"
-						}
-					}
-				},
-				{
-					"name": "AMC Performance",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/mf/analysis/amc-performance"
-						}
-					}
-				},
-				{
-					"name": "Category Returns",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/mf/analysis/category-returns"
-						}
-					}
-				},
-				{
-					"name": "Consistent Performers",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/mf/analysis/consistent-performers"
-						}
-					}
-				},
-				{
-					"name": "Scheme Detail",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/mf/details/INF179K01931"
-						}
-					}
-				},
-				{
-					"name": "NAV History",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/mf/history/INF179K01931"
-						}
-					}
-				},
-				{
-					"name": "Similar Funds",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/mf/INF179K01931/similar-funds"
-						}
-					}
+					]
 				}
 			]
 		},
 		{
-			"name": "9. Market Cross-Asset Intelligence",
+			"name": "8. Market & Geospatial",
 			"item": [
 				{
-					"name": "Market Snapshot",
+					"name": "Cross-Asset Snapshot",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/market/snapshot"
+							"raw": "{{baseUrl}}/market/snapshot",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"market",
+								"snapshot"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Snapshot Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"bullish\"\n}"
+						}
+					]
 				},
 				{
-					"name": "Market Heatmap",
+					"name": "Geospatial Stats",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/market/heatmap"
+							"raw": "{{baseUrl}}/geospatial/statistics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"geospatial",
+								"statistics"
+							]
 						}
-					}
-				},
-				{
-					"name": "Market Breadth",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/market/breadth"
+					},
+					"response": [
+						{
+							"name": "Stats Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"total_points\": 1000000\n}"
 						}
-					}
+					]
 				}
 			]
 		},
 		{
-			"name": "10. Geospatial & Analytics",
+			"name": "9. Intelligent Utilities",
 			"item": [
 				{
-					"name": "Global Stats",
+					"name": "Convert USD to INR",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/geospatial/statistics"
+							"raw": "{{baseUrl}}/currency/convert?from=USD&to=INR&amount=100",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"currency",
+								"convert"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "USD"
+								},
+								{
+									"key": "to",
+									"value": "INR"
+								},
+								{
+									"key": "amount",
+									"value": "100"
+								}
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Conversion Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"result\": 8350\n}"
+						}
+					]
 				},
 				{
-					"name": "Distance Calculation",
+					"name": "Address Verification",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/geospatial/distance?lat1=19&lng1=72&lat2=28&lng2=77"
+							"raw": "{{baseUrl}}/address/validate?pincode=400001",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"address",
+								"validate"
+							],
+							"query": [
+								{
+									"key": "pincode",
+									"value": "400001"
+								}
+							]
 						}
-					}
-				},
-				{
-					"name": "Nearby Search (Cities)",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/geospatial/nearby?lat=19&lng=72&radius=100&type=city"
+					},
+					"response": [
+						{
+							"name": "Verification Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"valid\": true\n}"
 						}
-					}
-				},
-				{
-					"name": "Reverse Geocode",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/geospatial/geocode?lat=18.921&lng=72.834"
-						}
-					}
-				},
-				{
-					"name": "Boundary Box Mapping",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/geospatial/boundary?min_lat=18.9&max_lat=19.1&min_lng=72.8&max_lng=73.0"
-						}
-					}
-				},
-				{
-					"name": "Grid Density Clustering",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/geospatial/cluster?lat=19.0&lng=72.8&radius=100&grid_size=0.5"
-						}
-					}
+					]
 				}
 			]
 		},
 		{
-			"name": "11. Economic & Utilities",
+			"name": "10. Economic Intelligence",
 			"item": [
 				{
-					"name": "Economic Profile",
+					"name": "Global Economic Profile",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/countries/economic-profile"
+							"raw": "{{baseUrl}}/countries/economic-profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"countries",
+								"economic-profile"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Economic Profile Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"country\": \"India\", \"gdp\": \"3.5T\" }\n]"
+						}
+					]
 				},
 				{
-					"name": "Taxation Data",
+					"name": "Taxation Profiles",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/countries/tax-data"
+							"raw": "{{baseUrl}}/countries/tax-data",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"countries",
+								"tax-data"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Tax Profiles Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"country\": \"India\", \"tax_rate\": 25 }\n]"
+						}
+					]
 				},
 				{
-					"name": "Regional GDP",
+					"name": "Regional GDP Breakdown",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/countries/analysis/regional-gdp"
+							"raw": "{{baseUrl}}/countries/analysis/regional-gdp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"countries",
+								"analysis",
+								"regional-gdp"
+							]
 						}
-					}
+					},
+					"response": [
+						{
+							"name": "Regional GDP Success",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    { \"region\": \"Maharashtra\", \"gdp\": \"400B\" }\n]"
+						}
+					]
 				},
 				{
-					"name": "Country Economic Summary",
+					"name": "Country Macro Summary",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/country/101/economic-summary"
+							"raw": "{{baseUrl}}/country/101/economic-summary",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"country",
+								"101",
+								"economic-summary"
+							]
 						}
-					}
-				},
-				{
-					"name": "Currency Exchange",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/currency/exchange?currency=EUR"
+					},
+					"response": [
+						{
+							"name": "Macro Summary Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"gdp_growth\": 6.8,\n    \"inflation\": 4.5\n}"
 						}
-					}
-				},
-				{
-					"name": "Currency Convert",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/currency/convert?from=USD&to=INR&amount=100"
-						}
-					}
-				},
-				{
-					"name": "Address Validate",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/address/validate?pincode=400001"
-						}
-					}
-				},
-				{
-					"name": "Address Autocomplete",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/address/autocomplete?search_query=Mum"
-						}
-					}
-				},
-				{
-					"name": "Timezone Convert",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/timezone/convert?from=UTC&to=Asia/Kolkata"
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "12. User Usage Analytics",
-			"item": [
-				{
-					"name": "Usage Breakdown",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/user/usage-breakdown"
-						}
-					}
-				},
-				{
-					"name": "Usage History",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/user/usage-history"
-						}
-					}
+					]
 				}
 			]
 		}
@@ -1190,6 +2375,11 @@
 		{
 			"key": "liveUrl",
 			"value": "https://setugeo.com/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "ocrBaseUrl",
+			"value": "https://api.setugeo.com",
 			"type": "string"
 		},
 		{
