@@ -34,8 +34,31 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('mutual_fund_prices', function (Blueprint $table) {
-            $table->foreign('mf_id')->references('id')->on('mutual_funds')->onDelete('cascade');
-        });
+        // To safely re-add the foreign key, we must first revert mf_id values 
+        // from scheme_code back to the auto-incrementing mutual_funds.id.
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('
+                UPDATE mutual_fund_prices
+                SET mf_id = (SELECT id FROM mutual_funds WHERE mutual_funds.isin = mutual_fund_prices.isin)
+            ');
+        } else {
+            // Revert values to IDs
+            DB::statement('
+                UPDATE mutual_fund_prices mfp
+                JOIN mutual_funds mf ON mf.isin = mfp.isin
+                SET mfp.mf_id = mf.id
+            ');
+
+            // Remove any orphan rows that would block the foreign key creation
+            DB::statement('
+                DELETE FROM mutual_fund_prices 
+                WHERE mf_id NOT IN (SELECT id FROM mutual_funds)
+            ');
+
+            // Now safely re-add the constraint
+            Schema::table('mutual_fund_prices', function (Blueprint $table) {
+                $table->foreign('mf_id')->references('id')->on('mutual_funds')->onDelete('cascade');
+            });
+        }
     }
 };
