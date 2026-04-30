@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('mutual_funds', function (Blueprint $table) {
             $table->id();
             $table->string('isin', 12)->unique();
-            $table->string('scheme_code', 20)->unique();
+            $table->string('scheme_code', 20);
             $table->string('isin_reinvest', 12)->nullable();
             $table->string('scheme_name', 300);
             $table->string('amc_name', 150)->nullable()->index();

@@ -312,14 +312,34 @@ class SyncMfHistoryCommand extends Command
 
         $this->info('Refreshing master scheme list from mfapi.in...');
         try {
-            $response = Http::timeout(60)->withoutVerifying()->get(self::MFAPI_BASE);
-            if (!$response->successful()) {
-                $this->error('Failed to fetch master list: HTTP ' . $response->status());
-                return;
+            $list = null;
+            $success = false;
+            
+            for ($attempt = 1; $attempt <= 3; $attempt++) {
+                if ($attempt > 0) sleep($attempt * 2);
+
+                try {
+                    $response = Http::connectTimeout(30)
+                        ->timeout(120)
+                        ->withoutVerifying()
+                        ->get(self::MFAPI_BASE);
+
+                    if ($response->successful()) {
+                        $list = $response->json();
+                        if (!empty($list)) {
+                            $success = true;
+                            break;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    $this->warn("Master refresh attempt $attempt failed: " . $e->getMessage());
+                }
             }
 
-            $list = $response->json();
-            if (empty($list)) return;
+            if (!$success) {
+                $this->error('Failed to fetch master list after multiple attempts.');
+                return;
+            }
 
             $this->info(sprintf('Processing %d schemes for auto-discovery...', count($list)));
             $bar = $this->output->createProgressBar(count($list));
