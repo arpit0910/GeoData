@@ -41,10 +41,8 @@ class SyncMfHistoryCommand extends Command
     {
         ini_set('memory_limit', '512M');
 
-        $months      = (int) $this->argument('months');
-        $dataCutoff  = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
-        // Fetch 3 extra years from API to allow computation of 3y returns for the oldest requested records
-        $fetchCutoff = Carbon::parse($dataCutoff)->subYears(3)->subDays(15)->format('Y-m-d');
+        $months     = (int) $this->argument('months');
+        $cutoff     = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
 
         $singleCode = $this->option('scheme');
 
@@ -64,11 +62,10 @@ class SyncMfHistoryCommand extends Command
         }
 
         $this->info(sprintf(
-            'Syncing %d months of history + returns for %d schemes (window >= %s, fetch >= %s)...',
+            'Syncing %d months of history + returns for %d schemes (cutoff >= %s)...',
             $months,
             $schemes->count(),
-            $dataCutoff,
-            $fetchCutoff
+            $cutoff
         ));
 
         // Build per-scheme date coverage map: isin → [min_date, max_date] of existing rows
@@ -78,7 +75,7 @@ class SyncMfHistoryCommand extends Command
         if (!$this->option('force')) {
             DB::table('mutual_fund_prices')
                 ->select('isin', DB::raw('MIN(nav_date) as min_d'), DB::raw('MAX(nav_date) as max_d'))
-                ->where('nav_date', '>=', $dataCutoff)
+                ->where('nav_date', '>=', $cutoff)
                 ->groupBy('isin')
                 ->orderBy('isin')
                 ->chunk(5000, function ($rows) use (&$existingRange) {
@@ -153,7 +150,7 @@ class SyncMfHistoryCommand extends Command
             $range = $existingRange[$scheme->isin] ?? null;
             if (
                 !$this->option('force') && $range
-                && $range[0] <= $dataCutoff
+                && $range[0] <= $cutoff
                 && $range[1] >= $recentThreshold
             ) {
                 $skipped++;
@@ -162,12 +159,12 @@ class SyncMfHistoryCommand extends Command
                 continue;
             }
 
-            // 1. Build full NAV map from API (back to fetchCutoff for returns)
+            // 1. Build full NAV map from API (strictly >= cutoff)
             $allNavs = [];
             $latestDate = null;
             foreach ($json['data'] as $entry) {
                 $d = $this->parseMfApiDate($entry['date'] ?? '');
-                if (!$d || $d < $fetchCutoff) continue;
+                if (!$d || $d < $cutoff) continue;
 
                 if (!$latestDate || $d > $latestDate) $latestDate = $d;
 
@@ -177,7 +174,7 @@ class SyncMfHistoryCommand extends Command
             }
 
             // Skip stale schemes where the latest data doesn't even reach our history window
-            if (!$latestDate || $latestDate < $dataCutoff) {
+            if (!$latestDate || $latestDate < $cutoff) {
                 $skipped++;
                 $bar->advance();
                 usleep(self::SLEEP_MS);
@@ -199,9 +196,6 @@ class SyncMfHistoryCommand extends Command
             // Determine which dates need to be inserted/updated
             $newDates = [];
             foreach ($allDates as $idx => $d) {
-                // Only insert records within the requested history window
-                if ($d < $dataCutoff) continue;
-
                 if (
                     !$this->option('force') && $range
                     && $d >= $range[0] && $d <= $range[1]
@@ -248,7 +242,10 @@ class SyncMfHistoryCommand extends Command
             $written = false;
             for ($attempt = 1; $attempt <= 3; $attempt++) {
                 try {
-                    try { DB::reconnect(); } catch (\Throwable $t) {}
+                    try {
+                        DB::reconnect();
+                    } catch (\Throwable $t) {
+                    }
                     DB::beginTransaction();
                     $this->flushBuffer($schemeRows);
                     DB::commit();
@@ -256,7 +253,10 @@ class SyncMfHistoryCommand extends Command
                     $written = true;
                     break;
                 } catch (\Exception $e) {
-                    try { DB::rollBack(); } catch (\Throwable $t) {}
+                    try {
+                        DB::rollBack();
+                    } catch (\Throwable $t) {
+                    }
                     if ($attempt < 3) usleep(500000);
                 }
             }
