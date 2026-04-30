@@ -34,7 +34,7 @@ return new class extends Migration
             $table->decimal('val_3y', 15, 4)->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->index('nav_date');
-            $table->foreign('mf_id')->references('id')->on('mutual_funds')->onDelete('cascade');
+            $table->unique(['isin', 'nav_date']);
         });
     }
 

@@ -41,8 +41,11 @@ class SyncMfHistoryCommand extends Command
     {
         ini_set('memory_limit', '512M');
 
-        $months     = (int) $this->argument('months');
-        $cutoff     = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
+        $months      = (int) $this->argument('months');
+        $dataCutoff  = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
+        // Fetch 3 extra years from API to allow computation of 3y returns for the oldest requested records
+        $fetchCutoff = Carbon::parse($dataCutoff)->subYears(3)->subDays(15)->format('Y-m-d');
+
         $singleCode = $this->option('scheme');
 
         $query = DB::table('mutual_funds')->where('is_active', 1);
@@ -61,10 +64,11 @@ class SyncMfHistoryCommand extends Command
         }
 
         $this->info(sprintf(
-            'Syncing %d months of history + returns for %d schemes (cutoff=%s)...',
+            'Syncing %d months of history + returns for %d schemes (window >= %s, fetch >= %s)...',
             $months,
             $schemes->count(),
-            $cutoff
+            $dataCutoff,
+            $fetchCutoff
         ));
 
         // Build per-scheme date coverage map: isin → [min_date, max_date] of existing rows
@@ -74,7 +78,7 @@ class SyncMfHistoryCommand extends Command
         if (!$this->option('force')) {
             DB::table('mutual_fund_prices')
                 ->select('isin', DB::raw('MIN(nav_date) as min_d'), DB::raw('MAX(nav_date) as max_d'))
-                ->where('nav_date', '>=', $cutoff)
+                ->where('nav_date', '>=', $dataCutoff)
                 ->groupBy('isin')
                 ->orderBy('isin')
                 ->chunk(5000, function ($rows) use (&$existingRange) {
@@ -149,7 +153,7 @@ class SyncMfHistoryCommand extends Command
             $range = $existingRange[$scheme->isin] ?? null;
             if (
                 !$this->option('force') && $range
-                && $range[0] <= $cutoff
+                && $range[0] <= $dataCutoff
                 && $range[1] >= $recentThreshold
             ) {
                 $skipped++;
@@ -158,14 +162,26 @@ class SyncMfHistoryCommand extends Command
                 continue;
             }
 
-            // Build full NAV map from API (all dates >= cutoff)
+            // 1. Build full NAV map from API (back to fetchCutoff for returns)
             $allNavs = [];
+            $latestDate = null;
             foreach ($json['data'] as $entry) {
                 $d = $this->parseMfApiDate($entry['date'] ?? '');
-                if (!$d || $d < $cutoff) continue;
+                if (!$d || $d < $fetchCutoff) continue;
+
+                if (!$latestDate || $d > $latestDate) $latestDate = $d;
+
                 $v = (float)($entry['nav'] ?? 0);
                 if ($v <= 0) continue;
                 $allNavs[$d] = $v;
+            }
+
+            // Skip stale schemes where the latest data doesn't even reach our history window
+            if (!$latestDate || $latestDate < $dataCutoff) {
+                $skipped++;
+                $bar->advance();
+                usleep(self::SLEEP_MS);
+                continue;
             }
 
             if (empty($allNavs)) {
@@ -183,6 +199,9 @@ class SyncMfHistoryCommand extends Command
             // Determine which dates need to be inserted/updated
             $newDates = [];
             foreach ($allDates as $idx => $d) {
+                // Only insert records within the requested history window
+                if ($d < $dataCutoff) continue;
+
                 if (
                     !$this->option('force') && $range
                     && $d >= $range[0] && $d <= $range[1]
@@ -257,15 +276,32 @@ class SyncMfHistoryCommand extends Command
 
         $bar->finish();
         $this->newLine();
-        $this->info(sprintf(
-            'Done. Rows upserted: %d | Skipped: %d | Failed: %d',
-            $flushed,
-            $skipped,
-            $failed
-        ));
+
+        $this->info('────────────────────────────────────────────────────────────────');
+        $this->info('  Sync Summary');
+        $this->info('────────────────────────────────────────────────────────────────');
+        $this->table(
+            ['Category', 'Count'],
+            [
+                ['Total Schemes', $schemes->count()],
+                ['Rows Upserted', $flushed],
+                ['Schemes Skipped', $skipped],
+                ['Schemes Failed', $failed],
+            ]
+        );
+        $this->info('────────────────────────────────────────────────────────────────');
+
         if (!empty($failedSchemes)) {
             $this->warn('Failed scheme codes: ' . implode(', ', $failedSchemes));
         }
+
+        Log::channel('single')->info('sync:mf-history complete', [
+            'months' => $months,
+            'upserted' => $flushed,
+            'skipped' => $skipped,
+            'failed' => $failed,
+            'failed_codes' => $failedSchemes,
+        ]);
 
         return $failed > 0 ? Command::FAILURE : Command::SUCCESS;
     }
