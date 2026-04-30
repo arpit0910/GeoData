@@ -14,7 +14,8 @@ class SyncMfHistoryCommand extends Command
     protected $signature = 'sync:mf-history
                             {months=12 : Months of history to fetch per scheme}
                             {--scheme= : Single scheme_code to sync (debug/backfill)}
-                            {--force : Re-insert even if records already exist}';
+                            {--force : Re-insert even if records already exist}
+                            {--skip-master : Skip refreshing the master fund list from mfapi.in}';
 
     protected $description = 'Fetch historical NAVs + compute period returns from mfapi.in';
 
@@ -23,19 +24,6 @@ class SyncMfHistoryCommand extends Command
     private const SLEEP_MS      = 300000; // 0.3 s between each scheme (avoid rate limiting)
     private const HTTP_RETRIES  = 5;
     private const HTTP_BACKOFF  = [1, 2, 4, 8, 16]; // seconds per retry attempt
-
-    // [carbon-method, value]
-    private const PERIODS = [
-        '1d' => ['subDays',   1],
-        '3d' => ['subDays',   3],
-        '7d' => ['subDays',   7],
-        '1m' => ['subMonth',  1],
-        '3m' => ['subMonths', 3],
-        '6m' => ['subMonths', 6],
-        '9m' => ['subMonths', 9],
-        '1y' => ['subYear',   1],
-        '3y' => ['subYears',  3],
-    ];
 
     public function handle(): int
     {
@@ -46,18 +34,14 @@ class SyncMfHistoryCommand extends Command
 
         $singleCode = $this->option('scheme');
 
+        $this->refreshMaster();
+
         $query = DB::table('mutual_funds')->where('is_active', 1);
         if ($singleCode) $query->where('scheme_code', $singleCode);
         $schemes = $query->get();
 
         if ($schemes->isEmpty()) {
-            $this->warn('No active schemes found — auto-running sync:mf-daily --force to populate master...');
-            Artisan::call('sync:mf-daily', ['--force' => true], $this->output);
-            $schemes = $query->get();
-        }
-
-        if ($schemes->isEmpty()) {
-            $this->error('Still no schemes after sync:mf-daily. Check AMFI connectivity.');
+            $this->error('No schemes found after master refresh. Check API connectivity.');
             return Command::FAILURE;
         }
 
@@ -212,31 +196,15 @@ class SyncMfHistoryCommand extends Command
                 continue;
             }
 
-            // Compute rows using the FULL nav array so period returns resolve correctly
+            // Prepare rows for bulk insert (raw NAVs only)
             $schemeRows = [];
             foreach ($newDates as $j => $date) {
-                $currentNav = $allNavVals[$j];
-                $row = [
+                $schemeRows[] = [
                     'mf_id'    => $this->resolveFundKey($scheme),
                     'isin'     => $scheme->isin,
                     'nav_date' => $date,
-                    'nav'      => $currentNav,
+                    'nav'      => $allNavVals[$j],
                 ];
-
-                foreach (self::PERIODS as $p => [$method, $val]) {
-                    $targetTs = $this->targetTs($date, $method, $val);
-                    $idx      = $this->closestIdx($allTimestamps, $j, $targetTs, 10);
-                    if ($idx !== null && $allNavVals[$idx] > 0) {
-                        $refNav          = $allNavVals[$idx];
-                        $row["chg_{$p}"] = round((($currentNav - $refNav) / $refNav) * 100, 4);
-                        $row["val_{$p}"] = $refNav;
-                    } else {
-                        $row["chg_{$p}"] = null;
-                        $row["val_{$p}"] = null;
-                    }
-                }
-
-                $schemeRows[] = $row;
             }
 
             $written = false;
@@ -319,78 +287,11 @@ class SyncMfHistoryCommand extends Command
 
     private function flushBuffer(array $rows): int
     {
-        $updateCols = [
-            'mf_id',
-            'nav',
-            'chg_1d',
-            'val_1d',
-            'chg_3d',
-            'val_3d',
-            'chg_7d',
-            'val_7d',
-            'chg_1m',
-            'val_1m',
-            'chg_3m',
-            'val_3m',
-            'chg_6m',
-            'val_6m',
-            'chg_9m',
-            'val_9m',
-            'chg_1y',
-            'val_1y',
-            'chg_3y',
-            'val_3y',
-        ];
+        $updateCols = ['mf_id', 'nav'];
         foreach (array_chunk($rows, self::NAV_CHUNK) as $chunk) {
             DB::table('mutual_fund_prices')->upsert($chunk, ['isin', 'nav_date'], $updateCols);
         }
         return count($rows);
-    }
-
-    private function targetTs(string $fromDate, string $method, int $val): int
-    {
-        $c = Carbon::createFromFormat('Y-m-d', $fromDate);
-        match ($method) {
-            'subDays'   => $c->subDays($val),
-            'subMonth'  => $c->subMonth(),
-            'subMonths' => $c->subMonths($val),
-            'subYear'   => $c->subYear(),
-            'subYears'  => $c->subYears($val),
-        };
-        return $c->timestamp;
-    }
-
-    /**
-     * Binary search in sorted $timestamps[0..$maxIdx-1] for the entry
-     * closest to $targetTs within $windowDays. Returns index or null.
-     */
-    private function closestIdx(array $timestamps, int $maxIdx, int $targetTs, int $windowDays): ?int
-    {
-        if ($maxIdx === 0) return null;
-
-        $windowSec = $windowDays * 86400;
-        $lo = 0;
-        $hi = $maxIdx - 1;
-
-        while ($lo < $hi) {
-            $mid = ($lo + $hi) >> 1;
-            if ($timestamps[$mid] < $targetTs) $lo = $mid + 1;
-            else $hi = $mid;
-        }
-
-        $best     = null;
-        $bestDiff = PHP_INT_MAX;
-
-        foreach ([$lo - 1, $lo] as $idx) {
-            if ($idx < 0 || $idx >= $maxIdx) continue;
-            $diff = abs($timestamps[$idx] - $targetTs);
-            if ($diff <= $windowSec && $diff < $bestDiff) {
-                $bestDiff = $diff;
-                $best     = $idx;
-            }
-        }
-
-        return $best;
     }
 
     private function parseMfApiDate(string $d): ?string
@@ -399,6 +300,63 @@ class SyncMfHistoryCommand extends Command
             return Carbon::createFromFormat('d-m-Y', $d)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;
+        }
+    }
+
+    private function refreshMaster(): void
+    {
+        if ($this->option('skip-master')) {
+            $this->info('Skipping master list refresh.');
+            return;
+        }
+
+        $this->info('Refreshing master scheme list from mfapi.in...');
+        try {
+            $response = Http::timeout(60)->withoutVerifying()->get(self::MFAPI_BASE);
+            if (!$response->successful()) {
+                $this->error('Failed to fetch master list: HTTP ' . $response->status());
+                return;
+            }
+
+            $list = $response->json();
+            if (empty($list)) return;
+
+            $this->info(sprintf('Processing %d schemes for auto-discovery...', count($list)));
+            $bar = $this->output->createProgressBar(count($list));
+            $bar->start();
+
+            $chunks = array_chunk($list, 1000);
+            foreach ($chunks as $chunk) {
+                $rows = [];
+                foreach ($chunk as $item) {
+                    $isin = $item['isinGrowth'] ?? $item['isinDivReinvestment'] ?? null;
+                    if (!$isin || strlen($isin) !== 12) continue;
+
+                    $rows[] = [
+                        'isin'          => $isin,
+                        'scheme_code'   => (string)$item['schemeCode'],
+                        'scheme_name'   => substr($item['schemeName'], 0, 300),
+                        'isin_reinvest' => $item['isinDivReinvestment'] ?? null,
+                        'is_active'     => 1,
+                        'updated_at'    => now(),
+                    ];
+                }
+
+                if (!empty($rows)) {
+                    // Match by ISIN, update name and code if changed
+                    DB::table('mutual_funds')->upsert(
+                        $rows,
+                        ['isin'],
+                        ['scheme_code', 'scheme_name', 'isin_reinvest', 'is_active', 'updated_at']
+                    );
+                }
+                $bar->advance(count($chunk));
+            }
+
+            $bar->finish();
+            $this->newLine();
+        } catch (\Exception $e) {
+            $this->error('Master refresh failed: ' . $e->getMessage());
         }
     }
 }
