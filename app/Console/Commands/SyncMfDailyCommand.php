@@ -373,7 +373,7 @@ class SyncMfDailyCommand extends Command
         DB::table('mutual_fund_prices')
             ->where('nav_date', $navDate)
             ->orderBy('isin')
-            ->select('isin', 'nav', 'nav_date')
+            ->select('isin', 'nav', 'nav_date', 'mf_id')
             ->chunk(500, function ($todayRows) use ($navDate, $oldest, $periods, $bar) {
                 if ($this->shouldStop) return false; // abort chunk iteration
 
@@ -392,7 +392,7 @@ class SyncMfDailyCommand extends Command
                 $upsertRows = [];
                 foreach ($todayRows as $todayRow) {
                     $schemeHistory = $history->get($todayRow->isin, collect());
-                    $updates       = ['isin' => $todayRow->isin, 'nav_date' => $navDate, 'nav' => $todayRow->nav];
+                    $updates       = ['isin' => $todayRow->isin, 'nav_date' => $navDate, 'nav' => $todayRow->nav, 'mf_id' => $todayRow->mf_id];
 
                     foreach ($periods as $chgCol => $targetCarbon) {
                         $valCol = str_replace('chg_', 'val_', $chgCol);
