@@ -12,8 +12,15 @@ class MfMaster extends Model
     protected $keyType    = 'string';
 
     protected $fillable = [
-        'isin', 'scheme_code', 'isin_reinvest', 'scheme_name',
-        'amc_name', 'category', 'sub_category', 'type', 'is_active',
+        'isin',
+        'scheme_code',
+        'isin_reinvest',
+        'scheme_name',
+        'amc_name',
+        'category',
+        'sub_category',
+        'type',
+        'is_active',
     ];
 
     protected $casts = ['is_active' => 'boolean'];
@@ -26,6 +33,6 @@ class MfMaster extends Model
     public function latestNav()
     {
         return $this->hasOne(MfNavHistory::class, 'isin', 'isin')
-                    ->latestOfMany('nav_date');
+            ->latestOfMany('nav_date');
     }
 }

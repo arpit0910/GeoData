@@ -39,6 +39,12 @@ class Kernel extends ConsoleKernel
             ->timezone('Asia/Kolkata')
             ->withoutOverlapping(180)
             ->after(fn() => $this->logCronRun('sync:mf-daily (23:15)'));
+
+        $schedule->command('mf:sync-and-calculate')
+            ->dailyAt('23:30')
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping(180)
+            ->after(fn() => $this->logCronRun('mf:sync-and-calculate (23:30)'));
     }
 
     protected function commands()

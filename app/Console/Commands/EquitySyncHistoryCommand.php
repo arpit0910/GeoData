@@ -8,6 +8,7 @@ use App\Models\EquityPrice;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class EquitySyncHistoryCommand extends Command
 {
@@ -30,21 +31,20 @@ class EquitySyncHistoryCommand extends Command
      */
     protected $description = 'Sync historical equity data for the last X months';
 
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
-    public function handle()
+    protected bool $shouldStop = false;
+
+    public function handle(): int
     {
         ini_set('memory_limit', '512M');
-        $exchange = strtoupper($this->option('exchange') ?? '');
+        set_time_limit(0);
+        $this->setupSignals();
+
+        $exchange  = strtoupper($this->option('exchange') ?? '');
+        $startedAt = microtime(true);
 
         if ($this->option('from')) {
             $startDate = Carbon::parse($this->option('from'))->startOfDay();
-            $endDate   = $this->option('to')
-                ? Carbon::parse($this->option('to'))->startOfDay()
-                : now()->startOfDay();
+            $endDate   = $this->option('to') ? Carbon::parse($this->option('to'))->startOfDay() : now()->startOfDay();
             $this->info("Starting historical equity sync (explicit range)...");
         } else {
             $months    = $this->argument('months');
@@ -54,13 +54,31 @@ class EquitySyncHistoryCommand extends Command
         }
 
         $this->info("From: {$startDate->format('Y-m-d')} To: {$endDate->format('Y-m-d')}");
+        Log::info('[equities:sync-history] started', [
+            'from'     => $startDate->format('Y-m-d'),
+            'to'       => $endDate->format('Y-m-d'),
+            'exchange' => $exchange ?: 'all',
+            'force'    => $this->option('force'),
+        ]);
 
         $currentDate = clone $startDate;
-        $totalDays = $startDate->diffInDays($endDate);
-        $bar = $this->output->createProgressBar($totalDays + 1);
+        $totalDays   = $startDate->diffInDays($endDate);
+        $bar         = $this->output->createProgressBar($totalDays + 1);
+        $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% | Elapsed: %elapsed:6s% | ETA: %estimated:-6s%');
         $bar->start();
 
+        $daysDone    = 0;
+        $daysSkipped = 0;
+        $daysFailed  = 0;
+
         while ($currentDate <= $endDate) {
+            if ($this->shouldStop) {
+                $this->newLine();
+                $this->warn('Stop signal — exiting at ' . $currentDate->format('Y-m-d') . '.');
+                Log::warning('[equities:sync-history] stopped by signal', ['stopped_at' => $currentDate->format('Y-m-d')]);
+                break;
+            }
+
             if ($currentDate->isWeekend()) {
                 $currentDate->addDay();
                 $bar->advance();
@@ -68,7 +86,7 @@ class EquitySyncHistoryCommand extends Command
             }
 
             $dateString = $currentDate->format('Y-m-d');
-            $this->info("\nProcessing {$dateString}...");
+            $this->line("\nProcessing {$dateString}...");
 
             try {
                 $shouldSkip = false;
@@ -84,20 +102,39 @@ class EquitySyncHistoryCommand extends Command
                 }
 
                 if ($shouldSkip) {
-                    $this->info("Records already exist for {$dateString}. Skipping...");
+                    $this->line("  <fg=yellow>Skip</> {$dateString} — already in DB.");
+                    $daysSkipped++;
                 } else {
+                    $t       = microtime(true);
                     $phpData = $this->handlePhpFetch($dateString, $exchange ?: null);
+
                     if (!empty($phpData)) {
                         $this->processData($phpData, $dateString);
-                        $this->info("Successfully synced {$dateString}.");
+                        $dayMs = round((microtime(true) - $t) * 1000);
+                        $this->info("  Synced {$dateString} ({$dayMs}ms).");
+                        Log::info('[equities:sync-history] day done', [
+                            'date'       => $dateString,
+                            'records'    => count($phpData),
+                            'elapsed_ms' => $dayMs,
+                        ]);
+                        $daysDone++;
                     } else {
-                        $this->warn("No data found for {$dateString}.");
+                        $this->warn("  No data for {$dateString}.");
+                        Log::warning('[equities:sync-history] no data', ['date' => $dateString]);
+                        $daysSkipped++;
                     }
                     unset($phpData);
                     gc_collect_cycles();
                 }
             } catch (\Exception $e) {
-                $this->error("\nFailed to sync for {$dateString}: " . $e->getMessage());
+                $daysFailed++;
+                $this->error("\nFailed {$dateString}: " . $e->getMessage());
+                Log::error('[equities:sync-history] day failed', [
+                    'date'  => $dateString,
+                    'error' => $e->getMessage(),
+                    'file'  => $e->getFile(),
+                    'line'  => $e->getLine(),
+                ]);
             }
 
             $currentDate->addDay();
@@ -106,9 +143,31 @@ class EquitySyncHistoryCommand extends Command
 
         $bar->finish();
         $this->newLine();
-        $this->info("Historical sync completed.");
 
-        return Command::SUCCESS;
+        $elapsed = round(microtime(true) - $startedAt, 1);
+        $this->info("Historical sync complete — done: {$daysDone}, skipped: {$daysSkipped}, failed: {$daysFailed} ({$elapsed}s).");
+        Log::info('[equities:sync-history] complete', [
+            'done'      => $daysDone,
+            'skipped'   => $daysSkipped,
+            'failed'    => $daysFailed,
+            'elapsed_s' => $elapsed,
+        ]);
+
+        return $daysFailed > 0 ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    protected function setupSignals(): void
+    {
+        if (!extension_loaded('pcntl')) return;
+        pcntl_async_signals(true);
+        $handler = function (int $sig) {
+            $this->shouldStop = true;
+            $label = match ($sig) { SIGTERM => 'SIGTERM', SIGINT => 'SIGINT', default => "SIG{$sig}" };
+            $this->warn("\n{$label} received — stopping after current date.");
+            Log::warning('[equities:sync-history] signal received', ['signal' => $label]);
+        };
+        pcntl_signal(SIGTERM, $handler);
+        pcntl_signal(SIGINT, $handler);
     }
 
     /**

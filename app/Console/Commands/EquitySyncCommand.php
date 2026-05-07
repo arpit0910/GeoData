@@ -18,67 +18,85 @@ class EquitySyncCommand extends Command
      */
     protected $signature = 'equities:sync {date?} {exchange?} {--force : Re-sync even if records already exist}';
 
-    /**
-     * The console command description.
-     */
     protected $description = 'Memory-optimized sync of daily Bhavcopy data from NSE and BSE';
 
-    /**
-     * Execute the console command.
-     */
-    public function handle()
-    {
-        // 1. Environmental Optimizations
-        ini_set('memory_limit', '1G');
-        DB::connection()->disableQueryLog();
+    protected bool $shouldStop = false;
 
-        $startDate = $this->argument('date') ?: now()->format('Y-m-d');
-        $exchange = $this->argument('exchange');
+    public function handle(): int
+    {
+        ini_set('memory_limit', '1G');
+        set_time_limit(0);
+        DB::connection()->disableQueryLog();
+        $this->setupSignals();
+
+        $startDate  = $this->argument('date') ?: now()->format('Y-m-d');
+        $exchange   = $this->argument('exchange');
+        $startedAt  = microtime(true);
+
+        Log::info('[equities:sync] started', [
+            'date'     => $startDate,
+            'exchange' => $exchange,
+            'force'    => $this->option('force'),
+        ]);
 
         $currentDateObj = Carbon::parse($startDate);
-        $attempts = 0;
+        $attempts   = 0;
         $maxAttempts = 10;
-
         $scriptPath = base_path('app/Scripts/fetch_bhavcopy.py');
         $pythonPath = $this->detectPython();
 
         while ($attempts < $maxAttempts) {
+            if ($this->shouldStop) {
+                $this->warn('Stop signal — aborting date search.');
+                Log::warning('[equities:sync] stopped by signal');
+                return Command::FAILURE;
+            }
+
             $date = $currentDateObj->format('Y-m-d');
             $this->info("--- Checking sync for {$date} ---");
+            Log::info('[equities:sync] checking date', ['date' => $date, 'attempt' => $attempts + 1]);
 
-            // Skip if already synced (unless --force)
             if (!$this->option('force') && $this->isAlreadySynced($date, $exchange)) {
                 $this->info("Records already exist for {$date}. Job complete.");
+                Log::info('[equities:sync] already synced', ['date' => $date]);
                 return Command::SUCCESS;
             }
 
             // Attempt 1: Python Worker
             if ($pythonPath) {
+                $t = microtime(true);
                 $pythonData = $this->fetchViaPython($pythonPath, $scriptPath, $date, $exchange);
                 if ($pythonData) {
-                    $this->info("Successfully fetched data via Python worker.");
+                    $this->info(sprintf('Fetched %d records via Python (%.1fs).', count($pythonData), microtime(true) - $t));
+                    Log::info('[equities:sync] python fetch success', ['date' => $date, 'records' => count($pythonData)]);
                     return $this->processData($pythonData, $date);
                 }
-                $this->warn("Python worker did not return usable data for {$date}; falling back to PHP fetcher.");
+                $this->warn("Python worker returned no data for {$date} — falling back to PHP.");
+                Log::warning('[equities:sync] python fetch empty', ['date' => $date]);
             }
 
             // Attempt 2: PHP Native Fallback
+            $t = microtime(true);
             $phpData = $this->handlePhpFetch($date, $exchange);
             if (!empty($phpData)) {
-                $this->info("Successfully fetched data via PHP native fetcher.");
+                $this->info(sprintf('Fetched %d records via PHP (%.1fs).', count($phpData), microtime(true) - $t));
+                Log::info('[equities:sync] php fetch success', ['date' => $date, 'records' => count($phpData)]);
                 return $this->processData($phpData, $date);
             }
 
             $this->warn("No data found for {$date}. Stepping back 1 day...");
+            Log::warning('[equities:sync] no data, stepping back', ['date' => $date]);
             $currentDateObj->subDay();
             $attempts++;
         }
 
-        $this->error("Failed to find any data after {$maxAttempts} attempts.");
-        Log::error('equities:sync exhausted all attempts without data', [
-            'start_date' => $startDate,
-            'exchange' => $exchange,
-            'max_attempts' => $maxAttempts,
+        $elapsed = round(microtime(true) - $startedAt, 1);
+        $this->error("Failed to find any data after {$maxAttempts} attempts ({$elapsed}s).");
+        Log::error('[equities:sync] exhausted all attempts', [
+            'start_date'  => $startDate,
+            'exchange'    => $exchange,
+            'max_attempts'=> $maxAttempts,
+            'elapsed_s'   => $elapsed,
         ]);
         return Command::FAILURE;
     }
@@ -102,40 +120,51 @@ class EquitySyncCommand extends Command
             return Command::SUCCESS;
         }
 
-        $this->info("Starting memory-efficient processing for " . count($data) . " records...");
-        $now = now();
+        $processStart = microtime(true);
+        $this->info(sprintf('[equities:sync] Processing %d records for %s...', count($data), $date));
+        Log::info('[equities:sync] processData started', ['date' => $date, 'records' => count($data)]);
+
+        $now     = now();
         $dateObj = Carbon::parse($date);
 
         // Step 1: Sync the base Equity table (names, symbols)
+        $t = microtime(true);
         $this->syncEquities($data, $now);
+        Log::info('[equities:sync] syncEquities done', ['elapsed_ms' => round((microtime(true) - $t) * 1000)]);
 
-        // Step 2: Map ISIN to IDs (Chunked to prevent SQL limit errors)
-        $isins = collect($data)->pluck('isin')->unique();
+        // Step 2: Map ISIN to IDs
+        $isins    = collect($data)->pluck('isin')->unique();
         $isinToId = collect();
         foreach ($isins->chunk(1000) as $chunk) {
             $isinToId = $isinToId->merge(Equity::whereIn('isin', $chunk)->pluck('id', 'isin'));
         }
 
-        // Step 3: Get historical dates for performance window calculations
+        // Step 3: Historical date windows for period returns
+        $t = microtime(true);
         $periodConfig = $this->getHistoricalDateWindows($dateObj);
-        $targetDates = collect($periodConfig['window_map'])->flatten()->filter()->unique()->values()->toArray();
+        $targetDates  = collect($periodConfig['window_map'])->flatten()->filter()->unique()->values()->toArray();
+        Log::info('[equities:sync] date windows built', [
+            'target_dates' => count($targetDates),
+            'elapsed_ms'   => round((microtime(true) - $t) * 1000),
+        ]);
 
-        // Step 4: Batch Process ISINs (Crucial for Memory)
-        // We group data by ISIN and process 200 stocks at a time
+        // Step 4: Batch Process ISINs in groups of 200
         $isinGroups = collect($data)->groupBy('isin');
-        $chunks = $isinGroups->chunk(200);
+        $chunks     = $isinGroups->chunk(200);
+        $totalChunks = $chunks->count();
 
         foreach ($chunks as $index => $isinBatch) {
-            $batchIsins = $isinBatch->keys()
-                ->filter(fn($isin) => is_scalar($isin) && trim((string) $isin) !== '')
-                ->map(fn($isin) => (string) $isin)
-                ->values();
+            if ($this->shouldStop) {
+                $this->warn('Stop signal — aborting after batch ' . $index . '/' . $totalChunks . '.');
+                Log::warning('[equities:sync] stopped by signal in processData', ['batch' => $index, 'total' => $totalChunks]);
+                break;
+            }
+
+            $t = microtime(true);
+            $batchIsins      = $isinBatch->keys()->filter(fn($isin) => is_scalar($isin) && trim((string)$isin) !== '')->map(fn($isin) => (string)$isin)->values();
             $batchIsinsArray = $batchIsins->all();
+            $batchIds        = $isinToId->only($batchIsinsArray)->values()->filter(fn($id) => is_scalar($id))->all();
 
-            // Defensively filter for valid offset types
-            $batchIds = $isinToId->only($batchIsinsArray)->values()->filter(fn($id) => is_scalar($id))->all();
-
-            // Fetch historical prices ONLY for this batch
             $historicalBatch = DB::table('equity_prices')
                 ->whereIn('traded_date', $targetDates)
                 ->whereIn('equity_id', $batchIds)
@@ -143,28 +172,20 @@ class EquitySyncCommand extends Command
                 ->get()
                 ->groupBy('equity_id');
 
-            // Fetch existing prices for today ONLY for this batch (additive sync)
             $existingPricesBatch = EquityPrice::whereIn('isin', $batchIsinsArray)
                 ->where('traded_date', $date)
                 ->get()
-                ->keyBy(fn($item) => (string) $item->isin);
+                ->keyBy(fn($item) => (string)$item->isin);
 
             $upsertData = [];
-
             foreach ($isinBatch as $isin => $records) {
-                if (!is_scalar($isin)) {
-                    continue;
-                }
-
-                $isin = (string) $isin;
+                if (!is_scalar($isin)) continue;
+                $isin     = (string)$isin;
                 $equityId = $isinToId->get($isin);
                 if (!$equityId) continue;
 
                 $upsertData[] = $this->calculateMetrics(
-                    $equityId,
-                    $isin,
-                    $date,
-                    $now,
+                    $equityId, $isin, $date, $now,
                     $records->where('exchange', 'NSE')->first(),
                     $records->where('exchange', 'BSE')->first(),
                     $existingPricesBatch->get($isin),
@@ -173,18 +194,27 @@ class EquitySyncCommand extends Command
                 );
             }
 
-            // Perform bulk upsert for this batch
             if (!empty($upsertData)) {
                 EquityPrice::upsert($upsertData, ['isin', 'traded_date'], $this->getUpsertColumns());
             }
 
-            $this->info("Processed batch " . ($index + 1) . " / " . $chunks->count());
+            $batchMs = round((microtime(true) - $t) * 1000);
+            $this->info(sprintf('  Batch %d/%d — %d records (%dms)', $index + 1, $totalChunks, count($upsertData), $batchMs));
+            Log::info('[equities:sync] batch done', [
+                'date'       => $date,
+                'batch'      => $index + 1,
+                'total'      => $totalChunks,
+                'upserted'   => count($upsertData),
+                'elapsed_ms' => $batchMs,
+            ]);
 
-            // Clean up loop variables to free memory
             unset($historicalBatch, $existingPricesBatch, $upsertData);
         }
 
-        $this->info("Sync completed successfully for {$date}.");
+        $elapsed = round(microtime(true) - $processStart, 1);
+        $this->info("Sync completed for {$date} ({$elapsed}s).");
+        Log::info('[equities:sync] processData complete', ['date' => $date, 'elapsed_s' => $elapsed]);
+
         return Command::SUCCESS;
     }
 
@@ -216,13 +246,32 @@ class EquitySyncCommand extends Command
             'spread' => ($nse_close > 0 && $bse_close > 0) ? abs($nse_close - $bse_close) : 0,
             'created_at' => $existing ? $existing->created_at : $now,
             'updated_at' => $now,
+            // Pre-initialize all period fields so every row has the same shape for upsert
+            'nse_chg_1d' => null, 'nse_val_1d' => null,
+            'nse_chg_3d' => null, 'nse_val_3d' => null,
+            'nse_chg_7d' => null, 'nse_val_7d' => null,
+            'nse_chg_1m' => null, 'nse_val_1m' => null,
+            'nse_chg_3m' => null, 'nse_val_3m' => null,
+            'nse_chg_6m' => null, 'nse_val_6m' => null,
+            'nse_chg_9m' => null, 'nse_val_9m' => null,
+            'nse_chg_1y' => null, 'nse_val_1y' => null,
+            'nse_chg_3y' => null, 'nse_val_3y' => null,
+            'bse_chg_1d' => null, 'bse_val_1d' => null,
+            'bse_chg_3d' => null, 'bse_val_3d' => null,
+            'bse_chg_7d' => null, 'bse_val_7d' => null,
+            'bse_chg_1m' => null, 'bse_val_1m' => null,
+            'bse_chg_3m' => null, 'bse_val_3m' => null,
+            'bse_chg_6m' => null, 'bse_val_6m' => null,
+            'bse_chg_9m' => null, 'bse_val_9m' => null,
+            'bse_chg_1y' => null, 'bse_val_1y' => null,
+            'bse_chg_3y' => null, 'bse_val_3y' => null,
         ];
 
         // Process Historical Returns
         if ($history) {
             $historyByDate = $history->keyBy('traded_date');
-            foreach (['1d', '3d', '7d', '1m', '3m', '6m', '1y', '3y'] as $period) {
-                foreach ($windowMap[$period] as $wd) {
+            foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'] as $period) {
+                foreach ($windowMap[$period] ?? [] as $wd) {
                     if ($prev = $historyByDate->get($wd)) {
                         if (isset($prev->nse_close) && $prev->nse_close > 0 && $nse_close > 0) {
                             $record["nse_chg_{$period}"] = (($nse_close - $prev->nse_close) / $prev->nse_close) * 100;
@@ -287,11 +336,17 @@ class EquitySyncCommand extends Command
      */
     protected function fetchViaPython($pythonPath, $scriptPath, $date, $exchange)
     {
+        if (!file_exists($scriptPath)) {
+            Log::warning('equities:sync python script not found', ['script_path' => $scriptPath]);
+            return null;
+        }
+
         $output = [];
         $returnVar = 0;
-        $exchangeParam = $exchange ?: "";
+        $exchangeParam = $exchange ? escapeshellarg($exchange) : "";
+        $cmd = escapeshellarg($pythonPath) . ' ' . escapeshellarg($scriptPath) . ' ' . escapeshellarg($date) . ' ' . $exchangeParam . ' 2>&1';
 
-        exec("{$pythonPath} \"{$scriptPath}\" {$date} {$exchangeParam} 2>&1", $output, $returnVar);
+        exec($cmd, $output, $returnVar);
 
         if ($returnVar !== 0) {
             Log::warning('equities:sync python worker failed', [
@@ -397,26 +452,63 @@ class EquitySyncCommand extends Command
     protected function fetchBseData($dateObj)
     {
         $dateUnderscore = $dateObj->format('Ymd');
+        $dateStr = $dateObj->format('dmy');
         $date = $dateObj->format('Y-m-d');
-        $url = "https://www.bseindia.com/download/BhavCopy/Equity/BhavCopy_BSE_CM_0_0_0_{$dateUnderscore}_F_0000.CSV";
 
-        try {
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Referer' => 'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx'
-            ])->timeout(30)->withoutVerifying()->get($url);
+        $urls = [
+            "https://www.bseindia.com/download/BhavCopy/Equity/BhavCopy_BSE_CM_0_0_0_{$dateUnderscore}_F_0000.CSV",
+            "https://www.bseindia.com/download/BhavCopy/Equity/EQ{$dateStr}_CSV.ZIP",
+        ];
 
-            if ($response->successful() && strlen($response->body()) > 500) {
-                Storage::put("equities/bhavcopies/{$date}/BSE_" . basename($url), $response->body());
-                return $this->parseFileContent($response->body(), 'BSE', $url);
+        $warmupPages = [
+            'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx',
+            'https://www.bseindia.com/markets/equity/EQReports/BhavCopy.aspx',
+        ];
+
+        $timeouts = [15, 30, 60];
+
+        foreach ($timeouts as $attempt => $timeout) {
+            if ($attempt > 0) {
+                sleep(3);
             }
-        } catch (\Exception $e) {
-            Log::warning('equities:sync BSE fetch failed', [
-                'date' => $date,
-                'url' => $url,
-                'message' => $e->getMessage(),
-            ]);
+
+            $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
+            try {
+                Http::withOptions(['cookies' => $cookieJar])
+                    ->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'])
+                    ->timeout(10)
+                    ->withoutVerifying()
+                    ->get($warmupPages[$attempt % count($warmupPages)]);
+            } catch (\Exception $e) {
+                // Warmup failure is non-fatal
+            }
+
+            foreach ($urls as $url) {
+                try {
+                    $response = Http::withOptions(['cookies' => $cookieJar])
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Referer' => 'https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx',
+                        ])
+                        ->timeout($timeout)
+                        ->withoutVerifying()
+                        ->get($url);
+
+                    if ($response->successful() && strlen($response->body()) > 500) {
+                        Storage::put("equities/bhavcopies/{$date}/BSE_" . basename($url), $response->body());
+                        return $this->parseFileContent($response->body(), 'BSE', $url);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('equities:sync BSE fetch failed', [
+                        'date' => $date,
+                        'url' => $url,
+                        'attempt' => $attempt + 1,
+                        'message' => $e->getMessage(),
+                    ]);
+                }
+            }
         }
+
         return null;
     }
 
@@ -499,7 +591,7 @@ class EquitySyncCommand extends Command
 
     protected function getHistoricalDateWindows($dateObj)
     {
-        $periods = ['1d' => 1, '3d' => 3, '7d' => 7, '1m' => 30, '3m' => 90, '6m' => 180, '1y' => 365, '3y' => 1095];
+        $periods = ['1d' => 1, '3d' => 3, '7d' => 7, '1m' => 30, '3m' => 90, '6m' => 180, '9m' => 270, '1y' => 365, '3y' => 1095];
         $windowMap = [];
         $allTradingDates = EquityPrice::where('traded_date', '<', $dateObj->format('Y-m-d'))
             ->orderBy('traded_date', 'desc')
@@ -516,45 +608,52 @@ class EquitySyncCommand extends Command
     protected function getUpsertColumns()
     {
         return [
-            'nse_open',
-            'nse_high',
-            'nse_low',
-            'nse_close',
-            'nse_prev_close',
-            'nse_volume',
-            'bse_open',
-            'bse_high',
-            'bse_low',
-            'bse_close',
-            'bse_prev_close',
-            'bse_volume',
-            'nse_chg_1d',
-            'nse_chg_3d',
-            'nse_chg_7d',
-            'nse_chg_1m',
-            'nse_chg_3m',
-            'nse_chg_6m',
-            'nse_chg_1y',
-            'nse_chg_3y',
-            'bse_chg_1d',
-            'bse_chg_3d',
-            'bse_chg_7d',
-            'bse_chg_1m',
-            'bse_chg_3m',
-            'bse_chg_6m',
-            'bse_chg_1y',
-            'bse_chg_3y',
-            'spread',
-            'updated_at'
+            'nse_open', 'nse_high', 'nse_low', 'nse_close', 'nse_prev_close', 'nse_volume',
+            'bse_open', 'bse_high', 'bse_low', 'bse_close', 'bse_prev_close', 'bse_volume',
+            'nse_chg_1d', 'nse_val_1d',
+            'nse_chg_3d', 'nse_val_3d',
+            'nse_chg_7d', 'nse_val_7d',
+            'nse_chg_1m', 'nse_val_1m',
+            'nse_chg_3m', 'nse_val_3m',
+            'nse_chg_6m', 'nse_val_6m',
+            'nse_chg_9m', 'nse_val_9m',
+            'nse_chg_1y', 'nse_val_1y',
+            'nse_chg_3y', 'nse_val_3y',
+            'bse_chg_1d', 'bse_val_1d',
+            'bse_chg_3d', 'bse_val_3d',
+            'bse_chg_7d', 'bse_val_7d',
+            'bse_chg_1m', 'bse_val_1m',
+            'bse_chg_3m', 'bse_val_3m',
+            'bse_chg_6m', 'bse_val_6m',
+            'bse_chg_9m', 'bse_val_9m',
+            'bse_chg_1y', 'bse_val_1y',
+            'bse_chg_3y', 'bse_val_3y',
+            'spread', 'updated_at',
         ];
+    }
+
+    protected function setupSignals(): void
+    {
+        if (!extension_loaded('pcntl')) return;
+        pcntl_async_signals(true);
+        $handler = function (int $sig) {
+            $this->shouldStop = true;
+            $label = match ($sig) { SIGTERM => 'SIGTERM', SIGINT => 'SIGINT', default => "SIG{$sig}" };
+            $this->warn("\n{$label} received — stopping after current step.");
+            Log::warning('[equities:sync] signal received', ['signal' => $label]);
+        };
+        pcntl_signal(SIGTERM, $handler);
+        pcntl_signal(SIGINT, $handler);
     }
 
     protected function detectPython()
     {
         if (!function_exists('exec')) return null;
-        foreach (['python3', 'python', 'py'] as $path) {
-            exec("{$path} --version 2>&1", $out, $ret);
-            if ($ret === 0) return $path;
+        foreach (['python3', 'python', 'py'] as $candidate) {
+            $out = [];
+            $ret = 0;
+            exec(escapeshellarg($candidate) . ' --version 2>&1', $out, $ret);
+            if ($ret === 0) return $candidate;
         }
         return null;
     }
