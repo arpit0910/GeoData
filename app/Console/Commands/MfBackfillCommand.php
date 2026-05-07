@@ -25,6 +25,7 @@ class MfBackfillCommand extends Command
                             {--from=2023-04-01  : Earliest nav_date to store (YYYY-MM-DD)}
                             {--skip-existing    : Skip ISINs that already have history from the from-date}
                             {--scheme=          : Process only this scheme_code}
+                            {--failed-only      : Retry only scheme codes from the last failed run (storage/logs/mf_backfill_failed.txt)}
                             {--chunk=500        : Rows per DB insertOrIgnore call}
                             {--delay=250000     : Microseconds to sleep between API calls (default 250 ms)}
                             {--limit=           : Cap the number of schemes processed (for testing)}';
@@ -45,24 +46,39 @@ class MfBackfillCommand extends Command
 
         $fromDate      = $this->option('from') ?: self::DEFAULT_FROM;
         $skipExisting  = (bool) $this->option('skip-existing');
+        $failedOnly    = (bool) $this->option('failed-only');
         $chunkSize     = max(1, (int) ($this->option('chunk')  ?: 500));
         $delay         = max(0, (int) ($this->option('delay')  ?: 250000));
         $schemeOpt     = $this->option('scheme');
         $limit         = $this->option('limit') !== null ? (int) $this->option('limit') : null;
 
-        $this->info("[mf:backfill] Starting — from={$fromDate} | skip-existing=" . ($skipExisting ? 'yes' : 'no'));
-        Log::info('[mf:backfill] started', compact('fromDate', 'skipExisting', 'chunkSize', 'delay'));
+        $this->info("[mf:backfill] Starting — from={$fromDate} | skip-existing=" . ($skipExisting ? 'yes' : 'no') . ($failedOnly ? ' | failed-only=yes' : ''));
+        Log::info('[mf:backfill] started', compact('fromDate', 'skipExisting', 'failedOnly', 'chunkSize', 'delay'));
 
         // ── 1. Load our scheme registry ───────────────────────────────────────
         $this->info('[1/3] Loading schemes from mutual_funds...');
-        $schemeQuery = DB::table('mutual_funds')->select('id', 'isin', 'scheme_code');
-        if ($schemeOpt !== null) {
-            $schemeQuery->where('scheme_code', $schemeOpt);
+
+        if ($failedOnly) {
+            $failedFile = storage_path('logs/mf_backfill_failed.txt');
+            if (!file_exists($failedFile)) {
+                $this->error("No failed schemes file found at: {$failedFile}");
+                return Command::FAILURE;
+            }
+            $failedCodes = array_filter(array_map('trim', file($failedFile)));
+            $schemes = DB::table('mutual_funds')
+                ->select('id', 'isin', 'scheme_code')
+                ->whereIn('scheme_code', $failedCodes)
+                ->get();
+        } else {
+            $schemeQuery = DB::table('mutual_funds')->select('id', 'isin', 'scheme_code');
+            if ($schemeOpt !== null) {
+                $schemeQuery->where('scheme_code', $schemeOpt);
+            }
+            $schemes = $schemeQuery->get();
         }
-        $schemes = $schemeQuery->get();
 
         if ($schemes->isEmpty()) {
-            $this->error('mutual_funds table is empty. Run `sync:mf-daily --force` first.');
+            $this->error('No schemes found. Run `sync:mf-daily --force` first.');
             return Command::FAILURE;
         }
 
@@ -97,12 +113,13 @@ class MfBackfillCommand extends Command
         $bar->setMessage('initializing...');
         $bar->start();
 
-        $processed      = 0;
-        $skipped        = 0;
-        $failed         = 0;
-        $inserted       = 0;
+        $processed           = 0;
+        $skipped             = 0;
+        $failed              = 0;
+        $inserted            = 0;
         $alreadyExistedTotal = 0;
-        $startedAt      = microtime(true);
+        $failedSchemeCodes   = [];
+        $startedAt           = microtime(true);
 
         foreach ($schemes as $scheme) {
             if ($this->shouldStop) {
@@ -131,13 +148,14 @@ class MfBackfillCommand extends Command
             }
 
             // Fetch full NAV history from mfapi.in
-            $apiData = $this->fetchHistory($schemeCode);
+            [$apiData, $fetchError] = $this->fetchHistory($schemeCode);
             if ($apiData === null) {
                 $failed++;
+                $failedSchemeCodes[] = $schemeCode;
                 $bar->clear();
                 $this->line(sprintf(
-                    ' [%d/%d] %s | %-12s | <error>API fetch failed</error>',
-                    $processed, $total, $schemeCode, $isin
+                    ' [%d/%d] %s | %-12s | <error>API fetch failed</error> — %s',
+                    $processed, $total, $schemeCode, $isin, $fetchError
                 ));
                 $bar->display();
                 $bar->advance();
@@ -183,6 +201,13 @@ class MfBackfillCommand extends Command
         $this->info($summary);
         Log::info('[mf:backfill] complete', compact('processed', 'total', 'skipped', 'failed', 'inserted', 'alreadyExistedTotal', 'elapsed', 'skipExisting'));
 
+        if (!empty($failedSchemeCodes)) {
+            $failedFile = storage_path('logs/mf_backfill_failed.txt');
+            file_put_contents($failedFile, implode("\n", $failedSchemeCodes) . "\n");
+            $this->warn("Failed scheme codes saved to: {$failedFile}");
+            $this->warn("Retry with: php artisan mf:backfill --failed-only");
+        }
+
         return $failed > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 
@@ -190,11 +215,11 @@ class MfBackfillCommand extends Command
 
     /**
      * Fetch the full NAV history for one scheme from mfapi.in.
-     * Returns the 'data' array on success, null on any failure.
+     * Returns [data, null] on success, [null, reason] on failure.
      *
-     * @return array<int, array{date: string, nav: string}>|null
+     * @return array{0: array<int, array{date: string, nav: string}>|null, 1: string|null}
      */
-    private function fetchHistory(string $schemeCode): ?array
+    private function fetchHistory(string $schemeCode): array
     {
         try {
             $response = Http::retry(3, 1500, throw: false)
@@ -204,30 +229,24 @@ class MfBackfillCommand extends Command
                 ->get(self::MFAPI_BASE . '/' . $schemeCode);
 
             if (!$response->successful()) {
-                Log::warning('[mf:backfill] HTTP error', [
-                    'scheme' => $schemeCode,
-                    'status' => $response->status(),
-                ]);
-                return null;
+                $reason = 'HTTP ' . $response->status();
+                Log::warning('[mf:backfill] HTTP error', ['scheme' => $schemeCode, 'status' => $response->status()]);
+                return [null, $reason];
             }
 
             $json = $response->json();
 
             if (($json['status'] ?? '') !== 'SUCCESS') {
-                Log::warning('[mf:backfill] bad status', [
-                    'scheme' => $schemeCode,
-                    'status' => $json['status'] ?? 'missing',
-                ]);
-                return null;
+                $reason = 'bad status: ' . ($json['status'] ?? 'missing');
+                Log::warning('[mf:backfill] bad status', ['scheme' => $schemeCode, 'status' => $json['status'] ?? 'missing']);
+                return [null, $reason];
             }
 
-            return $json['data'] ?? [];
+            return [$json['data'] ?? [], null];
         } catch (\Exception $e) {
-            Log::error('[mf:backfill] exception', [
-                'scheme' => $schemeCode,
-                'error'  => $e->getMessage(),
-            ]);
-            return null;
+            $reason = $e->getMessage();
+            Log::error('[mf:backfill] exception', ['scheme' => $schemeCode, 'error' => $reason]);
+            return [null, $reason];
         }
     }
 
