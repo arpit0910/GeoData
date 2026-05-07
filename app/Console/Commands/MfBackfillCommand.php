@@ -14,16 +14,16 @@ use Carbon\Carbon;
  * Prerequisites: Run `sync:mf-daily --force` first to populate mutual_funds.
  *
  * Usage examples:
- *   php artisan mf:backfill                          # backfill all, skip ISINs already imported
- *   php artisan mf:backfill --fresh                  # re-import everything
- *   php artisan mf:backfill --scheme=119551          # single scheme_code
- *   php artisan mf:backfill --limit=100 --delay=100000  # smoke-test with 100 schemes
+ *   php artisan mf:backfill                               # fetch all schemes (default)
+ *   php artisan mf:backfill --skip-existing               # skip ISINs that already have early history
+ *   php artisan mf:backfill --scheme=119551               # single scheme_code
+ *   php artisan mf:backfill --limit=100 --delay=100000    # smoke-test with 100 schemes
  */
 class MfBackfillCommand extends Command
 {
     protected $signature = 'mf:backfill
                             {--from=2023-04-01  : Earliest nav_date to store (YYYY-MM-DD)}
-                            {--fresh            : Re-fetch and insert even if history already exists}
+                            {--skip-existing    : Skip ISINs that already have history from the from-date}
                             {--scheme=          : Process only this scheme_code}
                             {--chunk=500        : Rows per DB insertOrIgnore call}
                             {--delay=250000     : Microseconds to sleep between API calls (default 250 ms)}
@@ -43,15 +43,15 @@ class MfBackfillCommand extends Command
         DB::disableQueryLog();
         $this->setupSignals();
 
-        $fromDate  = $this->option('from')   ?: self::DEFAULT_FROM;
-        $fresh     = (bool) $this->option('fresh');
-        $chunkSize = max(1,  (int) ($this->option('chunk')  ?: 500));
-        $delay     = max(0,  (int) ($this->option('delay')  ?: 250000));
-        $schemeOpt = $this->option('scheme');
-        $limit     = $this->option('limit') !== null ? (int) $this->option('limit') : null;
+        $fromDate      = $this->option('from') ?: self::DEFAULT_FROM;
+        $skipExisting  = (bool) $this->option('skip-existing');
+        $chunkSize     = max(1, (int) ($this->option('chunk')  ?: 500));
+        $delay         = max(0, (int) ($this->option('delay')  ?: 250000));
+        $schemeOpt     = $this->option('scheme');
+        $limit         = $this->option('limit') !== null ? (int) $this->option('limit') : null;
 
-        $this->info("[mf:backfill] Starting — from={$fromDate} | fresh=" . ($fresh ? 'yes' : 'no'));
-        Log::info('[mf:backfill] started', compact('fromDate', 'fresh', 'chunkSize', 'delay'));
+        $this->info("[mf:backfill] Starting — from={$fromDate} | skip-existing=" . ($skipExisting ? 'yes' : 'no'));
+        Log::info('[mf:backfill] started', compact('fromDate', 'skipExisting', 'chunkSize', 'delay'));
 
         // ── 1. Load our scheme registry ───────────────────────────────────────
         $this->info('[1/3] Loading schemes from mutual_funds...');
@@ -73,11 +73,9 @@ class MfBackfillCommand extends Command
         $total = $schemes->count();
         $this->info("  {$total} schemes loaded.");
 
-        // ── 2. Build set of ISINs already backfilled (skip unless --fresh) ────
+        // ── 2. Build set of ISINs already backfilled (only when --skip-existing) ─
         $existingIsins = [];
-        if (!$fresh) {
-            // An ISIN is considered backfilled if we have any row within the first
-            // 5 days after the cut-off date (proves we have early history).
+        if ($skipExisting) {
             $cutoffCheck   = Carbon::parse($fromDate)->addDays(5)->format('Y-m-d');
             $existingIsins = DB::table('mutual_fund_prices')
                 ->where('nav_date', '<=', $cutoffCheck)
@@ -99,11 +97,12 @@ class MfBackfillCommand extends Command
         $bar->setMessage('initializing...');
         $bar->start();
 
-        $processed = 0;
-        $skipped   = 0;
-        $failed    = 0;
-        $inserted  = 0;
-        $startedAt = microtime(true);
+        $processed      = 0;
+        $skipped        = 0;
+        $failed         = 0;
+        $inserted       = 0;
+        $alreadyExistedTotal = 0;
+        $startedAt      = microtime(true);
 
         foreach ($schemes as $scheme) {
             if ($this->shouldStop) {
@@ -118,11 +117,15 @@ class MfBackfillCommand extends Command
             $isin       = (string) $scheme->isin;
             $fundId     = (int)    $scheme->id;
 
-            $bar->setMessage("{$schemeCode} / {$isin}");
-
-            // Skip already-backfilled ISINs
-            if (!$fresh && isset($existingIsins[$isin])) {
+            // Skip already-backfilled ISINs (only when --skip-existing is set)
+            if ($skipExisting && isset($existingIsins[$isin])) {
                 $skipped++;
+                $bar->clear();
+                $this->line(sprintf(
+                    ' [%d/%d] %s | %-12s | <comment>skipped (already backfilled)</comment>',
+                    $processed, $total, $schemeCode, $isin
+                ));
+                $bar->display();
                 $bar->advance();
                 continue;
             }
@@ -131,17 +134,39 @@ class MfBackfillCommand extends Command
             $apiData = $this->fetchHistory($schemeCode);
             if ($apiData === null) {
                 $failed++;
+                $bar->clear();
+                $this->line(sprintf(
+                    ' [%d/%d] %s | %-12s | <error>API fetch failed</error>',
+                    $processed, $total, $schemeCode, $isin
+                ));
+                $bar->display();
                 $bar->advance();
                 usleep($delay);
                 continue;
             }
 
+            $apiCount = count($apiData);
+
             // Filter to from-date and build insert rows
-            $rows = $this->buildNavRows($apiData, $isin, $fundId, $fromDate);
+            $rows           = $this->buildNavRows($apiData, $isin, $fundId, $fromDate);
+            $filteredCount  = count($rows);
+            $schemeInserted = 0;
+
             if (!empty($rows)) {
-                $inserted += $this->insertRows($rows, $chunkSize);
+                $schemeInserted  = $this->insertRows($rows, $chunkSize);
+                $inserted       += $schemeInserted;
             }
 
+            $alreadyExisted       = $filteredCount - $schemeInserted;
+            $alreadyExistedTotal += $alreadyExisted;
+            $existedNote          = $alreadyExisted > 0 ? " | already_existed={$alreadyExisted}" : '';
+
+            $bar->clear();
+            $this->line(sprintf(
+                ' [%d/%d] %s | %-12s | api=%-5d filtered=%-5d inserted=%-5d%s',
+                $processed, $total, $schemeCode, $isin, $apiCount, $filteredCount, $schemeInserted, $existedNote
+            ));
+            $bar->display();
             $bar->advance();
 
             if ($delay > 0) {
@@ -154,9 +179,9 @@ class MfBackfillCommand extends Command
         $this->newLine();
 
         $elapsed = round(microtime(true) - $startedAt, 1);
-        $summary = "Done in {$elapsed}s — Processed: {$processed}/{$total} | Skipped: {$skipped} | Failed: {$failed} | Rows inserted: {$inserted}";
+        $summary = "Done in {$elapsed}s — Processed: {$processed}/{$total} | Skipped: {$skipped} | Failed: {$failed} | Inserted: {$inserted} | Already existed: {$alreadyExistedTotal}";
         $this->info($summary);
-        Log::info('[mf:backfill] complete', compact('processed', 'total', 'skipped', 'failed', 'inserted', 'elapsed'));
+        Log::info('[mf:backfill] complete', compact('processed', 'total', 'skipped', 'failed', 'inserted', 'alreadyExistedTotal', 'elapsed', 'skipExisting'));
 
         return $failed > 0 ? Command::FAILURE : Command::SUCCESS;
     }
@@ -267,8 +292,7 @@ class MfBackfillCommand extends Command
     {
         $count = 0;
         foreach (array_chunk($rows, $chunkSize) as $chunk) {
-            DB::table('mutual_fund_prices')->insertOrIgnore($chunk);
-            $count += count($chunk);
+            $count += DB::table('mutual_fund_prices')->insertOrIgnore($chunk);
         }
         return $count;
     }
