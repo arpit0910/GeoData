@@ -222,11 +222,16 @@ class MfBackfillCommand extends Command
     private function fetchHistory(string $schemeCode): array
     {
         try {
-            $response = Http::retry(3, 1500, throw: false)
+            $http = Http::retry(3, 1500, throw: false)
                 ->timeout(30)
                 ->withoutVerifying()
-                ->withHeaders(['Accept' => 'application/json'])
-                ->get(self::MFAPI_BASE . '/' . $schemeCode);
+                ->withHeaders(['Accept' => 'application/json']);
+
+            if ($proxy = env('MFAPI_PROXY')) {
+                $http = $http->withOptions(['proxy' => $proxy]);
+            }
+
+            $response = $http->get(self::MFAPI_BASE . '/' . $schemeCode);
 
             if (!$response->successful()) {
                 $reason = 'HTTP ' . $response->status();

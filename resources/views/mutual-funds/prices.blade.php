@@ -13,6 +13,12 @@
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium ml-7">Historical NAV records for all mutual fund schemes.</p>
         </div>
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="document.getElementById('mfSyncModal').classList.remove('hidden')"
+                class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
+                <i class="fas fa-sync-alt mr-2"></i> Sync MF NAV
+            </button>
+        </div>
     </div>
 
     {{-- Filter Bar --}}
@@ -41,6 +47,75 @@
                 <button id="resetFilters" class="px-4 py-2.5 text-sm font-bold text-gray-500 hover:text-red-600 transition-colors">
                     Reset
                 </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Sync MF NAV Modal --}}
+    <div id="mfSyncModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="document.getElementById('mfSyncModal').classList.add('hidden')"></div>
+            <div class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
+                <div class="mb-5">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Sync MF NAV</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Download AMFI NAV data and compute period returns for the selected date.</p>
+                </div>
+
+                {{-- Form State --}}
+                <div id="mfSyncInitialState">
+                    <form id="mfSyncForm">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-2">NAV Date</label>
+                            <input type="date" id="mf_sync_date" value="{{ date('Y-m-d') }}" required
+                                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all font-bold">
+                        </div>
+
+                        <div id="mfSyncStatus" class="hidden mt-6 text-center">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-bounce mb-3">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <p class="text-sm font-bold text-gray-900 dark:text-white">Syncing NAV Data...</p>
+                            <p class="text-xs text-gray-500 mt-1">Downloading from AMFI and computing returns. This may take a minute.</p>
+                        </div>
+
+                        <div id="mfSyncActions" class="mt-8 flex gap-3">
+                            <button type="button" onclick="document.getElementById('mfSyncModal').classList.add('hidden')"
+                                class="flex-1 px-4 py-3 text-sm font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="flex-1 px-4 py-3 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-lg shadow-amber-500/30 transition-all">
+                                Start Sync
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {{-- Result State --}}
+                <div id="mfSyncResultState" class="hidden text-center py-4">
+                    <div id="mfSuccessIcon" class="hidden inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400 text-2xl mb-4">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div id="mfErrorIcon" class="hidden inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-2xl mb-4">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+
+                    <h3 id="mfResultTitle" class="text-xl font-bold text-gray-900 dark:text-white mb-2">Sync Successful</h3>
+                    <p id="mfResultMessage" class="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed"></p>
+
+                    <div id="mfErrorDebug" class="hidden mb-6 text-left">
+                        <label class="block text-xs font-bold text-red-500 mb-2">Error Details</label>
+                        <div class="bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl p-3 max-h-40 overflow-y-auto text-xs text-red-700 dark:text-red-400">
+                            <pre id="mfDebugContent" class="whitespace-pre-wrap font-sans"></pre>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="closeMfSyncModal()"
+                        class="w-full px-4 py-3 text-sm font-bold text-white bg-gray-900 dark:bg-white/10 hover:bg-black dark:hover:bg-white/20 rounded-xl transition-all">
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -171,6 +246,59 @@
                 $('#filter_isin').val('');
                 table.ajax.reload();
             });
+
+            // ── MF Sync Modal ──────────────────────────────────────────────
+            $('#mfSyncForm').on('submit', function(e) {
+                e.preventDefault();
+                const date    = $('#mf_sync_date').val();
+                const status  = $('#mfSyncStatus');
+                const actions = $('#mfSyncActions');
+
+                status.removeClass('hidden');
+                actions.addClass('opacity-50 pointer-events-none');
+
+                $.post("{{ route('mutual-funds.sync') }}", {
+                    _token: "{{ csrf_token() }}",
+                    date: date,
+                })
+                .done(function(res) {
+                    $('#mfSyncInitialState').addClass('hidden');
+                    $('#mfSyncResultState').removeClass('hidden');
+                    $('#mfSuccessIcon').removeClass('hidden');
+                    $('#mfResultTitle').text('Sync Successful');
+                    $('#mfResultMessage').text(res.message);
+                    table.ajax.reload();
+                })
+                .fail(function(err) {
+                    $('#mfSyncInitialState').addClass('hidden');
+                    $('#mfSyncResultState').removeClass('hidden');
+                    $('#mfErrorIcon').removeClass('hidden');
+                    $('#mfResultTitle').text('Sync Failed');
+
+                    let msg = 'An unexpected error occurred during synchronization.';
+                    if (err.responseJSON) {
+                        msg = err.responseJSON.message;
+                        if (err.responseJSON.debug) {
+                            $('#mfErrorDebug').removeClass('hidden');
+                            $('#mfDebugContent').text(err.responseJSON.debug);
+                        }
+                    }
+                    $('#mfResultMessage').text(msg);
+                })
+                .always(function() {
+                    status.addClass('hidden');
+                    actions.removeClass('opacity-50 pointer-events-none');
+                });
+            });
         });
+
+        function closeMfSyncModal() {
+            document.getElementById('mfSyncModal').classList.add('hidden');
+            setTimeout(() => {
+                $('#mfSyncInitialState').removeClass('hidden');
+                $('#mfSyncResultState').addClass('hidden');
+                $('#mfSuccessIcon, #mfErrorIcon, #mfErrorDebug').addClass('hidden');
+            }, 300);
+        }
     </script>
 @endpush

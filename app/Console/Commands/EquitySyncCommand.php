@@ -224,28 +224,66 @@ class EquitySyncCommand extends Command
     protected function calculateMetrics($equityId, $isin, $date, $now, $nse, $bse, $existing, $history, $windowMap)
     {
         // Null-safe price extraction
-        $nse_close = (float)($nse['close'] ?? ($existing->nse_close ?? 0));
-        $bse_close = (float)($bse['close'] ?? ($existing->bse_close ?? 0));
+        $nse_open       = (float)($nse['open']       ?? ($existing->nse_open       ?? 0));
+        $nse_high       = (float)($nse['high']       ?? ($existing->nse_high       ?? 0));
+        $nse_low        = (float)($nse['low']        ?? ($existing->nse_low        ?? 0));
+        $nse_close      = (float)($nse['close']      ?? ($existing->nse_close      ?? 0));
+        $nse_prev_close = (float)($nse['prev_close'] ?? ($existing->nse_prev_close ?? 0));
+        $nse_turnover   = (float)($nse['turnover']   ?? ($existing->nse_turnover   ?? 0));
+        $nse_trades     = (int)  ($nse['trades']     ?? ($existing->nse_trades     ?? 0));
+
+        $bse_open       = (float)($bse['open']       ?? ($existing->bse_open       ?? 0));
+        $bse_high       = (float)($bse['high']       ?? ($existing->bse_high       ?? 0));
+        $bse_low        = (float)($bse['low']        ?? ($existing->bse_low        ?? 0));
+        $bse_close      = (float)($bse['close']      ?? ($existing->bse_close      ?? 0));
+        $bse_prev_close = (float)($bse['prev_close'] ?? ($existing->bse_prev_close ?? 0));
+        $bse_turnover   = (float)($bse['turnover']   ?? ($existing->bse_turnover   ?? 0));
+        $bse_trades     = (int)  ($bse['trades']     ?? ($existing->bse_trades     ?? 0));
+
+        // Intraday metrics (same logic as equities:update-metrics)
+        $nse_gap_pct          = $nse_prev_close > 0 ? (($nse_open  - $nse_prev_close) / $nse_prev_close) * 100 : null;
+        $nse_range_pct        = $nse_prev_close > 0 ? (($nse_high  - $nse_low)        / $nse_prev_close) * 100 : null;
+        $nse_intraday_chg_pct = $nse_open       > 0 ? (($nse_close - $nse_open)       / $nse_open)       * 100 : null;
+        $nse_avg_ticket_size  = $nse_trades      > 0 ? $nse_turnover / $nse_trades                             : null;
+
+        $bse_gap_pct          = $bse_prev_close > 0 ? (($bse_open  - $bse_prev_close) / $bse_prev_close) * 100 : null;
+        $bse_range_pct        = $bse_prev_close > 0 ? (($bse_high  - $bse_low)        / $bse_prev_close) * 100 : null;
+        $bse_intraday_chg_pct = $bse_open       > 0 ? (($bse_close - $bse_open)       / $bse_open)       * 100 : null;
+        $bse_avg_ticket_size  = $bse_trades      > 0 ? $bse_turnover / $bse_trades                             : null;
 
         $record = [
-            'equity_id' => $equityId,
-            'isin' => $isin,
-            'traded_date' => $date,
-            'nse_open' => (float)($nse['open'] ?? ($existing->nse_open ?? 0)),
-            'nse_high' => (float)($nse['high'] ?? ($existing->nse_high ?? 0)),
-            'nse_low' => (float)($nse['low'] ?? ($existing->nse_low ?? 0)),
-            'nse_close' => $nse_close,
-            'nse_prev_close' => (float)($nse['prev_close'] ?? ($existing->nse_prev_close ?? 0)),
-            'nse_volume' => (int)($nse['volume'] ?? ($existing->nse_volume ?? 0)),
-            'bse_open' => (float)($bse['open'] ?? ($existing->bse_open ?? 0)),
-            'bse_high' => (float)($bse['high'] ?? ($existing->bse_high ?? 0)),
-            'bse_low' => (float)($bse['low'] ?? ($existing->bse_low ?? 0)),
-            'bse_close' => $bse_close,
-            'bse_prev_close' => (float)($bse['prev_close'] ?? ($existing->bse_prev_close ?? 0)),
-            'bse_volume' => (int)($bse['volume'] ?? ($existing->bse_volume ?? 0)),
-            'spread' => ($nse_close > 0 && $bse_close > 0) ? abs($nse_close - $bse_close) : 0,
-            'created_at' => $existing ? $existing->created_at : $now,
-            'updated_at' => $now,
+            'equity_id'            => $equityId,
+            'isin'                 => $isin,
+            'traded_date'          => $date,
+            'nse_open'             => $nse_open,
+            'nse_high'             => $nse_high,
+            'nse_low'              => $nse_low,
+            'nse_close'            => $nse_close,
+            'nse_prev_close'       => $nse_prev_close,
+            'nse_volume'           => (int)($nse['volume']    ?? ($existing->nse_volume    ?? 0)),
+            'nse_turnover'         => $nse_turnover,
+            'nse_trades'           => $nse_trades,
+            'nse_avg_price'        => (float)($nse['avg_price'] ?? ($existing->nse_avg_price ?? 0)),
+            'bse_open'             => $bse_open,
+            'bse_high'             => $bse_high,
+            'bse_low'              => $bse_low,
+            'bse_close'            => $bse_close,
+            'bse_prev_close'       => $bse_prev_close,
+            'bse_volume'           => (int)($bse['volume']    ?? ($existing->bse_volume    ?? 0)),
+            'bse_turnover'         => $bse_turnover,
+            'bse_trades'           => $bse_trades,
+            'bse_avg_price'        => (float)($bse['avg_price'] ?? ($existing->bse_avg_price ?? 0)),
+            'spread'               => ($nse_close > 0 && $bse_close > 0) ? abs($nse_close - $bse_close) : 0,
+            'nse_gap_pct'          => $nse_gap_pct,
+            'nse_range_pct'        => $nse_range_pct,
+            'nse_intraday_chg_pct' => $nse_intraday_chg_pct,
+            'nse_avg_ticket_size'  => $nse_avg_ticket_size,
+            'bse_gap_pct'          => $bse_gap_pct,
+            'bse_range_pct'        => $bse_range_pct,
+            'bse_intraday_chg_pct' => $bse_intraday_chg_pct,
+            'bse_avg_ticket_size'  => $bse_avg_ticket_size,
+            'created_at'           => $existing ? $existing->created_at : $now,
+            'updated_at'           => $now,
             // Pre-initialize all period fields so every row has the same shape for upsert
             'nse_chg_1d' => null, 'nse_val_1d' => null,
             'nse_chg_3d' => null, 'nse_val_3d' => null,
@@ -547,15 +585,18 @@ class EquitySyncCommand extends Command
         $headers = array_map('trim', $headers);
 
         $map = [
-            'isin' => ['ISIN', 'FinInstrmId', 'ISIN_CODE'],
-            'symbol' => ['TckrSymb', 'SYMBOL', 'SC_NAME'],
-            'name' => ['FinInstrmNm', 'COMPANY_NAME', 'FULL_NAME'],
-            'open' => ['OpnPric', 'OPEN', 'OPEN_PRC'],
-            'high' => ['HghPric', 'HIGH', 'HIGH_PRC'],
-            'low' => ['LwPric', 'LOW', 'LOW_PRC'],
-            'close' => ['ClsPric', 'CLOSE', 'CLOSE_PRC', 'LAST_PRC'],
-            'prev' => ['PrvsClsgPric', 'PREVCLOSE', 'PREV_CLOSE'],
-            'volume' => ['TtlTradgVol', 'TOTTRDQTY', 'NO_SHARES', 'TRADE_QTY'],
+            'isin'     => ['ISIN', 'FinInstrmId', 'ISIN_CODE'],
+            'symbol'   => ['TckrSymb', 'SYMBOL', 'SC_NAME'],
+            'name'     => ['FinInstrmNm', 'COMPANY_NAME', 'FULL_NAME'],
+            'open'     => ['OpnPric', 'OPEN', 'OPEN_PRC'],
+            'high'     => ['HghPric', 'HIGH', 'HIGH_PRC'],
+            'low'      => ['LwPric', 'LOW', 'LOW_PRC'],
+            'close'    => ['ClsPric', 'CLOSE', 'CLOSE_PRC', 'LAST_PRC'],
+            'prev'     => ['PrvsClsgPric', 'PREVCLOSE', 'PREV_CLOSE'],
+            'volume'   => ['TtlTradgVol', 'TOTTRDQTY', 'NO_SHARES', 'TRADE_QTY'],
+            'turnover' => ['TtlTradgVal', 'TOTTRDVAL', 'NET_TURNOV'],
+            'trades'   => ['TtlNbOfTradesExecuted', 'TOTALTRADES', 'NO_OF_TRDS'],
+            'avg_price'=> ['WghtdAvgPric', 'AVG_PRICE', 'AVG_PRC'],
         ];
 
         $records = [];
@@ -575,13 +616,16 @@ class EquitySyncCommand extends Command
 
             if (!empty($mapped['isin'])) {
                 $records[] = array_merge($mapped, [
-                    'open' => (float)($mapped['open'] ?? 0),
-                    'high' => (float)($mapped['high'] ?? 0),
-                    'low' => (float)($mapped['low'] ?? 0),
-                    'close' => (float)($mapped['close'] ?? 0),
-                    'prev_close' => (float)($mapped['prev'] ?? 0),
-                    'volume' => (int)($mapped['volume'] ?? 0),
-                    'exchange' => $exchange
+                    'open'      => (float)($mapped['open'] ?? 0),
+                    'high'      => (float)($mapped['high'] ?? 0),
+                    'low'       => (float)($mapped['low'] ?? 0),
+                    'close'     => (float)($mapped['close'] ?? 0),
+                    'prev_close'=> (float)($mapped['prev'] ?? 0),
+                    'volume'    => (int)($mapped['volume'] ?? 0),
+                    'turnover'  => (float)($mapped['turnover'] ?? 0),
+                    'trades'    => (int)($mapped['trades'] ?? 0),
+                    'avg_price' => (float)($mapped['avg_price'] ?? 0),
+                    'exchange'  => $exchange,
                 ]);
             }
         }
@@ -593,9 +637,11 @@ class EquitySyncCommand extends Command
     {
         $periods = ['1d' => 1, '3d' => 3, '7d' => 7, '1m' => 30, '3m' => 90, '6m' => 180, '9m' => 270, '1y' => 365, '3y' => 1095];
         $windowMap = [];
-        $allTradingDates = EquityPrice::where('traded_date', '<', $dateObj->format('Y-m-d'))
+        $allTradingDates = DB::table('equity_prices')
+            ->where('traded_date', '<', $dateObj->format('Y-m-d'))
             ->orderBy('traded_date', 'desc')
-            ->limit(1200)->pluck('traded_date');
+            ->limit(1200)
+            ->pluck('traded_date');
 
         foreach ($periods as $label => $days) {
             $target = $dateObj->copy()->subDays($days);
@@ -609,7 +655,11 @@ class EquitySyncCommand extends Command
     {
         return [
             'nse_open', 'nse_high', 'nse_low', 'nse_close', 'nse_prev_close', 'nse_volume',
+            'nse_turnover', 'nse_trades', 'nse_avg_price',
             'bse_open', 'bse_high', 'bse_low', 'bse_close', 'bse_prev_close', 'bse_volume',
+            'bse_turnover', 'bse_trades', 'bse_avg_price',
+            'nse_gap_pct', 'nse_range_pct', 'nse_intraday_chg_pct', 'nse_avg_ticket_size',
+            'bse_gap_pct', 'bse_range_pct', 'bse_intraday_chg_pct', 'bse_avg_ticket_size',
             'nse_chg_1d', 'nse_val_1d',
             'nse_chg_3d', 'nse_val_3d',
             'nse_chg_7d', 'nse_val_7d',

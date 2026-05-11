@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\MfMaster;
 use App\Models\MfNavHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MfController extends Controller
 {
@@ -165,6 +167,42 @@ class MfController extends Controller
             ->get();
 
         return view('mutual-funds.show', compact('scheme', 'returns', 'chartData'));
+    }
+
+    public function sync(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        set_time_limit(600);
+
+        try {
+            $exitCode = Artisan::call('mf:sync', [
+                'date'    => $request->date,
+                '--force' => true,
+            ]);
+
+            $output = Artisan::output();
+            $lines  = array_filter(explode("\n", trim($output)));
+            $msg    = end($lines) ?: 'MF NAV synced successfully.';
+
+            if ($exitCode === 0) {
+                return response()->json(['success' => true, 'message' => $msg]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => "Sync failed with exit code {$exitCode}.",
+                'debug'   => $output,
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('[MfController::sync] ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function prices(Request $request)
