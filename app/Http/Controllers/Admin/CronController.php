@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CronLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class CronController extends Controller
 {
@@ -57,6 +58,15 @@ class CronController extends Controller
                 'timezone'    => 'Asia/Kolkata',
                 'overlap'     => false,
             ],
+            [
+                'title'       => 'mf:sync-and-calculate (23:30)',
+                'command'     => 'mf:sync-and-calculate',
+                'args'        => [],
+                'description' => 'Orchestrator: Syncs MF NAVs then computes performance returns.',
+                'schedule'    => 'Daily at 23:30',
+                'timezone'    => 'Asia/Kolkata',
+                'overlap'     => false,
+            ],
         ];
     }
 
@@ -88,33 +98,41 @@ class CronController extends Controller
             return response()->json(['success' => false, 'message' => 'Unknown cron job.'], 422);
         }
 
+        $exitCode = 0;
+        $output   = '';
+        $success  = true;
+
         try {
             $exitCode = Artisan::call($cron['command'], $cron['args']);
             $output = Artisan::output();
 
-            $this->logCronRun($cron['title']);
-
             if ($exitCode !== 0) {
-                return response()->json([
+                $success = false;
+                $response = response()->json([
                     'success' => false,
                     'message' => "Command `{$cron['command']}` exited with code {$exitCode}.",
-                    'output'  => trim($output) ?: 'Command finished with no output.',
                 ], 500);
+            } else {
+                $response = response()->json([
+                    'success' => true,
+                    'message' => "Command `{$cron['command']}` completed successfully.",
+                ]);
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => "Command `{$cron['command']}` completed successfully.",
-                'output'  => trim($output) ?: 'Command finished with no output.',
-            ]);
         } catch (\Throwable $e) {
-            $this->logCronRun($cron['title']);
-
-            return response()->json([
+            $success = false;
+            $response = response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
+        } finally {
+            // Reconnect before logging — long-running commands may leave the connection stale.
+            try {
+                DB::reconnect();
+                $this->logCronRun($cron['title'], $success);
+            } catch (\Throwable $ignored) {}
         }
+
+        return $response;
     }
 
     public function logs(Request $request)
@@ -155,11 +173,12 @@ class CronController extends Controller
         return view('admin.crons.logs', compact('titles'));
     }
 
-    private function logCronRun(string $title): void
+    private function logCronRun(string $title, bool $status = true): void
     {
         CronLog::create([
-            'title' => $title,
-            'ip' => gethostbyname(gethostname()),
+            'title'  => $title,
+            'ip'     => request()->ip() ?? gethostbyname(gethostname()),
+            'status' => $status,
             'ran_at' => now('Asia/Kolkata'),
         ]);
     }

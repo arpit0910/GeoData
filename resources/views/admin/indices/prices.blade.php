@@ -38,12 +38,12 @@
             </div>
             <div>
                 <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Date From</label>
-                <input type="date" id="filter_date_from"
+                <input type="date" id="filter_date_from" value="{{ date('Y-m-d', strtotime('-1 day')) }}"
                     class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs focus:ring-2 focus:ring-amber-500 transition-all">
             </div>
             <div>
                 <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Date To</label>
-                <input type="date" id="filter_date_to"
+                <input type="date" id="filter_date_to" value="{{ date('Y-m-d') }}"
                     class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs focus:ring-2 focus:ring-amber-500 transition-all">
             </div>
             <div class="flex items-end gap-2">

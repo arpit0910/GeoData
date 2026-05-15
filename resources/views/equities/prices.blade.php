@@ -19,7 +19,7 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <div>
             <label class="block text-xs font-bold text-gray-400 mb-2">Date From</label>
-            <input type="date" id="filter_date_from" value="{{ date('Y-m-d') }}"
+            <input type="date" id="filter_date_from" value="{{ date('Y-m-d', strtotime('-1 day')) }}"
                 class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-700 dark:text-gray-300">
         </div>
         <div>
@@ -289,7 +289,8 @@
 
         $('#resetFilters').on('click', function() {
             const today = new Date().toISOString().slice(0, 10);
-            $('#filter_date_from').val(today);
+            const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+            $('#filter_date_from').val(yesterday);
             $('#filter_date_to').val(today);
             $('#filter_isin').val('');
             table.ajax.reload();

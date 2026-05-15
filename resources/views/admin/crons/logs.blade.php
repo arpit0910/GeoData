@@ -40,6 +40,7 @@
                             <th class="pb-4 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">ID</th>
                             <th class="pb-4 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">Cron Title</th>
                             <th class="pb-4 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">Server IP</th>
+                            <th class="pb-4 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">Status</th>
                             <th class="pb-4 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">Ran At</th>
                             <th class="pb-4 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">Relative</th>
                         </tr>
@@ -48,6 +49,7 @@
                 </table>
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection
@@ -83,6 +85,20 @@ $(document).ready(function () {
                 render: data => data
                     ? `<span class="text-xs font-mono font-bold text-gray-700 dark:text-gray-300">${data}</span>`
                     : `<span class="text-xs text-gray-400 italic">—</span>`
+            },
+            {
+                data: 'status',
+                name: 'status',
+                render: data => {
+                    const color = data ? 'green' : 'red';
+                    const icon  = data ? 'check-circle' : 'exclamation-circle';
+                    const label = data ? 'Success' : 'Failed';
+                    return `
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-${color}-500/10 text-${color}-600 dark:text-${color}-400">
+                            <i class="fas fa-${icon}"></i> ${label}
+                        </span>
+                    `;
+                }
             },
             {
                 data: 'ran_at',
@@ -124,5 +140,9 @@ $(document).ready(function () {
         dom: '<"flex flex-col md:flex-row justify-between items-center gap-4 mb-6"lf>rt<"flex flex-col md:flex-row justify-between items-center mt-6 gap-4"ip>',
     });
 });
+
+function closeOutputModal() {
+    document.getElementById('cron-output-modal').classList.add('hidden');
+}
 </script>
 @endpush

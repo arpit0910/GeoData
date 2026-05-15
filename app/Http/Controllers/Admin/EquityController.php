@@ -87,7 +87,7 @@ class EquityController extends Controller
             $query->where('traded_date', '<=', $request->date_to);
         }
         if (!$request->filled('date_from') && !$request->filled('date_to')) {
-            $query->where('traded_date', now()->toDateString());
+            $query->whereBetween('traded_date', [now()->subDay()->toDateString(), now()->toDateString()]);
         }
         if ($request->filled('isin')) {
             $value = $request->isin;

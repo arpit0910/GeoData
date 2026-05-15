@@ -220,11 +220,12 @@ class MfController extends Controller
                 $query->where('p.nav_date', '<=', $request->date_to);
             }
 
-            // If neither date is supplied default to the latest available nav_date.
+            // If neither date is supplied default to the previous day → latest nav_date range.
             if (!$request->filled('date_from') && !$request->filled('date_to')) {
                 $latestDate = DB::table('mutual_fund_prices')->max('nav_date');
                 if ($latestDate) {
-                    $query->where('p.nav_date', $latestDate);
+                    $prevDate = \Carbon\Carbon::parse($latestDate)->subDay()->format('Y-m-d');
+                    $query->whereBetween('p.nav_date', [$prevDate, $latestDate]);
                 }
             }
 
@@ -254,8 +255,9 @@ class MfController extends Controller
             ]);
         }
 
-        $latestDate = DB::table('mutual_fund_prices')->max('nav_date');
+        $latestDate     = DB::table('mutual_fund_prices')->max('nav_date');
+        $latestDateFrom = $latestDate ? \Carbon\Carbon::parse($latestDate)->subDay()->format('Y-m-d') : null;
 
-        return view('mutual-funds.prices', compact('latestDate'));
+        return view('mutual-funds.prices', compact('latestDate', 'latestDateFrom'));
     }
 }

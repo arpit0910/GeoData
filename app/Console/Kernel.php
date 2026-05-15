@@ -14,37 +14,43 @@ class Kernel extends ConsoleKernel
             ->dailyAt('20:30')
             ->timezone('Asia/Kolkata')
             ->withoutOverlapping(120)
-            ->after(fn() => $this->logCronRun('currency:fetch-rates'));
+            ->onSuccess(fn() => $this->logCronRun('currency:fetch-rates', true))
+            ->onFailure(fn() => $this->logCronRun('currency:fetch-rates', false));
 
         $schedule->command('equities:sync')
             ->dailyAt('19:00')
             ->timezone('Asia/Kolkata')
             ->withoutOverlapping(120)
-            ->after(fn() => $this->logCronRun('equities:sync'));
+            ->onSuccess(fn() => $this->logCronRun('equities:sync', true))
+            ->onFailure(fn() => $this->logCronRun('equities:sync', false));
 
         $schedule->command('indices:sync')
             ->dailyAt('19:15')
             ->timezone('Asia/Kolkata')
             ->withoutOverlapping(120)
-            ->after(fn() => $this->logCronRun('indices:sync'));
+            ->onSuccess(fn() => $this->logCronRun('indices:sync', true))
+            ->onFailure(fn() => $this->logCronRun('indices:sync', false));
 
         $schedule->command('sync:mf-daily --force')
             ->dailyAt('21:30')
             ->timezone('Asia/Kolkata')
             ->withoutOverlapping(180)
-            ->after(fn() => $this->logCronRun('sync:mf-daily (21:30)'));
+            ->onSuccess(fn() => $this->logCronRun('sync:mf-daily (21:30)', true))
+            ->onFailure(fn() => $this->logCronRun('sync:mf-daily (21:30)', false));
 
         $schedule->command('sync:mf-daily --force')
             ->dailyAt('23:15')
             ->timezone('Asia/Kolkata')
             ->withoutOverlapping(180)
-            ->after(fn() => $this->logCronRun('sync:mf-daily (23:15)'));
+            ->onSuccess(fn() => $this->logCronRun('sync:mf-daily (23:15)', true))
+            ->onFailure(fn() => $this->logCronRun('sync:mf-daily (23:15)', false));
 
         $schedule->command('mf:sync-and-calculate')
             ->dailyAt('23:30')
             ->timezone('Asia/Kolkata')
             ->withoutOverlapping(180)
-            ->after(fn() => $this->logCronRun('mf:sync-and-calculate (23:30)'));
+            ->onSuccess(fn() => $this->logCronRun('mf:sync-and-calculate (23:30)', true))
+            ->onFailure(fn() => $this->logCronRun('mf:sync-and-calculate (23:30)', false));
     }
 
     protected function commands()
@@ -54,11 +60,12 @@ class Kernel extends ConsoleKernel
         require base_path('routes/console.php');
     }
 
-    private function logCronRun(string $title): void
+    private function logCronRun(string $title, bool $status = true): void
     {
         CronLog::create([
-            'title' => $title,
-            'ip' => gethostbyname(gethostname()),
+            'title'  => $title,
+            'ip'     => gethostbyname(gethostname()),
+            'status' => $status,
             'ran_at' => now('Asia/Kolkata'),
         ]);
     }

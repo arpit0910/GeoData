@@ -51,7 +51,10 @@ class IndexUpdateMetricsCommand extends Command
             if ($i % 50 === 0) {
                 gc_collect_cycles();
                 // Refresh connection only every 50 dates to avoid connection churn
-                try { DB::reconnect(); } catch (\Exception $e) {}
+                try {
+                    DB::reconnect();
+                } catch (\Exception $e) {
+                }
             }
         }
 
