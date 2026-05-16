@@ -67,6 +67,24 @@ class CronController extends Controller
                 'timezone'    => 'Asia/Kolkata',
                 'overlap'     => false,
             ],
+            [
+                'title'       => 'equities:sync-metadata',
+                'command'     => 'equities:sync-metadata',
+                'args'        => [],
+                'description' => 'Syncs Equity metadata (Industry, Market Cap, Category) from AMFI.',
+                'schedule'    => 'Daily at 08:00',
+                'timezone'    => 'Asia/Kolkata',
+                'overlap'     => false,
+            ],
+            [
+                'title'       => 'equities:sync-fundamentals',
+                'command'     => 'equities:sync-fundamentals',
+                'args'        => [],
+                'description' => 'Syncs daily equity fundamentals (P/E, Market Cap, EPS) from API.',
+                'schedule'    => 'Daily at 20:00',
+                'timezone'    => 'Asia/Kolkata',
+                'overlap'     => false,
+            ],
         ];
     }
 
@@ -89,6 +107,10 @@ class CronController extends Controller
 
     public function run(Request $request)
     {
+        // Prevent long-running sync commands from timing out or hitting memory limits during HTTP requests.
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+
         $request->validate(['title' => 'required|string']);
 
         $definitions = collect($this->cronDefinitions())->keyBy('title');
@@ -129,7 +151,8 @@ class CronController extends Controller
             try {
                 DB::reconnect();
                 $this->logCronRun($cron['title'], $success);
-            } catch (\Throwable $ignored) {}
+            } catch (\Throwable $ignored) {
+            }
         }
 
         return $response;
@@ -148,7 +171,7 @@ class CronController extends Controller
                 $search = $request->search['value'];
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                      ->orWhere('ip', 'like', "%{$search}%");
+                        ->orWhere('ip', 'like', "%{$search}%");
                 });
             }
 

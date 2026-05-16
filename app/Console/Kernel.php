@@ -51,6 +51,20 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping(180)
             ->onSuccess(fn() => $this->logCronRun('mf:sync-and-calculate (23:30)', true))
             ->onFailure(fn() => $this->logCronRun('mf:sync-and-calculate (23:30)', false));
+
+        $schedule->command('equities:sync-metadata')
+            ->dailyAt('08:00')
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping(60)
+            ->onSuccess(fn() => $this->logCronRun('equities:sync-metadata', true))
+            ->onFailure(fn() => $this->logCronRun('equities:sync-metadata', false));
+
+        $schedule->command('equities:sync-fundamentals')
+            ->dailyAt('20:00')
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping(120)
+            ->onSuccess(fn() => $this->logCronRun('equities:sync-fundamentals', true))
+            ->onFailure(fn() => $this->logCronRun('equities:sync-fundamentals', false));
     }
 
     protected function commands()

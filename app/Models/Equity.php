@@ -20,12 +20,22 @@ class Equity extends Model
         'face_value',
         'listing_date',
         'is_active',
+        'series',
+        'market_lot',
+        'status',
+        'sector',
+        'basic_industry',
+        'index_membership',
+        'company_website',
+        'cin',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'face_value' => 'decimal:2',
         'listing_date' => 'date',
+        'index_membership' => 'array',
+        'market_lot' => 'integer',
     ];
 
     public function prices()

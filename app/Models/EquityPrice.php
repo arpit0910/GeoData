@@ -78,6 +78,12 @@ class EquityPrice extends Model
         'bse_val_9m',
         'bse_val_1y',
         'bse_val_3y',
+        'outstanding_shares',
+        'market_cap',
+        'pe_ratio',
+        'pb_ratio',
+        'dividend_yield',
+        'eps',
     ];
 
     protected $casts = [
@@ -145,6 +151,12 @@ class EquityPrice extends Model
         'bse_val_9m' => 'decimal:2',
         'bse_val_1y' => 'decimal:2',
         'bse_val_3y' => 'decimal:2',
+        'outstanding_shares' => 'integer',
+        'market_cap' => 'decimal:2',
+        'pe_ratio' => 'decimal:2',
+        'pb_ratio' => 'decimal:2',
+        'dividend_yield' => 'decimal:4',
+        'eps' => 'decimal:2',
     ];
 
     public function equity()
