@@ -47,7 +47,7 @@ class EquitySyncHistoryCommand extends Command
             $endDate   = $this->option('to') ? Carbon::parse($this->option('to'))->startOfDay() : now()->startOfDay();
             $this->info("Starting historical equity sync (explicit range)...");
         } else {
-            $months    = $this->argument('months');
+            $months    = $this->resolveMonthsArgument($this->argument('months'));
             $endDate   = now()->startOfDay();
             $startDate = now()->subMonths($months)->startOfMonth();
             $this->info("Starting historical equity sync for the last {$months} months...");
@@ -154,6 +154,28 @@ class EquitySyncHistoryCommand extends Command
         ]);
 
         return $daysFailed > 0 ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    /**
+     * Accept both numeric months and legacy key=value forms like month=1/months=1.
+     */
+    protected function resolveMonthsArgument(mixed $value): int
+    {
+        if (is_numeric($value)) {
+            $months = (int) $value;
+            return $months > 0 ? $months : 12;
+        }
+
+        if (is_string($value)) {
+            $trimmed = trim($value);
+            if (preg_match('/^(?:month|months)\s*=\s*(\d+)$/i', $trimmed, $matches)) {
+                $months = (int) $matches[1];
+                return $months > 0 ? $months : 12;
+            }
+        }
+
+        $this->warn("Invalid months argument '{$value}'. Falling back to 12 months.");
+        return 12;
     }
 
     protected function setupSignals(): void

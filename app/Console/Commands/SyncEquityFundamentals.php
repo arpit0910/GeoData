@@ -42,84 +42,77 @@ class SyncEquityFundamentals extends Command
         $updatedCount = 0;
         $failedCount = 0;
 
-        // Process in chunks of 50 to avoid hitting Yahoo Finance URL length limits
-        $chunks = $equities->chunk(50);
         $bar = $this->output->createProgressBar($total);
         $bar->start();
 
-        foreach ($chunks as $chunk) {
-            $symbols = $chunk->map(function ($equity) {
-                // Yahoo finance uses .NS for NSE
-                // Handle special characters if needed, but mostly direct match
-                $cleanSymbol = str_replace(['&', '-'], ['', ''], $equity->nse_symbol);
-                // A better approach is using urlencode, but Yahoo prefers exact ticker.
-                return urlencode($equity->nse_symbol) . '.NS';
-            })->toArray();
-
-            $symbolString = implode(',', $symbols);
-            $url = "https://query2.finance.yahoo.com/v7/finance/quote?symbols={$symbolString}";
+        foreach ($equities as $equity) {
+            $symbol = urlencode($equity->nse_symbol);
+            $url = "https://www.screener.in/company/{$symbol}/consolidated/";
 
             try {
                 $response = Http::withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                ])->timeout(30)->withoutVerifying()->get($url);
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                ])->timeout(10)->withoutVerifying()->get($url);
+
+                if ($response->status() === 404) {
+                    // Try standalone if consolidated doesn't exist
+                    $url = "https://www.screener.in/company/{$symbol}/";
+                    $response = Http::withHeaders([
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    ])->timeout(10)->withoutVerifying()->get($url);
+                }
 
                 if ($response->successful()) {
-                    $data = $response->json();
-                    $results = $data['quoteResponse']['result'] ?? [];
+                    $html = $response->body();
 
-                    foreach ($results as $result) {
-                        $symbol = str_replace('.NS', '', $result['symbol'] ?? '');
-                        // some symbols might be URL encoded in the response, some not
-                        $symbol = urldecode($symbol);
+                    preg_match('/Stock P\/E.*?<span class="number">(.*?)<\/span>/s', $html, $pe);
+                    preg_match('/Market Cap.*?<span class="number">(.*?)<\/span>/s', $html, $mc);
+                    preg_match('/Book Value.*?<span class="number">(.*?)<\/span>/s', $html, $bv);
+                    preg_match('/Dividend Yield.*?<span class="number">(.*?)<\/span>/s', $html, $dy);
+                    preg_match('/Current Price.*?<span class="number">(.*?)<\/span>/s', $html, $price);
 
-                        $equity = $chunk->first(function ($item) use ($symbol) {
-                            return $item->nse_symbol === $symbol || urlencode($item->nse_symbol) === $symbol;
-                        });
+                    $pe_val = isset($pe[1]) ? (float)str_replace(',', '', $pe[1]) : null;
+                    $mc_val = isset($mc[1]) ? (float)str_replace(',', '', $mc[1]) : null; // In Crores
+                    $bv_val = isset($bv[1]) ? (float)str_replace(',', '', $bv[1]) : null;
+                    $dy_val = isset($dy[1]) ? (float)str_replace(',', '', $dy[1]) / 100 : null; // Convert to decimal
+                    $price_val = isset($price[1]) ? (float)str_replace(',', '', $price[1]) : null;
 
-                        if ($equity) {
-                            // Find the correct price record to update by exclusively checking ISIN and traded_date
-                            $priceQuery = EquityPrice::where('isin', $equity->isin)
-                                ->where('traded_date', $date);
+                    $pb_val = ($bv_val > 0 && $price_val > 0) ? round($price_val / $bv_val, 2) : null;
+                    $eps_val = ($pe_val > 0 && $price_val > 0) ? round($price_val / $pe_val, 2) : null;
 
-                            $price = $priceQuery->first();
+                    // Convert Market Cap from Crores to standard raw number for consistency (if it exists)
+                    $raw_mc = $mc_val !== null ? $mc_val * 10000000 : null;
 
-                            if ($price) {
-                                $price->update([
-                                    'outstanding_shares' => $result['sharesOutstanding'] ?? $price->outstanding_shares,
-                                    'market_cap'         => $result['marketCap'] ?? $price->market_cap,
-                                    'pe_ratio'           => $result['trailingPE'] ?? $price->pe_ratio,
-                                    'pb_ratio'           => $result['priceToBook'] ?? $price->pb_ratio,
-                                    'dividend_yield'     => isset($result['dividendYield']) ? $result['dividendYield'] / 100 : $price->dividend_yield,
-                                    'eps'                => $result['trailingEps'] ?? $price->eps,
-                                ]);
+                    // Find the correct price record to update by exclusively checking ISIN and traded_date
+                    $priceRecord = EquityPrice::where('isin', $equity->isin)
+                        ->where('traded_date', $date)
+                        ->first();
 
-                                // Update the static market cap on Equity model as well for quick access
-                                if (isset($result['marketCap'])) {
-                                    $equity->update([
-                                        'market_cap' => $result['marketCap']
-                                    ]);
-                                }
-                                $updatedCount++;
-                            }
+                    if ($priceRecord) {
+                        $priceRecord->update([
+                            'market_cap'     => $raw_mc ?? $priceRecord->market_cap,
+                            'pe_ratio'       => $pe_val ?? $priceRecord->pe_ratio,
+                            'pb_ratio'       => $pb_val ?? $priceRecord->pb_ratio,
+                            'dividend_yield' => $dy_val ?? $priceRecord->dividend_yield,
+                            'eps'            => $eps_val ?? $priceRecord->eps,
+                        ]);
+
+                        // Update the static market cap on Equity model as well for quick access
+                        if ($raw_mc !== null) {
+                            $equity->update(['market_cap' => $raw_mc]);
                         }
+                        $updatedCount++;
                     }
                 } else {
-                    if ($response->status() === 401) {
-                        $this->warn("\nYahoo Finance API returned 401 Unauthorized. Yahoo has recently restricted free API access. You may need to use a premium API (like EODHD or FMP) or implement advanced cookie/crumb scraping.");
-                        return; // Exit early to prevent 100s of failed requests
-                    }
-                    Log::warning("Yahoo Finance API failed with status " . $response->status());
-                    $failedCount += $chunk->count();
+                    $failedCount++;
                 }
             } catch (\Exception $e) {
-                Log::error("Yahoo Finance API exception: " . $e->getMessage());
-                $failedCount += $chunk->count();
+                $failedCount++;
             }
 
-            $bar->advance($chunk->count());
-            // small delay to prevent rate limiting
-            usleep(200000);
+            $bar->advance();
+            // Sleep to respect rate limits on Screener.in and prevent IP bans
+            usleep(250000); // 250ms
         }
 
         $bar->finish();
@@ -127,7 +120,7 @@ class SyncEquityFundamentals extends Command
         $this->info("Fundamentals Sync Complete!");
         $this->info("Successfully Updated: {$updatedCount}");
         if ($failedCount > 0) {
-            $this->error("Failed to fetch: {$failedCount}");
+            $this->error("Failed to fetch: {$failedCount} (likely invalid symbol on Screener)");
         }
     }
 }

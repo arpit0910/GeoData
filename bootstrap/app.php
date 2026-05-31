@@ -2,6 +2,17 @@
 
 /*
 |--------------------------------------------------------------------------
+| Runtime Error Reporting
+|--------------------------------------------------------------------------
+|
+| Suppress PHP deprecation notices in local runtime output to keep Artisan
+| and HTTP responses clean on newer PHP versions with older dependencies.
+|
+*/
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
+/*
+|--------------------------------------------------------------------------
 | Create The Application
 |--------------------------------------------------------------------------
 |
