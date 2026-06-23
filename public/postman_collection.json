@@ -2,7 +2,7 @@
     "info": {
         "_postman_id": "c661300e-1800-4b74-9da3-c08a53831dd1",
         "name": "SetuGeo Premium API - Full Production Suite (Exhaustive)",
-        "description": "The definitive, production-ready Postman collection for SetuGeo. Includes recursive geographic drills, advanced banking analytics, equity intelligence, and geospatial clustering.\n\n**Production URL:** https://setugeo.com/api/v1\n**OCR API:** https://api.setugeo.com\n**Local Development:** http://127.0.0.1:8000/api/v1",
+        "description": "The definitive, production-ready Postman collection for SetuGeo. Includes recursive geographic drills, advanced banking analytics, equity intelligence, and geospatial clustering.\n\nThis collection was reviewed for the module-based subscription rollout.\n\n**Important:** Public API request URLs remain unchanged.\n\nAccess is now controlled by subscription modules such as `address_api`, `banking_currency_api`, and `stocks_mutual_funds_api`. Requests can return `403 Forbidden` when the authenticated account does not have the required module or `all_api` access.\n\nPlan benefits are now managed as linked benefit records in the application, but that does not change API request paths.\n\n**Production URL:** https://setugeo.com/api/v1\n**OCR API:** https://api.setugeo.com\n**Local Development:** http://127.0.0.1:8000/api/v1",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [

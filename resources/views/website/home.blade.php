@@ -419,8 +419,8 @@
                         <i class="fas fa-check {{ $isPopular ? 'text-amber-500' : 'text-emerald-500' }} text-xs"></i> 
                         {{ $plan->api_hits_limit ? number_format($plan->api_hits_limit) : 'Unlimited' }} API requests
                     </li>
-                    @if($plan->benefits)
-                        @foreach($plan->benefits as $benefit)
+                    @if($plan->resolvedBenefits())
+                        @foreach($plan->resolvedBenefits() as $benefit)
                         <li class="flex items-center gap-3 text-balance">
                             <i class="fas fa-check {{ $isPopular ? 'text-amber-500' : 'text-emerald-500' }} text-xs"></i> 
                             {{ $benefit }}

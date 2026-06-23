@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(AdminUserSeeder::class);
         $this->call([
+            BenefitSeeder::class,
+            SubscriptionFeatureSeeder::class,
             RegionSeeder::class,
             SubRegionSeeder::class,
             CountrySeeder::class,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -46,5 +47,33 @@ class Subscription extends Model
     public function coupon()
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeUnexpired(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder) {
+            $builder->whereNull('expires_at')
+                ->orWhere('expires_at', '>', now());
+        });
+    }
+
+    public function isExpired(): bool
+    {
+        return !is_null($this->expires_at) && $this->expires_at->isPast();
+    }
+
+    public function isAccessible(): bool
+    {
+        return $this->status === 'active' && !$this->isExpired();
+    }
+
+    public function hasFeature(string $featureKey): bool
+    {
+        return $this->plan?->hasFeature($featureKey) ?? false;
     }
 }

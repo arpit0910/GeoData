@@ -14,10 +14,14 @@ use App\Models\Timezone;
 use App\Models\Pincode;
 use App\Models\Bank;
 use App\Models\BankBranch;
+use App\Models\Benefit;
 use App\Models\CurrencyConversion;
 use App\Models\ApiLog;
+use App\Models\SubscriptionFeature;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 trait CreatesTestData
 {
@@ -94,7 +98,10 @@ trait CreatesTestData
      */
     protected function createPlan(array $overrides = []): Plan
     {
-        return Plan::create(array_merge([
+        $featureKeys = Arr::pull($overrides, 'feature_keys', [SubscriptionFeature::MODULE_ALL_API]);
+        $benefitNames = Arr::pull($overrides, 'benefit_names', ['1000 API Calls', 'Email Support']);
+
+        $plan = Plan::create(array_merge([
             'name' => 'Starter Plan',
             'api_hits_limit' => 1000,
             'amount' => 499,
@@ -102,14 +109,46 @@ trait CreatesTestData
             'status' => 1,
             'billing_cycle' => 'monthly',
             'terms' => 'Test plan terms',
-            'benefits' => ['1000 API Calls', 'Email Support'],
+            'benefits' => $benefitNames,
         ], $overrides));
+
+        if (Schema::hasTable('subscription_features') && $featureKeys !== []) {
+            $featureIds = collect($featureKeys)->map(function (string $featureKey) {
+                return SubscriptionFeature::firstOrCreate(
+                    ['key' => $featureKey],
+                    [
+                        'name' => str($featureKey)->replace('_', ' ')->title()->toString(),
+                        'description' => str($featureKey)->replace('_', ' ')->title()->toString(),
+                        'is_active' => true,
+                    ]
+                )->id;
+            });
+
+            $plan->features()->sync($featureIds);
+        }
+
+        if (Schema::hasTable('benefits') && Schema::hasTable('benefit_plan') && $benefitNames !== []) {
+            $benefitIds = collect($benefitNames)->map(function (string $benefitName) {
+                return Benefit::firstOrCreate(
+                    ['name' => $benefitName],
+                    [
+                        'slug' => str($benefitName)->slug()->toString() . '-' . str()->lower(str()->random(6)),
+                        'description' => $benefitName,
+                        'is_active' => true,
+                    ]
+                )->id;
+            });
+
+            $plan->benefitItems()->sync($benefitIds);
+        }
+
+        return $plan;
     }
 
     /**
      * Create an active subscription for a user.
      */
-    protected function createActiveSubscription(User $user, Plan $plan = null, array $overrides = []): Subscription
+    protected function createActiveSubscription(User $user, ?Plan $plan = null, array $overrides = []): Subscription
     {
         if (!$plan) {
             $plan = $this->createPlan();
@@ -133,7 +172,7 @@ trait CreatesTestData
     /**
      * Create an expired subscription.
      */
-    protected function createExpiredSubscription(User $user, Plan $plan = null): Subscription
+    protected function createExpiredSubscription(User $user, ?Plan $plan = null): Subscription
     {
         if (!$plan) {
             $plan = $this->createPlan();
@@ -272,7 +311,7 @@ trait CreatesTestData
     /**
      * Create bank and branch test data.
      */
-    protected function createBankData(array $geo = null): array
+    protected function createBankData(?array $geo = null): array
     {
         if (!$geo) {
             $geo = $this->createGeoHierarchy();

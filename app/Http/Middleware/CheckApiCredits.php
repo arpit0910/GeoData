@@ -6,9 +6,15 @@ use Closure;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use App\Models\ApiLog;
+use App\Services\SubscriptionAccessService;
 
 class CheckApiCredits
 {
+    public function __construct(
+        protected SubscriptionAccessService $subscriptionAccessService
+    ) {
+    }
+
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
@@ -18,11 +24,7 @@ class CheckApiCredits
         }
 
         // Identify an active subscription
-        $subscription = $user->subscriptions()
-            ->where('status', 'active')
-            ->where('expires_at', '>', now())
-            ->latest()
-            ->first();
+        $subscription = $this->subscriptionAccessService->getActiveSubscription($user);
 
         if (!$subscription) {
             return response()->json([

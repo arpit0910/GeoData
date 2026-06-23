@@ -68,6 +68,7 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\IsAdmin::class,
         'profile.complete.check' => \App\Http\Middleware\EnsureProfileComplete::class,
         'api.credits' => \App\Http\Middleware\CheckApiCredits::class,
+        'subscription' => \App\Http\Middleware\CheckSubscriptionFeature::class,
         'subscribed' => \App\Http\Middleware\EnsureSubscribed::class,
         'priority' => \App\Http\Middleware\ApiPriorityMiddleware::class,
     ];

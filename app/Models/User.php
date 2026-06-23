@@ -5,6 +5,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -89,15 +90,17 @@ class User extends Authenticatable
 
     public function hasActiveSubscription()
     {
-        return $this->subscriptions()
-            ->where('status', 'active')
-            ->where('expires_at', '>', now())
-            ->exists();
+        return $this->activeSubscription()->exists();
     }
 
-    public function subscriptions()
+    public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function activeSubscription(): HasMany
+    {
+        return $this->subscriptions()->active()->unexpired();
     }
 
     public function country()

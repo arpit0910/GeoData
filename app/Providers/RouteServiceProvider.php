@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -69,10 +70,16 @@ class RouteServiceProvider extends ServiceProvider
 
             if ($user && $user->plan) {
                 $plan = $user->plan;
-                // Calculate actual cost
-                $cost = (float)($plan->amount - ($plan->discount_amount ?? 0));
+                $hasPaidAccess = (float)($plan->amount - ($plan->discount_amount ?? 0)) > 0;
+                $featureTablesReady = Schema::hasTable('subscription_features')
+                    && Schema::hasTable('plan_subscription_feature');
+                $hasElevatedAccess = $featureTablesReady && (
+                    $plan->relationLoaded('features')
+                        ? $plan->hasFeature(\App\Models\SubscriptionFeature::MODULE_ALL_API)
+                        : $plan->features()->where('key', \App\Models\SubscriptionFeature::MODULE_ALL_API)->exists()
+                );
 
-                if ($cost > 0) {
+                if ($hasPaidAccess || $hasElevatedAccess) {
                     // Paid tier: 300 hits per minute (5 per second on average)
                     return Limit::perMinute(300)->by($user->id);
                 }

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Plan extends Model
 {
@@ -28,6 +30,51 @@ class Plan extends Model
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function features(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            SubscriptionFeature::class,
+            'plan_subscription_feature'
+        )->withTimestamps();
+    }
+
+    public function benefitItems(): BelongsToMany
+    {
+        return $this->belongsToMany(Benefit::class, 'benefit_plan')
+            ->withTimestamps()
+            ->orderBy('sort_order')
+            ->orderBy('name');
+    }
+
+    public function hasFeature(string $featureKey): bool
+    {
+        if ($this->relationLoaded('features')) {
+            $featureKeys = $this->features->pluck('key');
+        } else {
+            $featureKeys = $this->features()->pluck('key');
+        }
+
+        return $featureKeys->contains(SubscriptionFeature::MODULE_ALL_API)
+            || $featureKeys->contains($featureKey);
+    }
+
+    public function resolvedBenefits(): array
+    {
+        if (Schema::hasTable('benefits') && Schema::hasTable('benefit_plan')) {
+            if ($this->relationLoaded('benefitItems')) {
+                $benefits = $this->benefitItems->pluck('name')->filter()->values()->all();
+            } else {
+                $benefits = $this->benefitItems()->pluck('name')->filter()->values()->all();
+            }
+
+            if ($benefits !== []) {
+                return $benefits;
+            }
+        }
+
+        return is_array($this->benefits) ? array_values(array_filter($this->benefits)) : [];
     }
 
     /**

@@ -100,16 +100,14 @@
                                 <i class="fas fa-check text-green-500 flex-shrink-0 h-5 w-5"></i>
                                 <span class="text-sm text-gray-600 font-medium">{{ $plan->api_hits_limit ? number_format($plan->api_hits_limit) . ' API Hits/Month' : 'Unlimited API Hits' }}</span>
                             </li>
-                            @if(is_array($plan->benefits))
-                                @foreach($plan->benefits as $benefit)
-                                    @if(!empty($benefit))
-                                    <li class="flex space-x-3">
-                                        <i class="fas fa-check text-green-500 flex-shrink-0 h-5 w-5"></i>
-                                        <span class="text-sm text-gray-600">{{ $benefit }}</span>
-                                    </li>
-                                    @endif
-                                @endforeach
-                            @endif
+                            @foreach($plan->resolvedBenefits() as $benefit)
+                                @if(!empty($benefit))
+                                <li class="flex space-x-3">
+                                    <i class="fas fa-check text-green-500 flex-shrink-0 h-5 w-5"></i>
+                                    <span class="text-sm text-gray-600">{{ $benefit }}</span>
+                                </li>
+                                @endif
+                            @endforeach
                         </ul>
                     </div>
                 </div>

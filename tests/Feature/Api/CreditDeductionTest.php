@@ -66,7 +66,12 @@ class CreditDeductionTest extends TestCase
 
         $response = $this->getJson('/api/v1/regions', $this->headers);
 
-        $response->assertStatus(402);
+        $response->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Your subscription has expired.',
+                'required_module' => 'address_api',
+            ]);
     }
 
     /** @test */

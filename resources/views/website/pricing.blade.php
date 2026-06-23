@@ -101,14 +101,12 @@
                             <i class="fas fa-check-circle text-amber-500 mt-1"></i>
                             <span><strong class="text-white">{{ $plan->api_hits_limit ? number_format($plan->api_hits_limit) : 'Unlimited' }}</strong> API Requests</span>
                         </li>
-                        @if($plan->benefits && is_array($plan->benefits))
-                            @foreach($plan->benefits as $benefit)
-                                <li class="flex gap-x-3 items-start">
-                                    <i class="fas fa-check-circle text-amber-500 mt-1"></i>
-                                    <span>{{ $benefit }}</span>
-                                </li>
-                            @endforeach
-                        @endif
+                        @foreach($plan->resolvedBenefits() as $benefit)
+                            <li class="flex gap-x-3 items-start">
+                                <i class="fas fa-check-circle text-amber-500 mt-1"></i>
+                                <span>{{ $benefit }}</span>
+                            </li>
+                        @endforeach
                     </ul>
 
                     {{-- CTA Button Logic --}}

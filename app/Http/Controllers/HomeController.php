@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Plan;
 use App\Models\Faq;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 use App\Models\WebsiteQuery;
 
@@ -14,7 +15,7 @@ class HomeController extends Controller
     public function index()
     {
         $faqs = Faq::where('visibility', 'website')->where('status', 1)->orderBy('order')->get();
-        $plans = Plan::where('status', 1)->orderBy('amount', 'asc')->get();
+        $plans = $this->plansQuery()->get();
         return view('website.home', compact('faqs', 'plans'));
     }
 
@@ -33,7 +34,7 @@ class HomeController extends Controller
     public function landingV3()
     {
         $faqs = Faq::where('visibility', 'website')->where('status', 1)->orderBy('order')->get();
-        $plans = Plan::where('status', 1)->orderBy('amount', 'asc')->get();
+        $plans = $this->plansQuery()->get();
         return view('website.landing-v3', compact('faqs', 'plans'));
     }
 
@@ -70,7 +71,7 @@ class HomeController extends Controller
 
     public function pricing()
     {
-        $plans = Plan::where('status', 1)->orderBy('amount', 'asc')->get();
+        $plans = $this->plansQuery()->get();
 
         $activeSubscription = null;
         if (Auth::check()) {
@@ -83,6 +84,17 @@ class HomeController extends Controller
         }
 
         return view('website.pricing', compact('plans', 'activeSubscription'));
+    }
+
+    protected function plansQuery()
+    {
+        $query = Plan::where('status', 1)->orderBy('amount', 'asc');
+
+        if (Schema::hasTable('benefits') && Schema::hasTable('benefit_plan')) {
+            $query->with('benefitItems');
+        }
+
+        return $query;
     }
 
     public function docs()
