@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Support\InternalAdminApiTester;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use App\Models\ApiLog;
@@ -23,7 +24,7 @@ class CheckApiCredits
             return response()->json(['status' => false, 'message' => 'Unauthenticated.'], 401);
         }
 
-        if ($user->is_admin && $request->headers->get('X-Admin-Api-Tester') === '1') {
+        if (InternalAdminApiTester::isActive($request, $user)) {
             return $next($request);
         }
 

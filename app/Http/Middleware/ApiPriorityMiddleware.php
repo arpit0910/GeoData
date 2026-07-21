@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\InternalAdminApiTester;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -24,6 +25,15 @@ class ApiPriorityMiddleware
             if ($accessToken && $accessToken->tokenable) {
                 $user = $accessToken->tokenable;
             }
+        }
+
+        if (InternalAdminApiTester::isActive($request, $user)) {
+            $response = $next($request);
+            $response->headers->set('X-Api-Priority', 'Internal-Admin');
+            $response->headers->set('X-Api-Tier', 'Internal-Admin');
+            $response->headers->set('X-Response-Time-Priority', 'Immediate');
+
+            return $response;
         }
 
         // Identify if the user is on a paid tier

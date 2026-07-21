@@ -11,16 +11,20 @@ use App\Models\CurrencyConversion;
 use App\Models\Equity;
 use App\Models\Index;
 use App\Models\MfMaster;
+use App\Models\Plan;
 use App\Models\Pincode;
 use App\Models\Region;
 use App\Models\State;
 use App\Models\SubRegion;
+use App\Models\Subscription;
+use App\Models\SubscriptionFeature;
 use App\Models\Timezone;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ApiTesterController extends Controller
@@ -49,6 +53,8 @@ class ApiTesterController extends Controller
                 'message' => 'API Tester can only be run as an authenticated admin user.',
             ], 403);
         }
+
+        $this->ensureAdminTestingAccess($user);
 
         $sampleData = $this->sampleData();
         $catalog = $this->buildEndpointCatalog($sampleData)->keyBy('key');
@@ -512,6 +518,75 @@ class ApiTesterController extends Controller
     {
         $path = str_replace('api/v1/', '', $uri);
         return ucfirst(Str::before($path, '/'));
+    }
+
+    private function ensureAdminTestingAccess(User $user): void
+    {
+        $plan = Plan::query()->firstOrCreate(
+            ['name' => 'Internal Admin Tester'],
+            [
+                'api_hits_limit' => null,
+                'amount' => 999999,
+                'discount_amount' => 0,
+                'status' => 'active',
+                'billing_cycle' => 'monthly',
+                'terms' => 'Internal plan provisioned automatically for API tester access.',
+                'benefits' => ['Unlimited internal admin API testing'],
+            ]
+        );
+
+        $plan->forceFill([
+            'api_hits_limit' => null,
+            'amount' => 999999,
+            'discount_amount' => 0,
+            'status' => 'active',
+            'billing_cycle' => 'monthly',
+        ])->save();
+
+        if (Schema::hasTable('subscription_features') && Schema::hasTable('plan_subscription_feature')) {
+            $allApiFeature = SubscriptionFeature::query()
+                ->where('key', SubscriptionFeature::MODULE_ALL_API)
+                ->where('is_active', true)
+                ->first();
+
+            if ($allApiFeature && !$plan->features()->whereKey($allApiFeature->id)->exists()) {
+                $plan->features()->attach($allApiFeature->id);
+            }
+        }
+
+        $subscription = Subscription::query()
+            ->where('user_id', $user->id)
+            ->where('plan_id', $plan->id)
+            ->latest()
+            ->first();
+
+        if (!$subscription) {
+            $subscription = new Subscription([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
+        }
+
+        $subscription->forceFill([
+            'razorpay_order_id' => $subscription->razorpay_order_id ?: 'internal-admin-tester-order',
+            'razorpay_payment_id' => $subscription->razorpay_payment_id ?: null,
+            'razorpay_signature' => $subscription->razorpay_signature ?: null,
+            'razorpay_subscription_id' => $subscription->razorpay_subscription_id ?: 'internal-admin-tester-subscription',
+            'amount_paid' => 0,
+            'status' => 'active',
+            'expires_at' => now()->addYears(50),
+            'total_credits' => 999999999,
+            'used_credits' => 0,
+            'available_credits' => 999999999,
+            'discount_amount' => 0,
+            'remaining_discount_cycles' => 0,
+            'last_credit_refresh' => now(),
+        ])->save();
+
+        $user->forceFill([
+            'plan_id' => $plan->id,
+            'available_credits' => 999999999,
+        ])->save();
     }
 
     private function truncateResponse(?string $content): string

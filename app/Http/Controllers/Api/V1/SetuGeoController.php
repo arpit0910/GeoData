@@ -328,7 +328,10 @@ class SetuGeoController extends Controller
         
         $subscription = $user->subscriptions()
             ->where('status', 'active')
-            ->where('expires_at', '>', now())
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
             ->latest()
             ->first();
 

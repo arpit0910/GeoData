@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\InternalAdminApiTester;
 use App\Services\SubscriptionAccessService;
 use Closure;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class CheckSubscriptionFeature
             return sendResponse(null, 'Unauthenticated.', 401);
         }
 
-        if ($user->is_admin && $request->headers->get('X-Admin-Api-Tester') === '1') {
+        if (InternalAdminApiTester::isActive($request, $user)) {
             return $next($request);
         }
 

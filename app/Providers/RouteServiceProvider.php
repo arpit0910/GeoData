@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\InternalAdminApiTester;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -66,6 +67,10 @@ class RouteServiceProvider extends ServiceProvider
                 if ($accessToken && $accessToken->tokenable) {
                     $user = $accessToken->tokenable;
                 }
+            }
+
+            if (InternalAdminApiTester::isActive($request, $user)) {
+                return Limit::perMinute(100000)->by('internal-admin-tester-'.$user->id);
             }
 
             if ($user && $user->plan) {
