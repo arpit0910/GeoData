@@ -35,6 +35,7 @@ Route::get('/equity/{isin}/activity-metrics', [EquityApiController::class, 'acti
 
 Route::get('/indices/snapshot', [IndexApiController::class, 'snapshot']);
 Route::get('/indices/search', [IndexApiController::class, 'search']);
+Route::get('/indices/holdings', [IndexApiController::class, 'holdings']);
 Route::get('/indices/analysis/top-gainers', [IndexApiController::class, 'topGainers']);
 Route::get('/indices/analysis/top-losers', [IndexApiController::class, 'topLosers']);
 Route::get('/indices/analysis/valuation-comparison', [IndexApiController::class, 'valuationComparison']);

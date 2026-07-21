@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Models\Index;
 use App\Models\IndexPrice;
+use App\Models\Equity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -59,7 +60,23 @@ class SyncIndices extends Command
                 $query->whereHas('index', fn($q) => $q->where('exchange', $exchange));
             }
             if ($query->exists()) {
-                $this->info("  Data already exists for {$dateStr}. Nothing to do.");
+                $existingIndices = IndexPrice::query()
+                    ->with('index:index_code,index_name,exchange')
+                    ->where('traded_date', $dateStr)
+                    ->when($exchange, fn($q) => $q->whereHas('index', fn($iq) => $iq->where('exchange', $exchange)))
+                    ->get();
+
+                $missingDetails = $existingIndices->filter(
+                    fn($row) => $this->needsHoldingsBackfill($row)
+                )->values();
+
+                if ($missingDetails->isNotEmpty()) {
+                    $this->info("  Data already exists for {$dateStr}. Backfilling overview and holdings for {$missingDetails->count()} indices...");
+                    $this->syncOverviewDetails($currentDateObj, $missingDetails);
+                } else {
+                    $this->info("  Data already exists for {$dateStr}. Nothing to do.");
+                }
+
                 return Command::SUCCESS;
             }
 
@@ -89,6 +106,20 @@ class SyncIndices extends Command
             $this->info("  Total records in DB for {$dateStr}: {$saved}");
 
             if ($syncedNse > 0 || $syncedBse > 0) {
+                $overviewExchanges = [];
+                if ($syncedNse > 0) $overviewExchanges[] = 'NSE';
+                if ($syncedBse > 0) $overviewExchanges[] = 'BSE';
+
+                if (!empty($overviewExchanges)) {
+                    $syncedIndices = IndexPrice::query()
+                        ->with('index:index_code,index_name,exchange')
+                        ->where('traded_date', $dateStr)
+                        ->whereHas('index', fn($q) => $q->whereIn('exchange', $overviewExchanges))
+                        ->get();
+
+                    $this->syncOverviewDetails($currentDateObj, $syncedIndices);
+                }
+
                 $this->calculateAnalytics($currentDateObj);
                 $this->info("  Sync complete for {$dateStr}. Analytics updated.");
                 return Command::SUCCESS;
@@ -230,7 +261,7 @@ class SyncIndices extends Command
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Referer'    => 'https://www.niftyindices.com/reports/daily-reports',
                 'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            ])->timeout(30)->get($url);
+            ])->withoutVerifying()->timeout(30)->get($url);
 
             if ($response->failed()) {
                 $this->warn("  [NSE] HTTP {$response->status()} — no data for this date.");
@@ -370,7 +401,7 @@ class SyncIndices extends Command
                 Http::withOptions([
                     'cookies'         => $cookieJar,
                     'connect_timeout' => 5,
-                ])->withHeaders($headers)->timeout(10)->get($warmupPages[$attempt % count($warmupPages)]);
+                ])->withoutVerifying()->withHeaders($headers)->timeout(10)->get($warmupPages[$attempt % count($warmupPages)]);
             } catch (\Exception $e) {
                 // Warmup failure is non-fatal — carry on
             }
@@ -383,7 +414,7 @@ class SyncIndices extends Command
                     $response = Http::withOptions([
                         'cookies'         => $cookieJar,
                         'connect_timeout' => 5,   // fail fast if IP is blocked
-                    ])->withHeaders($headers)->timeout($timeout)->get($url);
+                    ])->withoutVerifying()->withHeaders($headers)->timeout($timeout)->get($url);
 
                     if ($response->successful()) {
                         $body = $response->body();
@@ -596,6 +627,7 @@ class SyncIndices extends Command
         foreach ($yahooHosts as $host) {
             try {
                 $probe = Http::withOptions(['connect_timeout' => 5])
+                    ->withoutVerifying()
                     ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
                     ->timeout(10)
                     ->get(sprintf($probeUrl, $host));
@@ -621,6 +653,7 @@ class SyncIndices extends Command
                      . "?period1={$tsStart}&period2={$tsEnd}&interval=1d";
 
                 $response = Http::withOptions(['connect_timeout' => 5])
+                    ->withoutVerifying()
                     ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
                     ->timeout(10)
                     ->get($url);
@@ -716,6 +749,7 @@ class SyncIndices extends Command
                      . "&d1={$d1}&d2={$d1}&i=d";
 
                 $response = Http::withOptions(['connect_timeout' => 5])
+                    ->withoutVerifying()
                     ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
                     ->timeout(10)
                     ->get($url);
@@ -801,6 +835,834 @@ class SyncIndices extends Command
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function syncOverviewDetails(Carbon $date, $indices): void
+    {
+        $endpoint = config('services.financial_api.overview_endpoint');
+        $indices = collect($indices)
+            ->filter(fn($item) => !empty($item->index_code))
+            ->unique('index_code')
+            ->values();
+
+        if ($indices->isEmpty()) {
+            $this->warn("  [Overview] No indices available for overview sync.");
+            return;
+        }
+
+        $dateStr     = $date->format('Y-m-d');
+        $batchSize   = 15;
+        $delayMicros = 500000;
+        $chunks      = $indices->chunk($batchSize)->values();
+        $useApi      = !empty($endpoint);
+
+        if (!$useApi) {
+            $this->warn("  [Overview] Missing services.financial_api.overview_endpoint config. Falling back to derived overview payloads.");
+        }
+
+        $this->info("  [Overview] Fetching detailed overview data for {$indices->count()} indices...");
+
+        foreach ($chunks as $batchNumber => $chunk) {
+            $updates = [];
+
+            foreach ($chunk as $indexPrice) {
+                try {
+                    $overview = null;
+                    $holdings = $this->fetchDirectExchangeHoldings($indexPrice);
+
+                    if ($useApi) {
+                        $response = Http::acceptJson()
+                            ->withoutVerifying()
+                            ->timeout(20)
+                            ->retry(2, 500)
+                            ->get($endpoint, [
+                                'index_code' => $indexPrice->index_code,
+                                'date' => $dateStr,
+                            ]);
+
+                        if ($response->successful()) {
+                            $payload = $response->json();
+                            if (is_array($payload)) {
+                                $apiHoldings = $this->extractHoldingsFromOverview($payload);
+                                if (!empty($apiHoldings)) {
+                                    $holdings = $apiHoldings;
+                                }
+                                $overview = $this->normalizeOverviewPayload($payload, $indexPrice, $holdings);
+
+                                if (!$this->isValidOverviewPayload($overview)) {
+                                    $overview = null;
+                                }
+                            }
+
+                            if ($overview) {
+                                $holdings = $this->extractHoldingsFromOverview($overview);
+                            } else {
+                                if (!empty($holdings)) {
+                                    $this->warn("  [Overview] {$indexPrice->index_code}: partial overview payload detected. Saving holdings with fallback overview.");
+                                } else {
+                                    $this->warn("  [Overview] {$indexPrice->index_code}: invalid overview payload schema. Using derived fallback.");
+                                }
+                            }
+                        } else {
+                            $this->warn("  [Overview] {$indexPrice->index_code}: HTTP {$response->status()} from overview endpoint. Using derived fallback.");
+                        }
+                    }
+
+                    $overview ??= $this->buildFallbackOverviewPayload($indexPrice, $holdings);
+                    $holdings = !empty($holdings)
+                        ? $holdings
+                        : $this->extractHoldingsFromOverview($overview);
+
+                    $updates[] = [
+                        'index_code' => $indexPrice->index_code,
+                        'traded_date' => $dateStr,
+                        'overview' => json_encode($overview, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'holdings' => json_encode($holdings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'updated_at' => now(),
+                    ];
+                } catch (\Exception $e) {
+                    $this->warn("  [Overview] {$indexPrice->index_code}: {$e->getMessage()}. Using derived fallback.");
+
+                    $updates[] = [
+                        'index_code' => $indexPrice->index_code,
+                        'traded_date' => $dateStr,
+                        'overview' => json_encode($this->buildFallbackOverviewPayload($indexPrice), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'holdings' => json_encode([], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+
+            if (!empty($updates)) {
+                IndexPrice::upsert(
+                    $updates,
+                    ['index_code', 'traded_date'],
+                    ['overview', 'holdings', 'updated_at']
+                );
+            }
+
+            $this->info("  [Overview] Batch " . ($batchNumber + 1) . " processed (" . count($updates) . " saved).");
+
+            if (($batchNumber + 1) < $chunks->count()) {
+                usleep($delayMicros);
+            }
+        }
+    }
+
+    private function buildFallbackOverviewPayload(IndexPrice $indexPrice, array $holdings = []): array
+    {
+        $index = $indexPrice->index;
+        $close = $this->toFloat($indexPrice->close);
+        $prevClose = $this->toFloat($indexPrice->prev_close);
+        $open = $this->toFloat($indexPrice->open);
+        $high = $this->toFloat($indexPrice->high);
+        $low = $this->toFloat($indexPrice->low);
+        $volume = $this->toFloat($indexPrice->volume);
+        $turnover = $this->toFloat($indexPrice->turnover);
+        $peRatio = $this->toFloat($indexPrice->pe_ratio);
+        $pbRatio = $this->toFloat($indexPrice->pb_ratio);
+        $divYield = $this->toFloat($indexPrice->div_yield);
+        $absoluteChange = $prevClose > 0 ? round($close - $prevClose, 2) : 0.0;
+        $percentageChange = $prevClose > 0 ? round((($close - $prevClose) / $prevClose) * 100, 4) : $this->toFloat($indexPrice->change_percent);
+
+        return [
+            'index_metadata' => [
+                'name' => (string) ($index->index_name ?? $indexPrice->index_code),
+                'ticker' => (string) $indexPrice->index_code,
+                'exchange' => (string) ($index->exchange ?? ''),
+                'currency' => 'INR',
+            ],
+            'daily_price_summary' => [
+                'open' => $open,
+                'high' => $high,
+                'low' => $low,
+                'close' => $close,
+                'previous_close' => $prevClose,
+                'absolute_change' => $absoluteChange,
+                'percentage_change' => $percentageChange,
+                'volume' => $volume,
+                'turnover_in_crores' => $turnover,
+                'fifty_two_week_high' => 0.0,
+                'fifty_two_week_low' => 0.0,
+            ],
+            'valuation_metrics' => [
+                'pe_ratio' => $peRatio,
+                'pb_ratio' => $pbRatio,
+                'dividend_yield_percentage' => $divYield,
+            ],
+            'market_capitalization' => [
+                'total_market_cap' => 0.0,
+                'free_float_market_cap' => 0.0,
+            ],
+            'composition_overview' => [
+                'total_constituents' => count($holdings),
+                'top_constituents' => $holdings,
+                'sector_weightages' => [],
+            ],
+            'risk_metrics' => [
+                'beta' => 0.0,
+                'standard_deviation' => 0.0,
+                'correlation' => 0.0,
+            ],
+        ];
+    }
+
+    private function isValidOverviewPayload(array $overview): bool
+    {
+        $requiredSections = [
+            'index_metadata',
+            'daily_price_summary',
+            'valuation_metrics',
+            'market_capitalization',
+            'composition_overview',
+            'risk_metrics',
+        ];
+
+        foreach ($requiredSections as $section) {
+            if (!isset($overview[$section]) || !is_array($overview[$section])) {
+                return false;
+            }
+        }
+
+        if (!$this->hasRequiredKeys($overview['index_metadata'], ['name', 'ticker', 'exchange', 'currency'])) {
+            return false;
+        }
+
+        foreach (['name', 'ticker', 'exchange', 'currency'] as $field) {
+            if (!is_string($overview['index_metadata'][$field])) {
+                return false;
+            }
+        }
+
+        if (
+            !$this->validateNumericFields($overview['daily_price_summary'], [
+                'open', 'high', 'low', 'close', 'previous_close', 'absolute_change',
+                'percentage_change', 'volume', 'turnover_in_crores',
+                'fifty_two_week_high', 'fifty_two_week_low',
+            ]) ||
+            !$this->validateNumericFields($overview['valuation_metrics'], [
+                'pe_ratio', 'pb_ratio', 'dividend_yield_percentage',
+            ]) ||
+            !$this->validateNumericFields($overview['market_capitalization'], [
+                'total_market_cap', 'free_float_market_cap',
+            ]) ||
+            !$this->validateNumericFields($overview['risk_metrics'], [
+                'beta', 'standard_deviation', 'correlation',
+            ])
+        ) {
+            return false;
+        }
+
+        $composition = $overview['composition_overview'];
+        if (
+            !$this->hasRequiredKeys($composition, ['total_constituents', 'top_constituents', 'sector_weightages']) ||
+            !is_numeric($composition['total_constituents']) ||
+            !is_array($composition['top_constituents']) ||
+            !is_array($composition['sector_weightages'])
+        ) {
+            return false;
+        }
+
+        foreach ($composition['top_constituents'] as $constituent) {
+            if (
+                !is_array($constituent) ||
+                !$this->hasRequiredKeys($constituent, ['company_name', 'symbol', 'weightage_percentage']) ||
+                !is_string($constituent['company_name']) ||
+                !is_string($constituent['symbol']) ||
+                !is_numeric($constituent['weightage_percentage'])
+            ) {
+                return false;
+            }
+        }
+
+        foreach ($composition['sector_weightages'] as $sector => $weightage) {
+            if (!is_string((string) $sector) || !is_numeric($weightage)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function normalizeOverviewPayload(array $payload, IndexPrice $indexPrice, array $holdings = []): array
+    {
+        if ($this->isValidOverviewPayload($payload)) {
+            return $payload;
+        }
+
+        $source = $this->findNestedArray($payload, [
+            ['data'],
+            ['result'],
+            ['overview'],
+            ['data', 'overview'],
+            ['data', 'result'],
+        ]) ?? $payload;
+
+        $fallback = $this->buildFallbackOverviewPayload($indexPrice, $holdings);
+
+        $metadata = is_array($source['index_metadata'] ?? null) ? $source['index_metadata'] : [];
+        $daily = is_array($source['daily_price_summary'] ?? null) ? $source['daily_price_summary'] : [];
+        $valuation = is_array($source['valuation_metrics'] ?? null) ? $source['valuation_metrics'] : [];
+        $marketCap = is_array($source['market_capitalization'] ?? null) ? $source['market_capitalization'] : [];
+        $risk = is_array($source['risk_metrics'] ?? null) ? $source['risk_metrics'] : [];
+        $composition = is_array($source['composition_overview'] ?? null) ? $source['composition_overview'] : [];
+
+        $sectorWeightages = $this->extractSectorWeightages($source);
+
+        return [
+            'index_metadata' => [
+                'name' => (string) ($metadata['name'] ?? $source['index_name'] ?? $source['name'] ?? $fallback['index_metadata']['name']),
+                'ticker' => (string) ($metadata['ticker'] ?? $source['ticker'] ?? $source['index_code'] ?? $fallback['index_metadata']['ticker']),
+                'exchange' => (string) ($metadata['exchange'] ?? $source['exchange'] ?? $fallback['index_metadata']['exchange']),
+                'currency' => (string) ($metadata['currency'] ?? $source['currency'] ?? $fallback['index_metadata']['currency']),
+            ],
+            'daily_price_summary' => [
+                'open' => $this->firstNumericValue($daily, ['open'], $fallback['daily_price_summary']['open']),
+                'high' => $this->firstNumericValue($daily, ['high'], $fallback['daily_price_summary']['high']),
+                'low' => $this->firstNumericValue($daily, ['low'], $fallback['daily_price_summary']['low']),
+                'close' => $this->firstNumericValue($daily, ['close', 'last_price'], $fallback['daily_price_summary']['close']),
+                'previous_close' => $this->firstNumericValue($daily, ['previous_close', 'prev_close'], $fallback['daily_price_summary']['previous_close']),
+                'absolute_change' => $this->firstNumericValue($daily, ['absolute_change', 'change'], $fallback['daily_price_summary']['absolute_change']),
+                'percentage_change' => $this->firstNumericValue($daily, ['percentage_change', 'change_percent', 'percent_change'], $fallback['daily_price_summary']['percentage_change']),
+                'volume' => $this->firstNumericValue($daily, ['volume'], $fallback['daily_price_summary']['volume']),
+                'turnover_in_crores' => $this->firstNumericValue($daily, ['turnover_in_crores', 'turnover'], $fallback['daily_price_summary']['turnover_in_crores']),
+                'fifty_two_week_high' => $this->firstNumericValue($daily, ['fifty_two_week_high', '52_week_high'], $fallback['daily_price_summary']['fifty_two_week_high']),
+                'fifty_two_week_low' => $this->firstNumericValue($daily, ['fifty_two_week_low', '52_week_low'], $fallback['daily_price_summary']['fifty_two_week_low']),
+            ],
+            'valuation_metrics' => [
+                'pe_ratio' => $this->firstNumericValue($valuation, ['pe_ratio', 'pe'], $fallback['valuation_metrics']['pe_ratio']),
+                'pb_ratio' => $this->firstNumericValue($valuation, ['pb_ratio', 'pb'], $fallback['valuation_metrics']['pb_ratio']),
+                'dividend_yield_percentage' => $this->firstNumericValue($valuation, ['dividend_yield_percentage', 'div_yield', 'yield'], $fallback['valuation_metrics']['dividend_yield_percentage']),
+            ],
+            'market_capitalization' => [
+                'total_market_cap' => $this->firstNumericValue($marketCap, ['total_market_cap', 'market_cap'], $fallback['market_capitalization']['total_market_cap']),
+                'free_float_market_cap' => $this->firstNumericValue($marketCap, ['free_float_market_cap', 'free_float'], $fallback['market_capitalization']['free_float_market_cap']),
+            ],
+            'composition_overview' => [
+                'total_constituents' => $this->firstNumericValue($composition, ['total_constituents', 'constituents_count', 'count'], count($holdings)),
+                'top_constituents' => $holdings,
+                'sector_weightages' => $sectorWeightages,
+            ],
+            'risk_metrics' => [
+                'beta' => $this->firstNumericValue($risk, ['beta'], $fallback['risk_metrics']['beta']),
+                'standard_deviation' => $this->firstNumericValue($risk, ['standard_deviation', 'std_dev'], $fallback['risk_metrics']['standard_deviation']),
+                'correlation' => $this->firstNumericValue($risk, ['correlation'], $fallback['risk_metrics']['correlation']),
+            ],
+        ];
+    }
+
+    private function extractHoldingsFromOverview(array $overview): array
+    {
+        $candidates = [
+            ['composition_overview', 'top_constituents'],
+            ['composition_overview', 'constituents'],
+            ['composition', 'top_constituents'],
+            ['composition', 'constituents'],
+            ['data', 'composition_overview', 'top_constituents'],
+            ['data', 'composition_overview', 'constituents'],
+            ['data', 'holdings'],
+            ['data', 'constituents'],
+            ['holdings'],
+            ['constituents'],
+            ['top_holdings'],
+        ];
+
+        $holdings = [];
+        foreach ($candidates as $path) {
+            $candidate = $this->findNestedValue($overview, $path);
+            if (is_array($candidate) && !empty($candidate)) {
+                $holdings = $candidate;
+                break;
+            }
+        }
+
+        if (empty($holdings)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($holdings as $holding) {
+            if (!is_array($holding)) {
+                continue;
+            }
+
+            $companyName = $holding['company_name']
+                ?? $holding['company']
+                ?? $holding['name']
+                ?? $holding['security_name']
+                ?? $holding['constituent_name']
+                ?? null;
+
+            $symbol = $holding['symbol']
+                ?? $holding['ticker']
+                ?? $holding['code']
+                ?? $holding['security_code']
+                ?? null;
+
+            $weight = $holding['weightage_percentage']
+                ?? $holding['weightage']
+                ?? $holding['weight_percent']
+                ?? $holding['weight']
+                ?? null;
+
+            if (!is_string($companyName) || !is_string($symbol) || !is_numeric($weight)) {
+                continue;
+            }
+
+            $normalized[] = [
+                'company_name' => trim($companyName),
+                'symbol' => trim($symbol),
+                'weightage_percentage' => round((float) $weight, 4),
+            ];
+        }
+
+        return array_values($normalized);
+    }
+
+    private function extractSectorWeightages(array $payload): array
+    {
+        $candidates = [
+            ['composition_overview', 'sector_weightages'],
+            ['composition', 'sector_weightages'],
+            ['data', 'composition_overview', 'sector_weightages'],
+            ['data', 'sector_weightages'],
+            ['sector_weightages'],
+            ['sectors'],
+        ];
+
+        foreach ($candidates as $path) {
+            $candidate = $this->findNestedValue($payload, $path);
+            if (!is_array($candidate)) {
+                continue;
+            }
+
+            $normalized = [];
+            foreach ($candidate as $key => $value) {
+                if (is_array($value)) {
+                    $sector = $value['sector'] ?? $value['name'] ?? $key;
+                    $weight = $value['weight'] ?? $value['weightage'] ?? $value['weightage_percentage'] ?? null;
+                } else {
+                    $sector = $key;
+                    $weight = $value;
+                }
+
+                if (!is_string((string) $sector) || !is_numeric($weight)) {
+                    continue;
+                }
+
+                $normalized[(string) $sector] = round((float) $weight, 4);
+            }
+
+            if (!empty($normalized)) {
+                return $normalized;
+            }
+        }
+
+        return [];
+    }
+
+    private function fetchDirectExchangeHoldings(IndexPrice $indexPrice): array
+    {
+        $exchange = strtoupper((string) optional($indexPrice->index)->exchange);
+
+        return match ($exchange) {
+            'NSE' => $this->fetchNseHoldings($indexPrice),
+            'BSE' => $this->fetchBseHoldings($indexPrice),
+            default => [],
+        };
+    }
+
+    private function fetchNseHoldings(IndexPrice $indexPrice): array
+    {
+        $headers = [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+            'Referer' => 'https://www.niftyindices.com/reports/daily-reports',
+            'Accept' => 'text/csv,text/plain,*/*',
+        ];
+
+        foreach ($this->buildNseConstituentUrls($indexPrice) as $url) {
+            try {
+                $response = Http::withoutVerifying()
+                    ->withHeaders($headers)
+                    ->timeout(20)
+                    ->retry(1, 300)
+                    ->get($url);
+
+                if (!$response->successful()) {
+                    continue;
+                }
+
+                $body = trim((string) $response->body());
+                if ($body === '' || str_starts_with(strtolower($body), '<!doctype') || str_starts_with(strtolower($body), '<html')) {
+                    continue;
+                }
+
+                $holdings = $this->parseNseConstituentCsv($body);
+                if (!empty($holdings)) {
+                    return $holdings;
+                }
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+
+        return [];
+    }
+
+    private function buildNseConstituentUrls(IndexPrice $indexPrice): array
+    {
+        $name = (string) optional($indexPrice->index)->index_name;
+        $normalizedName = strtolower($name);
+        $normalizedName = str_replace('&', 'and', $normalizedName);
+        $normalizedName = preg_replace('/[^a-z0-9]+/', '', $normalizedName);
+        $normalizedName = str_replace('index', '', $normalizedName);
+
+        $variants = array_values(array_unique(array_filter([
+            $normalizedName,
+            strtolower(preg_replace('/[^a-z0-9]+/', '', str_replace('_', ' ', (string) $indexPrice->index_code))),
+        ])));
+
+        $urls = [];
+        foreach ($variants as $variant) {
+            $urls[] = "https://nsearchives.nseindia.com/content/indices/ind_{$variant}list.csv";
+        }
+
+        return array_values(array_unique($urls));
+    }
+
+    private function parseNseConstituentCsv(string $csvData): array
+    {
+        $csvData = preg_replace('/^\xEF\xBB\xBF/', '', $csvData);
+        $lines = array_values(array_filter(explode("\n", str_replace("\r", "", $csvData))));
+        if (count($lines) < 2) {
+            return [];
+        }
+
+        $header = str_getcsv(array_shift($lines));
+        $map = array_flip(array_map('trim', $header));
+        $nameKey = $map['Company Name'] ?? $map['Company'] ?? null;
+        $symbolKey = $map['Symbol'] ?? $map['SYMBOL'] ?? null;
+
+        if ($nameKey === null || $symbolKey === null) {
+            return [];
+        }
+
+        $rows = [];
+        foreach ($lines as $line) {
+            $row = str_getcsv($line);
+            $company = trim((string) ($row[$nameKey] ?? ''));
+            $symbol = trim((string) ($row[$symbolKey] ?? ''));
+            if ($company === '' || $symbol === '') {
+                continue;
+            }
+
+            $rows[] = [
+                'company_name' => $company,
+                'symbol' => $symbol,
+            ];
+        }
+
+        return $this->applyEqualWeightage($rows);
+    }
+
+    private function fetchBseHoldings(IndexPrice $indexPrice): array
+    {
+        $holdings = $this->fetchBseHoldingsFromWorkbook($indexPrice);
+        if (!empty($holdings)) {
+            return $holdings;
+        }
+
+        return $this->fetchBseHoldingsFromMobilePage($indexPrice);
+    }
+
+    private function fetchBseHoldingsFromWorkbook(IndexPrice $indexPrice): array
+    {
+        $url = $this->getBseWorkbookUrl($indexPrice);
+        if (!$url) {
+            return [];
+        }
+
+        try {
+            $response = Http::withoutVerifying()
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+                    'Referer' => 'https://www.bseindia.com/',
+                ])
+                ->timeout(30)
+                ->get($url);
+
+            if (!$response->successful()) {
+                return [];
+            }
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'bse_holdings_');
+            if ($tempFile === false) {
+                return [];
+            }
+
+            $xlsxFile = $tempFile . '.xlsx';
+            file_put_contents($xlsxFile, $response->body());
+            @unlink($tempFile);
+
+            $sheetRows = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx')
+                ->load($xlsxFile)
+                ->getActiveSheet()
+                ->toArray(null, true, true, true);
+
+            @unlink($xlsxFile);
+
+            $isinRows = [];
+            foreach ($sheetRows as $row) {
+                $isin = trim((string) ($row['C'] ?? ''));
+                if (strlen($isin) === 12) {
+                    $isinRows[] = $isin;
+                }
+            }
+
+            $symbolMap = Equity::query()
+                ->whereIn('isin', array_values(array_unique($isinRows)))
+                ->get(['isin', 'bse_symbol', 'nse_symbol'])
+                ->mapWithKeys(function ($equity) {
+                    return [
+                        $equity->isin => $equity->bse_symbol ?: $equity->nse_symbol,
+                    ];
+                });
+
+            $rows = [];
+            $headerFound = false;
+            foreach ($sheetRows as $row) {
+                if (!$headerFound) {
+                    if (strtoupper(trim((string) ($row['A'] ?? ''))) === 'SCRIP_CODE') {
+                        $headerFound = true;
+                    }
+                    continue;
+                }
+
+                $company = trim((string) ($row['B'] ?? ''));
+                $isin = trim((string) ($row['C'] ?? ''));
+                $symbol = trim((string) ($symbolMap[$isin] ?? ''));
+                if ($company === '' || $symbol === '') {
+                    continue;
+                }
+
+                $rows[] = [
+                    'company_name' => $company,
+                    'symbol' => $symbol,
+                ];
+            }
+
+            return $this->applyEqualWeightage($rows);
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    private function fetchBseHoldingsFromMobilePage(IndexPrice $indexPrice): array
+    {
+        $url = $this->getBseMobileConstituentUrl($indexPrice);
+        if (!$url) {
+            return [];
+        }
+
+        try {
+            $response = Http::withoutVerifying()
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+                    'Referer' => 'https://m.bseindia.com/',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                ])
+                ->timeout(20)
+                ->get($url);
+
+            if (!$response->successful()) {
+                return [];
+            }
+
+            return $this->parseBseMobileConstituents((string) $response->body());
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    private function getBseWorkbookUrl(IndexPrice $indexPrice): ?string
+    {
+        $name = strtoupper((string) optional($indexPrice->index)->index_name);
+
+        if (str_contains($name, 'SENSEX')) {
+            return 'https://www.bseindia.com/downloads1/List_of_S%26P_BSE_SENSEX_Securities.xlsx';
+        }
+
+        return null;
+    }
+
+    private function getBseMobileConstituentUrl(IndexPrice $indexPrice): ?string
+    {
+        $name = strtoupper((string) optional($indexPrice->index)->index_name);
+
+        if (str_contains($name, 'SENSEX')) {
+            return 'https://m.bseindia.com/Sensex.aspx?indexcode=16';
+        }
+
+        return null;
+    }
+
+    private function parseBseMobileConstituents(string $html): array
+    {
+        if ($html === '' || !class_exists(\DOMDocument::class)) {
+            return [];
+        }
+
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $loaded = $dom->loadHTML($html);
+        libxml_clear_errors();
+
+        if (!$loaded) {
+            return [];
+        }
+
+        $xpath = new \DOMXPath($dom);
+        $rows = $xpath->query("//table[@id='grd1']//tr[position()>1]");
+        if ($rows === false) {
+            return [];
+        }
+
+        $holdings = [];
+        foreach ($rows as $row) {
+            $cells = $row->getElementsByTagName('td');
+            if ($cells->length < 1) {
+                continue;
+            }
+
+            $symbol = trim((string) $cells->item(0)?->textContent);
+            if ($symbol === '') {
+                continue;
+            }
+
+            $holdings[] = [
+                'company_name' => $symbol,
+                'symbol' => $symbol,
+            ];
+        }
+
+        return $this->applyEqualWeightage($holdings);
+    }
+
+    private function applyEqualWeightage(array $rows): array
+    {
+        $rows = array_values(array_filter($rows, function ($row) {
+            return is_array($row)
+                && !empty(trim((string) ($row['company_name'] ?? '')))
+                && !empty(trim((string) ($row['symbol'] ?? '')));
+        }));
+
+        $count = count($rows);
+        if ($count === 0) {
+            return [];
+        }
+
+        $weight = round(100 / $count, 4);
+
+        return array_map(function ($row) use ($weight) {
+            return [
+                'company_name' => trim((string) $row['company_name']),
+                'symbol' => trim((string) $row['symbol']),
+                'weightage_percentage' => $weight,
+            ];
+        }, $rows);
+    }
+
+    private function needsHoldingsBackfill(IndexPrice $indexPrice): bool
+    {
+        if (empty($indexPrice->overview)) {
+            return true;
+        }
+
+        $holdings = $indexPrice->holdings;
+        if (!is_array($holdings) || empty($holdings)) {
+            return true;
+        }
+
+        foreach ($holdings as $holding) {
+            $symbol = $holding['symbol'] ?? null;
+            if (!is_string($symbol) || trim($symbol) === '') {
+                return true;
+            }
+
+            if (preg_match('/^\d+$/', trim($symbol))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasRequiredKeys(array $payload, array $keys): bool
+    {
+        foreach ($keys as $key) {
+            if (!array_key_exists($key, $payload)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function validateNumericFields(array $payload, array $keys): bool
+    {
+        if (!$this->hasRequiredKeys($payload, $keys)) {
+            return false;
+        }
+
+        foreach ($keys as $key) {
+            if (!is_numeric($payload[$key])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function toFloat($value): float
+    {
+        return is_numeric($value) ? (float) $value : 0.0;
+    }
+
+    private function firstNumericValue(array $payload, array $keys, float $default = 0.0): float
+    {
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $payload) && is_numeric($payload[$key])) {
+                return (float) $payload[$key];
+            }
+        }
+
+        return $default;
+    }
+
+    private function findNestedArray(array $payload, array $paths): ?array
+    {
+        foreach ($paths as $path) {
+            $value = $this->findNestedValue($payload, $path);
+            if (is_array($value)) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    private function findNestedValue(array $payload, array $path): mixed
+    {
+        $current = $payload;
+        foreach ($path as $segment) {
+            if (!is_array($current) || !array_key_exists($segment, $current)) {
+                return null;
+            }
+
+            $current = $current[$segment];
+        }
+
+        return $current;
+    }
 
     private function guessCategory(string $name): string
     {

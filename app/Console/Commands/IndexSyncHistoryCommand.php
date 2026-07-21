@@ -76,20 +76,56 @@ class IndexSyncHistoryCommand extends Command
                     ->whereHas('index', fn($q) => $q->where('exchange', 'BSE'))
                     ->count();
                 $hasBse   = $bseCount >= (int)$this->option('min-bse');
+                $missingNseOverview = IndexPrice::where('traded_date', $dateStr)
+                    ->whereHas('index', fn($q) => $q->where('exchange', 'NSE'))
+                    ->get()
+                    ->contains(function ($row) {
+                        $holdings = $row->holdings;
+                        if (empty($row->overview) || !is_array($holdings) || empty($holdings)) {
+                            return true;
+                        }
+
+                        foreach ($holdings as $holding) {
+                            $symbol = $holding['symbol'] ?? null;
+                            if (!is_string($symbol) || trim($symbol) === '' || preg_match('/^\d+$/', trim($symbol))) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    });
+                $missingBseOverview = IndexPrice::where('traded_date', $dateStr)
+                    ->whereHas('index', fn($q) => $q->where('exchange', 'BSE'))
+                    ->get()
+                    ->contains(function ($row) {
+                        $holdings = $row->holdings;
+                        if (empty($row->overview) || !is_array($holdings) || empty($holdings)) {
+                            return true;
+                        }
+
+                        foreach ($holdings as $holding) {
+                            $symbol = $holding['symbol'] ?? null;
+                            if (!is_string($symbol) || trim($symbol) === '' || preg_match('/^\d+$/', trim($symbol))) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    });
 
                 // ── Explicit single-exchange mode ────────────────────────────
-                if ($exchange === 'NSE' && $hasNse) {
+                if ($exchange === 'NSE' && $hasNse && !$missingNseOverview) {
                     $this->line("\n  <fg=gray>SKIP {$dateStr} — NSE already synced.</>");
                     $currentDate->addDay(); $bar->advance(); continue;
                 }
-                if ($exchange === 'BSE' && $hasBse) {
+                if ($exchange === 'BSE' && $hasBse && !$missingBseOverview) {
                     $this->line("\n  <fg=gray>SKIP {$dateStr} — BSE already synced ({$bseCount}).</>");
                     $currentDate->addDay(); $bar->advance(); continue;
                 }
 
                 // ── Both exchanges mode ──────────────────────────────────────
                 if (!$exchange) {
-                    if ($hasNse && $hasBse) {
+                    if ($hasNse && $hasBse && !$missingNseOverview && !$missingBseOverview) {
                         $this->line("\n  <fg=gray>SKIP {$dateStr} — NSE & BSE ({$bseCount}) both synced.</>");
                         $currentDate->addDay(); $bar->advance(); continue;
                     }

@@ -220,4 +220,75 @@ class IndexApiController extends Controller
 
         return response()->json(['success' => true, 'traded_date' => $date, 'data' => $data]);
     }
+
+    /**
+     * Get holdings for an index using index_code or index_name.
+     * Accepts either index_code or index_name, with optional traded date.
+     */
+    public function holdings(Request $request): JsonResponse
+    {
+        $indexCode = trim((string) $request->get('index_code', ''));
+        $indexName = trim((string) $request->get('index_name', ''));
+
+        if ($indexCode === '' && $indexName === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please provide either index_code or index_name.',
+            ], 422);
+        }
+
+        $index = DB::table('indices')
+            ->when($indexCode !== '', fn ($q) => $q->where('index_code', $indexCode))
+            ->when($indexCode === '' && $indexName !== '', fn ($q) => $q->where('index_name', $indexName))
+            ->first(['index_code', 'index_name', 'exchange', 'category']);
+
+        if (!$index) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Index not found.',
+            ], 404);
+        }
+
+        $requestedDate = $request->get('date');
+
+        $priceQuery = DB::table('indices_prices')
+            ->where('index_code', $index->index_code);
+
+        if ($requestedDate) {
+            $priceQuery->where('traded_date', $requestedDate);
+        } else {
+            $priceQuery
+                ->whereNotNull('holdings')
+                ->where('holdings', '!=', '[]')
+                ->orderByDesc('traded_date');
+        }
+
+        $price = $priceQuery->first(['traded_date', 'close', 'overview', 'holdings']);
+
+        if (!$price) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No holdings data found for the requested index/date.',
+            ], 404);
+        }
+
+        $holdings = json_decode($price->holdings ?? '[]', true);
+        $overview = json_decode($price->overview ?? '{}', true);
+        $composition = is_array($overview) ? ($overview['composition_overview'] ?? []) : [];
+
+        return response()->json([
+            'success' => true,
+            'index' => [
+                'index_code' => $index->index_code,
+                'index_name' => $index->index_name,
+                'exchange' => $index->exchange,
+                'category' => $index->category,
+            ],
+            'traded_date' => $price->traded_date,
+            'close' => $price->close,
+            'count' => is_array($holdings) ? count($holdings) : 0,
+            'data' => is_array($holdings) ? array_values($holdings) : [],
+            'sector_weightages' => is_array($composition) ? ($composition['sector_weightages'] ?? []) : [],
+        ]);
+    }
 }

@@ -21,6 +21,10 @@ class CheckSubscriptionFeature
             return sendResponse(null, 'Unauthenticated.', 401);
         }
 
+        if ($user->is_admin && $request->headers->get('X-Admin-Api-Tester') === '1') {
+            return $next($request);
+        }
+
         $result = $this->subscriptionAccessService->resolveAccess($user, $module);
 
         if ($result['allowed']) {

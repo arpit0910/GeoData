@@ -73,6 +73,8 @@
                             Closing Value</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Change %</th>
+                        <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
+                            Holdings</th>
                         <th
                             class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4 text-right">
                             Actions</th>
@@ -88,7 +90,7 @@
         <div class="flex items-center justify-center min-h-screen px-4 py-8">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeDetailModal()"></div>
             <div
-                class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-4xl p-8 z-10">
+                class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-6xl p-8 z-10">
                 <div class="flex items-center justify-between mb-8">
                     <div>
                         <h3 id="modalIndexName"
@@ -171,23 +173,83 @@
                         </div>
 
                         <!-- Right: Returns Grid -->
-                        <div class="bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-100 dark:border-white/5">
-                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Historical
-                                Returns (Compounded)</h4>
-                            <div class="grid grid-cols-2 gap-4" id="detReturns">
-                                <!-- Generated via JS -->
+                        <div class="space-y-6">
+                            <div class="bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-100 dark:border-white/5">
+                                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Historical
+                                    Returns (Compounded)</h4>
+                                <div class="grid grid-cols-2 gap-4" id="detReturns">
+                                    <!-- Generated via JS -->
+                                </div>
+
+                                <div class="mt-8 pt-8 border-t border-gray-100 dark:border-white/10 grid grid-cols-2 gap-6">
+                                    <div>
+                                        <p class="text-[10px] text-gray-500 mb-1 uppercase">P/E Ratio</p>
+                                        <p id="detPE" class="text-sm font-bold text-gray-900 dark:text-white"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-500 mb-1 uppercase">Div Yield</p>
+                                        <p id="detYield" class="text-sm font-bold text-gray-900 dark:text-white"></p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="mt-8 pt-8 border-t border-gray-100 dark:border-white/10 grid grid-cols-2 gap-6">
-                                <div>
-                                    <p class="text-[10px] text-gray-500 mb-1 uppercase">P/E Ratio</p>
-                                    <p id="detPE" class="text-sm font-bold text-gray-900 dark:text-white"></p>
+                            <div
+                                class="bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-100 dark:border-white/5">
+                                <div class="flex items-center justify-between gap-4 mb-4">
+                                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Index Overview</h4>
+                                    <span id="detConstituentCount"
+                                        class="text-[10px] font-bold uppercase tracking-widest text-gray-500"></span>
                                 </div>
-                                <div>
-                                    <p class="text-[10px] text-gray-500 mb-1 uppercase">Div Yield</p>
-                                    <p id="detYield" class="text-sm font-bold text-gray-900 dark:text-white"></p>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <p class="text-[10px] text-gray-500 mb-1 uppercase">Index Name</p>
+                                        <p id="detOverviewName" class="text-sm font-bold text-gray-900 dark:text-white"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-500 mb-1 uppercase">Exchange</p>
+                                        <p id="detOverviewExchange" class="text-sm font-bold text-gray-900 dark:text-white"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-500 mb-1 uppercase">Currency</p>
+                                        <p id="detOverviewCurrency" class="text-sm font-bold text-gray-900 dark:text-white"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-500 mb-1 uppercase">Ticker</p>
+                                        <p id="detOverviewTicker" class="text-sm font-bold text-gray-900 dark:text-white"></p>
+                                    </div>
+                                </div>
+                                <div class="mt-6">
+                                    <p class="text-[10px] text-gray-500 mb-2 uppercase">Sector Weightages</p>
+                                    <div id="detSectorWeightages" class="flex flex-wrap gap-2"></div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-100 dark:border-white/5">
+                        <div class="flex items-center justify-between gap-4 mb-4">
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Holdings</h4>
+                            <span id="detHoldingsCount"
+                                class="text-[10px] font-bold uppercase tracking-widest text-gray-500"></span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th class="text-[10px] font-black text-gray-400 border-b border-gray-100 dark:border-white/10 pb-3 pr-4 uppercase tracking-widest">
+                                            Company</th>
+                                        <th class="text-[10px] font-black text-gray-400 border-b border-gray-100 dark:border-white/10 pb-3 px-4 uppercase tracking-widest">
+                                            Symbol</th>
+                                        <th class="text-[10px] font-black text-gray-400 border-b border-gray-100 dark:border-white/10 pb-3 pl-4 text-right uppercase tracking-widest">
+                                            Weightage</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detHoldingsRows" class="divide-y divide-gray-100 dark:divide-white/10">
+                                    <tr>
+                                        <td colspan="3" class="py-4 text-sm text-gray-400 italic">No holdings available.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -315,6 +377,54 @@
                         }
                     },
                     {
+                        data: 'holdings',
+                        name: 'holdings',
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row) {
+                            const holdings = Array.isArray(data) ? data : [];
+
+                            if (!holdings.length) {
+                                return `
+                                    <div class="min-w-[220px]">
+                                        <span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-white/5 px-3 py-1 text-[11px] font-bold text-gray-500">
+                                            No holdings
+                                        </span>
+                                    </div>
+                                `;
+                            }
+
+                            const preview = holdings.slice(0, 3).map((holding) => {
+                                const symbol = holding.symbol || holding.company_name || '-';
+                                return `
+                                    <span class="inline-flex items-center rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 px-2.5 py-1 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                                        ${symbol}
+                                    </span>
+                                `;
+                            }).join('');
+
+                            const extraCount = holdings.length > 3 ? `
+                                <span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-white/5 px-2.5 py-1 text-[10px] font-bold text-gray-500">
+                                    +${holdings.length - 3} more
+                                </span>
+                            ` : '';
+
+                            return `
+                                <div class="min-w-[220px] space-y-2">
+                                    <div>
+                                        <span class="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 px-3 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                                            ${holdings.length} holdings
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${preview}
+                                        ${extraCount}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    },
+                    {
                         data: 'id',
                         name: 'action',
                         orderable: false,
@@ -396,6 +506,7 @@
                 }));
 
                 const fmt = (val) => (val !== null && val !== undefined) ? parseFloat(val).toFixed(2) : 'N/A';
+                const safeText = (val) => (val !== null && val !== undefined && val !== '') ? val : 'N/A';
                 const colorFmt = (val) => {
                     if (val === null || val === undefined)
                     return '<span class="text-gray-400 italic">N/A</span>';
@@ -419,6 +530,33 @@
                 $('#detIntra').html(colorFmt(data.intraday_chg_pct));
                 $('#detRange').text((data.range_pct !== null && data.range_pct !== undefined) ? fmt(data
                     .range_pct) + '%' : 'N/A');
+
+                const overview = data.overview || {};
+                const metadata = overview.index_metadata || {};
+                const composition = overview.composition_overview || {};
+                const holdings = Array.isArray(data.holdings) ? data.holdings : [];
+                const sectorWeightages = composition.sector_weightages || {};
+
+                $('#detOverviewName').text(safeText(metadata.name));
+                $('#detOverviewExchange').text(safeText(metadata.exchange));
+                $('#detOverviewCurrency').text(safeText(metadata.currency));
+                $('#detOverviewTicker').text(safeText(metadata.ticker || data.index_code));
+                $('#detConstituentCount').text(
+                    composition.total_constituents ? `${composition.total_constituents} Constituents` : 'Constituent Count N/A'
+                );
+                $('#detHoldingsCount').text(
+                    holdings.length ? `${holdings.length} Holdings Shown` : 'No Holdings'
+                );
+
+                let sectorHtml = '';
+                Object.entries(sectorWeightages).forEach(([sector, weight]) => {
+                    sectorHtml += `
+                        <span class="inline-flex items-center rounded-full bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-3 py-1 text-[11px] font-bold text-gray-700 dark:text-gray-200">
+                            ${sector}: ${parseFloat(weight).toFixed(2)}%
+                        </span>
+                    `;
+                });
+                $('#detSectorWeightages').html(sectorHtml || '<span class="text-sm text-gray-400 italic">No sector weightages available.</span>');
 
                 const returns = [
                     ['1 Day', 'chg_1d'],
@@ -447,6 +585,28 @@
                     `;
                 });
                 $('#detReturns').html(returnHtml);
+
+                let holdingsHtml = '';
+                holdings.forEach((holding) => {
+                    const company = safeText(holding.company_name);
+                    const symbol = safeText(holding.symbol);
+                    const weight = holding.weightage_percentage !== null && holding.weightage_percentage !== undefined
+                        ? parseFloat(holding.weightage_percentage).toFixed(2) + '%'
+                        : 'N/A';
+
+                    holdingsHtml += `
+                        <tr>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900 dark:text-white">${company}</td>
+                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-300">${symbol}</td>
+                            <td class="py-3 pl-4 text-sm font-bold text-right text-amber-600 dark:text-amber-300">${weight}</td>
+                        </tr>
+                    `;
+                });
+                $('#detHoldingsRows').html(holdingsHtml || `
+                    <tr>
+                        <td colspan="3" class="py-4 text-sm text-gray-400 italic">No holdings available.</td>
+                    </tr>
+                `);
 
                 loading.addClass('hidden');
                 content.removeClass('hidden');

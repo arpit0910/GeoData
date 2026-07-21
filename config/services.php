@@ -37,4 +37,8 @@ return [
         'connect_timeout' => (int) env('OCR_SERVICE_CONNECT_TIMEOUT', 5),
     ],
 
+    'financial_api' => [
+        'overview_endpoint' => env('FINANCIAL_API_OVERVIEW_ENDPOINT'),
+    ],
+
 ];

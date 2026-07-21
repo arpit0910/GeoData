@@ -140,6 +140,12 @@
                         <i class="fas fa-book mr-3 w-5"></i>
                         Docs
                     </a>
+                    @if(auth()->check() && auth()->user()->is_admin)
+                    <a href="{{ route('admin.api-tester.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.api-tester.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-vial-circle-check mr-3 w-5"></i>
+                        API Tester
+                    </a>
+                    @endif
                     
                     @if(auth()->check() && !auth()->user()->is_admin)
                     <a href="{{ route('api-keys.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('api-keys.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
@@ -251,7 +257,6 @@
                         <i class="fas fa-receipt mr-3 w-5"></i>
                         Transactions
                     </a>
-
                     <div class="pt-6 pb-2">
                         <p class="px-4 text-[10px] font-bold text-amber-200 dark:text-gray-500 uppercase tracking-[0.2em]">Support</p>
                     </div>

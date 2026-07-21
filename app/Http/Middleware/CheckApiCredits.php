@@ -23,6 +23,10 @@ class CheckApiCredits
             return response()->json(['status' => false, 'message' => 'Unauthenticated.'], 401);
         }
 
+        if ($user->is_admin && $request->headers->get('X-Admin-Api-Tester') === '1') {
+            return $next($request);
+        }
+
         // Identify an active subscription
         $subscription = $this->subscriptionAccessService->getActiveSubscription($user);
 

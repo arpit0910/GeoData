@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\CurrencyConversionController as AdminCurrencyConversionController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\BankBranchController;
+use App\Http\Controllers\Admin\ApiTesterController;
 use App\Http\Controllers\CurrencyConversionController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -221,6 +222,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\CronController::class, 'index'])->name('index');
         Route::post('/run', [App\Http\Controllers\Admin\CronController::class, 'run'])->name('run');
         Route::get('/logs', [App\Http\Controllers\Admin\CronController::class, 'logs'])->name('logs');
+    });
+
+    Route::prefix('admin/api-tester')->name('admin.api-tester.')->group(function () {
+        Route::get('/', [ApiTesterController::class, 'index'])->name('index');
+        Route::post('/run', [ApiTesterController::class, 'run'])->name('run');
     });
 
     // Server Logs
