@@ -18,6 +18,7 @@ use App\Models\SubRegion;
 use App\Models\Timezone;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -28,28 +29,27 @@ class ApiTesterController extends Controller
     {
         $sampleData = $this->sampleData();
         $endpoints = $this->buildEndpointCatalog($sampleData);
+        $adminUser = Auth::user();
 
-        $users = User::query()
-            ->where('status', 1)
-            ->where(function ($query) {
-                $query->where('is_admin', true)
-                    ->orWhereHas('subscriptions', fn ($q) => $q->where('status', 'active')->where('expires_at', '>', now()));
-            })
-            ->orderBy('name')
-            ->get(['id', 'name', 'email', 'is_admin']);
-
-        return view('admin.api-tester.index', compact('endpoints', 'users'));
+        return view('admin.api-tester.index', compact('endpoints', 'adminUser'));
     }
 
     public function run(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
             'endpoints' => ['nullable', 'array'],
             'endpoints.*' => ['string'],
         ]);
 
-        $user = User::findOrFail($validated['user_id']);
+        $user = Auth::user();
+
+        if (!$user || !$user->is_admin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'API Tester can only be run as an authenticated admin user.',
+            ], 403);
+        }
+
         $sampleData = $this->sampleData();
         $catalog = $this->buildEndpointCatalog($sampleData)->keyBy('key');
 
@@ -86,9 +86,7 @@ class ApiTesterController extends Controller
             'success' => true,
             'summary' => $summary,
             'results' => $results,
-            'warning' => $user->is_admin
-                ? 'Admin-mode tests bypass subscription and credit checks only inside the internal API tester.'
-                : 'Authenticated API tests use a real subscribed user and may create API logs or consume credits on successful paid endpoints.',
+            'warning' => 'Admin-mode tests bypass subscription and credit checks only inside the internal API tester.',
         ]);
     }
 
@@ -165,7 +163,7 @@ class ApiTesterController extends Controller
                     'ok' => false,
                     'status' => 422,
                     'duration_ms' => 0,
-                    'response_preview' => 'Selected admin user does not have API client credentials for token generation.',
+                    'response_preview' => 'The signed-in admin user does not have API client credentials for token generation.',
                 ];
             }
 

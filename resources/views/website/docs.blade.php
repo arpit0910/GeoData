@@ -2114,6 +2114,66 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         </div>
                                     </div>
 
+                                    <!-- Index Holdings -->
+                                    <div id="index-holdings" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /indices/holdings</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30 ring-4 ring-amber-600/5">
+                                                <i class="fas fa-coins sm:mr-2 text-amber-400"></i> <span class="hidden sm:inline">Credits Required</span>
+                                            </span>
+                                        </div>
+                                        <div class="p-6">
+                                            <p class="mb-4">Fetch the latest available holdings for an index using either its <code class="text-white">index_code</code> or <code class="text-white">index_name</code>. This endpoint returns constituent symbols, company names, weightage, and sector weightages when available.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                            <table class="w-full text-sm mb-8">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Field</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800 text-gray-400">
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">index_code</td>
+                                                        <td class="py-3">Index code identifier such as <code class="text-white">NIFTY_50</code>. Optional if <code class="text-white">index_name</code> is sent.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">index_name</td>
+                                                        <td class="py-3">Human readable index name such as <code class="text-white">Nifty 50</code>. Optional if <code class="text-white">index_code</code> is sent.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-3 font-mono text-amber-500">date</td>
+                                                        <td class="py-3">Optional trading date in <code class="text-white">YYYY-MM-DD</code> format. If omitted, the latest row with holdings is returned.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
+                                                <pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"index"</span>: {
+    <span class="text-blue-400">"index_code"</span>: <span class="text-green-400">"NIFTY_50"</span>,
+    <span class="text-blue-400">"index_name"</span>: <span class="text-green-400">"Nifty 50"</span>,
+    <span class="text-blue-400">"exchange"</span>: <span class="text-green-400">"NSE"</span>
+  },
+  <span class="text-blue-400">"traded_date"</span>: <span class="text-green-400">"2026-07-01"</span>,
+  <span class="text-blue-400">"close"</span>: <span class="text-blue-400">25412.35</span>,
+  <span class="text-blue-400">"count"</span>: <span class="text-blue-400">50</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"company"</span>: <span class="text-green-400">"Reliance Industries Ltd"</span>,
+      <span class="text-blue-400">"symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+      <span class="text-blue-400">"weightage"</span>: <span class="text-blue-400">9.84</span>
+    }
+  ],
+  <span class="text-blue-400">"sector_weightages"</span>: {
+    <span class="text-blue-400">"Financial Services"</span>: <span class="text-blue-400">35.12</span>
+  }
+}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Index Rankings -->
                                     <div id="index-rankings" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                                         <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
@@ -2712,6 +2772,107 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   <span class="text-blue-400">"equity_gainers"</span>: [ ... ],
   <span class="text-blue-400">"equity_losers"</span>: [ ... ],
   <span class="text-blue-400">"mf_top_gainers"</span>: [ ... ]
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/stocks</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Returns live stock quote snapshots for a comma-separated list of Yahoo Finance symbols. If no symbols are provided, the API defaults to <code class="text-white">AAPL,MSFT,TSLA,AMZN,GOOGL</code>.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Parameter</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">symbols</td>
+                                                        <td class="py-2">Comma-separated Yahoo symbols such as <code class="text-white">AAPL,MSFT,TSLA</code>.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"type"</span>: <span class="text-green-400">"stocks"</span>,
+  <span class="text-blue-400">"symbols"</span>: [<span class="text-green-400">"AAPL"</span>, <span class="text-green-400">"MSFT"</span>],
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"AAPL"</span>: {
+      <span class="text-blue-400">"price"</span>: <span class="text-blue-400">326.59</span>,
+      <span class="text-blue-400">"previous_close"</span>: <span class="text-blue-400">333.74</span>,
+      <span class="text-blue-400">"d"</span>: <span class="text-blue-400">-7.15</span>,
+      <span class="text-blue-400">"dp"</span>: <span class="text-blue-400">-2.1424</span>,
+      <span class="text-blue-400">"currency"</span>: <span class="text-green-400">"USD"</span>,
+      <span class="text-blue-400">"exchange"</span>: <span class="text-green-400">"NMS"</span>
+    }
+  }
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/indices</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Returns live index quote snapshots for a comma-separated list of Yahoo Finance index symbols. If omitted, it defaults to <code class="text-white">^GSPC,^DJI,^IXIC</code>.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Parameter</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">symbols</td>
+                                                        <td class="py-2">Comma-separated index symbols such as <code class="text-white">^GSPC,^DJI,^IXIC</code>.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <p class="text-sm">Response shape is the same as <code class="text-white">/market/stocks</code>, but <code class="text-white">type</code> is returned as <code class="text-white">indices</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/quote/{symbol}</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Fetch a live quote for any single Yahoo Finance symbol, including stocks, ETFs, and index tickers.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Path Parameter</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">symbol</td>
+                                                        <td class="py-2">Any Yahoo Finance symbol, for example <code class="text-white">AAPL</code>, <code class="text-white">MSFT</code>, or <code class="text-white">^GSPC</code>.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"symbol"</span>: <span class="text-green-400">"AAPL"</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"price"</span>: <span class="text-blue-400">326.59</span>,
+    <span class="text-blue-400">"previous_close"</span>: <span class="text-blue-400">333.74</span>,
+    <span class="text-blue-400">"d"</span>: <span class="text-blue-400">-7.15</span>,
+    <span class="text-blue-400">"dp"</span>: <span class="text-blue-400">-2.1424</span>,
+    <span class="text-blue-400">"source"</span>: <span class="text-green-400">"live"</span>
+  }
 }</pre></div>
                                         </div>
                                     </div>

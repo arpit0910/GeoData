@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\MarketDataController;
 use App\Http\Controllers\Api\V1\GeoAnalysisController;
 use App\Http\Controllers\Api\V1\OcrController;
 use App\Http\Controllers\Api\V1\SetuGeoController;
@@ -28,6 +29,11 @@ Route::prefix('v1')->group(function () {
     Route::post('/webhooks/razorpay', [SubscriptionController::class, 'handleWebhook'])->name('api.razorpay.webhook');
 
     Route::get('/ocr/health', [OcrController::class, 'health']);
+    Route::prefix('market')->group(function () {
+        Route::get('/stocks', [MarketDataController::class, 'stocks']);
+        Route::get('/indices', [MarketDataController::class, 'indices']);
+        Route::get('/quote/{symbol}', [MarketDataController::class, 'quote']);
+    });
 
     Route::middleware(['auth:sanctum', 'subscription', 'api.credits'])->group(function () {
         Route::post('/ocr/extract', [OcrController::class, 'extract']);

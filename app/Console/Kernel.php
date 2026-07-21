@@ -65,6 +65,12 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping(120)
             ->onSuccess(fn() => $this->logCronRun('equities:sync-fundamentals', true))
             ->onFailure(fn() => $this->logCronRun('equities:sync-fundamentals', false));
+
+        $schedule->command('market:fetch-live')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->onSuccess(fn() => $this->logCronRun('market:fetch-live', true))
+            ->onFailure(fn() => $this->logCronRun('market:fetch-live', false));
     }
 
     protected function commands()
