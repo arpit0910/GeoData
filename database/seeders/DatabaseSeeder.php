@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             FaqSeeder::class,
             PlanSeeder::class,
             BankSeeder::class,
+            DemoCompanySeeder::class,
         ]);
     }
 }
