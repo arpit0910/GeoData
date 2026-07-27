@@ -218,7 +218,11 @@ trait CreatesTestData
     protected function createFreeApiUser(): array
     {
         $user = $this->createUser();
-        $plan = $this->createPlan(['amount' => 0, 'name' => 'Free Plan']);
+        $plan = $this->createPlan([
+            'amount' => 0,
+            'name' => 'Free Plan',
+            'feature_keys' => [SubscriptionFeature::MODULE_ADDRESS_API],
+        ]);
         $subscription = $this->createActiveSubscription($user, $plan);
         $user->update(['plan_id' => $plan->id]);
         $token = $user->createToken('setugeo-auth-token')->plainTextToken;

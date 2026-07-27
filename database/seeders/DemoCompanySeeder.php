@@ -85,24 +85,33 @@ class DemoCompanySeeder extends Seeder
             ->where('status', 'active')
             ->update(['status' => 'expired']);
 
-        Subscription::query()->updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-                'status' => 'active',
-            ],
-            [
-                'razorpay_order_id' => 'demo-order-ethnic-treasures',
-                'razorpay_payment_id' => 'demo-payment-ethnic-treasures',
-                'razorpay_signature' => 'demo-signature-ethnic-treasures',
-                'amount_paid' => $plan->amount,
-                'expires_at' => now()->addMonth(),
-                'total_credits' => $plan->api_hits_limit,
-                'used_credits' => 0,
-                'available_credits' => $plan->api_hits_limit,
-                'last_credit_refresh' => now(),
-            ]
-        );
+        $demoOrderId = 'demo-order-ethnic-treasures-' . $user->id;
+        $demoPaymentId = 'demo-payment-ethnic-treasures-' . $user->id;
+        $demoSignature = 'demo-signature-ethnic-treasures-' . $user->id;
+
+        $subscription = Subscription::query()
+            ->where('user_id', $user->id)
+            ->where(function ($query) use ($demoOrderId) {
+                $query->where('status', 'active')
+                    ->orWhere('razorpay_order_id', $demoOrderId);
+            })
+            ->latest('id')
+            ->first()
+            ?? new Subscription(['user_id' => $user->id]);
+
+        $subscription->fill([
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'razorpay_order_id' => $demoOrderId,
+            'razorpay_payment_id' => $demoPaymentId,
+            'razorpay_signature' => $demoSignature,
+            'amount_paid' => $plan->amount,
+            'expires_at' => now()->addMonth(),
+            'total_credits' => $plan->api_hits_limit,
+            'used_credits' => 0,
+            'available_credits' => $plan->api_hits_limit,
+            'last_credit_refresh' => now(),
+        ])->save();
 
         $this->command?->info('Ethnic Treasures demo company is ready: demo@ethnictreasures.in / Demo@12345');
     }

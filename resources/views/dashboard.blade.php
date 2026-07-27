@@ -355,7 +355,7 @@
                         </a>
                     @else
                         <a href="{{ route('pricing') }}"
-                            class="group/btn relative inline-flex items-center px-10 py-5 border border-amber-600/20 text-lg font-black rounded-[1.5rem] text-amber-600 dark:text-amber-500 bg-amber-600/5 hover:bg-amber-600 hover:text-white transition-all active:scale-95 whitespace-nowrap z-10 overflow-hidden">
+                            class="group/btn relative inline-flex items-center px-10 py-5 border border-amber-600/20 text-lg font-black rounded-[1.5rem] text-amber-700 dark:text-amber-300 bg-amber-600/5 hover:bg-amber-600 hover:text-white dark:hover:text-white transition-all active:scale-95 whitespace-nowrap z-10 overflow-hidden">
                             <span class="relative z-10">Switch Plan</span>
                             <i
                                 class="fas fa-exchange-alt ml-3 transition-transform group-hover/btn:translate-x-1 relative z-10"></i>
