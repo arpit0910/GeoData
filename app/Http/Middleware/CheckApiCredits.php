@@ -12,8 +12,9 @@ use App\Services\SubscriptionAccessService;
 class CheckApiCredits
 {
     public function __construct(
-        protected SubscriptionAccessService $subscriptionAccessService
+        protected ?SubscriptionAccessService $subscriptionAccessService = null
     ) {
+        $this->subscriptionAccessService ??= app(SubscriptionAccessService::class);
     }
 
     public function handle(Request $request, Closure $next)

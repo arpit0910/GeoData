@@ -73,8 +73,23 @@ class RouteServiceProvider extends ServiceProvider
                 return Limit::perMinute(100000)->by('internal-admin-tester-'.$user->id);
             }
 
-            if ($user && $user->plan) {
-                $plan = $user->plan;
+            if ($user) {
+                $subscription = $user->subscriptions()
+                    ->with('plan.features')
+                    ->where('status', 'active')
+                    ->where(function ($query) {
+                        $query->whereNull('expires_at')
+                            ->orWhere('expires_at', '>', now());
+                    })
+                    ->latest()
+                    ->first();
+
+                $plan = $subscription?->plan;
+            } else {
+                $plan = null;
+            }
+
+            if ($plan) {
                 $hasPaidAccess = (float)($plan->amount - ($plan->discount_amount ?? 0)) > 0;
                 $featureTablesReady = Schema::hasTable('subscription_features')
                     && Schema::hasTable('plan_subscription_feature');

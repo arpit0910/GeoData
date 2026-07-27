@@ -70,7 +70,7 @@
                 <div class="md:col-span-2">
                     <label for="company_name" class="block text-sm font-medium text-gray-700">Company Name <span class="text-red-500">*</span></label>
                     <div class="mt-1">
-                        <input id="company_name" name="company_name" type="text" value="{{ old('company_name') }}" required placeholder="e.g. Acme Pvt. Ltd."
+                        <input id="company_name" name="company_name" type="text" value="{{ old('company_name', $user->company_name) }}" required placeholder="e.g. Acme Pvt. Ltd."
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>
@@ -78,7 +78,7 @@
                 <div>
                     <label for="gst_number" class="block text-sm font-medium text-gray-700">GSTIN <span class="text-gray-400 font-normal">(Optional)</span></label>
                     <div class="mt-1">
-                        <input id="gst_number" name="gst_number" type="text" value="{{ old('gst_number') }}" placeholder="e.g. 27AAAAA0000A1Z5" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$" title="Please enter a valid 15-character Indian GSTIN"
+                        <input id="gst_number" name="gst_number" type="text" value="{{ old('gst_number', $user->gst_number) }}" placeholder="e.g. 27AAAAA0000A1Z5" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$" title="Please enter a valid 15-character Indian GSTIN"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>
@@ -86,7 +86,7 @@
                 <div>
                     <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
                     <div class="mt-1">
-                        <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" required placeholder="e.g. 90909 09090" title="Please enter your phone number without country code"
+                        <input id="phone" name="phone" type="tel" value="{{ old('phone', $user->phone) }}" required placeholder="e.g. 90909 09090" title="Please enter your phone number without country code"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>
@@ -94,7 +94,7 @@
                 <div class="md:col-span-2">
                     <label for="company_website" class="block text-sm font-medium text-gray-700">Company Website <span class="text-gray-400 font-normal">(Optional)</span></label>
                     <div class="mt-1">
-                        <input id="company_website" name="company_website" type="text" value="{{ old('company_website') }}" placeholder="https://www.example.com"
+                        <input id="company_website" name="company_website" type="text" value="{{ old('company_website', $user->company_website) }}" placeholder="https://www.example.com"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>
@@ -102,7 +102,7 @@
                 <div class="md:col-span-2">
                     <label for="address_line_1" class="block text-sm font-medium text-gray-700">Address Line 1 <span class="text-red-500">*</span></label>
                     <div class="mt-1">
-                        <input id="address_line_1" name="address_line_1" type="text" value="{{ old('address_line_1') }}" required placeholder="e.g. Building, Street Name"
+                        <input id="address_line_1" name="address_line_1" type="text" value="{{ old('address_line_1', $user->address_line_1) }}" required placeholder="e.g. Building, Street Name"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>
@@ -110,7 +110,7 @@
                 <div class="md:col-span-2">
                     <label for="address_line_2" class="block text-sm font-medium text-gray-700">Address Line 2 <span class="text-gray-400 font-normal">(Optional)</span></label>
                     <div class="mt-1">
-                        <input id="address_line_2" name="address_line_2" type="text" value="{{ old('address_line_2') }}" placeholder="e.g. Landmark, Area"
+                        <input id="address_line_2" name="address_line_2" type="text" value="{{ old('address_line_2', $user->address_line_2) }}" placeholder="e.g. Landmark, Area"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>
@@ -122,7 +122,7 @@
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors bg-white">
                             <option value="">Select Country</option>
                             @foreach($countries as $country)
-                                <option value="{{ $country->id }}" {{ old('country_id', 101) == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
+                                <option value="{{ $country->id }}" {{ old('country_id', $user->country_id ?? 101) == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -131,7 +131,7 @@
                 <div>
                     <label for="pincode" class="block text-sm font-medium text-gray-700">Pincode <span class="text-red-500">*</span></label>
                     <div class="mt-1 relative rounded-md shadow-sm">
-                        <input id="pincode" name="pincode" type="text" value="{{ old('pincode') }}" required placeholder="e.g. 400001" pattern="^[1-9][0-9]{5}$" title="Please enter a valid 6-digit Indian PIN code"
+                        <input id="pincode" name="pincode" type="text" value="{{ old('pincode', $user->pincode) }}" required placeholder="e.g. 400001" pattern="^[1-9][0-9]{5}$" title="Please enter a valid 6-digit Indian PIN code"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors"
                             oninput="searchPincode(this.value)">
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none" id="pincode_loader" style="display: none;">
@@ -141,8 +141,8 @@
                     <p id="pincode_error" class="mt-1 text-xs text-red-500 hidden">Pincode not found.</p>
                 </div>
 
-                <input type="hidden" id="state_id" name="state_id" value="{{ old('state_id') }}">
-                <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id') }}">
+                <input type="hidden" id="state_id" name="state_id" value="{{ old('state_id', $user->state_id) }}">
+                <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id', $user->city_id) }}">
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">State <span class="text-red-500">*</span></label>

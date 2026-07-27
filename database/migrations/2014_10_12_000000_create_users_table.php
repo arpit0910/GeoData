@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('company_name')->nullable();
             $table->string('company_website')->nullable();
             $table->string('gst_number')->nullable();
+            $table->string('phone', 20)->nullable();
             $table->string('account_type')->default('client');
             $table->string('client_key')->unique()->nullable();
             $table->string('client_secret')->nullable();

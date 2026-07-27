@@ -109,8 +109,9 @@ class AuthController extends Controller
 
     public function completeProfile()
     {
+        $user = Auth::user();
         $countries = Country::orderBy('name')->get();
-        return view('auth.complete-profile', compact('countries'));
+        return view('auth.complete-profile', compact('countries', 'user'));
     }
 
     public function saveProfile(Request $request)

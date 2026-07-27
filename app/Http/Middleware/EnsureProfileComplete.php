@@ -14,7 +14,7 @@ class EnsureProfileComplete
             // Skip the check if we're already on the profile completion routes
             if (!$request->routeIs('profile.complete') && !$request->routeIs('profile.complete.post')) {
                 $user = Auth::user();
-                if (empty($user->company_name) || empty($user->phone)) {
+                if (!$user->hasCompletedProfile()) {
                     return redirect()->route('profile.complete');
                 }
             }

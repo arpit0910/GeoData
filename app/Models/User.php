@@ -134,6 +134,11 @@ class User extends Authenticatable
             ->format($format);
     }
 
+    public function hasCompletedProfile(): bool
+    {
+        return !empty($this->company_name) && !empty($this->phone);
+    }
+
     protected static function booted()
     {
         static::creating(function ($user) {

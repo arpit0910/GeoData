@@ -8,17 +8,26 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'phone')) {
+        $addPhone = !Schema::hasColumn('users', 'phone');
+        $addCompanyName = !Schema::hasColumn('users', 'company_name');
+        $addCompanyWebsite = !Schema::hasColumn('users', 'company_website');
+        $addGstNumber = !Schema::hasColumn('users', 'gst_number');
+
+        if (!$addPhone && !$addCompanyName && !$addCompanyWebsite && !$addGstNumber) {
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) use ($addPhone, $addCompanyName, $addCompanyWebsite, $addGstNumber) {
+            if ($addPhone) {
                 $table->string('phone', 20)->nullable();
             }
-            if (!Schema::hasColumn('users', 'company_name')) {
+            if ($addCompanyName) {
                 $table->string('company_name')->nullable();
             }
-            if (!Schema::hasColumn('users', 'company_website')) {
+            if ($addCompanyWebsite) {
                 $table->string('company_website')->nullable();
             }
-            if (!Schema::hasColumn('users', 'gst_number')) {
+            if ($addGstNumber) {
                 $table->string('gst_number')->nullable();
             }
         });

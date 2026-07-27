@@ -149,4 +149,27 @@ class AuthFlowTest extends TestCase
         $response = $this->get('/forgot-password');
         $response->assertStatus(200);
     }
+
+    /** @test */
+    public function complete_profile_form_prefills_existing_user_details()
+    {
+        $user = $this->createIncompleteUser([
+            'company_name' => 'Stored Company',
+            'company_website' => 'https://example.com',
+            'gst_number' => '27AAAAA0000A1Z5',
+            'address_line_1' => '123 Demo Street',
+            'address_line_2' => 'Near Demo Landmark',
+            'pincode' => '400001',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('profile.complete'));
+
+        $response->assertOk();
+        $response->assertSee('value="Stored Company"', false);
+        $response->assertSee('value="https://example.com"', false);
+        $response->assertSee('value="27AAAAA0000A1Z5"', false);
+        $response->assertSee('value="123 Demo Street"', false);
+        $response->assertSee('value="Near Demo Landmark"', false);
+        $response->assertSee('value="400001"', false);
+    }
 }

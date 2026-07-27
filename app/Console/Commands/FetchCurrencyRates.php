@@ -35,8 +35,15 @@ class FetchCurrencyRates extends Command
         $this->info('Fetching latest currency rates...');
 
         try {
+            $http = Http::timeout(30);
+
+            // XAMPP/local PHP installs are often missing an up-to-date CA bundle.
+            if (app()->environment('local')) {
+                $http = $http->withoutVerifying();
+            }
+
             // Fetch USD rates
-            $usdResponse = Http::get('https://api.frankfurter.dev/v2/rates?base=USD');
+            $usdResponse = $http->get('https://api.frankfurter.dev/v2/rates?base=USD');
             if ($usdResponse->failed()) {
                 throw new Exception('Failed to fetch rates from USD base API.');
             }
@@ -49,7 +56,7 @@ class FetchCurrencyRates extends Command
             }
 
             // Fetch INR rates
-            $inrResponse = Http::get('https://api.frankfurter.dev/v2/rates?base=INR');
+            $inrResponse = $http->get('https://api.frankfurter.dev/v2/rates?base=INR');
             if ($inrResponse->failed()) {
                 throw new Exception('Failed to fetch rates from INR base API.');
             }
