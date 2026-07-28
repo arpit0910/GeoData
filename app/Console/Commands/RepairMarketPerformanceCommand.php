@@ -206,9 +206,7 @@ class RepairMarketPerformanceCommand extends Command
         }
 
         if (! empty($updates)) {
-            foreach (array_chunk($updates, 200) as $chunk) {
-                EquityPrice::upsert($chunk, ['id'], $this->equityUpdateColumns());
-            }
+            $this->applyEquityUpdates($updates);
         }
     }
 
@@ -283,9 +281,7 @@ class RepairMarketPerformanceCommand extends Command
         }
 
         if (! empty($updates)) {
-            foreach (array_chunk($updates, 300) as $chunk) {
-                IndexPrice::upsert($chunk, ['id'], $this->indexUpdateColumns());
-            }
+            $this->applyIndexUpdates($updates);
         }
     }
 
@@ -363,6 +359,30 @@ class RepairMarketPerformanceCommand extends Command
         }
 
         return (($currentClose - $pastClose) / $pastClose) * 100;
+    }
+
+    private function applyEquityUpdates(array $updates): void
+    {
+        foreach (array_chunk($updates, 200) as $chunk) {
+            foreach ($chunk as $row) {
+                $id = $row['id'];
+                unset($row['id']);
+
+                EquityPrice::whereKey($id)->update($row);
+            }
+        }
+    }
+
+    private function applyIndexUpdates(array $updates): void
+    {
+        foreach (array_chunk($updates, 300) as $chunk) {
+            foreach ($chunk as $row) {
+                $id = $row['id'];
+                unset($row['id']);
+
+                IndexPrice::whereKey($id)->update($row);
+            }
+        }
     }
 
     private function equityUpdateColumns(): array
