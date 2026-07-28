@@ -656,7 +656,7 @@ class ApiTestRunnerService
                 'api_hits_limit' => null,
                 'amount' => 999999,
                 'discount_amount' => 0,
-                'status' => 'active',
+                'status' => 1,
                 'billing_cycle' => 'monthly',
                 'terms' => 'Internal plan provisioned automatically for API tester access.',
                 'benefits' => ['Unlimited internal admin API testing'],
@@ -667,7 +667,7 @@ class ApiTestRunnerService
             'api_hits_limit' => null,
             'amount' => 999999,
             'discount_amount' => 0,
-            'status' => 'active',
+            'status' => 1,
             'billing_cycle' => 'monthly',
         ])->save();
 

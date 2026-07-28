@@ -233,7 +233,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     // Server Logs
-    Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->name('admin.logs');
+    Route::get('logs', [\App\Http\Controllers\Admin\LogController::class, 'index'])->name('admin.logs');
 
     // Admin End
 });
