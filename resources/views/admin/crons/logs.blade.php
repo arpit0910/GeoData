@@ -7,7 +7,7 @@
     <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
             <h1 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Cron Execution Logs</h1>
-            <p class="mt-2 text-sm font-medium text-gray-500 dark:text-gray-400">Review scheduled and manual cron runs with status, source, timestamps, and captured command output.</p>
+            <p class="mt-2 text-sm font-medium text-gray-500 dark:text-gray-400">Review scheduled and manual cron runs with status, source, and timestamps.</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.crons.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-black text-gray-600 transition-all hover:bg-gray-50 dark:border-white/10 dark:bg-richdark-surface dark:text-gray-300 dark:hover:bg-white/5">
@@ -42,7 +42,6 @@
                             <th class="border-b border-gray-100 px-4 pb-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Ran At</th>
                             <th class="border-b border-gray-100 px-4 pb-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Finished</th>
                             <th class="border-b border-gray-100 px-4 pb-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Relative</th>
-                            <th class="border-b border-gray-100 px-4 pb-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Output</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50 dark:divide-white/5"></tbody>
@@ -147,20 +146,6 @@ $(document).ready(function () {
                     }
 
                     return `<span class="text-xs text-gray-400 dark:text-gray-500">${rel}</span>`;
-                }
-            },
-            {
-                data: 'output',
-                name: 'output',
-                orderable: false,
-                searchable: false,
-                render: data => {
-                    if (!data) {
-                        return '<span class="text-xs italic text-gray-400">No output captured</span>';
-                    }
-
-                    const escaped = $('<div>').text(data).html();
-                    return `<details class="min-w-[18rem] max-w-xl"><summary class="cursor-pointer text-xs font-bold text-amber-600 dark:text-amber-500">View output</summary><pre class="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-gray-950 p-3 text-[11px] leading-relaxed text-green-400">${escaped}</pre></details>`;
                 }
             }
         ],

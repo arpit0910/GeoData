@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MarketApiController extends Controller
 {
@@ -16,56 +17,66 @@ class MarketApiController extends Controller
      */
     public function snapshot(Request $request): JsonResponse
     {
-        // Latest indices
-        $indexDate = DB::table('indices_prices')->max('traded_date');
-        $indices = DB::table('indices_prices as p')
-            ->join('indices as i', 'p.index_code', '=', 'i.index_code')
-            ->where('p.traded_date', $indexDate)
-            ->whereIn('i.index_code', ['NIFTY 50', 'NIFTY BANK', 'SENSEX', 'NIFTY IT', 'NIFTY MIDCAP 100'])
-            ->select('i.index_code', 'i.index_name', 'i.exchange', 'p.close', 'p.change_percent', 'p.chg_1d', 'p.traded_date')
-            ->orderBy('i.index_name')
-            ->get();
+        try {
+            DB::reconnect();
 
-        // Top 5 equity gainers and losers (NSE, today)
-        $equityDate = DB::table('equity_prices')->max('traded_date');
-        $topGainers = DB::table('equity_prices as p')
-            ->join('equities as e', 'p.equity_id', '=', 'e.id')
-            ->where('p.traded_date', $equityDate)
-            ->whereNotNull('p.nse_chg_1d')
-            ->orderBy('p.nse_chg_1d', 'desc')
-            ->select('e.isin', 'e.company_name', 'e.nse_symbol', 'p.nse_close as close', 'p.nse_chg_1d as chg_1d', 'p.traded_date')
-            ->limit(5)->get();
+            $indexDate = DB::table('indices_prices')->max('traded_date');
+            $indices = DB::table('indices_prices as p')
+                ->join('indices as i', 'p.index_code', '=', 'i.index_code')
+                ->where('p.traded_date', $indexDate)
+                ->whereIn('i.index_code', ['NIFTY 50', 'NIFTY BANK', 'SENSEX', 'NIFTY IT', 'NIFTY MIDCAP 100'])
+                ->select('i.index_code', 'i.index_name', 'i.exchange', 'p.close', 'p.change_percent', 'p.chg_1d', 'p.traded_date')
+                ->orderBy('i.index_name')
+                ->get();
 
-        $topLosers = DB::table('equity_prices as p')
-            ->join('equities as e', 'p.equity_id', '=', 'e.id')
-            ->where('p.traded_date', $equityDate)
-            ->whereNotNull('p.nse_chg_1d')
-            ->orderBy('p.nse_chg_1d', 'asc')
-            ->select('e.isin', 'e.company_name', 'e.nse_symbol', 'p.nse_close as close', 'p.nse_chg_1d as chg_1d', 'p.traded_date')
-            ->limit(5)->get();
+            $equityDate = DB::table('equity_prices')->max('traded_date');
+            $topGainers = DB::table('equity_prices as p')
+                ->join('equities as e', 'p.equity_id', '=', 'e.id')
+                ->where('p.traded_date', $equityDate)
+                ->whereNotNull('p.nse_chg_1d')
+                ->orderBy('p.nse_chg_1d', 'desc')
+                ->select('e.isin', 'e.company_name', 'e.nse_symbol', 'p.nse_close as close', 'p.nse_chg_1d as chg_1d', 'p.traded_date')
+                ->limit(5)->get();
 
-        // Top 5 MF performers (1-day)
-        $mfDate = DB::table('mutual_fund_prices')->max('nav_date');
-        $topMfGainers = DB::table('mutual_fund_prices as p')
-            ->join('mutual_funds as m', 'p.isin', '=', 'm.isin')
-            ->where('p.nav_date', $mfDate)
-            ->whereNotNull('p.chg_1d')
-            ->orderBy('p.chg_1d', 'desc')
-            ->select('m.isin', 'm.scheme_name', 'm.category', 'p.nav', 'p.chg_1d', 'p.nav_date')
-            ->limit(5)->get();
+            $topLosers = DB::table('equity_prices as p')
+                ->join('equities as e', 'p.equity_id', '=', 'e.id')
+                ->where('p.traded_date', $equityDate)
+                ->whereNotNull('p.nse_chg_1d')
+                ->orderBy('p.nse_chg_1d', 'asc')
+                ->select('e.isin', 'e.company_name', 'e.nse_symbol', 'p.nse_close as close', 'p.nse_chg_1d as chg_1d', 'p.traded_date')
+                ->limit(5)->get();
 
-        return response()->json([
-            'success' => true,
-            'as_of' => [
-                'indices'         => $indexDate,
-                'equities'        => $equityDate,
-                'mutual_funds'    => $mfDate,
-            ],
-            'indices'         => $indices,
-            'equity_gainers'  => $topGainers,
-            'equity_losers'   => $topLosers,
-            'mf_top_gainers'  => $topMfGainers,
-        ]);
+            $mfDate = DB::table('mutual_fund_prices')->max('nav_date');
+            $topMfGainers = DB::table('mutual_fund_prices as p')
+                ->join('mutual_funds as m', 'p.isin', '=', 'm.isin')
+                ->where('p.nav_date', $mfDate)
+                ->whereNotNull('p.chg_1d')
+                ->orderBy('p.chg_1d', 'desc')
+                ->select('m.isin', 'm.scheme_name', 'm.category', 'p.nav', 'p.chg_1d', 'p.nav_date')
+                ->limit(5)->get();
+
+            return response()->json([
+                'success' => true,
+                'as_of' => [
+                    'indices' => $indexDate,
+                    'equities' => $equityDate,
+                    'mutual_funds' => $mfDate,
+                ],
+                'indices' => $indices,
+                'equity_gainers' => $topGainers,
+                'equity_losers' => $topLosers,
+                'mf_top_gainers' => $topMfGainers,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Market snapshot failed.', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to load market snapshot right now.',
+            ], 500);
+        }
     }
 
     /**

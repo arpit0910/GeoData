@@ -30,6 +30,7 @@
                 @php
                     $lastRan = $cron['last_ran_at'] ? \Carbon\Carbon::parse($cron['last_ran_at']) : null;
                     $isRecent = $lastRan && $lastRan->gt(now()->subHours(26));
+                    $isMaintenance = str_contains(strtolower($cron['schedule']), 'manual one-time maintenance');
                 @endphp
                 <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
                     <td class="px-6 py-5">
@@ -39,7 +40,14 @@
                                 {{ $isRecent ? 'Active' : ($lastRan ? 'Idle' : 'Never') }}
                             </span>
                             <div>
-                                <code class="block text-sm font-bold text-amber-600 dark:text-amber-500">{{ $cron['title'] }}</code>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <code class="block text-sm font-bold text-amber-600 dark:text-amber-500">{{ $cron['title'] }}</code>
+                                    @if($isMaintenance)
+                                        <span class="inline-flex items-center rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-sky-600 dark:text-sky-400">
+                                            Maintenance
+                                        </span>
+                                    @endif
+                                </div>
                                 <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{{ $cron['description'] }}</p>
                             </div>
                         </div>

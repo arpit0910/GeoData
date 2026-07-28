@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -206,6 +207,8 @@ class ApiTestRunnerService
         $transactionStarted = false;
 
         try {
+            $this->resetDatabaseState();
+
             if (in_array($mode, ['demo', 'production'], true)) {
                 DB::beginTransaction();
                 $transactionStarted = true;
@@ -235,14 +238,9 @@ class ApiTestRunnerService
             $content = $response->getContent();
             app('auth')->forgetGuards();
 
-            if ($transactionStarted && DB::transactionLevel() > 0) {
-                DB::rollBack();
-                $transactionStarted = false;
-            }
+            $this->cleanupDatabaseState();
         } catch (\Throwable $e) {
-            if ($transactionStarted && DB::transactionLevel() > 0) {
-                DB::rollBack();
-            }
+            $this->cleanupDatabaseState();
 
             app('auth')->forgetGuards();
 
@@ -276,6 +274,57 @@ class ApiTestRunnerService
             'duration_ms' => $durationMs,
             'response_preview' => $this->truncateResponse($content),
         ];
+    }
+
+    private function resetDatabaseState(): void
+    {
+        try {
+            while (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+        } catch (\Throwable $e) {
+            Log::warning('API tester failed to unwind existing DB transactions before request.', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            DB::disconnect();
+        } catch (\Throwable $e) {
+            Log::warning('API tester failed to disconnect DB before request.', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            DB::reconnect();
+        } catch (\Throwable $e) {
+            Log::warning('API tester failed to reconnect DB before request.', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function cleanupDatabaseState(): void
+    {
+        try {
+            while (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+        } catch (\Throwable $e) {
+            Log::warning('API tester failed to unwind DB transactions after request.', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            DB::disconnect();
+            DB::reconnect();
+        } catch (\Throwable $e) {
+            Log::warning('API tester failed to reset DB connection after request.', [
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     private function buildSkippedResult(array $endpoint, array $override = [], ?string $reason = null): array

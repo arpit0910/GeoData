@@ -16,7 +16,8 @@ class SyncIndices extends Command
     protected $signature = 'indices:sync
                             {date?  : Trading date YYYY-MM-DD (defaults to today)}
                             {exchange? : NSE or BSE (default: both)}
-                            {--analytics-only : Skip fetch, just recalculate analytics for existing data}';
+                            {--analytics-only : Skip fetch, just recalculate analytics for existing data}
+                            {--refresh-overview : Force refresh of overview and holdings for existing rows on the target date}';
 
     protected $description = 'Sync daily stock market indices from NSE and BSE';
 
@@ -30,6 +31,7 @@ class SyncIndices extends Command
         $exchange       = strtoupper($this->argument('exchange') ?? '');
         $isExplicitDate = !is_null($dateArg);          // history command passes an explicit date
         $currentDateObj = Carbon::parse($dateArg ?: now());
+        $refreshOverview = (bool) $this->option('refresh-overview');
 
         // ── Analytics-only mode ──────────────────────────────────────────────
         if ($this->option('analytics-only')) {
@@ -70,7 +72,10 @@ class SyncIndices extends Command
                     fn($row) => $this->needsHoldingsBackfill($row)
                 )->values();
 
-                if ($missingDetails->isNotEmpty()) {
+                if ($refreshOverview) {
+                    $this->info("  Refreshing overview and holdings for all {$existingIndices->count()} existing indices on {$dateStr}...");
+                    $this->syncOverviewDetails($currentDateObj, $existingIndices);
+                } elseif ($missingDetails->isNotEmpty()) {
                     $this->info("  Data already exists for {$dateStr}. Backfilling overview and holdings for {$missingDetails->count()} indices...");
                     $this->syncOverviewDetails($currentDateObj, $missingDetails);
                 }
@@ -78,7 +83,9 @@ class SyncIndices extends Command
                 $this->info("  Recalculating analytics for existing {$dateStr} records to keep performance returns up to date...");
                 $this->calculateAnalytics($currentDateObj);
 
-                if ($missingDetails->isEmpty()) {
+                if ($refreshOverview) {
+                    $this->info("  Data already exists for {$dateStr}. Overview, holdings, and analytics refreshed.");
+                } elseif ($missingDetails->isEmpty()) {
                     $this->info("  Data already exists for {$dateStr}. Analytics refreshed.");
                 }
 
@@ -887,24 +894,30 @@ class SyncIndices extends Command
                         if ($response->successful()) {
                             $payload = $response->json();
                             if (is_array($payload)) {
-                                $apiHoldings = $this->extractHoldingsFromOverview($payload);
-                                if (!empty($apiHoldings)) {
-                                    $holdings = $apiHoldings;
-                                }
                                 $overview = $this->normalizeOverviewPayload($payload, $indexPrice, $holdings);
 
-                                if (!$this->isValidOverviewPayload($overview)) {
+                                if (
+                                    !$this->isValidOverviewPayload($overview)
+                                    || !$this->overviewMatchesIndex($overview, $indexPrice)
+                                ) {
                                     $overview = null;
+                                } else {
+                                    $apiHoldings = $this->extractHoldingsFromOverview($payload);
+                                    if (empty($holdings) && !empty($apiHoldings)) {
+                                        $holdings = $apiHoldings;
+                                    }
                                 }
                             }
 
                             if ($overview) {
-                                $holdings = $this->extractHoldingsFromOverview($overview);
+                                if (empty($holdings)) {
+                                    $holdings = $this->extractHoldingsFromOverview($overview);
+                                }
                             } else {
                                 if (!empty($holdings)) {
                                     $this->warn("  [Overview] {$indexPrice->index_code}: partial overview payload detected. Saving holdings with fallback overview.");
                                 } else {
-                                    $this->warn("  [Overview] {$indexPrice->index_code}: invalid overview payload schema. Using derived fallback.");
+                                    $this->warn("  [Overview] {$indexPrice->index_code}: invalid or mismatched overview payload schema. Using derived fallback.");
                                 }
                             }
                         } else {
@@ -1086,6 +1099,34 @@ class SyncIndices extends Command
         }
 
         return true;
+    }
+
+    private function overviewMatchesIndex(array $overview, IndexPrice $indexPrice): bool
+    {
+        $expectedCode = strtoupper(trim((string) $indexPrice->index_code));
+        $expectedName = strtoupper(trim((string) optional($indexPrice->index)->index_name));
+
+        $metadata = $overview['index_metadata'] ?? [];
+        $ticker = strtoupper(trim((string) ($metadata['ticker'] ?? '')));
+        $name = strtoupper(trim((string) ($metadata['name'] ?? '')));
+
+        if ($ticker !== '' && $expectedCode !== '' && $ticker === $expectedCode) {
+            return true;
+        }
+
+        if ($name !== '' && $expectedName !== '' && $name === $expectedName) {
+            return true;
+        }
+
+        if ($ticker !== '' && $expectedName !== '' && str_contains($expectedName, $ticker)) {
+            return true;
+        }
+
+        if ($name !== '' && $expectedCode !== '' && str_contains($name, $expectedCode)) {
+            return true;
+        }
+
+        return $ticker === '' && $name === '';
     }
 
     private function normalizeOverviewPayload(array $payload, IndexPrice $indexPrice, array $holdings = []): array

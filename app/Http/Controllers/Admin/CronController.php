@@ -94,6 +94,24 @@ class CronController extends Controller
                 'timezone' => 'Asia/Kolkata',
                 'overlap' => false,
             ],
+            [
+                'title' => 'market:repair-performance-values',
+                'command' => 'market:repair-performance-values',
+                'args' => [],
+                'description' => 'One-time repair for equity NSE/BSE performance values and compounded index historical returns.',
+                'schedule' => 'Manual one-time maintenance run',
+                'timezone' => 'Asia/Kolkata',
+                'overlap' => false,
+            ],
+            [
+                'title' => 'indices:sync (refresh holdings)',
+                'command' => 'indices:sync',
+                'args' => ['--refresh-overview' => true],
+                'description' => 'One-time maintenance refresh for saved index holdings and overview payloads.',
+                'schedule' => 'Manual one-time maintenance run',
+                'timezone' => 'Asia/Kolkata',
+                'overlap' => false,
+            ],
         ];
     }
 
@@ -180,7 +198,6 @@ class CronController extends Controller
                     $cron['title'],
                     $success,
                     'manual',
-                    $output,
                     $exitCode,
                     $startedAt,
                     $finishedAt ?? now('Asia/Kolkata')
@@ -206,15 +223,14 @@ class CronController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
                         ->orWhere('ip', 'like', "%{$search}%")
-                        ->orWhere('source', 'like', "%{$search}%")
-                        ->orWhere('output', 'like', "%{$search}%");
+                        ->orWhere('source', 'like', "%{$search}%");
                 });
             }
 
             $total = $query->count();
             $limit = $request->length ?? 25;
             $start = $request->start ?? 0;
-            $orderColumns = ['id', 'title', 'source', 'ip', 'status', 'ran_at', 'finished_at', 'output'];
+            $orderColumns = ['id', 'title', 'source', 'ip', 'status', 'ran_at', 'finished_at'];
             $orderCol = $orderColumns[$request->input('order.0.column', 0)] ?? 'id';
             $orderDir = $request->input('order.0.dir', 'desc');
 
@@ -240,7 +256,6 @@ class CronController extends Controller
         string $title,
         bool $status = true,
         string $source = 'scheduled',
-        string $output = '',
         ?int $exitCode = null,
         $startedAt = null,
         $finishedAt = null
@@ -251,7 +266,6 @@ class CronController extends Controller
             'source' => $source,
             'status' => $status,
             'exit_code' => $exitCode,
-            'output' => $output !== '' ? $output : null,
             'started_at' => $startedAt,
             'finished_at' => $finishedAt,
             'ran_at' => $finishedAt ?? now('Asia/Kolkata'),

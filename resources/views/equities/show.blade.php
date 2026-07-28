@@ -354,7 +354,7 @@
                                     <div class="mt-4 pt-4 border-t ${borderClass}">
                                         <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Performance Returns</p>
                                         <div class="grid grid-cols-4 gap-2">
-                                            ${['1d', '3d', '7d', '1m', '3m', '6m', '9m', '12m'].map(p => `
+                                        ${['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'].map(p => `
                                                     <div class="bg-white dark:bg-white/5 rounded-lg p-1.5 border border-gray-100 dark:border-white/5 text-center">
                                                         <p class="text-[8px] font-bold text-gray-400 mb-0.5 uppercase">${p}</p>
                                                         ${returnFmt(priceData[prefix + '_chg_' + p])}

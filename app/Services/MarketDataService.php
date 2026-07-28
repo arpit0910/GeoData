@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -27,11 +28,11 @@ class MarketDataService
         try {
             $payload = $this->fetchLivePayload($symbol);
 
-            Cache::forever($cacheKey, $payload);
+            $this->storeQuoteCache($cacheKey, $payload);
 
             return $payload;
         } catch (Throwable $exception) {
-            $cached = Cache::get($cacheKey);
+            $cached = $this->readQuoteCache($cacheKey);
 
             Log::warning('Yahoo Finance live quote fetch failed; falling back to cache.', [
                 'symbol' => $symbol,
@@ -206,5 +207,42 @@ class MarketDataService
     private function cacheKey(string $symbol): string
     {
         return 'market-data:latest:'.md5(strtoupper($symbol));
+    }
+
+    private function storeQuoteCache(string $cacheKey, array $payload): void
+    {
+        try {
+            Cache::forever($cacheKey, $payload);
+        } catch (Throwable $exception) {
+            try {
+                DB::reconnect();
+                Cache::forever($cacheKey, $payload);
+                return;
+            } catch (Throwable $retryException) {
+                Log::warning('Unable to persist market quote cache.', [
+                    'cache_key' => $cacheKey,
+                    'message' => $retryException->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    private function readQuoteCache(string $cacheKey): mixed
+    {
+        try {
+            return Cache::get($cacheKey);
+        } catch (Throwable $exception) {
+            try {
+                DB::reconnect();
+                return Cache::get($cacheKey);
+            } catch (Throwable $retryException) {
+                Log::warning('Unable to read market quote cache.', [
+                    'cache_key' => $cacheKey,
+                    'message' => $retryException->getMessage(),
+                ]);
+
+                return null;
+            }
+        }
     }
 }
