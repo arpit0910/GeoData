@@ -19,6 +19,21 @@ use Illuminate\Support\Facades\DB;
 
 class SetuGeoController extends Controller
 {
+    private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lngDelta = deg2rad($lng2 - $lng1);
+        $originLat = deg2rad($lat1);
+        $targetLat = deg2rad($lat2);
+
+        $angle = 2 * asin(sqrt(
+            pow(sin($latDelta / 2), 2) +
+            cos($originLat) * cos($targetLat) * pow(sin($lngDelta / 2), 2)
+        ));
+
+        return $angle * 6371;
+    }
+
     /**
      * Retrieve a list of generic Regions
      */
@@ -1027,14 +1042,31 @@ class SetuGeoController extends Controller
         $lng = $country->longitude;
         $limit = $request->query('limit', 5);
 
-        $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            $neighbors = Country::where('id', '!=', $country->id)
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->get(['id', 'name', 'iso2', 'emoji', 'latitude', 'longitude'])
+                ->map(function ($item) use ($lat, $lng) {
+                    $item->distance = round($this->haversineKm((float) $lat, (float) $lng, (float) $item->latitude, (float) $item->longitude), 4);
 
-        $neighbors = Country::where('id', '!=', $country->id)
-            ->select('id', 'name', 'iso2', 'emoji')
-            ->selectRaw("{$rawDistance} AS distance")
-            ->orderBy('distance')
-            ->limit($limit)
-            ->get();
+                    unset($item->latitude, $item->longitude);
+
+                    return $item;
+                })
+                ->sortBy('distance')
+                ->take($limit)
+                ->values();
+        } else {
+            $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+
+            $neighbors = Country::where('id', '!=', $country->id)
+                ->select('id', 'name', 'iso2', 'emoji')
+                ->selectRaw("{$rawDistance} AS distance")
+                ->orderBy('distance')
+                ->limit($limit)
+                ->get();
+        }
 
         return response()->json([
             'success' => true,
@@ -1146,7 +1178,13 @@ class SetuGeoController extends Controller
         $summary = [
             'total_countries' => $data->count(),
             'systems'         => $data->groupBy('tax_system')->map->count(),
-            'avg_tax_rate'    => round($data->whereNotNull('standard_tax_rate')->avg('standard_tax_rate'), 2),
+            'avg_tax_rate'    => round(
+                $data->pluck('standard_tax_rate')
+                    ->filter(fn ($value) => is_numeric($value))
+                    ->map(fn ($value) => (float) $value)
+                    ->avg() ?? 0,
+                2
+            ),
         ];
 
         return response()->json(['success' => true, 'summary' => $summary, 'data' => $data]);

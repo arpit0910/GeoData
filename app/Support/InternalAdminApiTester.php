@@ -12,13 +12,27 @@ class InternalAdminApiTester
      */
     public static function isActive(Request $request, ?User $user = null): bool
     {
-        $user ??= $request->user();
-
-        if (! $user?->is_admin) {
+        if ($request->headers->get('X-Admin-Api-Tester') !== '1'
+            && $request->server->get('HTTP_X_ADMIN_API_TESTER') !== '1') {
             return false;
         }
 
-        return $request->headers->get('X-Admin-Api-Tester') === '1'
-            || $request->server->get('HTTP_X_ADMIN_API_TESTER') === '1';
+        $user ??= $request->user();
+
+        if ($user?->is_admin) {
+            return true;
+        }
+
+        $actorId = $request->headers->get('X-Admin-Api-Tester-Actor')
+            ?? $request->server->get('HTTP_X_ADMIN_API_TESTER_ACTOR');
+
+        if (blank($actorId)) {
+            return false;
+        }
+
+        return User::query()
+            ->whereKey($actorId)
+            ->where('is_admin', true)
+            ->exists();
     }
 }

@@ -14,6 +14,9 @@ Route::get('/pincodes', [SetuGeoController::class, 'pincodes']);
 Route::get('/pincodes/search', [SetuGeoController::class, 'pincodeSearch']);
 
 Route::get('/countries/compare', [SetuGeoController::class, 'countriesCompare']);
+Route::get('/countries/economic-profile', [SetuGeoController::class, 'economicProfile']);
+Route::get('/countries/tax-data', [SetuGeoController::class, 'taxData']);
+Route::get('/countries/analysis/regional-gdp', [SetuGeoController::class, 'regionalGdp']);
 Route::get('/country/{country}', [SetuGeoController::class, 'countryDetail']);
 Route::get('/countries/{country}', [SetuGeoController::class, 'countryDetail']);
 Route::get('/country/{country}/states', [SetuGeoController::class, 'countryStates']);
@@ -42,8 +45,4 @@ Route::get('/geospatial/nearby', [GeoAnalysisController::class, 'nearby']);
 Route::get('/geospatial/geocode', [GeoAnalysisController::class, 'geocode']);
 Route::get('/geospatial/boundary', [GeoAnalysisController::class, 'boundary']);
 Route::get('/geospatial/cluster', [GeoAnalysisController::class, 'cluster']);
-
-Route::get('/countries/economic-profile', [SetuGeoController::class, 'economicProfile']);
-Route::get('/countries/tax-data', [SetuGeoController::class, 'taxData']);
-Route::get('/countries/analysis/regional-gdp', [SetuGeoController::class, 'regionalGdp']);
 Route::get('/country/{country}/economic-summary', [SetuGeoController::class, 'economicSummary']);

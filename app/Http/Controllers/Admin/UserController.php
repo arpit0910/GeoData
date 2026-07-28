@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\ApiTestRunnerService;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -170,5 +172,52 @@ class UserController extends Controller
         $user->save();
 
         return sendResponse(['status' => $user->status], 'Status updated successfully');
+    }
+
+    public function generateApiReport(Request $request, User $user, ApiTestRunnerService $runner)
+    {
+        $validated = $request->validate([
+            'mode' => 'nullable|in:demo,production',
+            'download_format' => 'nullable|in:json,pdf',
+        ]);
+
+        $adminUser = Auth::user();
+
+        if (! $adminUser || ! $adminUser->is_admin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only admins can generate API reports.',
+            ], 403);
+        }
+
+        $mode = $validated['mode'] ?? 'production';
+        $downloadFormat = $validated['download_format'] ?? 'json';
+
+        try {
+            $report = $runner->runAndStore($adminUser, $user, [], $mode);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $mode === 'production'
+                ? 'API report generated successfully in production rollback-safe mode.'
+                : 'API report generated successfully.',
+            'report' => [
+                'id' => $report->id,
+                'name' => $report->report_name,
+                'mode' => $report->mode,
+                'download_urls' => [
+                    'json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json']),
+                    'pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf']),
+                ],
+                'preferred_download_url' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => $downloadFormat]),
+                'summary' => $report->summary,
+            ],
+        ]);
     }
 }

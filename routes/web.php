@@ -77,6 +77,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::put('/update/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/delete/{user}', [UserController::class, 'destroy'])->name('destroy');
         Route::post('/toggle-status/{user}', [UserController::class, 'toggleStatus'])->name('toggle-status');
+        Route::post('/{user}/generate-api-report', [UserController::class, 'generateApiReport'])->name('generate-api-report');
     });
 
     Route::prefix('countries')->name('countries.')->group(function () {
@@ -228,6 +229,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('admin/api-tester')->name('admin.api-tester.')->group(function () {
         Route::get('/', [ApiTesterController::class, 'index'])->name('index');
         Route::post('/run', [ApiTesterController::class, 'run'])->name('run');
+        Route::get('/reports/{reportId}/download', [ApiTesterController::class, 'download'])->name('reports.download');
     });
 
     // Server Logs

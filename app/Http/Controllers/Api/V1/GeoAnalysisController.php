@@ -13,6 +13,38 @@ use Illuminate\Support\Facades\Validator;
 
 class GeoAnalysisController extends Controller
 {
+    private function isSqlite(): bool
+    {
+        return DB::connection()->getDriverName() === 'sqlite';
+    }
+
+    private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lngDelta = deg2rad($lng2 - $lng1);
+        $originLat = deg2rad($lat1);
+        $targetLat = deg2rad($lat2);
+
+        $angle = 2 * asin(sqrt(
+            pow(sin($latDelta / 2), 2) +
+            cos($originLat) * cos($targetLat) * pow(sin($lngDelta / 2), 2)
+        ));
+
+        return $angle * 6371;
+    }
+
+    private function latitudeDeltaKm(float $radiusKm): float
+    {
+        return $radiusKm / 111;
+    }
+
+    private function longitudeDeltaKm(float $radiusKm, float $latitude): float
+    {
+        $cos = cos(deg2rad($latitude));
+
+        return $cos === 0.0 ? 180.0 : $radiusKm / (111 * abs($cos));
+    }
+
     /**
      * Retrieve aggregate data counts to plan data fetching and spending.
      * This endpoint is intended to be free (no credit deduction).
@@ -147,14 +179,34 @@ class GeoAnalysisController extends Controller
             $query = Pincode::select('*');
         }
 
-        // Haversine implementation in Raw SQL for database performance
-        $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+        if ($this->isSqlite()) {
+            $latDelta = $this->latitudeDeltaKm((float) $radius);
+            $lngDelta = $this->longitudeDeltaKm((float) $radius, (float) $lat);
 
-        $results = $query->selectRaw("{$rawDistance} AS distance")
-            ->whereRaw("{$rawDistance} <= ?", [$radius])
-            ->orderBy('distance')
-            ->limit($limit)
-            ->get();
+            $results = $query
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->whereBetween('latitude', [$lat - $latDelta, $lat + $latDelta])
+                ->whereBetween('longitude', [$lng - $lngDelta, $lng + $lngDelta])
+                ->get()
+                ->map(function ($item) use ($lat, $lng) {
+                    $item->distance = round($this->haversineKm((float) $lat, (float) $lng, (float) $item->latitude, (float) $item->longitude), 4);
+
+                    return $item;
+                })
+                ->filter(fn ($item) => $item->distance <= $radius)
+                ->sortBy('distance')
+                ->take($limit)
+                ->values();
+        } else {
+            $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+
+            $results = $query->selectRaw("{$rawDistance} AS distance")
+                ->whereRaw("{$rawDistance} <= ?", [$radius])
+                ->orderBy('distance')
+                ->limit($limit)
+                ->get();
+        }
 
         return response()->json([
             'success' => true,
@@ -179,15 +231,34 @@ class GeoAnalysisController extends Controller
         $lat = $request->lat;
         $lng = $request->lng;
 
-        // Search nearest city within 50km
-        $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+        if ($this->isSqlite()) {
+            $latDelta = $this->latitudeDeltaKm(50.0);
+            $lngDelta = $this->longitudeDeltaKm(50.0, (float) $lat);
 
-        $city = City::with(['State', 'Country'])
-            ->select('*')
-            ->selectRaw("{$rawDistance} AS distance")
-            ->whereRaw("{$rawDistance} <= 50")
-            ->orderBy('distance')
-            ->first();
+            $city = City::with(['State', 'Country'])
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->whereBetween('latitude', [$lat - $latDelta, $lat + $latDelta])
+                ->whereBetween('longitude', [$lng - $lngDelta, $lng + $lngDelta])
+                ->get()
+                ->map(function ($item) use ($lat, $lng) {
+                    $item->distance = $this->haversineKm((float) $lat, (float) $lng, (float) $item->latitude, (float) $item->longitude);
+
+                    return $item;
+                })
+                ->filter(fn ($item) => $item->distance <= 50)
+                ->sortBy('distance')
+                ->first();
+        } else {
+            $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+
+            $city = City::with(['State', 'Country'])
+                ->select('*')
+                ->selectRaw("{$rawDistance} AS distance")
+                ->whereRaw("{$rawDistance} <= 50")
+                ->orderBy('distance')
+                ->first();
+        }
 
         if (!$city) {
             return response()->json([
@@ -284,19 +355,54 @@ class GeoAnalysisController extends Controller
         $lat = $request->lat;
         $lng = $request->lng;
 
-        // Efficient grid-based clustering using floor in SQL
-        $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+        if ($this->isSqlite()) {
+            $latDelta = $this->latitudeDeltaKm((float) $radius);
+            $lngDelta = $this->longitudeDeltaKm((float) $radius, (float) $lat);
 
-        $clusters = City::selectRaw("
-                ROUND(latitude / {$gridSize}) * {$gridSize} as grid_lat,
-                ROUND(longitude / {$gridSize}) * {$gridSize} as grid_lng,
-                COUNT(*) as count,
-                AVG(latitude) as center_lat,
-                AVG(longitude) as center_lng
-            ")
-            ->whereRaw("{$rawDistance} <= ?", [$radius])
-            ->groupBy('grid_lat', 'grid_lng')
-            ->get();
+            $clusters = City::query()
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->whereBetween('latitude', [$lat - $latDelta, $lat + $latDelta])
+                ->whereBetween('longitude', [$lng - $lngDelta, $lng + $lngDelta])
+                ->get()
+                ->map(function ($item) use ($lat, $lng) {
+                    $item->distance = $this->haversineKm((float) $lat, (float) $lng, (float) $item->latitude, (float) $item->longitude);
+
+                    return $item;
+                })
+                ->filter(fn ($item) => $item->distance <= $radius)
+                ->groupBy(function ($item) use ($gridSize) {
+                    $gridLat = round(((float) $item->latitude) / $gridSize) * $gridSize;
+                    $gridLng = round(((float) $item->longitude) / $gridSize) * $gridSize;
+
+                    return $gridLat . '|' . $gridLng;
+                })
+                ->map(function ($items, $key) {
+                    [$gridLat, $gridLng] = array_map('floatval', explode('|', $key));
+
+                    return [
+                        'grid_lat' => $gridLat,
+                        'grid_lng' => $gridLng,
+                        'count' => $items->count(),
+                        'center_lat' => round($items->avg('latitude'), 6),
+                        'center_lng' => round($items->avg('longitude'), 6),
+                    ];
+                })
+                ->values();
+        } else {
+            $rawDistance = "(6371 * acos(cos(radians($lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(latitude))))";
+
+            $clusters = City::selectRaw("
+                    ROUND(latitude / {$gridSize}) * {$gridSize} as grid_lat,
+                    ROUND(longitude / {$gridSize}) * {$gridSize} as grid_lng,
+                    COUNT(*) as count,
+                    AVG(latitude) as center_lat,
+                    AVG(longitude) as center_lng
+                ")
+                ->whereRaw("{$rawDistance} <= ?", [$radius])
+                ->groupBy('grid_lat', 'grid_lng')
+                ->get();
+        }
 
         return response()->json([
             'success' => true,

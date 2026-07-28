@@ -70,7 +70,7 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             if (InternalAdminApiTester::isActive($request, $user)) {
-                return Limit::perMinute(100000)->by('internal-admin-tester-'.$user->id);
+                return Limit::perMinute(100000)->by('internal-admin-tester-'.($user?->id ?: $request->ip()));
             }
 
             if ($user) {
