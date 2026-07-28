@@ -898,11 +898,11 @@ class SetuGeoController extends Controller
             return response()->json(['success' => false, 'message' => 'Please provide a "pincode" parameter (e.g. ?pincode=400001).'], 400);
         }
 
-        $pincodes = Pincode::with(['state', 'city', 'country'])
+        $allMatches = Pincode::with(['state', 'city', 'country'])
             ->where('postal_code', $pincodeVal)
             ->get();
 
-        if ($pincodes->isEmpty()) {
+        if ($allMatches->isEmpty()) {
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -913,8 +913,40 @@ class SetuGeoController extends Controller
             ], 200);
         }
 
+        $pincodes = $allMatches;
+        $countryId = $request->query('country_id');
+        $stateId = $request->query('state_id');
+        $cityId = $request->query('city_id');
+        $countryParam = $request->query('country');
+        $stateParam = $request->query('state');
+        $cityParam = $request->query('city');
+
+        if ($countryId !== null && $countryId !== '') {
+            $pincodes = $pincodes->where('country_id', (int) $countryId)->values();
+        }
+
+        if ($stateId !== null && $stateId !== '') {
+            $pincodes = $pincodes->where('state_id', (int) $stateId)->values();
+        }
+
+        if ($cityId !== null && $cityId !== '') {
+            $pincodes = $pincodes->where('city_id', (int) $cityId)->values();
+        }
+
+        if ($countryParam) {
+            $pincodes = $pincodes->filter(fn($p) => $p->country && stripos($p->country->name, $countryParam) !== false)->values();
+        }
+
+        if ($stateParam) {
+            $pincodes = $pincodes->filter(fn($p) => $p->state && stripos($p->state->name, $stateParam) !== false)->values();
+        }
+
+        if ($cityParam) {
+            $pincodes = $pincodes->filter(fn($p) => $p->city && stripos($p->city->name, $cityParam) !== false)->values();
+        }
+
         $result = [
-            'is_valid' => true,
+            'is_valid' => $pincodes->isNotEmpty(),
             'pincode' => $pincodeVal,
             'matches' => [],
             'warnings' => [],
@@ -930,24 +962,32 @@ class SetuGeoController extends Controller
             ];
         }
 
-        // Cross-check if user provided state/city
-        $stateParam = $request->query('state');
-        $cityParam = $request->query('city');
-
-        if ($stateParam) {
-            $stateMatches = $pincodes->filter(fn($p) => $p->state && stripos($p->state->name, $stateParam) !== false);
-            if ($stateMatches->isEmpty()) {
-                $result['warnings'][] = "State '{$stateParam}' does not match pincode {$pincodeVal}. Expected: " . $pincodes->pluck('state.name')->unique()->filter()->implode(', ');
-                $result['is_valid'] = false;
-            }
+        if ($countryId !== null && $countryId !== '' && $allMatches->where('country_id', (int) $countryId)->isEmpty()) {
+            $result['warnings'][] = "Country ID '{$countryId}' does not match pincode {$pincodeVal}. Expected country IDs: " . $allMatches->pluck('country_id')->unique()->filter()->implode(', ');
         }
 
-        if ($cityParam) {
-            $cityMatches = $pincodes->filter(fn($p) => $p->city && stripos($p->city->name, $cityParam) !== false);
-            if ($cityMatches->isEmpty()) {
-                $result['warnings'][] = "City '{$cityParam}' does not match pincode {$pincodeVal}. Expected: " . $pincodes->pluck('city.name')->unique()->filter()->implode(', ');
-                $result['is_valid'] = false;
-            }
+        if ($stateId !== null && $stateId !== '' && $allMatches->where('state_id', (int) $stateId)->isEmpty()) {
+            $result['warnings'][] = "State ID '{$stateId}' does not match pincode {$pincodeVal}. Expected state IDs: " . $allMatches->pluck('state_id')->unique()->filter()->implode(', ');
+        }
+
+        if ($cityId !== null && $cityId !== '' && $allMatches->where('city_id', (int) $cityId)->isEmpty()) {
+            $result['warnings'][] = "City ID '{$cityId}' does not match pincode {$pincodeVal}. Expected city IDs: " . $allMatches->pluck('city_id')->unique()->filter()->implode(', ');
+        }
+
+        if ($countryParam && $allMatches->filter(fn($p) => $p->country && stripos($p->country->name, $countryParam) !== false)->isEmpty()) {
+            $result['warnings'][] = "Country '{$countryParam}' does not match pincode {$pincodeVal}. Expected: " . $allMatches->pluck('country.name')->unique()->filter()->implode(', ');
+        }
+
+        if ($stateParam && $allMatches->filter(fn($p) => $p->state && stripos($p->state->name, $stateParam) !== false)->isEmpty()) {
+            $result['warnings'][] = "State '{$stateParam}' does not match pincode {$pincodeVal}. Expected: " . $allMatches->pluck('state.name')->unique()->filter()->implode(', ');
+        }
+
+        if ($cityParam && $allMatches->filter(fn($p) => $p->city && stripos($p->city->name, $cityParam) !== false)->isEmpty()) {
+            $result['warnings'][] = "City '{$cityParam}' does not match pincode {$pincodeVal}. Expected: " . $allMatches->pluck('city.name')->unique()->filter()->implode(', ');
+        }
+
+        if ($result['is_valid'] === false && empty($result['warnings'])) {
+            $result['warnings'][] = "The provided location filters do not match pincode {$pincodeVal}.";
         }
 
         return response()->json([
