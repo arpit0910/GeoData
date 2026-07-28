@@ -44,6 +44,17 @@ class IndexService
                     'volume'         => $latest?->volume,
                     'turnover'       => $latest?->turnover,
                     'updated_at'     => $latest?->traded_date->format('Y-m-d'),
+                    'returns' => [
+                        '1d' => $latest?->chg_1d,
+                        '3d' => $latest?->chg_3d,
+                        '7d' => $latest?->chg_7d,
+                        '1m' => $latest?->chg_1m,
+                        '3m' => $latest?->chg_3m,
+                        '6m' => $latest?->chg_6m,
+                        '9m' => $latest?->chg_9m,
+                        '1y' => $latest?->chg_1y,
+                        '3y' => $latest?->chg_3y,
+                    ],
                     'valuation' => [
                         'pe' => $latest?->pe_ratio,
                         'pb' => $latest?->pb_ratio,

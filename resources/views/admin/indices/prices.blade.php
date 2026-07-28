@@ -565,6 +565,7 @@
                     ['1 Month', 'chg_1m'],
                     ['3 Month', 'chg_3m'],
                     ['6 Month', 'chg_6m'],
+                    ['9 Month', 'chg_9m'],
                     ['1 Year', 'chg_1y'],
                     ['3 Year', 'chg_3y']
                 ];

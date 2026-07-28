@@ -212,10 +212,14 @@ class UserController extends Controller
                 'name' => $report->report_name,
                 'mode' => $report->mode,
                 'download_urls' => [
-                    'json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json']),
-                    'pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf']),
+                    'all_json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'all'], false),
+                    'all_pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'all'], false),
+                    'passed_json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'passed'], false),
+                    'passed_pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'passed'], false),
+                    'failed_json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'failed'], false),
+                    'failed_pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'failed'], false),
                 ],
-                'preferred_download_url' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => $downloadFormat]),
+                'preferred_download_url' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => $downloadFormat, 'result_set' => 'all'], false),
                 'summary' => $report->summary,
             ],
         ]);

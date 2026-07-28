@@ -242,11 +242,23 @@
                                     {{ $report->targetUser->company_name ?: $report->targetUser->name }} - {{ ucfirst($report->mode) }} - {{ $report->passed_endpoints }} passed, {{ $report->failed_endpoints }} failed, {{ $report->skipped_endpoints ?? 0 }} skipped
                                 </p>
                                 <div class="mt-3 flex flex-wrap gap-2">
-                                    <a href="{{ route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json']) }}" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-white/5">
-                                        <i class="fas fa-file-code mr-2"></i> JSON
+                                    <a href="{{ route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'all'], false) }}" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-white/5">
+                                        <i class="fas fa-file-code mr-2"></i> All JSON
                                     </a>
-                                    <a href="{{ route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf']) }}" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-white/5">
-                                        <i class="fas fa-file-pdf mr-2"></i> PDF
+                                    <a href="{{ route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'all'], false) }}" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-white/5">
+                                        <i class="fas fa-file-pdf mr-2"></i> All PDF
+                                    </a>
+                                    <a href="{{ route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'passed'], false) }}" class="inline-flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20">
+                                        <i class="fas fa-circle-check mr-2"></i> Success JSON
+                                    </a>
+                                    <a href="{{ route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'passed'], false) }}" class="inline-flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20">
+                                        <i class="fas fa-file-pdf mr-2"></i> Success PDF
+                                    </a>
+                                    <a href="{{ route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'failed'], false) }}" class="inline-flex items-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20">
+                                        <i class="fas fa-triangle-exclamation mr-2"></i> Failure JSON
+                                    </a>
+                                    <a href="{{ route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'failed'], false) }}" class="inline-flex items-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20">
+                                        <i class="fas fa-file-pdf mr-2"></i> Failure PDF
                                     </a>
                                 </div>
                             </article>
@@ -664,11 +676,23 @@
                 <p class="text-sm font-black text-slate-900 dark:text-white">${escapeHtml(report.name)}</p>
                 <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">${escapeHtml(report.company_name)} - ${escapeHtml(report.mode)} - ${summary.passed ?? 0} passed, ${summary.failed ?? 0} failed, ${summary.skipped ?? 0} skipped</p>
                 <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="${report.download_urls?.json || '#'}" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-white/5">
-                        <i class="fas fa-file-code mr-2"></i> JSON
+                    <a href="${report.download_urls?.all_json || '#'}" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-white/5">
+                        <i class="fas fa-file-code mr-2"></i> All JSON
                     </a>
-                    <a href="${report.download_urls?.pdf || '#'}" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-white/5">
-                        <i class="fas fa-file-pdf mr-2"></i> PDF
+                    <a href="${report.download_urls?.all_pdf || '#'}" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-white/5">
+                        <i class="fas fa-file-pdf mr-2"></i> All PDF
+                    </a>
+                    <a href="${report.download_urls?.passed_json || '#'}" class="inline-flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20">
+                        <i class="fas fa-circle-check mr-2"></i> Success JSON
+                    </a>
+                    <a href="${report.download_urls?.passed_pdf || '#'}" class="inline-flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20">
+                        <i class="fas fa-file-pdf mr-2"></i> Success PDF
+                    </a>
+                    <a href="${report.download_urls?.failed_json || '#'}" class="inline-flex items-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20">
+                        <i class="fas fa-triangle-exclamation mr-2"></i> Failure JSON
+                    </a>
+                    <a href="${report.download_urls?.failed_pdf || '#'}" class="inline-flex items-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20">
+                        <i class="fas fa-file-pdf mr-2"></i> Failure PDF
                     </a>
                 </div>
             `;

@@ -73,8 +73,13 @@ class SyncIndices extends Command
                 if ($missingDetails->isNotEmpty()) {
                     $this->info("  Data already exists for {$dateStr}. Backfilling overview and holdings for {$missingDetails->count()} indices...");
                     $this->syncOverviewDetails($currentDateObj, $missingDetails);
-                } else {
-                    $this->info("  Data already exists for {$dateStr}. Nothing to do.");
+                }
+
+                $this->info("  Recalculating analytics for existing {$dateStr} records to keep performance returns up to date...");
+                $this->calculateAnalytics($currentDateObj);
+
+                if ($missingDetails->isEmpty()) {
+                    $this->info("  Data already exists for {$dateStr}. Analytics refreshed.");
                 }
 
                 return Command::SUCCESS;

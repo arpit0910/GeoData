@@ -15,13 +15,19 @@ class ApiTestReportExporter
     private const CONTINUED_START_Y = 682;
     private const BOTTOM_LIMIT_Y = 48;
 
-    public function buildPayload(ApiTestReport $report): array
+    public function buildPayload(ApiTestReport $report, string $resultSet = 'all'): array
     {
+        $resultSet = $this->normalizeResultSet($resultSet);
+        $results = collect($report->results ?? []);
+        $filteredResults = $this->filterResults($results, $resultSet)->values();
+        $summary = $this->buildSummary($report, $filteredResults);
+
         return [
             'id' => $report->id,
-            'name' => $report->report_name,
+            'name' => $this->buildExportName($report->report_name, $resultSet),
             'mode' => $report->mode,
             'status' => $report->status,
+            'result_set' => $resultSet,
             'company' => [
                 'id' => $report->targetUser?->id,
                 'name' => $report->targetUser?->company_name ?: $report->targetUser?->name,
@@ -33,17 +39,53 @@ class ApiTestReportExporter
                 'name' => $report->generatedBy?->name,
                 'email' => $report->generatedBy?->email,
             ],
-            'summary' => $report->summary,
-            'results' => $report->results,
+            'summary' => $summary,
+            'results' => $filteredResults->all(),
             'started_at' => optional($report->started_at)->toDateTimeString(),
             'completed_at' => optional($report->completed_at)->toDateTimeString(),
             'generated_at' => optional($report->created_at)->toDateTimeString(),
         ];
     }
 
-    public function buildPdf(ApiTestReport $report): string
+    public function buildPdf(ApiTestReport $report, string $resultSet = 'all'): string
     {
-        return $this->renderStyledPdf($this->buildPayload($report));
+        return $this->renderStyledPdf($this->buildPayload($report, $resultSet));
+    }
+
+    private function normalizeResultSet(string $resultSet): string
+    {
+        return in_array($resultSet, ['all', 'passed', 'failed', 'skipped'], true) ? $resultSet : 'all';
+    }
+
+    private function filterResults($results, string $resultSet)
+    {
+        if ($resultSet === 'all') {
+            return $results;
+        }
+
+        return $results->where('outcome', $resultSet);
+    }
+
+    private function buildExportName(string $baseName, string $resultSet): string
+    {
+        return $resultSet === 'all'
+            ? $baseName
+            : $baseName . ' - ' . ucfirst($resultSet) . ' Only';
+    }
+
+    private function buildSummary(ApiTestReport $report, $results): array
+    {
+        $baseSummary = is_array($report->summary) ? $report->summary : [];
+        $executed = $results->whereIn('outcome', ['passed', 'failed']);
+
+        return array_merge($baseSummary, [
+            'total' => $results->count(),
+            'passed' => $results->where('outcome', 'passed')->count(),
+            'failed' => $results->where('outcome', 'failed')->count(),
+            'skipped' => $results->where('outcome', 'skipped')->count(),
+            'executed' => $executed->count(),
+            'average_duration_ms' => round((float) ($executed->avg('duration_ms') ?? 0), 2),
+        ]);
     }
 
     private function renderStyledPdf(array $payload): string

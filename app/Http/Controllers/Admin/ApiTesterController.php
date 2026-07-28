@@ -85,8 +85,12 @@ class ApiTesterController extends Controller
                 'company_name' => $report->targetUser->company_name ?: $report->targetUser->name,
                 'company_email' => $report->targetUser->email,
                 'download_urls' => [
-                    'json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json']),
-                    'pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf']),
+                    'all_json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'all'], false),
+                    'all_pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'all'], false),
+                    'passed_json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'passed'], false),
+                    'passed_pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'passed'], false),
+                    'failed_json' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'json', 'result_set' => 'failed'], false),
+                    'failed_pdf' => route('admin.api-tester.reports.download', ['reportId' => $report->id, 'format' => 'pdf', 'result_set' => 'failed'], false),
                 ],
                 'created_at' => optional($report->created_at)->format('d M Y, h:i A'),
             ],
@@ -99,6 +103,7 @@ class ApiTesterController extends Controller
     public function download(Request $request, int $reportId)
     {
         $format = $request->query('format', 'json');
+        $resultSet = $request->query('result_set', 'all');
         $report = ApiTestReport::query()
             ->with(['generatedBy:id,name,email', 'targetUser:id,name,email,company_name,client_key'])
             ->find($reportId);
@@ -121,21 +126,28 @@ class ApiTesterController extends Controller
             ], 422);
         }
 
+        if (! in_array($resultSet, ['all', 'passed', 'failed', 'skipped'], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unsupported report result set.',
+            ], 422);
+        }
+
         if ($format === 'pdf') {
-            $pdf = $this->exporter->buildPdf($report);
+            $pdf = $this->exporter->buildPdf($report, $resultSet);
 
             return response($pdf, 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="api-test-report-' . $report->id . '.pdf"',
+                'Content-Disposition' => 'attachment; filename="api-test-report-' . $report->id . '-' . $resultSet . '.pdf"',
                 'Cache-Control' => 'no-store, no-cache, must-revalidate',
             ]);
         }
 
-        $json = json_encode($this->exporter->buildPayload($report), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $json = json_encode($this->exporter->buildPayload($report, $resultSet), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         return response($json, 200, [
             'Content-Type' => 'application/json',
-            'Content-Disposition' => 'attachment; filename="api-test-report-' . $report->id . '.json"',
+            'Content-Disposition' => 'attachment; filename="api-test-report-' . $report->id . '-' . $resultSet . '.json"',
             'Cache-Control' => 'no-store, no-cache, must-revalidate',
         ]);
     }

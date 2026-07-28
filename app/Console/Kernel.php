@@ -83,8 +83,9 @@ class Kernel extends ConsoleKernel
     private function logCronRun(string $title, bool $status = true): void
     {
         CronLog::create([
-            'title'  => $title,
-            'ip'     => gethostbyname(gethostname()),
+            'title' => $title,
+            'ip' => gethostbyname(gethostname()),
+            'source' => 'scheduled',
             'status' => $status,
             'ran_at' => now('Asia/Kolkata'),
         ]);
