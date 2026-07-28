@@ -158,17 +158,44 @@ class GenerateSalesPostmanCollectionCommand extends Command
 
     private function buildCategoryFolders(Collection $supported): array
     {
-        return $supported
-            ->groupBy('category')
-            ->map(function (Collection $items, string $category) {
+        $grouped = $supported
+            ->reject(fn (array $endpoint) => $this->shouldExcludeFromSalesCollection($endpoint['uri']))
+            ->groupBy(fn (array $endpoint) => $this->categoryFamilyKey($endpoint['category']))
+            ->map(function (Collection $familyItems, string $familyKey) {
+                $config = $this->categoryFamilyConfig($familyKey);
+
+                $subfolders = $familyItems
+                    ->groupBy(fn (array $endpoint) => $this->normalizedCategory($endpoint['category']))
+                    ->sortKeys()
+                    ->map(function (Collection $items, string $subcategory) {
+                        $sorted = $items->sortBy([
+                            fn (array $endpoint) => $this->requestSortWeight($endpoint),
+                            'uri',
+                        ])->values();
+
+                        return [
+                            'name' => $subcategory,
+                            'item' => $sorted->map(fn (array $endpoint) => $this->buildRequestItem($endpoint))->values()->all(),
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
                 return [
-                    'name' => sprintf('%s. %s', str_pad((string) $this->categoryOrder($category), 2, '0', STR_PAD_LEFT), $category),
-                    'item' => $items->map(fn (array $endpoint) => $this->buildRequestItem($endpoint))->values()->all(),
+                    'order' => $config['order'],
+                    'name' => sprintf('%02d. %s', $config['order'], $config['label']),
+                    'description' => $config['description'],
+                    'item' => $subfolders,
                 ];
             })
-            ->sortBy('name')
-            ->values()
-            ->all();
+            ->sortBy('order')
+            ->values();
+
+        return $grouped->map(function (array $folder) {
+            unset($folder['order']);
+
+            return $folder;
+        })->all();
     }
 
     private function buildRequestItem(array $endpoint): array
@@ -406,21 +433,351 @@ class GenerateSalesPostmanCollectionCommand extends Command
     private function humanizeRequestName(array $endpoint): string
     {
         $path = str_replace('api/v1/', '', $endpoint['uri']);
-        $path = str_replace(['{', '}'], '', $path);
+        $segments = array_values(array_filter(explode('/', $path)));
+        $method = strtoupper($endpoint['method']);
+        $normalizedCategory = $this->normalizedCategory($endpoint['category']);
+        $baseResource = $segments[0] ?? '';
+        $detailResource = Str::singular($this->displayResourceLabel($baseResource));
 
-        return Str::title(str_replace(['/', '-'], [' ', ' '], $path));
+        if ($segments === ['auth', 'token']) {
+            return 'Generate Access Token';
+        }
+
+        if ($segments === ['address', 'validate']) {
+            return 'Validate Address by Pincode';
+        }
+
+        if ($segments === ['address', 'autocomplete']) {
+            return 'Autocomplete Address';
+        }
+
+        if ($segments === ['currency', 'convert']) {
+            return 'Convert Currency';
+        }
+
+        if ($segments === ['ocr', 'health']) {
+            return 'Check OCR Health';
+        }
+
+        if ($segments === ['ocr', 'extract']) {
+            return 'Extract OCR Data';
+        }
+
+        if ($segments === ['market', 'indices']) {
+            return 'List Market Indices';
+        }
+
+        if ($segments === ['market', 'snapshot']) {
+            return 'Get Market Snapshot';
+        }
+
+        if ($segments === ['market', 'quote', '{symbol}']) {
+            return 'Get Market Quote by Symbol';
+        }
+
+        if ($segments === ['market', 'stocks']) {
+            return 'List Market Stocks';
+        }
+
+        if ($segments === ['market', 'heatmap']) {
+            return 'Get Market Heatmap';
+        }
+
+        if ($segments === ['market', 'breadth']) {
+            return 'Get Market Breadth';
+        }
+
+        if ($segments === ['geospatial', 'statistics']) {
+            return 'Get Geospatial Statistics';
+        }
+
+        if ($segments === ['geospatial', 'distance']) {
+            return 'Calculate Distance Between Coordinates';
+        }
+
+        if ($segments === ['geospatial', 'geocode']) {
+            return 'Reverse Geocode Coordinates';
+        }
+
+        if ($segments === ['geospatial', 'boundary']) {
+            return 'Find Locations in Boundary';
+        }
+
+        if ($segments === ['geospatial', 'cluster']) {
+            return 'Cluster Nearby Locations';
+        }
+
+        if ($segments === ['geospatial', 'nearby']) {
+            return 'Find Nearby Locations';
+        }
+
+        if ($segments === ['user', 'usage']) {
+            return 'Get API Usage Summary';
+        }
+
+        if ($segments === ['user', 'usage-breakdown']) {
+            return 'Get API Usage Breakdown';
+        }
+
+        if ($segments === ['user', 'usage-history']) {
+            return 'Get API Usage History';
+        }
+
+        if ($segments === ['mf', 'list']) {
+            return 'List Mutual Funds';
+        }
+
+        if ($segments === ['mf', 'search']) {
+            return 'Search Mutual Funds';
+        }
+
+        if ($segments === ['mf', 'compare']) {
+            return 'Compare Mutual Funds';
+        }
+
+        if ($segments === ['mf', 'filters']) {
+            return 'Get Mutual Fund Filters';
+        }
+
+        if ($segments === ['mf', 'details', '{isin}']) {
+            return 'Get Mutual Fund Details';
+        }
+
+        if ($segments === ['mf', 'history', '{isin}']) {
+            return 'Get Mutual Fund History';
+        }
+
+        if ($segments === ['mf', '{isin}', 'similar-funds']) {
+            return 'Get Similar Mutual Funds';
+        }
+
+        if (($segments[1] ?? null) === 'analysis' && isset($segments[2])) {
+            return Str::singular($this->displayResourceLabel($segments[0])) . ' Analysis: ' . $this->labelFromSlug($segments[2]);
+        }
+
+        if (($segments[1] ?? null) === 'filter' && isset($segments[2])) {
+            return 'Filter ' . $this->displayResourceLabel($segments[0]) . ' by ' . $this->labelFromSlug($segments[2]);
+        }
+
+        if (($segments[1] ?? null) === 'search') {
+            return 'Search ' . $this->displayResourceLabel($segments[0]);
+        }
+
+        if (($segments[1] ?? null) === 'nearby') {
+            return 'Find Nearby ' . $this->displayResourceLabel($segments[0]);
+        }
+
+        if (($segments[1] ?? null) === 'coverage') {
+            return 'Get ' . Str::singular($this->displayResourceLabel($segments[0])) . ' Coverage';
+        }
+
+        if (($segments[1] ?? null) === 'performance') {
+            return 'Get ' . Str::singular($this->displayResourceLabel($segments[0])) . ' Performance';
+        }
+
+        if (($segments[1] ?? null) === 'returns') {
+            return 'Get ' . Str::singular($this->displayResourceLabel($segments[0])) . ' Returns';
+        }
+
+        if (($segments[1] ?? null) === 'top') {
+            return 'List Top ' . $this->displayResourceLabel($segments[0]);
+        }
+
+        if ($method === 'POST' && count($segments) === 1) {
+            return 'Create ' . Str::singular($this->displayResourceLabel($normalizedCategory));
+        }
+
+        if ($method === 'GET' && count($segments) === 1) {
+            return 'List ' . $this->displayResourceLabel($normalizedCategory);
+        }
+
+        if ($method === 'GET' && count($segments) === 2 && str_starts_with($segments[1], '{')) {
+            return 'Get ' . $detailResource . ' Details';
+        }
+
+        if ($method === 'GET' && count($segments) >= 3 && str_starts_with($segments[1], '{')) {
+            return match ($segments[2]) {
+                'banks' => 'List ' . $detailResource . ' Banks',
+                'branches' => 'List ' . $detailResource . ' Branches',
+                'states' => 'Get ' . $detailResource . ' States',
+                'cities' => 'Get ' . $detailResource . ' Cities',
+                'neighbors' => 'Get ' . $detailResource . ' Neighbors',
+                'timezones' => 'Get ' . $detailResource . ' Timezones',
+                'history' => 'Get ' . $detailResource . ' History',
+                'metrics' => 'Get ' . $detailResource . ' Metrics',
+                'valuation' => 'Get ' . $detailResource . ' Valuation',
+                'valuation-history' => 'Get ' . $detailResource . ' Valuation History',
+                'coverage' => 'Get ' . $detailResource . ' Coverage',
+                'swift-branches' => 'List ' . $detailResource . ' SWIFT Branches',
+                'activity-metrics' => 'Get ' . $detailResource . ' Activity Metrics',
+                'dual-exchange' => 'Get ' . $detailResource . ' Dual Exchange Data',
+                'ohlc' => 'Get ' . $detailResource . ' OHLC Data',
+                'peers' => 'Get ' . $detailResource . ' Peers',
+                'economic-summary' => 'Get ' . $detailResource . ' Economic Summary',
+                default => 'Get ' . $detailResource . ' ' . $this->labelFromSlug($segments[2]),
+            };
+        }
+
+        if ($method === 'GET' && count($segments) === 2 && ! str_starts_with($segments[1], '{')) {
+            return match ($segments[0]) {
+                'user' => 'Get ' . $this->labelFromSlug($segments[1]),
+                'market' => 'Get ' . $this->labelFromSlug($segments[1]),
+                default => 'Get ' . Str::singular($this->displayResourceLabel($segments[0])) . ' ' . $this->labelFromSlug($segments[1]),
+            };
+        }
+
+        if ($method === 'GET' && count($segments) >= 3 && ! str_starts_with($segments[1], '{')) {
+            $prefix = match ($segments[0]) {
+                'countries', 'country' => 'Country',
+                'equities', 'equity' => 'Equity',
+                'indices' => 'Index',
+                'market' => 'Market',
+                default => Str::singular($this->displayResourceLabel($segments[0])),
+            };
+
+            return $prefix . ': ' . collect(array_slice($segments, 1))
+                ->map(fn (string $segment) => $this->labelFromSlug($segment))
+                ->implode(' ');
+        }
+
+        return Str::title(str_replace(['/', '-', '{', '}'], [' ', ' ', '', ''], $path));
     }
 
-    private function categoryOrder(string $category): int
+    private function categoryFamilyKey(string $category): string
+    {
+        return match ($this->normalizedCategory($category)) {
+            'Authentication' => 'authentication',
+            'User & Account' => 'user-account',
+            'OCR' => 'ocr',
+            'Webhooks' => 'webhooks',
+            'Countries', 'States', 'Cities', 'Regions', 'Sub-Regions', 'Timezones', 'Address', 'Geospatial', 'Pincodes' => 'geography-address',
+            'Banks', 'Currency' => 'banking-currency',
+            'Equities', 'Indices', 'Mutual Funds', 'Market' => 'market-data',
+            default => 'other',
+        };
+    }
+
+    private function categoryFamilyConfig(string $familyKey): array
+    {
+        return match ($familyKey) {
+            'geography-address' => [
+                'order' => 1,
+                'label' => 'Geography & Address',
+                'description' => 'Country, state, city, pincode, timezone, address, and geospatial APIs.',
+            ],
+            'banking-currency' => [
+                'order' => 2,
+                'label' => 'Banking & Currency',
+                'description' => 'Bank coverage, branch lookup, and currency conversion APIs.',
+            ],
+            'market-data' => [
+                'order' => 3,
+                'label' => 'Market Data',
+                'description' => 'Equities, indices, mutual funds, and market overview APIs.',
+            ],
+            'user-account' => [
+                'order' => 4,
+                'label' => 'User & Account',
+                'description' => 'Profile and customer account APIs.',
+            ],
+            'ocr' => [
+                'order' => 5,
+                'label' => 'OCR',
+                'description' => 'OCR status and extraction APIs.',
+            ],
+            'webhooks' => [
+                'order' => 6,
+                'label' => 'Webhooks',
+                'description' => 'Webhook endpoints for integrations and event handling.',
+            ],
+            default => [
+                'order' => 7,
+                'label' => 'Other APIs',
+                'description' => 'Additional APIs grouped for completeness.',
+            ],
+        };
+    }
+
+    private function normalizedCategory(string $category): string
     {
         return match (strtolower($category)) {
-            'auth' => 1,
-            'ocr' => 2,
-            'user' => 3,
-            'regions', 'sub-regions', 'timezones', 'countries', 'states', 'cities', 'country', 'state', 'city', 'address', 'timezone', 'geospatial' => 4,
-            'currency', 'banks', 'bank', 'branch', 'pincodes', 'pincode' => 5,
-            'equities', 'equity', 'indices', 'mf', 'market' => 6,
-            default => 7,
+            'auth' => 'Authentication',
+            'user' => 'User & Account',
+            'ocr' => 'OCR',
+            'webhooks' => 'Webhooks',
+            'country', 'countries' => 'Countries',
+            'state', 'states' => 'States',
+            'city', 'cities' => 'Cities',
+            'region', 'regions' => 'Regions',
+            'sub-region', 'sub-regions' => 'Sub-Regions',
+            'timezone', 'timezones' => 'Timezones',
+            'address' => 'Address',
+            'geospatial' => 'Geospatial',
+            'pincode', 'pincodes' => 'Pincodes',
+            'bank', 'banks', 'branch' => 'Banks',
+            'currency' => 'Currency',
+            'equity', 'equities' => 'Equities',
+            'indices', 'index' => 'Indices',
+            'mf' => 'Mutual Funds',
+            'market' => 'Market',
+            default => Str::title($category),
         };
+    }
+
+    private function displayResourceLabel(string $value): string
+    {
+        $normalized = $this->normalizedCategory(Str::title(str_replace('-', ' ', $value)));
+
+        return $normalized === Str::title(str_replace('-', ' ', $value))
+            ? $this->labelFromSlug($value)
+            : $normalized;
+    }
+
+    private function requestSortWeight(array $endpoint): int
+    {
+        $path = str_replace('api/v1/', '', $endpoint['uri']);
+
+        return match (true) {
+            $path === 'auth/token' => 1,
+            str_contains($path, '/search') => 2,
+            str_contains($path, '/autocomplete') => 3,
+            str_contains($path, '/validate') => 4,
+            str_contains($path, '/convert') => 5,
+            str_contains($path, '/snapshot') => 6,
+            str_contains($path, '/quote/') => 7,
+            str_contains($path, '{') => 20,
+            default => 10,
+        };
+    }
+
+    private function labelFromSlug(string $slug): string
+    {
+        $slug = str_replace(['{', '}'], '', $slug);
+
+        return Str::of($slug)
+            ->replace('-', ' ')
+            ->replace('_', ' ')
+            ->title()
+            ->toString();
+    }
+
+    private function shouldExcludeFromSalesCollection(string $uri): bool
+    {
+        return in_array($uri, [
+            'api/v1/auth/token',
+            'api/v1/country/{country}',
+            'api/v1/country/{country}/banks',
+            'api/v1/country/{country}/cities',
+            'api/v1/country/{country}/neighbors',
+            'api/v1/country/{country}/states',
+            'api/v1/country/{country}/timezones',
+            'api/v1/state/{state}',
+            'api/v1/state/{state}/banks',
+            'api/v1/state/{state}/cities',
+            'api/v1/city/{city}',
+            'api/v1/city/{city}/banks',
+            'api/v1/bank/{bank}/branches',
+            'api/v1/bank/{bank}/coverage',
+        ], true);
     }
 }
