@@ -705,7 +705,7 @@ class ApiTestRunnerService
             'razorpay_subscription_id' => $subscription->razorpay_subscription_id ?: $internalSubscriptionId,
             'amount_paid' => 0,
             'status' => 'active',
-            'expires_at' => now()->addYears(50),
+            'expires_at' => now()->addYears(10),
             'total_credits' => 999999999,
             'used_credits' => 0,
             'available_credits' => 999999999,
