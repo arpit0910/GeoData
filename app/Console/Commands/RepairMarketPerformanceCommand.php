@@ -206,7 +206,9 @@ class RepairMarketPerformanceCommand extends Command
         }
 
         if (! empty($updates)) {
-            EquityPrice::upsert($updates, ['id'], $this->equityUpdateColumns());
+            foreach (array_chunk($updates, 200) as $chunk) {
+                EquityPrice::upsert($chunk, ['id'], $this->equityUpdateColumns());
+            }
         }
     }
 
@@ -281,7 +283,9 @@ class RepairMarketPerformanceCommand extends Command
         }
 
         if (! empty($updates)) {
-            IndexPrice::upsert($updates, ['id'], $this->indexUpdateColumns());
+            foreach (array_chunk($updates, 300) as $chunk) {
+                IndexPrice::upsert($chunk, ['id'], $this->indexUpdateColumns());
+            }
         }
     }
 
