@@ -151,7 +151,7 @@ class EquityController extends Controller
      */
     public function priceDetail(EquityPrice $price)
     {
-        $price->load('equity:id,company_name,isin,nse_symbol,bse_symbol');
+        $price->load('equity:id,company_name,isin,nse_symbol,bse_symbol,industry,market_cap,market_cap_category,listing_date,face_value,is_active');
         return response()->json($price);
     }
 

@@ -287,19 +287,34 @@ class RepairMarketPerformanceCommand extends Command
 
     private function buildEquityWindowMap(Carbon $date): array
     {
-        $periods = ['1d' => 1, '3d' => 3, '7d' => 7, '1m' => 30, '3m' => 90, '6m' => 180, '9m' => 270, '1y' => 365, '3y' => 1095];
+        $periodTargets = [
+            '1d' => $date->copy()->subDay(),
+            '3d' => $date->copy()->subDays(3),
+            '7d' => $date->copy()->subDays(7),
+            '1m' => $date->copy()->subMonth(),
+            '3m' => $date->copy()->subMonths(3),
+            '6m' => $date->copy()->subMonths(6),
+            '9m' => $date->copy()->subMonths(9),
+            '1y' => $date->copy()->subYear(),
+            '3y' => $date->copy()->subYears(3),
+        ];
         $windowMap = [];
-        $tradingDates = DB::table('equity_prices')
-            ->where('traded_date', '<', $date->format('Y-m-d'))
-            ->orderBy('traded_date', 'desc')
-            ->limit(1200)
-            ->pluck('traded_date');
+        $oldestTarget = $date->copy()->subYears(3)->subDays(15)->format('Y-m-d');
 
-        foreach ($periods as $label => $days) {
-            $target = $date->copy()->subDays($days);
+        $tradingDates = DB::table('equity_prices')
+            ->select('traded_date')
+            ->distinct()
+            ->where('traded_date', '<', $date->format('Y-m-d'))
+            ->where('traded_date', '>=', $oldestTarget)
+            ->orderBy('traded_date', 'desc')
+            ->pluck('traded_date')
+            ->map(fn($tradedDate) => Carbon::parse((string) $tradedDate));
+
+        foreach ($periodTargets as $label => $target) {
             $windowMap[$label] = $tradingDates
-                ->filter(fn($tradedDate) => abs(Carbon::parse($tradedDate)->diffInDays($target)) <= 7)
-                ->sortBy(fn($tradedDate) => abs(Carbon::parse($tradedDate)->diffInDays($target)))
+                ->filter(fn($tradedDate) => abs($tradedDate->diffInDays($target)) <= 10)
+                ->sortBy(fn($tradedDate) => abs($tradedDate->diffInDays($target)))
+                ->map(fn($tradedDate) => $tradedDate->format('Y-m-d'))
                 ->values()
                 ->toArray();
         }

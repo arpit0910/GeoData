@@ -635,19 +635,38 @@ class EquitySyncCommand extends Command
 
     protected function getHistoricalDateWindows($dateObj)
     {
-        $periods = ['1d' => 1, '3d' => 3, '7d' => 7, '1m' => 30, '3m' => 90, '6m' => 180, '9m' => 270, '1y' => 365, '3y' => 1095];
+        $periodTargets = [
+            '1d' => $dateObj->copy()->subDay(),
+            '3d' => $dateObj->copy()->subDays(3),
+            '7d' => $dateObj->copy()->subDays(7),
+            '1m' => $dateObj->copy()->subMonth(),
+            '3m' => $dateObj->copy()->subMonths(3),
+            '6m' => $dateObj->copy()->subMonths(6),
+            '9m' => $dateObj->copy()->subMonths(9),
+            '1y' => $dateObj->copy()->subYear(),
+            '3y' => $dateObj->copy()->subYears(3),
+        ];
         $windowMap = [];
-        $allTradingDates = DB::table('equity_prices')
-            ->where('traded_date', '<', $dateObj->format('Y-m-d'))
-            ->orderBy('traded_date', 'desc')
-            ->limit(1200)
-            ->pluck('traded_date');
+        $oldestTarget = $dateObj->copy()->subYears(3)->subDays(15)->format('Y-m-d');
 
-        foreach ($periods as $label => $days) {
-            $target = $dateObj->copy()->subDays($days);
-            $windowMap[$label] = $allTradingDates->filter(fn($d) => abs(Carbon::parse($d)->diffInDays($target)) <= 7)
-                ->sortBy(fn($d) => abs(Carbon::parse($d)->diffInDays($target)))->values()->toArray();
+        $allTradingDates = DB::table('equity_prices')
+            ->select('traded_date')
+            ->distinct()
+            ->where('traded_date', '<', $dateObj->format('Y-m-d'))
+            ->where('traded_date', '>=', $oldestTarget)
+            ->orderBy('traded_date', 'desc')
+            ->pluck('traded_date')
+            ->map(fn($tradedDate) => Carbon::parse((string) $tradedDate));
+
+        foreach ($periodTargets as $label => $target) {
+            $windowMap[$label] = $allTradingDates
+                ->filter(fn($tradedDate) => abs($tradedDate->diffInDays($target)) <= 10)
+                ->sortBy(fn($tradedDate) => abs($tradedDate->diffInDays($target)))
+                ->map(fn($tradedDate) => $tradedDate->format('Y-m-d'))
+                ->values()
+                ->toArray();
         }
+
         return ['window_map' => $windowMap];
     }
 
