@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\StateController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\PincodeController;
 use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\SubscriptionFeatureController;
 use App\Http\Controllers\Admin\WebsiteQueryController;
 use App\Http\Controllers\Admin\SubscriptionAdminController;
 use App\Http\Controllers\Admin\CouponController;
@@ -137,6 +138,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/{plan}', [PlanController::class, 'destroy'])->name('destroy');
         Route::post('/{plan}/toggle-status', [PlanController::class, 'toggleStatus'])->name('toggle-status');
         Route::post('/{plan}/sync', [PlanController::class, 'syncToGateway'])->name('sync');
+    });
+
+    Route::prefix('subscription-features')->name('subscription-features.')->group(function () {
+        Route::get('/', [SubscriptionFeatureController::class, 'index'])->name('index');
+        Route::get('/create', [SubscriptionFeatureController::class, 'create'])->name('create');
+        Route::post('/', [SubscriptionFeatureController::class, 'store'])->name('store');
+        Route::get('/{subscriptionFeature}/edit', [SubscriptionFeatureController::class, 'edit'])->name('edit');
+        Route::put('/{subscriptionFeature}', [SubscriptionFeatureController::class, 'update'])->name('update');
+        Route::delete('/{subscriptionFeature}', [SubscriptionFeatureController::class, 'destroy'])->name('destroy');
+        Route::post('/{subscriptionFeature}/toggle-status', [SubscriptionFeatureController::class, 'toggleStatus'])->name('toggle-status');
     });
 
     Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {

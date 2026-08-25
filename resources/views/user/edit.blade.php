@@ -112,6 +112,61 @@
                 </div>
 
                 @if($user->account_type === 'client')
+                <div class="mt-8 p-8 bg-slate-50 rounded-3xl border border-slate-200 space-y-6">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h4 class="text-sm font-black text-slate-900 uppercase tracking-widest">Plan Assignment</h4>
+                            <p class="mt-1 text-sm text-slate-500">Assign or update the user's plan directly without going through checkout.</p>
+                        </div>
+                        <div class="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">
+                            Admin Override
+                        </div>
+                    </div>
+
+                    @php
+                        $currentPlanId = old('plan_id', $user->plan_id);
+                    @endphp
+
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-gray-700">Assigned Plan</label>
+                            <select name="plan_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all appearance-none bg-white">
+                                <option value="">No Plan Assigned</option>
+                                @foreach($plans as $plan)
+                                    <option value="{{ $plan->id }}" {{ (string) $currentPlanId === (string) $plan->id ? 'selected' : '' }}>
+                                        {{ $plan->name }} • {{ ucfirst($plan->billing_cycle) }} • {{ is_null($plan->api_hits_limit) ? 'Unlimited credits' : number_format($plan->api_hits_limit) . ' credits' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-xs text-slate-500">Saving this form will expire any current active subscription and create a new admin-assigned one for the selected plan.</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                            <p class="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">Current Subscription Snapshot</p>
+                            <div class="mt-4 space-y-3 text-sm text-slate-600">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span>Current plan</span>
+                                    <span class="font-bold text-slate-900">{{ $activeSubscription?->plan?->name ?? ($user->plan?->name ?? 'No active plan') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-3">
+                                    <span>Status</span>
+                                    <span class="font-bold text-slate-900">{{ $activeSubscription?->status ? ucfirst($activeSubscription->status) : 'Inactive' }}</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-3">
+                                    <span>Available credits</span>
+                                    <span class="font-bold text-slate-900">{{ number_format((int) $user->available_credits) }}</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-3">
+                                    <span>Expires at</span>
+                                    <span class="font-bold text-slate-900">{{ $activeSubscription?->expires_at?->format('d M Y') ?? 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if($user->account_type === 'client')
                 <div class="mt-8 p-8 bg-amber-50/50 dark:bg-amber-500/[0.02] rounded-3xl border border-amber-200/50 dark:border-amber-500/10 space-y-6">
                     <div class="flex items-center justify-between">
                         <h4 class="text-sm font-black text-amber-800 dark:text-amber-500 flex items-center uppercase tracking-widest">

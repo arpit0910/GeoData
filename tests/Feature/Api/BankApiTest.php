@@ -106,6 +106,15 @@ class BankApiTest extends TestCase
     }
 
     /** @test */
+    public function unauthenticated_ifsc_requests_return_json_instead_of_redirecting_to_login()
+    {
+        $response = $this->get('/api/v1/bank/ifsc/' . $this->bankData['branch']->ifsc);
+
+        $response->assertStatus(401);
+        $this->assertStringNotContainsString('/login', $response->getContent());
+    }
+
+    /** @test */
     public function it_fetches_banks_in_city()
     {
         $response = $this->getJson('/api/v1/cities/' . $this->bankData['city']->id . '/banks', $this->headers);

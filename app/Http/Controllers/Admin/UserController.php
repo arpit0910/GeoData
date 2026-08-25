@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
+use App\Models\Subscription;
+use App\Models\TransactionHistory;
 use App\Services\ApiTestRunnerService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -110,7 +114,19 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('user.edit', compact('user'));
+        $plans = Plan::query()
+            ->where('status', 1)
+            ->orderBy('amount')
+            ->orderBy('name')
+            ->get();
+
+        $activeSubscription = $user->subscriptions()
+            ->with('plan')
+            ->where('status', 'active')
+            ->latest()
+            ->first();
+
+        return view('user.edit', compact('user', 'plans', 'activeSubscription'));
     }
 
     /**
@@ -130,11 +146,19 @@ class UserController extends Controller
             'company_website' => 'nullable|url',
             'gst_number' => 'nullable|string',
             'status' => 'required|in:1,0',
+            'plan_id' => 'nullable|exists:plans,id',
         ]);
+
+        $selectedPlan = null;
+        if ($request->filled('plan_id')) {
+            $selectedPlan = Plan::findOrFail($request->plan_id);
+        }
 
         if (empty($validated['password'])) {
             unset($validated['password']);
         }
+
+        unset($validated['plan_id']);
 
         $user->fill($validated);
         if ($request->filled('password')) {
@@ -142,11 +166,80 @@ class UserController extends Controller
         }
         $user->save();
 
+        if ($user->account_type === 'client') {
+            $this->syncManualPlanAssignment($user, $selectedPlan);
+        }
+
         if ($request->wantsJson()) {
             return sendResponse($user, 'User updated successfully');
         }
 
         return redirect()->route('user.list')->with('success', 'User updated successfully');
+    }
+
+    private function syncManualPlanAssignment(User $user, ?Plan $plan): void
+    {
+        DB::transaction(function () use ($user, $plan) {
+            Subscription::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->update(['status' => 'expired']);
+
+            if (!$plan) {
+                $user->forceFill([
+                    'plan_id' => null,
+                    'available_credits' => 0,
+                ])->save();
+
+                return;
+            }
+
+            $expiresAt = now();
+            if ($plan->billing_cycle === 'monthly') {
+                $expiresAt = $expiresAt->copy()->addMonth();
+            } elseif ($plan->billing_cycle === 'yearly') {
+                $expiresAt = $expiresAt->copy()->addYear();
+            } else {
+                $expiresAt = $expiresAt->copy()->addYears(100);
+            }
+
+            $creditsToAdd = $plan->api_hits_limit ?? 999999999;
+            $manualReference = 'admin-manual-' . $user->id . '-' . Str::lower(Str::random(10));
+
+            $subscription = Subscription::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'razorpay_order_id' => $manualReference,
+                'amount_paid' => 0,
+                'discount_amount' => 0,
+                'remaining_discount_cycles' => 0,
+                'status' => 'active',
+                'expires_at' => $expiresAt,
+                'total_credits' => $creditsToAdd,
+                'used_credits' => 0,
+                'available_credits' => $creditsToAdd,
+                'last_credit_refresh' => now(),
+            ]);
+
+            TransactionHistory::create([
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'plan_id' => $plan->id,
+                'razorpay_order_id' => $manualReference,
+                'amount' => 0,
+                'discount_amount' => 0,
+                'plan_name' => $plan->name,
+                'billing_cycle' => $plan->billing_cycle,
+                'status' => 'success',
+                'type' => 'admin_assignment',
+                'credits' => $creditsToAdd,
+            ]);
+
+            $user->forceFill([
+                'plan_id' => $plan->id,
+                'available_credits' => $creditsToAdd,
+                'status' => 1,
+            ])->save();
+        });
     }
 
     /**
