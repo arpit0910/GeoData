@@ -264,9 +264,11 @@
                     $dashboardSub = auth()
                         ->user()
                         ->subscriptions()
-                        ->with('plan')
+                        ->with('plan.features')
                         ->where('status', 'active')
-                        ->where('expires_at', '>', now())
+                        ->where(function ($query) {
+                            $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+                        })
                         ->latest()
                         ->first();
                     $dashboardPlan = $dashboardSub?->plan ?? auth()->user()->plan;
@@ -360,6 +362,117 @@
                             <i
                                 class="fas fa-exchange-alt ml-3 transition-transform group-hover/btn:translate-x-1 relative z-10"></i>
                         </a>
+                    @endif
+                </div>
+
+                @php
+                    $dashboardPlan?->loadMissing('features');
+                    $canUse = fn (string $feature) => $dashboardPlan && $dashboardPlan->hasFeature($feature);
+                    $availableApiDocs = [];
+
+                    if ($canUse(\App\Models\SubscriptionFeature::MODULE_INDIA_PINCODE_API)) {
+                        $availableApiDocs[] = [
+                            'category' => 'India Pincode',
+                            'icon' => 'fa-map-pin',
+                            'color' => 'emerald',
+                            'items' => [
+                                ['method' => 'GET', 'path' => '/api/v1/india/pincode/{pincode}', 'description' => 'Fetch one Indian pincode as a single object.', 'anchor' => 'india-pincode'],
+                            ],
+                        ];
+                    }
+
+                    if ($canUse(\App\Models\SubscriptionFeature::MODULE_IFSC_API)) {
+                        $availableApiDocs[] = [
+                            'category' => 'IFSC Lookup',
+                            'icon' => 'fa-university',
+                            'color' => 'blue',
+                            'items' => [
+                                ['method' => 'GET', 'path' => '/api/v1/bank/ifsc/{ifsc}', 'description' => 'Fetch bank branch details using an IFSC code.', 'anchor' => 'branch-info'],
+                            ],
+                        ];
+                    }
+
+                    if ($canUse(\App\Models\SubscriptionFeature::MODULE_ADDRESS_API)) {
+                        $availableApiDocs[] = [
+                            'category' => 'Address & Geography',
+                            'icon' => 'fa-globe-asia',
+                            'color' => 'amber',
+                            'items' => [
+                                ['method' => 'GET', 'path' => '/api/v1/countries', 'description' => 'List and filter countries.', 'anchor' => 'countries'],
+                                ['method' => 'GET', 'path' => '/api/v1/states', 'description' => 'List and filter states.', 'anchor' => 'states'],
+                                ['method' => 'GET', 'path' => '/api/v1/cities', 'description' => 'List and filter cities.', 'anchor' => 'cities'],
+                                ['method' => 'GET', 'path' => '/api/v1/pincodes', 'description' => 'Batch retrieve pincode records.', 'anchor' => 'pincodes'],
+                                ['method' => 'GET', 'path' => '/api/v1/address/validate', 'description' => 'Validate an address and pincode.', 'anchor' => 'address-validate'],
+                            ],
+                        ];
+                    }
+
+                    if ($canUse(\App\Models\SubscriptionFeature::MODULE_BANKING_CURRENCY_API)) {
+                        $availableApiDocs[] = [
+                            'category' => 'Banking & Currency',
+                            'icon' => 'fa-money-check-alt',
+                            'color' => 'violet',
+                            'items' => [
+                                ['method' => 'GET', 'path' => '/api/v1/banks', 'description' => 'List supported banks.', 'anchor' => 'banks'],
+                                ['method' => 'GET', 'path' => '/api/v1/banks/{bank}/branches', 'description' => 'List branches for a bank.', 'anchor' => 'bank-branches'],
+                                ['method' => 'GET', 'path' => '/api/v1/currency/exchange', 'description' => 'Get currency exchange rates.', 'anchor' => 'currency-exchange'],
+                            ],
+                        ];
+                    }
+
+                    if ($canUse(\App\Models\SubscriptionFeature::MODULE_STOCKS_MUTUAL_FUNDS_API)) {
+                        $availableApiDocs[] = [
+                            'category' => 'Stocks & Mutual Funds',
+                            'icon' => 'fa-chart-line',
+                            'color' => 'rose',
+                            'items' => [
+                                ['method' => 'GET', 'path' => '/api/v1/equities', 'description' => 'Browse equity market data.', 'anchor' => 'list-equities'],
+                                ['method' => 'GET', 'path' => '/api/v1/mf/list', 'description' => 'Browse mutual fund data.', 'anchor' => 'mf-list'],
+                            ],
+                        ];
+                    }
+                @endphp
+
+                <div class="mt-8 md:mt-12 text-left bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-3xl p-6 md:p-8 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h4 class="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                                <i class="fas fa-code text-amber-600 dark:text-amber-500"></i>
+                                Your Available APIs
+                            </h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quick reference for the endpoints included in your active plan.</p>
+                        </div>
+                        <a href="{{ route('docs') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-amber-500/30 text-amber-700 dark:text-amber-400 text-sm font-bold hover:bg-amber-500/10 transition-colors">
+                            Full API Docs <i class="fas fa-arrow-up-right-from-square ml-2 text-xs"></i>
+                        </a>
+                    </div>
+
+                    @if(count($availableApiDocs))
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                            @foreach($availableApiDocs as $apiGroup)
+                                <div class="rounded-2xl bg-white dark:bg-[#111827] border border-gray-200 dark:border-white/10 overflow-hidden">
+                                    <div class="px-5 py-4 border-b border-gray-100 dark:border-white/10 flex items-center gap-3">
+                                        <span class="w-9 h-9 rounded-xl bg-{{ $apiGroup['color'] }}-500/10 text-{{ $apiGroup['color'] }}-600 dark:text-{{ $apiGroup['color'] }}-400 flex items-center justify-center"><i class="fas {{ $apiGroup['icon'] }}"></i></span>
+                                        <h5 class="font-black text-gray-900 dark:text-white">{{ $apiGroup['category'] }}</h5>
+                                    </div>
+                                    <div class="divide-y divide-gray-100 dark:divide-white/5">
+                                        @foreach($apiGroup['items'] as $api)
+                                            <a href="{{ route('docs') }}#{{ $api['anchor'] }}" class="block px-5 py-4 hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors">
+                                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                                                    <span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase">{{ $api['method'] }}</span>
+                                                    <code class="text-xs md:text-sm text-gray-800 dark:text-gray-200 break-all">{{ $api['path'] }}</code>
+                                                </div>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $api['description'] }}</p>
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="rounded-2xl border border-dashed border-gray-300 dark:border-white/10 p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                            No API modules are assigned to your active plan yet.
+                        </div>
                     @endif
                 </div>
             </div>

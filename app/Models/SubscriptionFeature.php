@@ -14,6 +14,8 @@ class SubscriptionFeature extends Model
     public const MODULE_BANKING_CURRENCY_API = 'banking_currency_api';
     public const MODULE_STOCKS_MUTUAL_FUNDS_API = 'stocks_mutual_funds_api';
     public const MODULE_ALL_API = 'all_api';
+    public const MODULE_INDIA_PINCODE_API = 'india_pincode_api';
+    public const MODULE_IFSC_API = 'ifsc_api';
 
     protected $fillable = [
         'key',

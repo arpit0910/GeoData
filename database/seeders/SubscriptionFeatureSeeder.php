@@ -34,6 +34,18 @@ class SubscriptionFeatureSeeder extends Seeder
                 'description' => 'Access to all current and future API modules.',
                 'is_active' => true,
             ],
+            [
+                'key' => SubscriptionFeature::MODULE_INDIA_PINCODE_API,
+                'name' => 'India Pincode API',
+                'description' => 'Single-object Indian pincode detail lookup.',
+                'is_active' => true,
+            ],
+            [
+                'key' => SubscriptionFeature::MODULE_IFSC_API,
+                'name' => 'IFSC API',
+                'description' => 'Single bank branch lookup by IFSC code.',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($features as $feature) {

@@ -13,8 +13,6 @@ Route::get('/bank/{bank}/branches', [SetuGeoController::class, 'bankBranches']);
 Route::get('/bank/{bank}/coverage', [SetuGeoController::class, 'bankCoverage']);
 Route::get('/branch/search', [SetuGeoController::class, 'branchSearch']);
 Route::get('/bank/branches/search', [SetuGeoController::class, 'branchSearch']);
-Route::get('/branch/{ifsc}', [SetuGeoController::class, 'branchInfo']);
-Route::get('/bank/ifsc/{ifsc}', [SetuGeoController::class, 'branchInfo']);
 Route::get('/cities/{city}/banks', [SetuGeoController::class, 'banksInCity']);
 Route::get('/city/{city}/banks', [SetuGeoController::class, 'banksInCity']);
 Route::get('/states/{state}/banks', [SetuGeoController::class, 'banksInState']);

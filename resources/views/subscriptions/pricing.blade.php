@@ -6,6 +6,11 @@
         <div class="text-center">
             <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Pricing Plans</h2>
             <p class="mt-4 text-xl text-gray-600">Choose the perfect feature-rich plan for your APIs.</p>
+            @if(!config('services.subscriptions.purchases_enabled'))
+                <div class="mt-6 mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-800">
+                    Paid subscriptions are temporarily unavailable while payment setup is being completed. Free onboarding access remains available.
+                </div>
+            @endif
 
             <!-- Billing Toggle -->
             <div class="mt-8 flex justify-center">
@@ -72,7 +77,7 @@
                                 Buy Now
                             </button>
 
-                        @elseif($isUpgrade)
+                        @elseif($isUpgrade && config('services.subscriptions.purchases_enabled'))
                             {{-- Higher price — Upgrade Now --}}
                             <button @click="selectPlan({{ json_encode($plan) }})" class="mt-8 block w-full bg-amber-600 hover:bg-amber-700 border border-transparent rounded-xl py-3 text-sm font-black text-white text-center transition-colors flex items-center justify-center gap-2">
                                 <i class="fas fa-arrow-up text-xs"></i>
@@ -86,10 +91,14 @@
                                 Activate Free Plan
                             </button>
 
-                        @else
+                        @elseif(config('services.subscriptions.purchases_enabled'))
                             {{-- Paid plan, no active subscription --}}
                             <button @click="selectPlan({{ json_encode($plan) }})" class="mt-8 block w-full bg-amber-600 hover:bg-amber-700 border border-transparent rounded-xl py-3 text-sm font-semibold text-white text-center transition-colors">
                                 Subscribe Now
+                            </button>
+                        @else
+                            <button disabled class="mt-8 block w-full bg-gray-100 border border-gray-200 rounded-xl py-3 text-sm font-black text-gray-400 text-center cursor-not-allowed">
+                                Coming Soon
                             </button>
                         @endif
                     </div>

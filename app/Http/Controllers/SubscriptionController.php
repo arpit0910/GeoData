@@ -82,11 +82,6 @@ class SubscriptionController extends Controller
 
     public function createOrder(Request $request, Plan $plan)
     {
-        $keyId = env('RAZORPAY_KEY', 'rzp_test_dummy');
-        $keySecret = env('RAZORPAY_SECRET', 'dummy_secret');
-
-        $api = new Api($keyId, $keySecret);
-        
         $amount = ($plan->amount - $plan->discount_amount);
         
         // Handle Coupon discount if provided
@@ -107,14 +102,25 @@ class SubscriptionController extends Controller
         }
 
         $amountPaise = $amount * 100;
+
+        if ($amountPaise > 0 && !config('services.subscriptions.purchases_enabled')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paid subscriptions are temporarily unavailable while payment setup is being completed.',
+            ], 503);
+        }
         
         if ($amountPaise <= 0) {
             return response()->json([
                 'order_id' => 'free_plan_' . time(),
                 'amount' => 0,
-                'key' => $keyId
+                'key' => null
             ]);
         }
+
+        $keyId = env('RAZORPAY_KEY', 'rzp_test_dummy');
+        $keySecret = env('RAZORPAY_SECRET', 'dummy_secret');
+        $api = new Api($keyId, $keySecret);
 
         $orderData = [
             'receipt'         => 'rcpt_' . Auth::id() . '_' . time(),
@@ -164,6 +170,13 @@ class SubscriptionController extends Controller
                 $amountPaid = max(0, $amountPaid - $discountAmount);
                 $remainingCycles = $coupon->apply_to_cycles - 1;
             }
+        }
+
+        if ($amountPaid > 0 && !config('services.subscriptions.purchases_enabled')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paid subscriptions are temporarily unavailable while payment setup is being completed.',
+            ], 503);
         }
 
         $orderId = $request->razorpay_order_id;
@@ -497,6 +510,13 @@ class SubscriptionController extends Controller
 
     public function createTopupOrder(Request $request)
     {
+        if (!config('services.subscriptions.purchases_enabled')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paid subscription purchases are temporarily unavailable.',
+            ], 503);
+        }
+
         $user = Auth::user();
         $subscription = $user->subscriptions()->where('status', 'active')->latest()->first();
         
@@ -539,6 +559,13 @@ class SubscriptionController extends Controller
 
     public function verifyTopupPayment(Request $request)
     {
+        if (!config('services.subscriptions.purchases_enabled')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paid subscription purchases are temporarily unavailable.',
+            ], 503);
+        }
+
         $keyId = env('RAZORPAY_KEY', 'rzp_test_dummy');
         $keySecret = env('RAZORPAY_SECRET', 'dummy_secret');
         

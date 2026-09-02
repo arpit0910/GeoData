@@ -103,6 +103,23 @@ class SubscriptionAccessService
             ];
         }
 
+        // Legacy zero-cost subscriptions predate the narrow free-tier feature
+        // keys. They should still receive the two onboarding APIs.
+        if ((float) ($subscription->plan?->amount ?? 1) <= 0 && in_array($module, [
+            SubscriptionFeature::MODULE_IFSC_API,
+            SubscriptionFeature::MODULE_INDIA_PINCODE_API,
+        ], true)) {
+            return [
+                'allowed' => true,
+                'status' => 200,
+                'message' => 'Access granted.',
+                'data' => null,
+                'reason' => 'free_tier_access',
+                'required_module' => $module,
+                'subscription' => $subscription,
+            ];
+        }
+
         if (!$subscription->hasFeature($module)) {
             return [
                 'allowed' => false,
@@ -131,10 +148,21 @@ class SubscriptionAccessService
             return true;
         }
 
-        return SubscriptionFeature::query()
+        $exists = SubscriptionFeature::query()
             ->where('key', $module)
             ->where('is_active', true)
             ->exists();
+
+        // Keep API access checks compatible with installations that have run the
+        // feature-table migrations but have not yet re-run the seeders.
+        return $exists || in_array($module, [
+            SubscriptionFeature::MODULE_ADDRESS_API,
+            SubscriptionFeature::MODULE_BANKING_CURRENCY_API,
+            SubscriptionFeature::MODULE_STOCKS_MUTUAL_FUNDS_API,
+            SubscriptionFeature::MODULE_ALL_API,
+            SubscriptionFeature::MODULE_INDIA_PINCODE_API,
+            SubscriptionFeature::MODULE_IFSC_API,
+        ], true);
     }
 
     protected function subscriptionQuery(User $user): HasMany

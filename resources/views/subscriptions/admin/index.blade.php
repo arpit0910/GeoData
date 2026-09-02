@@ -36,6 +36,32 @@
 @endsection
 
 @section('modals')
+<!-- Assign Subscription Modal -->
+<div id="assignPlanModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="assignPlanForm">
+                @csrf
+                <input type="hidden" id="plan_subscription_id">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg font-medium text-gray-900">Assign Subscription</h3>
+                    <p class="mt-2 text-sm text-gray-500">Choose a plan for <span id="planUserName" class="font-bold text-gray-900"></span>. Their current active subscription will be replaced.</p>
+                    <select id="planInput" class="mt-4 block w-full border-gray-300 rounded-md shadow-sm" required>
+                        @foreach($plans as $plan)
+                            <option value="{{ $plan->id }}">{{ $plan->name }} · {{ ucfirst($plan->billing_cycle) }} · ₹{{ number_format($plan->amount, 2) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md px-4 py-2 bg-amber-600 text-white sm:ml-3 sm:w-auto sm:text-sm">Assign</button>
+                    <button type="button" onclick="closePlanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <!-- Assign Credits Modal -->
 <div id="assignCreditsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -148,7 +174,8 @@
                         let userName = row.user ? row.user.name : 'User';
                         return `
                             <div class="flex justify-end space-x-2">
-                                <button onclick="openAssignModal(${data}, '${userName}')" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Assign Credits"><i class="fas fa-coins"></i></button>
+                                <button onclick="openPlanModal(${data}, '${userName.replace(/'/g, "\\'")}')" class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Assign Subscription"><i class="fas fa-id-card"></i></button>
+                                <button onclick="openAssignModal(${data}, '${userName.replace(/'/g, "\\'")}')" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Assign Credits"><i class="fas fa-coins"></i></button>
                                 <a href="${showUrl}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details"><i class="fas fa-eye"></i></a>
                             </div>
                         `;
@@ -189,6 +216,22 @@
                 }
             });
         });
+
+        $('#assignPlanForm').on('submit', function(e) {
+            e.preventDefault();
+            const id = $('#plan_subscription_id').val();
+            $.ajax({
+                url: `/admin/subscriptions/${id}/assign-plan`,
+                type: 'POST',
+                data: { _token: $('input[name="_token"]').first().val(), plan_id: $('#planInput').val() },
+                success: function(response) {
+                    toastr.success(response.message);
+                    closePlanModal();
+                    table.ajax.reload(null, false);
+                },
+                error: function(xhr) { toastr.error(xhr.responseJSON?.message || 'Could not assign subscription'); }
+            });
+        });
     });
 
     function openAssignModal(id, name) {
@@ -200,6 +243,16 @@
 
     function closeModal() {
         $('#assignCreditsModal').addClass('hidden');
+    }
+
+    function openPlanModal(id, name) {
+        $('#plan_subscription_id').val(id);
+        $('#planUserName').text(name);
+        $('#assignPlanModal').removeClass('hidden');
+    }
+
+    function closePlanModal() {
+        $('#assignPlanModal').addClass('hidden');
     }
 </script>
 @endpush

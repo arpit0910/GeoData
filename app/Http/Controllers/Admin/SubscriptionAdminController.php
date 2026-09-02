@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Subscription;
 use App\Models\TransactionHistory;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SubscriptionAdminController extends Controller
 {
@@ -48,13 +50,71 @@ class SubscriptionAdminController extends Controller
             ]);
         }
 
-        return view('subscriptions.admin.index');
+        $plans = Plan::where('status', 1)->orderBy('amount')->orderBy('name')->get();
+        return view('subscriptions.admin.index', compact('plans'));
     }
 
     public function show(Subscription $subscription)
     {
         $subscription->load(['user', 'plan']);
         return view('subscriptions.admin.show', compact('subscription'));
+    }
+
+    public function assignPlan(Request $request, Subscription $subscription)
+    {
+        $validated = $request->validate(['plan_id' => 'required|exists:plans,id']);
+        $plan = Plan::findOrFail($validated['plan_id']);
+
+        DB::transaction(function () use ($subscription, $plan) {
+            Subscription::where('user_id', $subscription->user_id)
+                ->where('status', 'active')
+                ->update(['status' => 'expired']);
+
+            $expiresAt = match ($plan->billing_cycle) {
+                'monthly' => now()->addMonth(),
+                'yearly' => now()->addYear(),
+                default => now()->addYears(100),
+            };
+            $credits = $plan->api_hits_limit ?? 999999999;
+            $reference = 'admin-manual-' . $subscription->user_id . '-' . Str::lower(Str::random(10));
+
+            $newSubscription = Subscription::create([
+                'user_id' => $subscription->user_id,
+                'plan_id' => $plan->id,
+                'razorpay_order_id' => $reference,
+                'amount_paid' => 0,
+                'discount_amount' => 0,
+                'remaining_discount_cycles' => 0,
+                'status' => 'active',
+                'expires_at' => $expiresAt,
+                'total_credits' => $credits,
+                'used_credits' => 0,
+                'available_credits' => $credits,
+                'last_credit_refresh' => now(),
+            ]);
+
+            $newSubscription->user()->update([
+                'plan_id' => $plan->id,
+                'available_credits' => $credits,
+                'status' => 1,
+            ]);
+
+            TransactionHistory::create([
+                'user_id' => $subscription->user_id,
+                'subscription_id' => $newSubscription->id,
+                'plan_id' => $plan->id,
+                'razorpay_order_id' => $reference,
+                'amount' => 0,
+                'discount_amount' => 0,
+                'plan_name' => $plan->name,
+                'billing_cycle' => $plan->billing_cycle,
+                'status' => 'success',
+                'type' => 'admin_assignment',
+                'credits' => $credits,
+            ]);
+        });
+
+        return response()->json(['status' => true, 'message' => "{$plan->name} assigned successfully."]);
     }
 
     public function assignCredits(Request $request, Subscription $subscription)

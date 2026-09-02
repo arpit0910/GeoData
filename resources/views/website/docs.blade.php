@@ -847,6 +847,31 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                 </div>
                             </div>
 
+                            <!-- India Pincode -->
+                            <div id="india-pincode" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden mb-6">
+                                <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                    <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /india/pincode/{pincode}</h3>
+                                    <span class="bg-green-600/20 text-green-400 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-green-600/30">Free tier</span>
+                                </div>
+                                <div class="p-6">
+                                    <p class="mb-4">Fetch details for one Indian pincode. This endpoint returns a single object, not an array.</p>
+                                    <p class="text-sm text-gray-400 mb-4">Example: <code class="text-amber-400">GET {{ url('/api/v1/india/pincode/400001') }}</code></p>
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                    <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"pincode"</span>: <span class="text-green-400">"400001"</span>,
+    <span class="text-blue-400">"country"</span>: <span class="text-green-400">"India"</span>,
+    <span class="text-blue-400">"state"</span>: <span class="text-green-400">"Maharashtra"</span>,
+    <span class="text-blue-400">"city"</span>: <span class="text-green-400">"Mumbai"</span>,
+    <span class="text-blue-400">"area"</span>: <span class="text-green-400">"Fort"</span>,
+    <span class="text-blue-400">"latitude"</span>: <span class="text-green-400">"18.9398"</span>,
+    <span class="text-blue-400">"longitude"</span>: <span class="text-green-400">"72.8354"</span>
+  }
+}</pre></div>
+                                </div>
+                            </div>
+
                             <!-- Pincode Search -->
                             <div id="pincode-search"
                                 class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">

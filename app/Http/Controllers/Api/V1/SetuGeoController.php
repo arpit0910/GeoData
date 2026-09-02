@@ -335,6 +335,46 @@ class SetuGeoController extends Controller
     }
 
     /**
+     * Retrieve one Indian pincode record as a single object.
+     */
+    public function indiaPincode(string $pincode)
+    {
+        if (!preg_match('/^[1-9][0-9]{5}$/', $pincode)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please provide a valid 6-digit Indian pincode.',
+            ], 400);
+        }
+
+        $record = Pincode::with(['state', 'city', 'country'])
+            ->where('postal_code', $pincode)
+            ->whereHas('country', fn ($query) => $query->where('iso2', 'IN'))
+            ->orderByRaw('city_id IS NULL')
+            ->first();
+
+        if (!$record) {
+            return response()->json(['success' => false, 'message' => 'Indian pincode not found.'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'pincode' => $record->postal_code,
+                'country' => $record->country?->name,
+                'country_code' => $record->country?->iso2,
+                'state' => $record->state?->name,
+                'state_code' => $record->state?->state_code,
+                'city' => $record->city?->name,
+                'area' => $record->area,
+                'county' => $record->county,
+                'latitude' => $record->latitude,
+                'longitude' => $record->longitude,
+                'accuracy' => $record->accuracy,
+            ],
+        ]);
+    }
+
+    /**
      * Retrieve the active user's current API usage and credit balance.
      */
     public function usage(Request $request)

@@ -14,16 +14,31 @@ class PlanSeeder extends Seeder
     {
         $plans = [
             [
+                'name' => 'Free Developer',
+                'amount' => 0,
+                'discount_amount' => 0,
+                'billing_cycle' => 'monthly',
+                'api_hits_limit' => 1000,
+                'status' => 1,
+                'terms' => 'Free access to IFSC and Indian pincode APIs.',
+                'benefits' => ['IFSC lookup', 'India pincode lookup', '1,000 API calls per month'],
+                'features' => [
+                    SubscriptionFeature::MODULE_IFSC_API,
+                    SubscriptionFeature::MODULE_INDIA_PINCODE_API,
+                ],
+            ],
+            [
                 'name' => 'Bronze',
                 'amount' => 0,
                 'discount_amount' => 0,
                 'billing_cycle' => 'monthly',
                 'api_hits_limit' => 200,
                 'status' => 1,
-                'terms' => 'Free Bronze Plan with basic API access.',
-                'benefits' => ['Basic Data Access', 'Standard Support'],
+                'terms' => 'Free plan for IFSC and Indian pincode lookups.',
+                'benefits' => ['IFSC lookup', 'India pincode lookup', 'Standard Support'],
                 'features' => [
-                    SubscriptionFeature::MODULE_ADDRESS_API,
+                    SubscriptionFeature::MODULE_IFSC_API,
+                    SubscriptionFeature::MODULE_INDIA_PINCODE_API,
                 ],
             ],
             [

@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\BankBranchController;
 use App\Http\Controllers\Admin\ApiTesterController;
 use App\Http\Controllers\CurrencyConversionController;
+use App\Http\Controllers\ApiAccessController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/landing-v1', [HomeController::class, 'landingV1'])->name('landing.v1');
@@ -66,6 +67,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'profile.complete.check', 'subscribed'])->name('dashboard');
+
+Route::get('/available-apis', [ApiAccessController::class, 'index'])
+    ->middleware(['auth', 'profile.complete.check', 'subscribed'])
+    ->name('available-apis.index');
 
 Route::middleware(['auth', 'admin'])->group(function () {
 
@@ -153,6 +158,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
         Route::get('/', [SubscriptionAdminController::class, 'index'])->name('index');
         Route::get('/{subscription}', [SubscriptionAdminController::class, 'show'])->name('show');
+        Route::post('/{subscription}/assign-plan', [SubscriptionAdminController::class, 'assignPlan'])->name('assign-plan');
         Route::post('/{subscription}/assign-credits', [SubscriptionAdminController::class, 'assignCredits'])->name('assign-credits');
     });
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WelcomeMail;
+use App\Services\FreeRegistrationSubscriptionService;
 
 class AuthController extends Controller
 {
@@ -59,7 +60,7 @@ class AuthController extends Controller
     /**
      * Handle user registration.
      */
-    public function register(Request $request)
+    public function register(Request $request, FreeRegistrationSubscriptionService $freeSubscription)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -82,6 +83,8 @@ class AuthController extends Controller
             'status' => null,
             'available_credits' => 0,
         ]);
+
+        $freeSubscription->provision($user);
 
         try {
             Mail::to($user->email)->send(new WelcomeMail($user));

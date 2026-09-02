@@ -128,7 +128,7 @@
                             Buy Now
                         </button>
 
-                    @elseif($isUpgrade)
+                    @elseif($isUpgrade && config('services.subscriptions.purchases_enabled'))
                         {{-- Higher price plan — Upgrade Now --}}
                         @auth
                             <a href="{{ route('subscription.pricing') }}#plan-{{ $plan->id }}"
@@ -165,7 +165,7 @@
                             </a>
                         @endauth
 
-                    @else
+                    @elseif(config('services.subscriptions.purchases_enabled'))
                         {{-- Paid plan, no current subscription --}}
                         @auth
                             <a href="{{ route('subscription.pricing') }}"
@@ -177,7 +177,11 @@
                                 class="mt-auto block w-full bg-white/5 border border-white/10 text-white hover:bg-amber-600 hover:border-amber-600 text-center font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-sm">
                                 Get Started
                             </a>
-                        @endauth
+                            @endauth
+                    @else
+                        <button disabled class="mt-auto block w-full bg-white/5 border border-white/10 text-gray-500 text-center font-bold py-3.5 px-4 rounded-xl cursor-not-allowed">
+                            Paid Plans Coming Soon
+                        </button>
                     @endif
                 </div>
             @endforeach

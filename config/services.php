@@ -41,4 +41,9 @@ return [
         'overview_endpoint' => env('FINANCIAL_API_OVERVIEW_ENDPOINT'),
     ],
 
+    'subscriptions' => [
+        // Keep paid checkout off until the live Razorpay keys are configured.
+        'purchases_enabled' => (bool) env('SUBSCRIPTION_PURCHASES_ENABLED', false),
+    ],
+
 ];

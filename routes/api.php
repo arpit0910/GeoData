@@ -52,6 +52,12 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'subscription:banking_currency_api', 'api.credits'])
         ->group(base_path('routes/api/banking-currency.php'));
 
+    Route::middleware(['auth:sanctum', 'subscription:ifsc_api', 'api.credits'])
+        ->group(base_path('routes/api/ifsc.php'));
+
+    Route::middleware(['auth:sanctum', 'subscription:india_pincode_api', 'api.credits'])
+        ->group(base_path('routes/api/india-pincode.php'));
+
     Route::middleware(['auth:sanctum', 'subscription:stocks_mutual_funds_api', 'api.credits'])
         ->group(base_path('routes/api/stocks-mutual-funds.php'));
 

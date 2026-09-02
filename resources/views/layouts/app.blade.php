@@ -140,6 +140,12 @@
                         <i class="fas fa-book-open mr-3 w-5"></i>
                         Docs
                     </a>
+                    @if(auth()->check() && !auth()->user()->is_admin)
+                    <a href="{{ route('available-apis.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('available-apis.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-code mr-3 w-5"></i>
+                        Available APIs
+                    </a>
+                    @endif
                     @if(auth()->check() && auth()->user()->is_admin)
                     <a href="{{ route('admin.api-tester.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.api-tester.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-vial mr-3 w-5"></i>
