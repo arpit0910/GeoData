@@ -503,7 +503,21 @@ class SetuGeoController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $branch
+            'data' => [
+                'ifsc' => $branch->ifsc,
+                'bank_name' => $branch->bank?->name,
+                'branch' => $branch->branch,
+                'address' => $branch->address,
+                'city' => $branch->city?->name,
+                'state' => $branch->state?->name,
+                'micr' => $branch->micr,
+                'contact' => $branch->contact,
+                'imps' => (bool) $branch->imps,
+                'rtgs' => (bool) $branch->rtgs,
+                'neft' => (bool) $branch->neft,
+                'upi' => (bool) $branch->upi,
+                'swift' => (bool) $branch->swift,
+            ],
         ], 200);
     }
 

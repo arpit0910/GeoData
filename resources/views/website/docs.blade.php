@@ -1199,10 +1199,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
   <span class="text-blue-400">"data"</span>: {
     <span class="text-blue-400">"ifsc"</span>: <span class="text-green-400">"SBIN0000001"</span>,
-    <span class="text-blue-400">"bank"</span>: {
-      <span class="text-blue-400">"id"</span>: <span class="text-blue-400">1</span>,
-      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"State Bank of India"</span>
-    },
+    <span class="text-blue-400">"bank_name"</span>: <span class="text-green-400">"State Bank of India"</span>,
     <span class="text-blue-400">"branch"</span>: <span class="text-green-400">"Kolkata Main Branch"</span>,
     <span class="text-blue-400">"address"</span>: <span class="text-green-400">"Samriddhi Bhavan, 1, Strand Road, Kolkata"</span>,
     <span class="text-blue-400">"city"</span>: {

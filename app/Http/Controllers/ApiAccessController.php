@@ -42,7 +42,7 @@ class ApiAccessController extends Controller
                     'description' => 'Fetch bank branch details using an IFSC code.', 'anchor' => 'branch-info',
                     'parameters' => [['name' => 'ifsc', 'location' => 'Path', 'required' => true, 'description' => 'The bank IFSC code, for example SBIN0000001.']],
                     'example' => "curl --request GET \"" . url('/api/v1/bank/ifsc/SBIN0000001') . "\"\n  --header \"Authorization: Bearer YOUR_API_TOKEN\"",
-                    'response' => ['success' => true, 'data' => ['ifsc' => 'SBIN0000001', 'branch' => 'Fort Branch', 'bank' => ['name' => 'State Bank of India'], 'address' => 'D N Road, Fort, Mumbai']],
+                    'response' => ['success' => true, 'data' => ['ifsc' => 'SBIN0000001', 'bank_name' => 'State Bank of India', 'branch' => 'Fort Branch', 'address' => 'D N Road, Fort, Mumbai', 'city' => 'Mumbai', 'state' => 'Maharashtra', 'micr' => '400002001']],
                 ]],
             ];
         }
