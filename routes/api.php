@@ -32,6 +32,7 @@ Route::prefix('v1')->group(function () {
     Route::prefix('market')->group(function () {
         Route::get('/stocks', [MarketDataController::class, 'stocks']);
         Route::get('/indices', [MarketDataController::class, 'indices']);
+        Route::get('/equity/{isin}', [MarketDataController::class, 'equityQuote']);
         Route::get('/quote/{symbol}', [MarketDataController::class, 'quote']);
     });
 

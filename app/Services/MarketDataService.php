@@ -22,7 +22,7 @@ class MarketDataService
      */
     public function getQuote(string $symbol): array
     {
-        $symbol = trim($symbol);
+        $symbol = strtoupper(trim($symbol));
         $cacheKey = $this->cacheKey($symbol);
 
         try {
@@ -132,72 +132,29 @@ class MarketDataService
             'currency' => data_get($meta, 'currency'),
             'exchange' => data_get($meta, 'exchangeName', data_get($meta, 'fullExchangeName')),
             'fetched_at' => now()->toIso8601String(),
+            'quoted_at' => is_numeric(data_get($meta, 'regularMarketTime'))
+                ? \Carbon\Carbon::createFromTimestampUTC((int) $meta['regularMarketTime'])->toIso8601String()
+                : null,
             'source' => 'live',
         ];
     }
 
-    /**
-     * Prefer Laravel's HTTP client, but fall back to PHP streams when the
-     * local cURL/OpenSSL bundle cannot validate Yahoo's certificate chain.
-     */
     private function fetchLivePayload(string $symbol): array
     {
-        try {
-            $response = Http::acceptJson()
-                ->withHeaders([
-                    'User-Agent' => 'Mozilla/5.0',
-                ])
-                ->timeout(10)
-                ->retry(1, 250)
-                ->get(self::BASE_URL.rawurlencode($symbol), [
-                    'interval' => '1d',
-                    'range' => '1d',
-                ])
-                ->throw();
+        $response = Http::acceptJson()
+            ->withOptions(['verify' => config('market_data.ca_bundle') ?: true])
+            ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+            ->connectTimeout(5)
+            ->timeout(10)
+            ->get(self::BASE_URL.rawurlencode($symbol), ['interval' => '1d', 'range' => '1d'])
+            ->throw();
 
-            return $this->transformResponse($symbol, $response->json());
-        } catch (Throwable $exception) {
-            Log::warning('Laravel HTTP client failed for Yahoo Finance, trying stream fallback.', [
-                'symbol' => $symbol,
-                'message' => $exception->getMessage(),
-            ]);
-
-            return $this->transformResponse($symbol, $this->fetchViaStream($symbol));
-        }
-    }
-
-    private function fetchViaStream(string $symbol): array
-    {
-        $url = self::BASE_URL.rawurlencode($symbol).'?interval=1d&range=1d';
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'timeout' => 10,
-                'header' => implode("\r\n", [
-                    'Accept: application/json',
-                    'User-Agent: Mozilla/5.0',
-                ]),
-            ],
-        ]);
-
-        $body = @file_get_contents($url, false, $context);
-
-        if ($body === false) {
-            throw new RuntimeException('Yahoo Finance stream fallback request failed.');
-        }
-
-        $decoded = json_decode($body, true);
-
-        if (! is_array($decoded)) {
-            throw new RuntimeException('Yahoo Finance stream fallback returned invalid JSON.');
-        }
-
-        return $decoded;
+        return $this->transformResponse($symbol, $response->json());
     }
 
     private function toFloat(mixed $value): ?float
     {
-        if ($value === null || $value === '') {
+        if (! is_numeric($value) || ! is_finite((float) $value)) {
             return null;
         }
 

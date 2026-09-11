@@ -13,6 +13,20 @@ class MarketDataController extends Controller
     {
     }
 
+    public function equityQuote(string $isin): JsonResponse
+    {
+        $isin = strtoupper(trim($isin));
+        if (!preg_match('/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/', $isin)) {
+            return response()->json(['success' => false, 'message' => 'Invalid ISIN.'], 422);
+        }
+        $quotes = app(\App\Services\EquityQuoteService::class)->latest($isin);
+        return response()->json([
+            'success' => $quotes !== [],
+            'isin' => $isin,
+            'data' => $quotes,
+        ], $quotes === [] ? 404 : 200);
+    }
+
     /**
      * GET /api/v1/market/stocks?symbols=AAPL,MSFT,TSLA
      */

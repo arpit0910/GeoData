@@ -202,6 +202,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Equity Management
     Route::prefix('equities')->name('equities.')->group(function () {
+        Route::get('/quotes', [App\Http\Controllers\Admin\EquityQuoteController::class, 'index'])->name('quotes');
         Route::get('/', [App\Http\Controllers\Admin\EquityController::class, 'index'])->name('index');
         Route::get('/prices', [App\Http\Controllers\Admin\EquityController::class, 'prices'])->name('prices');
         Route::get('/prices/data', [App\Http\Controllers\Admin\EquityController::class, 'pricesData'])->name('prices.data');
