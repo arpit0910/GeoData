@@ -17,6 +17,13 @@ class MarketDataService
     private const BASE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 
     /**
+     * Yahoo's spark endpoint accepts multiple symbols in one request. This is
+     * essential for the equity master, which contains several thousand symbols.
+     */
+    private const BATCH_URL = 'https://query1.finance.yahoo.com/v7/finance/spark';
+    private const BATCH_SIZE = 20;
+
+    /**
      * Fetch a single symbol and cache the latest good payload forever.
      * If Yahoo fails, we fall back to the last cached state.
      */
@@ -67,8 +74,52 @@ class MarketDataService
     {
         $quotes = [];
 
-        foreach ($this->normalizeSymbols($symbols) as $symbol) {
-            $quotes[$symbol] = $this->getQuote($symbol);
+        foreach (array_chunk($this->normalizeSymbols($symbols), self::BATCH_SIZE) as $batch) {
+            try {
+                $response = Http::acceptJson()
+                    ->withOptions(['verify' => config('market_data.ca_bundle') ?: true])
+                    ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                    ->connectTimeout(5)
+                    ->timeout(15)
+                    ->get(self::BATCH_URL, [
+                        'symbols' => implode(',', $batch),
+                        'interval' => '1d',
+                        'range' => '1d',
+                    ])
+                    ->throw()
+                    ->json();
+
+                $results = collect(data_get($response, 'spark.result', []))
+                    ->filter(fn ($result) => is_array($result) && ! empty($result['symbol']))
+                    ->keyBy(fn ($result) => strtoupper((string) $result['symbol']));
+
+                foreach ($batch as $symbol) {
+                    $result = $results->get($symbol);
+                    $chart = is_array($result) ? data_get($result, 'response.0') : null;
+
+                    if (! is_array($chart)) {
+                        $quotes[$symbol] = $this->fallbackPayload(
+                            $symbol,
+                            new RuntimeException('Symbol missing from Yahoo Finance batch response.')
+                        );
+                        continue;
+                    }
+
+                    try {
+                        $payload = $this->transformResponse($symbol, [
+                            'chart' => ['result' => [$chart], 'error' => null],
+                        ]);
+                        $this->storeQuoteCache($this->cacheKey($symbol), $payload);
+                        $quotes[$symbol] = $payload;
+                    } catch (Throwable $exception) {
+                        $quotes[$symbol] = $this->fallbackPayload($symbol, $exception);
+                    }
+                }
+            } catch (Throwable $exception) {
+                foreach ($batch as $symbol) {
+                    $quotes[$symbol] = $this->fallbackPayload($symbol, $exception);
+                }
+            }
         }
 
         return $quotes;
@@ -201,5 +252,33 @@ class MarketDataService
                 return null;
             }
         }
+    }
+
+    private function fallbackPayload(string $symbol, Throwable $exception): array
+    {
+        $cached = $this->readQuoteCache($this->cacheKey($symbol));
+
+        Log::warning('Yahoo Finance live quote fetch failed; falling back to cache.', [
+            'symbol' => $symbol,
+            'message' => $exception->getMessage(),
+            'has_cached_value' => ! empty($cached),
+        ]);
+
+        if (! empty($cached)) {
+            $cached['source'] = 'cache';
+            return $cached;
+        }
+
+        return [
+            'symbol' => $symbol,
+            'price' => null,
+            'previous_close' => null,
+            'd' => null,
+            'dp' => null,
+            'currency' => null,
+            'exchange' => null,
+            'fetched_at' => now()->toIso8601String(),
+            'source' => 'unavailable',
+        ];
     }
 }

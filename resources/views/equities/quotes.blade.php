@@ -7,8 +7,16 @@
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Latest Stock Quotes</h1>
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Latest saved price per ISIN and exchange. All times are in IST.</p>
     </div>
-    <a href="{{ request()->fullUrl() }}" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold"><i class="fas fa-rotate mr-2" aria-hidden="true"></i>Refresh view</a>
+    <div class="flex items-center gap-3">
+        <form method="POST" action="{{ route('equities.quotes.sync') }}" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=&quot;fas fa-spinner fa-spin mr-2&quot;></i>Syncing…';">
+            @csrf
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white text-sm font-bold"><i class="fas fa-cloud-arrow-down mr-2" aria-hidden="true"></i>Sync latest quotes</button>
+        </form>
+        <a href="{{ request()->fullUrl() }}" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold"><i class="fas fa-rotate mr-2" aria-hidden="true"></i>Refresh view</a>
+    </div>
 </div>
+@if (session('success'))<div class="mb-5 rounded-xl bg-green-100 px-4 py-3 text-sm font-medium text-green-800">{{ session('success') }}</div>@endif
+@if (session('error'))<div class="mb-5 rounded-xl bg-red-100 px-4 py-3 text-sm font-medium text-red-800">{{ session('error') }}</div>@endif
 <form method="GET" action="{{ route('equities.quotes') }}" class="mb-6 p-5 rounded-2xl bg-white dark:bg-richdark-card border border-gray-200 dark:border-white/10 flex flex-wrap items-end gap-4">
     <div class="flex-1 min-w-48">
         <label for="search" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Company, symbol or ISIN</label>

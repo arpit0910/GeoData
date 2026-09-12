@@ -88,9 +88,9 @@ class CronController extends Controller
             [
                 'title' => 'market:fetch-live',
                 'command' => 'market:fetch-live',
-                'args' => [],
-                'description' => 'Fetches live market data every minute.',
-                'schedule' => 'Every minute',
+                'args' => ['--allow-partial' => true],
+                'description' => 'Fetches and stores the latest available NSE/BSE quote snapshots.',
+                'schedule' => 'Every 15 minutes on weekdays, 09:15–16:00',
                 'timezone' => 'Asia/Kolkata',
                 'overlap' => false,
             ],

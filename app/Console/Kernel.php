@@ -66,7 +66,7 @@ class Kernel extends ConsoleKernel
             ->onSuccess(fn() => $this->logCronRun('equities:sync-fundamentals', true))
             ->onFailure(fn() => $this->logCronRun('equities:sync-fundamentals', false));
 
-        $schedule->command('market:fetch-live')
+        $schedule->command('market:fetch-live --allow-partial')
             ->everyFifteenMinutes()
             ->timezone('Asia/Kolkata')
             ->weekdays()

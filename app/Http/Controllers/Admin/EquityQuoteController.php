@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class EquityQuoteController extends Controller
@@ -40,5 +41,29 @@ class EquityQuoteController extends Controller
             $quote->stale = $quote->quoted_at < $cutoff;
         }
         return view('equities.quotes', compact('quotes', 'filters'));
+    }
+
+    public function sync()
+    {
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+
+        try {
+            $exitCode = Artisan::call('market:fetch-live', ['--allow-partial' => true]);
+            $output = trim(Artisan::output());
+        } catch (\Throwable $exception) {
+            return redirect()->route('equities.quotes')->with(
+                'error',
+                'Quote sync could not start: '.$exception->getMessage()
+            );
+        }
+        $summary = last(array_filter(explode("\n", $output))) ?: '';
+
+        return redirect()->route('equities.quotes')->with(
+            $exitCode === 0 ? 'success' : 'error',
+            $exitCode === 0
+                ? 'Latest stock quotes synced. '.$summary
+                : 'Quote sync failed. '.($output ?: 'No eligible quotes were returned by the provider.')
+        );
     }
 }

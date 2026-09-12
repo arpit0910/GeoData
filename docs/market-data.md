@@ -29,8 +29,9 @@ Optional Yahoo symbols must map to the master, for example:
 The Laravel schedule runs every 15 minutes on weekdays from 09:15 through
 16:00 Asia/Kolkata. It prevents overlapping runs, runs in the background,
 and records success/failure in the existing cron logs. Holidays may return
-the previous session's quote. Large universes are fetched sequentially and
-can take longer than 15 minutes; overlapping cycles are skipped.
+the previous session's quote. Large universes are fetched in provider batches;
+overlapping cycles are skipped. Bulk scheduled/UI runs allow partial provider
+coverage and report saved/failed counts. Targeted command runs remain strict.
 
 On Linux, add this crontab entry (replace the deployment path):
 
