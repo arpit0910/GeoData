@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\EquityApiController;
+use App\Http\Controllers\Api\V1\ExchangeCalendarController;
 use App\Http\Controllers\Api\V1\IndexApiController;
 use App\Http\Controllers\Api\V1\MarketApiController;
 use App\Http\Controllers\Api\V1\MfApiController;
@@ -61,3 +62,6 @@ Route::get('/mf/{isin}/similar-funds', [MfApiController::class, 'similarFunds'])
 Route::get('/market/snapshot', [MarketApiController::class, 'snapshot']);
 Route::get('/market/heatmap', [MarketApiController::class, 'heatmap']);
 Route::get('/market/breadth', [MarketApiController::class, 'breadth']);
+
+Route::get('/market-calendar/holidays', [ExchangeCalendarController::class, 'index']);
+Route::get('/market-calendar/check', [ExchangeCalendarController::class, 'check']);

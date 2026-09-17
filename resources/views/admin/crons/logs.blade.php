@@ -86,7 +86,9 @@ $(document).ready(function () {
                     const label = data || 'scheduled';
                     const classes = label === 'manual'
                         ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+                        : (label === 'cli'
+                            ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400');
                     return `<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${classes}">${label}</span>`;
                 }
             },

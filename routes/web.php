@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\BankBranchController;
 use App\Http\Controllers\Admin\ApiTesterController;
 use App\Http\Controllers\CurrencyConversionController;
 use App\Http\Controllers\ApiAccessController;
+use App\Http\Controllers\Admin\ExchangeCalendarEventController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/landing-v1', [HomeController::class, 'landingV1'])->name('landing.v1');
@@ -201,6 +202,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     // Equity Management
+    Route::resource('admin/exchange-calendar', ExchangeCalendarEventController::class, [
+        'as' => 'admin',
+        'parameters' => ['exchange-calendar' => 'exchangeCalendar'],
+    ]);
+
     Route::prefix('equities')->name('equities.')->group(function () {
         Route::get('/quotes', [App\Http\Controllers\Admin\EquityQuoteController::class, 'index'])->name('quotes');
         Route::post('/quotes/sync', [App\Http\Controllers\Admin\EquityQuoteController::class, 'sync'])->name('quotes.sync');

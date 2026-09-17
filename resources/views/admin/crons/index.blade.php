@@ -20,7 +20,7 @@
                 <tr>
                     <th class="border-b border-gray-100 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Command</th>
                     <th class="border-b border-gray-100 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Schedule</th>
-                    <th class="border-b border-gray-100 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Last Run</th>
+                    <th class="border-b border-gray-100 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Last Execution</th>
                     <th class="border-b border-gray-100 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Total Runs</th>
                     <th class="border-b border-gray-100 px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Actions</th>
                 </tr>
@@ -28,16 +28,24 @@
             <tbody class="divide-y divide-gray-50 dark:divide-white/5">
                 @foreach($crons as $cron)
                 @php
-                    $lastRan = $cron['last_ran_at'] ? \Carbon\Carbon::parse($cron['last_ran_at']) : null;
+                    $lastRun = $cron['last_run'];
+                    $lastRan = $lastRun?->ran_at;
                     $isRecent = $lastRan && $lastRan->gt(now()->subHours(26));
                     $isMaintenance = str_contains(strtolower($cron['schedule']), 'manual one-time maintenance');
+                    $stateLabel = !$lastRun ? 'Never' : (!$lastRun->status ? 'Failed' : ($isRecent ? 'Healthy' : 'Completed'));
+                    $stateClasses = !$lastRun
+                        ? 'bg-gray-100 text-gray-400 dark:bg-white/5'
+                        : (!$lastRun->status
+                            ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                            : ($isRecent ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400'));
+                    $dotClasses = !$lastRun ? 'bg-gray-400' : (!$lastRun->status ? 'bg-red-500' : ($isRecent ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'));
                 @endphp
                 <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
                     <td class="px-6 py-5">
                         <div class="flex items-center gap-3">
-                            <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest {{ $isRecent ? 'bg-green-500/10 text-green-600 dark:text-green-400' : ($lastRan ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' : 'bg-gray-100 text-gray-400 dark:bg-white/5') }}">
-                                <span class="h-1.5 w-1.5 rounded-full {{ $isRecent ? 'bg-green-500 animate-pulse' : ($lastRan ? 'bg-yellow-500' : 'bg-gray-400') }}"></span>
-                                {{ $isRecent ? 'Active' : ($lastRan ? 'Idle' : 'Never') }}
+                            <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest {{ $stateClasses }}">
+                                <span class="h-1.5 w-1.5 rounded-full {{ $dotClasses }}"></span>
+                                {{ $stateLabel }}
                             </span>
                             <div>
                                 <div class="flex flex-wrap items-center gap-2">
@@ -65,6 +73,15 @@
                         @if($lastRan)
                             <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $lastRan->diffForHumans() }}</span>
                             <span class="mt-0.5 block text-xs text-gray-400 dark:text-gray-500">{{ $lastRan->format('d M Y, H:i') }}</span>
+                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                                <span class="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest {{ $lastRun->status ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-red-500/10 text-red-600 dark:text-red-400' }}">
+                                    {{ $lastRun->status ? 'Success' : 'Failed' }}@if($lastRun->exit_code !== null) · Exit {{ $lastRun->exit_code }}@endif
+                                </span>
+                                <span class="rounded-full bg-blue-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">{{ $lastRun->source ?: 'unknown' }}</span>
+                                @if($lastRun->started_at && $lastRun->finished_at)
+                                    <span class="text-[10px] font-bold text-gray-400">{{ $lastRun->started_at->diffForHumans($lastRun->finished_at, true) }}</span>
+                                @endif
+                            </div>
                         @else
                             <span class="text-xs italic text-gray-400 dark:text-gray-600">No run recorded</span>
                         @endif

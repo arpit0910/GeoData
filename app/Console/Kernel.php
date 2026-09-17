@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\Models\CronLog;
+use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -10,71 +10,40 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('currency:fetch-rates')
-            ->dailyAt('20:30')
-            ->timezone('Asia/Kolkata')
-            ->withoutOverlapping(120)
-            ->onSuccess(fn() => $this->logCronRun('currency:fetch-rates', true))
-            ->onFailure(fn() => $this->logCronRun('currency:fetch-rates', false));
+        $this->markScheduled($schedule->command('currency:fetch-rates')
+            ->dailyAt('20:30')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $schedule->command('equities:sync')
-            ->dailyAt('19:00')
-            ->timezone('Asia/Kolkata')
-            ->withoutOverlapping(120)
-            ->onSuccess(fn() => $this->logCronRun('equities:sync', true))
-            ->onFailure(fn() => $this->logCronRun('equities:sync', false));
+        $this->markScheduled($schedule->command('equities:sync')
+            ->dailyAt('19:00')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $schedule->command('indices:sync')
-            ->dailyAt('19:15')
-            ->timezone('Asia/Kolkata')
-            ->withoutOverlapping(120)
-            ->onSuccess(fn() => $this->logCronRun('indices:sync', true))
-            ->onFailure(fn() => $this->logCronRun('indices:sync', false));
+        $this->markScheduled($schedule->command('indices:sync')
+            ->dailyAt('19:15')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $schedule->command('sync:mf-daily --force')
-            ->dailyAt('21:30')
-            ->timezone('Asia/Kolkata')
-            ->withoutOverlapping(180)
-            ->onSuccess(fn() => $this->logCronRun('sync:mf-daily (21:30)', true))
-            ->onFailure(fn() => $this->logCronRun('sync:mf-daily (21:30)', false));
+        $this->markScheduled($schedule->command('sync:mf-daily --force')
+            ->dailyAt('21:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        $schedule->command('sync:mf-daily --force')
-            ->dailyAt('23:15')
-            ->timezone('Asia/Kolkata')
-            ->withoutOverlapping(180)
-            ->onSuccess(fn() => $this->logCronRun('sync:mf-daily (23:15)', true))
-            ->onFailure(fn() => $this->logCronRun('sync:mf-daily (23:15)', false));
+        $this->markScheduled($schedule->command('sync:mf-daily --force')
+            ->dailyAt('23:15')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        $schedule->command('mf:sync-and-calculate')
-            ->dailyAt('23:30')
-            ->timezone('Asia/Kolkata')
-            ->withoutOverlapping(180)
-            ->onSuccess(fn() => $this->logCronRun('mf:sync-and-calculate (23:30)', true))
-            ->onFailure(fn() => $this->logCronRun('mf:sync-and-calculate (23:30)', false));
+        $this->markScheduled($schedule->command('mf:sync-and-calculate')
+            ->dailyAt('23:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        $schedule->command('equities:sync-metadata')
-            ->dailyAt('08:00')
-            ->timezone('Asia/Kolkata')
-            ->withoutOverlapping(60)
-            ->onSuccess(fn() => $this->logCronRun('equities:sync-metadata', true))
-            ->onFailure(fn() => $this->logCronRun('equities:sync-metadata', false));
+        $this->markScheduled($schedule->command('equities:sync-metadata')
+            ->dailyAt('08:00')->timezone('Asia/Kolkata')->withoutOverlapping(60));
 
-        $schedule->command('equities:sync-fundamentals')
-            ->dailyAt('20:00')
-            ->timezone('Asia/Kolkata')
-            ->withoutOverlapping(120)
-            ->onSuccess(fn() => $this->logCronRun('equities:sync-fundamentals', true))
-            ->onFailure(fn() => $this->logCronRun('equities:sync-fundamentals', false));
+        $this->markScheduled($schedule->command('equities:sync-fundamentals')
+            ->dailyAt('20:00')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $schedule->command('market:fetch-live --allow-partial')
+        $this->markScheduled($schedule->command('market:fetch-live --allow-partial')
             ->everyFifteenMinutes()
             ->timezone('Asia/Kolkata')
             ->weekdays()
             ->between('09:15', '16:00')
             ->runInBackground()
-            ->withoutOverlapping()
-            ->onSuccess(fn() => $this->logCronRun('market:fetch-live', true))
-            ->onFailure(fn() => $this->logCronRun('market:fetch-live', false));
+            ->withoutOverlapping());
+
+        $this->markScheduled($schedule->command('exchange-calendar:sync')
+            ->dailyAt('06:00')->timezone('Asia/Kolkata')->withoutOverlapping(60));
     }
 
     protected function commands()
@@ -84,14 +53,10 @@ class Kernel extends ConsoleKernel
         require base_path('routes/console.php');
     }
 
-    private function logCronRun(string $title, bool $status = true): void
+    private function markScheduled(Event $event): void
     {
-        CronLog::create([
-            'title' => $title,
-            'ip' => gethostbyname(gethostname()),
-            'source' => 'scheduled',
-            'status' => $status,
-            'ran_at' => now('Asia/Kolkata'),
-        ]);
+        $event
+            ->before(fn () => putenv('SETUGEO_CRON_SOURCE=scheduled'))
+            ->after(fn () => putenv('SETUGEO_CRON_SOURCE'));
     }
 }
