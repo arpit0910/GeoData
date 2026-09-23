@@ -56,6 +56,23 @@
         </div>
     </div>
 
+    <div class="mb-8 bg-rose-50/70 dark:bg-rose-500/5 border border-rose-200 dark:border-rose-500/20 rounded-2xl p-5">
+        <div class="flex items-center gap-2 mb-4">
+            <i class="fas fa-lock text-rose-500"></i>
+            <h3 class="text-xs font-black text-rose-700 dark:text-rose-300 uppercase tracking-widest">Private Upstox Mapping — Admin Only</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">NSE Instrument Key</p>
+                <code class="text-xs text-indigo-700 dark:text-indigo-300 break-all">{{ $equity->upstox_nse_instrument_key ?: 'Not mapped' }}</code>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">BSE Instrument Key</p>
+                <code class="text-xs text-amber-700 dark:text-amber-300 break-all">{{ $equity->upstox_bse_instrument_key ?: 'Not mapped' }}</code>
+            </div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <!-- Intraday & Volatility Analytics (NSE) -->
         <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">

@@ -7,7 +7,7 @@
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Manage and view all listed companies in the
                 database.</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <a href="{{ route('equities.export') }}"
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-gray-50 transition-all">
                 <i class="fas fa-download mr-2 text-amber-500"></i> Export CSV
@@ -16,10 +16,57 @@
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-gray-50 transition-all">
                 <i class="fas fa-upload mr-2 text-amber-500"></i> Import CSV
             </button>
+            <button type="button" onclick="document.getElementById('upstoxImportModal').classList.remove('hidden')"
+                class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-violet-200 dark:border-violet-500/20 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 transition-all">
+                <i class="fas fa-cloud-upload-alt mr-2"></i> Sync Upstox JSON
+            </button>
             <a href="{{ route('equities.prices') }}"
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
                 <i class="fas fa-chart-line mr-2"></i> Price Records
             </a>
+        </div>
+    </div>
+
+    {{-- Upstox JSON Import Modal --}}
+    <div id="upstoxImportModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                onclick="document.getElementById('upstoxImportModal').classList.add('hidden')"></div>
+            <div class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-lg p-6 z-10">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-violet-50 dark:bg-violet-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-link text-2xl text-violet-600 dark:text-violet-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Sync Upstox Instruments</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Upload Upstox <code>complete.json</code>. Records are matched by ISIN and NSE/BSE attributes are updated.</p>
+                </div>
+
+                <form id="upstoxImportForm" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-gray-400 mb-2">Upstox JSON File</label>
+                        <input type="file" name="file" id="upstox_file" required accept=".json,application/json"
+                            class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all">
+                        <p class="mt-2 text-xs text-gray-400">Maximum size: 100 MB. Only NSE_EQ and BSE_EQ instruments with valid ISINs are imported.</p>
+                    </div>
+
+                    <div id="upstoxImportStatus" class="hidden mb-6 p-4 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-circle-notch fa-spin text-violet-600 dark:text-violet-400"></i>
+                            <span class="text-xs font-bold text-violet-700 dark:text-violet-300">Uploading and mapping instruments...</span>
+                        </div>
+                    </div>
+
+                    <div id="upstoxImportResult" class="hidden mb-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-200"></div>
+
+                    <div class="flex justify-end gap-3" id="upstoxImportActions">
+                        <button type="button" onclick="document.getElementById('upstoxImportModal').classList.add('hidden')"
+                            class="flex-1 px-4 py-3 text-sm font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">Close</button>
+                        <button type="submit"
+                            class="flex-1 px-4 py-3 text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl shadow-lg shadow-violet-500/30 transition-all">Upload & Sync</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -88,6 +135,8 @@
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             BSE Symbol</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
+                            Upstox Keys <span class="text-[9px] text-rose-500">Admin only</span></th>
+                        <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Industry</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Category</th>
@@ -135,6 +184,22 @@
                         name: 'bse_symbol',
                         render: function(data) {
                             return data ? data : '<span class="text-gray-400">N/A</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        name: 'upstox_keys',
+                        orderable: false,
+                        render: function(data, type, row) {
+                            const escape = value => $('<div>').text(value).html();
+                            const keys = [];
+                            if (row.upstox_nse_instrument_key) {
+                                keys.push(`<div class="text-[10px] font-mono text-indigo-600 dark:text-indigo-400">${escape(row.upstox_nse_instrument_key)}</div>`);
+                            }
+                            if (row.upstox_bse_instrument_key) {
+                                keys.push(`<div class="text-[10px] font-mono text-amber-600 dark:text-amber-400">${escape(row.upstox_bse_instrument_key)}</div>`);
+                            }
+                            return keys.length ? keys.join('') : '<span class="text-gray-400">N/A</span>';
                         }
                     },
                     {
@@ -224,6 +289,57 @@
                             msg = err.responseJSON.message;
                         }
                         alert(msg);
+                    },
+                    complete: function() {
+                        status.addClass('hidden');
+                        actions.removeClass('opacity-50 pointer-events-none');
+                    }
+                });
+            });
+
+            $('#upstoxImportForm').on('submit', function(e) {
+                e.preventDefault();
+                const form = this;
+                const status = $('#upstoxImportStatus');
+                const result = $('#upstoxImportResult');
+                const actions = $('#upstoxImportActions');
+
+                status.removeClass('hidden');
+                result.addClass('hidden').empty();
+                actions.addClass('opacity-50 pointer-events-none');
+
+                $.ajax({
+                    url: "{{ route('equities.upstox.import') }}",
+                    type: 'POST',
+                    data: new FormData(form),
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        const stats = res.data;
+                        result.removeClass('bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-800 dark:text-rose-200')
+                            .addClass('bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-200')
+                            .html(`
+                            <p class="font-black mb-2">${res.message}</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <span>Unique ISINs: <strong>${stats.unique_isins}</strong></span>
+                                <span>Matched: <strong>${stats.existing}</strong></span>
+                                <span>Added: <strong>${stats.added}</strong></span>
+                                <span>Updated: <strong>${stats.updated}</strong></span>
+                                <span>Invalid rows: <strong>${stats.invalid_rows}</strong></span>
+                                <span>Unmapped existing: <strong>${stats.unmatched_existing}</strong></span>
+                            </div>
+                            `).removeClass('hidden');
+                        form.reset();
+                        table.ajax.reload(null, false);
+                    },
+                    error: function(err) {
+                        let message = 'Unable to upload the file. Verify the JSON and server upload limits.';
+                        if (err.responseJSON && err.responseJSON.message) {
+                            message = err.responseJSON.message;
+                        }
+                        result.text(message)
+                            .removeClass('hidden bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-200')
+                            .addClass('bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-800 dark:text-rose-200');
                     },
                     complete: function() {
                         status.addClass('hidden');

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Equity;
 use App\Models\EquityPrice;
+use App\Services\UpstoxInstrumentSyncService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -27,6 +29,8 @@ class EquityController extends Controller
                         ->orWhere('company_name', 'like', "%{$search}%")
                         ->orWhere('nse_symbol', 'like', "%{$search}%")
                         ->orWhere('bse_symbol', 'like', "%{$search}%")
+                        ->orWhere('upstox_nse_instrument_key', 'like', "%{$search}%")
+                        ->orWhere('upstox_bse_instrument_key', 'like', "%{$search}%")
                         ->orWhere('industry', 'like', "%{$search}%")
                         ->orWhere('market_cap', 'like', "%{$search}%");
                 });
@@ -38,6 +42,10 @@ class EquityController extends Controller
             $start = $request->start ?? 0;
 
             $data = $query->skip($start)->take($limit)->get();
+            $data->each(fn (Equity $equity) => $equity->makeVisible([
+                'upstox_nse_instrument_key',
+                'upstox_bse_instrument_key',
+            ]));
 
             return response()->json([
                 'draw' => $request->draw,
@@ -48,6 +56,52 @@ class EquityController extends Controller
         }
 
         return view('equities.index');
+    }
+
+    /**
+     * Upload and sync an Upstox complete.json instrument master.
+     */
+    public function importUpstox(Request $request, UpstoxInstrumentSyncService $syncService): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'max:102400'],
+        ]);
+
+        $file = $request->file('file');
+        if (strtolower($file->getClientOriginalExtension()) !== 'json') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please upload the Upstox complete.json file.',
+            ], 422);
+        }
+
+        set_time_limit(300);
+
+        try {
+            $stats = $syncService->sync($file->getRealPath());
+
+            Log::info('Upstox instrument master imported by admin.', [
+                'admin_id' => $request->user()?->id,
+                'original_name' => $file->getClientOriginalName(),
+                'stats' => $stats,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Upstox instruments synced successfully.',
+                'data' => $stats,
+            ]);
+        } catch (\Throwable $exception) {
+            Log::error('Upstox instrument import failed.', [
+                'admin_id' => $request->user()?->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'The Upstox instrument file could not be processed.',
+            ], 422);
+        }
     }
 
     /**

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\MarketDataController;
 use App\Http\Controllers\Api\V1\GeoAnalysisController;
 use App\Http\Controllers\Api\V1\OcrController;
 use App\Http\Controllers\Api\V1\SetuGeoController;
+use App\Http\Controllers\Api\V1\UpstoxController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('v1')->group(function () {
     Route::post('/auth/token', [AuthController::class, 'token']);
     Route::post('/webhooks/razorpay', [SubscriptionController::class, 'handleWebhook'])->name('api.razorpay.webhook');
+    Route::get('/upstox/callback', [UpstoxController::class, 'callback'])->name('api.upstox.callback');
 
     Route::get('/ocr/health', [OcrController::class, 'health']);
     Route::prefix('market')->group(function () {
