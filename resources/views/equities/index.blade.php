@@ -53,7 +53,7 @@
                     <div id="upstoxImportStatus" class="hidden mb-6 p-4 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20">
                         <div class="flex items-center gap-3">
                             <i class="fas fa-circle-notch fa-spin text-violet-600 dark:text-violet-400"></i>
-                            <span class="text-xs font-bold text-violet-700 dark:text-violet-300">Uploading and mapping instruments...</span>
+                            <span id="upstoxImportStatusText" class="text-xs font-bold text-violet-700 dark:text-violet-300">Uploading and mapping instruments...</span>
                         </div>
                     </div>
 
@@ -297,29 +297,64 @@
                 });
             });
 
-            $('#upstoxImportForm').on('submit', function(e) {
+            $('#upstoxImportForm').on('submit', async function(e) {
                 e.preventDefault();
                 const form = this;
+                const file = document.getElementById('upstox_file').files[0];
                 const status = $('#upstoxImportStatus');
+                const statusText = $('#upstoxImportStatusText');
                 const result = $('#upstoxImportResult');
                 const actions = $('#upstoxImportActions');
+                const chunkSize = 512 * 1024;
+
+                if (!file || !file.name.toLowerCase().endsWith('.json')) {
+                    result.text('Please select an Upstox JSON file.').removeClass('hidden');
+                    return;
+                }
+                if (file.size > 100 * 1024 * 1024) {
+                    result.text('The selected file exceeds the 100 MB limit.').removeClass('hidden');
+                    return;
+                }
 
                 status.removeClass('hidden');
                 result.addClass('hidden').empty();
                 actions.addClass('opacity-50 pointer-events-none');
+                const uploadId = window.crypto && window.crypto.randomUUID
+                    ? window.crypto.randomUUID()
+                    : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+                const totalChunks = Math.max(1, Math.ceil(file.size / chunkSize));
 
-                $.ajax({
-                    url: "{{ route('equities.upstox.import') }}",
-                    type: 'POST',
-                    data: new FormData(form),
-                    processData: false,
-                    contentType: false,
-                    success: function(res) {
-                        const stats = res.data;
-                        result.removeClass('bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-800 dark:text-rose-200')
-                            .addClass('bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-200')
-                            .html(`
-                            <p class="font-black mb-2">${res.message}</p>
+                try {
+                    let responseBody = null;
+                    for (let index = 0; index < totalChunks; index++) {
+                        statusText.text(`Uploading part ${index + 1} of ${totalChunks}...`);
+                        const payload = new FormData();
+                        payload.append('_token', form.querySelector('[name="_token"]').value);
+                        payload.append('upload_id', uploadId);
+                        payload.append('chunk_index', index);
+                        payload.append('total_chunks', totalChunks);
+                        payload.append('original_name', file.name);
+                        payload.append('chunk', file.slice(index * chunkSize, Math.min(file.size, (index + 1) * chunkSize)), `${index}.part`);
+
+                        const response = await fetch("{{ route('equities.upstox.import.chunk') }}", {
+                            method: 'POST',
+                            headers: { 'Accept': 'application/json' },
+                            body: payload
+                        });
+                        responseBody = await response.json().catch(() => null);
+                        if (!response.ok || !responseBody || responseBody.success !== true) {
+                            throw new Error(responseBody && responseBody.message
+                                ? responseBody.message
+                                : `Upload failed with HTTP ${response.status}.`);
+                        }
+                    }
+
+                    statusText.text('Mapping ISIN records...');
+                    const stats = responseBody.data;
+                    result.removeClass('bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-800 dark:text-rose-200')
+                        .addClass('bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-200')
+                        .html(`
+                            <p class="font-black mb-2">${responseBody.message}</p>
                             <div class="grid grid-cols-2 gap-2">
                                 <span>Unique ISINs: <strong>${stats.unique_isins}</strong></span>
                                 <span>Matched: <strong>${stats.existing}</strong></span>
@@ -328,24 +363,18 @@
                                 <span>Invalid rows: <strong>${stats.invalid_rows}</strong></span>
                                 <span>Unmapped existing: <strong>${stats.unmatched_existing}</strong></span>
                             </div>
-                            `).removeClass('hidden');
-                        form.reset();
-                        table.ajax.reload(null, false);
-                    },
-                    error: function(err) {
-                        let message = 'Unable to upload the file. Verify the JSON and server upload limits.';
-                        if (err.responseJSON && err.responseJSON.message) {
-                            message = err.responseJSON.message;
-                        }
-                        result.text(message)
-                            .removeClass('hidden bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-200')
-                            .addClass('bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-800 dark:text-rose-200');
-                    },
-                    complete: function() {
-                        status.addClass('hidden');
-                        actions.removeClass('opacity-50 pointer-events-none');
-                    }
-                });
+                        `).removeClass('hidden');
+                    form.reset();
+                    table.ajax.reload(null, false);
+                } catch (error) {
+                    result.text(error.message || 'Unable to upload and process the JSON file.')
+                        .removeClass('hidden bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-200')
+                        .addClass('bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20 text-rose-800 dark:text-rose-200');
+                } finally {
+                    status.addClass('hidden');
+                    statusText.text('Uploading and mapping instruments...');
+                    actions.removeClass('opacity-50 pointer-events-none');
+                }
             });
         });
     </script>

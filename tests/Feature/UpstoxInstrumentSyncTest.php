@@ -172,6 +172,51 @@ class UpstoxInstrumentSyncTest extends TestCase
         $this->assertDatabaseMissing('equities', ['isin' => 'INE002A01018']);
     }
 
+    public function test_admin_can_upload_and_sync_the_master_in_small_chunks(): void
+    {
+        $admin = $this->createAdminUser();
+        $json = json_encode([
+            [
+                'segment' => 'BSE_EQ',
+                'name' => 'CHUNKED COMPANY LTD',
+                'isin' => 'INE123A01010',
+                'instrument_type' => 'A',
+                'instrument_key' => 'BSE_EQ|INE123A01010',
+                'lot_size' => 1,
+                'trading_symbol' => 'CHUNKED',
+            ],
+        ], JSON_THROW_ON_ERROR);
+        $splitAt = (int) floor(strlen($json) / 2);
+        $uploadId = '12345678-1234-1234-1234-123456789012';
+
+        $first = $this->actingAs($admin)->postJson(route('equities.upstox.import.chunk'), [
+            'upload_id' => $uploadId,
+            'chunk_index' => 0,
+            'total_chunks' => 2,
+            'original_name' => 'complete.json',
+            'chunk' => UploadedFile::fake()->createWithContent('0.part', substr($json, 0, $splitAt)),
+        ]);
+        $first->assertOk()->assertJsonPath('complete', false);
+
+        $second = $this->actingAs($admin)->postJson(route('equities.upstox.import.chunk'), [
+            'upload_id' => $uploadId,
+            'chunk_index' => 1,
+            'total_chunks' => 2,
+            'original_name' => 'complete.json',
+            'chunk' => UploadedFile::fake()->createWithContent('1.part', substr($json, $splitAt)),
+        ]);
+
+        $second->assertOk()
+            ->assertJsonPath('complete', true)
+            ->assertJsonPath('data.unique_isins', 1);
+        $this->assertStringNotContainsString('BSE_EQ|INE123A01010', $second->getContent());
+        $this->assertDatabaseHas('equities', [
+            'isin' => 'INE123A01010',
+            'bse_symbol' => 'CHUNKED',
+            'upstox_bse_instrument_key' => 'BSE_EQ|INE123A01010',
+        ]);
+    }
+
     /** @param array<int, array<string, mixed>> $rows */
     private function instrumentFile(array $rows): string
     {

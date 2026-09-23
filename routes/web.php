@@ -217,6 +217,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/export', [App\Http\Controllers\Admin\EquityController::class, 'export'])->name('export');
         Route::post('/import', [App\Http\Controllers\Admin\EquityController::class, 'import'])->name('import');
         Route::post('/upstox/import', [App\Http\Controllers\Admin\EquityController::class, 'importUpstox'])->name('upstox.import');
+        Route::post('/upstox/import/chunk', [App\Http\Controllers\Admin\EquityController::class, 'importUpstoxChunk'])->name('upstox.import.chunk');
         Route::post('/sync', [App\Http\Controllers\Admin\EquityController::class, 'sync'])->name('sync');
 
         Route::get('/{equity}/edit', [App\Http\Controllers\Admin\EquityController::class, 'edit'])->name('edit');

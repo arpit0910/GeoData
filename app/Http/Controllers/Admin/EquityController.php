@@ -9,6 +9,7 @@ use App\Services\UpstoxInstrumentSyncService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class EquityController extends Controller
@@ -101,6 +102,102 @@ class EquityController extends Controller
                 'success' => false,
                 'message' => 'The Upstox instrument file could not be processed.',
             ], 422);
+        }
+    }
+
+    /**
+     * Receive a small part of a large Upstox master, then assemble and sync it.
+     */
+    public function importUpstoxChunk(Request $request, UpstoxInstrumentSyncService $syncService): JsonResponse
+    {
+        $validated = $request->validate([
+            'upload_id' => ['required', 'string', 'regex:/^[A-Za-z0-9-]{20,64}$/'],
+            'chunk_index' => ['required', 'integer', 'min:0', 'max:399'],
+            'total_chunks' => ['required', 'integer', 'min:1', 'max:400'],
+            'original_name' => ['required', 'string', 'max:255', 'regex:/\.json$/i'],
+            'chunk' => ['required', 'file', 'max:1024'],
+        ]);
+
+        $chunkIndex = (int) $validated['chunk_index'];
+        $totalChunks = (int) $validated['total_chunks'];
+        if ($chunkIndex >= $totalChunks) {
+            return response()->json(['success' => false, 'message' => 'Invalid upload chunk sequence.'], 422);
+        }
+
+        $directory = storage_path('app/upstox-imports/'.$request->user()->id.'/'.$validated['upload_id']);
+        File::ensureDirectoryExists($directory);
+        $request->file('chunk')->move($directory, sprintf('%04d.part', $chunkIndex));
+
+        if ($chunkIndex < $totalChunks - 1) {
+            return response()->json([
+                'success' => true,
+                'complete' => false,
+                'uploaded_chunks' => $chunkIndex + 1,
+                'total_chunks' => $totalChunks,
+            ]);
+        }
+
+        for ($index = 0; $index < $totalChunks; $index++) {
+            if (!is_file($directory.'/'.sprintf('%04d.part', $index))) {
+                File::deleteDirectory($directory);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An upload chunk is missing. Please restart the upload.',
+                ], 409);
+            }
+        }
+
+        $assembledPath = $directory.'/complete.json';
+
+        try {
+            $output = fopen($assembledPath, 'wb');
+            if ($output === false) {
+                throw new \RuntimeException('Unable to create the temporary instrument file.');
+            }
+
+            try {
+                for ($index = 0; $index < $totalChunks; $index++) {
+                    $part = fopen($directory.'/'.sprintf('%04d.part', $index), 'rb');
+                    if ($part === false) {
+                        throw new \RuntimeException('Unable to read an uploaded chunk.');
+                    }
+                    try {
+                        stream_copy_to_stream($part, $output);
+                    } finally {
+                        fclose($part);
+                    }
+                }
+            } finally {
+                fclose($output);
+            }
+
+            set_time_limit(300);
+            $stats = $syncService->sync($assembledPath);
+
+            Log::info('Chunked Upstox instrument master imported by admin.', [
+                'admin_id' => $request->user()->id,
+                'original_name' => $validated['original_name'],
+                'stats' => $stats,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'complete' => true,
+                'message' => 'Upstox instruments synced successfully.',
+                'data' => $stats,
+            ]);
+        } catch (\Throwable $exception) {
+            Log::error('Chunked Upstox instrument import failed.', [
+                'admin_id' => $request->user()->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'The uploaded JSON could not be processed. Check the application log for details.',
+            ], 422);
+        } finally {
+            File::deleteDirectory($directory);
         }
     }
 
