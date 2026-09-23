@@ -34,13 +34,13 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('equities:sync-fundamentals')
             ->dailyAt('20:00')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('market:fetch-live --allow-partial')
-            ->everyFifteenMinutes()
+        $this->markScheduled($schedule->command('market:sync-upstox-quotes --batch-size=500')
+            ->everyFiveMinutes()
             ->timezone('Asia/Kolkata')
             ->weekdays()
             ->between('09:15', '16:00')
             ->runInBackground()
-            ->withoutOverlapping());
+            ->withoutOverlapping(10));
 
         $this->markScheduled($schedule->command('exchange-calendar:sync')
             ->dailyAt('06:00')->timezone('Asia/Kolkata')->withoutOverlapping(60));

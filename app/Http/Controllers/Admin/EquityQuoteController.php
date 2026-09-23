@@ -49,7 +49,7 @@ class EquityQuoteController extends Controller
         ini_set('memory_limit', '1024M');
 
         try {
-            $exitCode = Artisan::call('market:fetch-live', ['--allow-partial' => true]);
+            $exitCode = Artisan::call('market:sync-upstox-quotes', ['--batch-size' => 500]);
             $output = trim(Artisan::output());
         } catch (\Throwable $exception) {
             return redirect()->route('equities.quotes')->with(
