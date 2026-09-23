@@ -122,8 +122,13 @@ class SyncUpstoxQuotesCommand extends Command
         return Equity::query()
             ->where('is_active', true)
             ->where(function ($query) {
-                $query->whereNotNull('upstox_nse_instrument_key')
-                    ->orWhereNotNull('upstox_bse_instrument_key');
+                $query->where(function ($query) {
+                    $query->whereNotNull('upstox_nse_instrument_key')
+                        ->where('upstox_nse_instrument_key', '<>', '');
+                })->orWhere(function ($query) {
+                    $query->whereNotNull('upstox_bse_instrument_key')
+                        ->where('upstox_bse_instrument_key', '<>', '');
+                });
             })
             ->select([
                 'id', 'isin', 'nse_symbol', 'bse_symbol',
