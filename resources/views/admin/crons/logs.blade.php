@@ -102,7 +102,10 @@ $(document).ready(function () {
             {
                 data: 'status',
                 name: 'status',
-                render: data => {
+                render: (data, type, row) => {
+                    if (!row.finished_at) {
+                        return `<span class="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400"><i class="fas fa-circle-notch fa-spin"></i> Running</span>`;
+                    }
                     const color = data ? 'green' : 'red';
                     const icon = data ? 'check-circle' : 'exclamation-circle';
                     const label = data ? 'Success' : 'Failed';

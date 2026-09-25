@@ -223,10 +223,8 @@ class MarketController extends Controller
                 'equities.series',
                 'equities.industry',
                 'equities.sector',
-                'equities.upstox_nse_instrument_key',
                 'equity_quotes.price as live_price',
                 'equity_quotes.quoted_at as live_time',
-                'equity_quotes.payload as live_payload',
                 DB::raw('COALESCE(equity_prices.nse_prev_close, equity_prices.bse_prev_close) as prev_close'),
                 DB::raw('COALESCE(equity_prices.nse_open, equity_prices.bse_open) as day_open'),
                 DB::raw('COALESCE(equity_prices.nse_high, equity_prices.bse_high) as day_high'),
@@ -401,7 +399,7 @@ class MarketController extends Controller
             'total_news' => $totalNews,
             'total_corporate_actions' => $totalCorporateActions,
             'last_sync_time' => $lastQuote ? Carbon::parse($lastQuote->quoted_at)->setTimezone('Asia/Kolkata')->format('d M, h:i A') : 'Live Now',
-            'provider' => 'Upstox & AMFI Official Feeds',
+            'provider' => 'SetuGeo Market Data',
         ];
     }
 }

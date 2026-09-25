@@ -28,7 +28,7 @@ class MarketDataController extends Controller
 
     /**
      * GET /api/v1/market/stocks
-     * Retrieve all Indian stocks with real-time Upstox quotes and day statistics.
+     * Retrieve all Indian stocks with real-time quotes and day statistics.
      */
     public function stocks(Request $request): JsonResponse
     {
@@ -171,7 +171,7 @@ class MarketDataController extends Controller
                 'market_cap' => $stock->market_cap,
                 'pe_ratio' => $stock->pe_ratio,
                 'quoted_at' => $stock->live_time,
-                'source' => $livePrice !== null ? 'upstox_live' : 'historical',
+                'source' => $livePrice !== null ? 'live' : 'historical',
             ];
         });
 
@@ -187,7 +187,7 @@ class MarketDataController extends Controller
                 'from' => $paginator->firstItem() ?? 0,
                 'to' => $paginator->lastItem() ?? 0,
             ],
-            'provider' => 'Upstox Real-Time Feeds',
+            'provider' => 'SetuGeo Market Data',
             'timestamp' => now()->toIso8601String(),
         ]);
     }
@@ -364,7 +364,6 @@ class MarketDataController extends Controller
                         'industry' => $equity->industry,
                         'sector' => $equity->sector,
                         'basic_industry' => $equity->basic_industry,
-                        'instrument_key' => $equity->upstox_nse_instrument_key,
                     ],
                     'live_quote' => [
                         'price' => $livePrice,
@@ -376,7 +375,7 @@ class MarketDataController extends Controller
                         'day_low' => $price ? (float) ($price->nse_low ?: $price->bse_low) : null,
                         'day_volume' => $price ? (int) ($price->nse_volume ?: $price->bse_volume) : null,
                         'quoted_at' => $quote ? $quote->quoted_at : null,
-                        'source' => $quote ? 'upstox' : 'database',
+                        'source' => $quote ? 'live' : 'historical',
                     ],
                     'fundamentals' => [
                         'market_cap' => $price ? $price->market_cap : null,
@@ -447,7 +446,7 @@ class MarketDataController extends Controller
 
     /**
      * POST /api/v1/market/sync
-     * Trigger an on-demand real-time sync with Upstox for requested ISINs or top active stocks.
+     * Trigger an on-demand real-time sync for requested ISINs or top active stocks.
      */
     public function sync(Request $request): JsonResponse
     {
@@ -497,7 +496,7 @@ class MarketDataController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Successfully synchronized {$syncedCount} stock quotes from Upstox live feed.",
+                'message' => "Successfully synchronized {$syncedCount} stock quotes from the live market feed.",
                 'requested' => count($keys),
                 'synced' => $syncedCount,
                 'timestamp' => now()->toIso8601String(),
@@ -505,7 +504,7 @@ class MarketDataController extends Controller
         } catch (Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Upstox synchronization error: ' . $e->getMessage(),
+                'message' => 'The live market feed could not be synchronized right now.',
             ], 500);
         }
     }
@@ -581,7 +580,7 @@ class MarketDataController extends Controller
                 'per_page' => $news->perPage(),
                 'total' => $news->total(),
             ],
-            'provider' => 'Upstox Financial News',
+            'provider' => 'SetuGeo Market News',
         ]);
     }
 
@@ -625,7 +624,7 @@ class MarketDataController extends Controller
                 'per_page' => $actions->perPage(),
                 'total' => $actions->total(),
             ],
-            'provider' => 'Upstox Corporate Actions',
+            'provider' => 'SetuGeo Corporate Actions',
         ]);
     }
 

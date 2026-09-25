@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\ApiTesterController;
 use App\Http\Controllers\CurrencyConversionController;
 use App\Http\Controllers\ApiAccessController;
 use App\Http\Controllers\Admin\ExchangeCalendarEventController;
+use App\Http\Controllers\Admin\MarketDatasetController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/landing-v1', [HomeController::class, 'landingV1'])->name('landing.v1');
@@ -257,6 +258,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\CronController::class, 'index'])->name('index');
         Route::post('/run', [App\Http\Controllers\Admin\CronController::class, 'run'])->name('run');
         Route::get('/logs', [App\Http\Controllers\Admin\CronController::class, 'logs'])->name('logs');
+    });
+
+    Route::prefix('admin/market-datasets')->name('admin.market-datasets.')->group(function () {
+        Route::get('/global-instruments', [MarketDatasetController::class, 'globalInstruments'])->name('global-instruments');
+        Route::post('/global-instruments/sync', [MarketDatasetController::class, 'syncGlobalInstruments'])->name('global-instruments.sync');
+        Route::get('/company-fundamentals', [MarketDatasetController::class, 'companyFundamentals'])->name('company-fundamentals');
+        Route::post('/company-fundamentals/sync', [MarketDatasetController::class, 'syncCompanyFundamentals'])->name('company-fundamentals.sync');
+        Route::get('/company-fundamentals/{companyFundamental}', [MarketDatasetController::class, 'showCompanyFundamental'])->name('company-fundamentals.show');
     });
 
     Route::prefix('admin/api-tester')->name('admin.api-tester.')->group(function () {

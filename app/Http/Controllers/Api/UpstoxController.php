@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +22,8 @@ class UpstoxController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Upstox callback received.',
+            'message' => 'Market data authorization received.',
         ]);
     }
 }
+

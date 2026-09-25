@@ -32,6 +32,26 @@ class CronLoggingTest extends TestCase
         $this->assertNotNull($log->ran_at);
     }
 
+    public function test_run_record_exists_while_the_command_is_still_running(): void
+    {
+        $recordExistsDuringRun = false;
+        Artisan::command('test:started-cron', function () use (&$recordExistsDuringRun) {
+            $recordExistsDuringRun = CronLog::query()
+                ->where('title', 'test:started-cron')
+                ->whereNull('finished_at')
+                ->exists();
+
+            return 0;
+        });
+        $this->setJobs(['test:started-cron']);
+
+        $this->artisan('test:started-cron')->assertExitCode(0);
+
+        $this->assertTrue($recordExistsDuringRun);
+        $this->assertDatabaseCount('cron_logs', 1);
+        $this->assertNotNull(CronLog::firstOrFail()->finished_at);
+    }
+
     public function test_admin_run_is_logged_once_as_manual_even_when_command_fails(): void
     {
         Artisan::command('test:failing-cron', fn () => 1);

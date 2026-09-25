@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\OcrService;
@@ -22,8 +22,8 @@ class OcrController extends Controller
      * Accepts a document image and returns structured OCR data.
      *
      * Form fields:
-     *   image         (file, required)  — JPEG / PNG / WEBP / BMP / TIFF
-     *   document_type (string, optional) — pan | aadhaar_front | aadhaar_back
+     *   image         (file, required)  â€” JPEG / PNG / WEBP / BMP / TIFF
+     *   document_type (string, optional) â€” pan | aadhaar_front | aadhaar_back
      */
     public function extract(Request $request): JsonResponse
     {
@@ -71,3 +71,4 @@ class OcrController extends Controller
         ], $alive ? 200 : 503);
     }
 }
+

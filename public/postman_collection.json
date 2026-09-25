@@ -6069,7 +6069,7 @@
                     "name": "Market",
                     "item": [
                         {
-                            "name": "Sync Market Quotes from Upstox",
+                            "name": "Sync Market Quotes",
                             "request": {
                                 "method": "POST",
                                 "header": [
@@ -8149,44 +8149,6 @@
                                     "code": 403,
                                     "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "Upstox",
-                    "item": [
-                        {
-                            "name": "Get Upstox Callback",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Accept",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/upstox/callback",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "upstox",
-                                        "callback"
-                                    ],
-                                    "query": []
-                                },
-                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
-                            },
-                            "response": [
-                                {
-                                    "name": "Success",
-                                    "status": "OK",
-                                    "code": 200,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/upstox/callback\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 }
                             ]
                         }

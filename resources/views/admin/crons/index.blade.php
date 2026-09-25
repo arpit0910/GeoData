@@ -30,15 +30,18 @@
                 @php
                     $lastRun = $cron['last_run'];
                     $lastRan = $lastRun?->ran_at;
+                    $isRunning = $lastRun && $lastRun->finished_at === null;
                     $isRecent = $lastRan && $lastRan->gt(now()->subHours(26));
                     $isMaintenance = str_contains(strtolower($cron['schedule']), 'manual one-time maintenance');
-                    $stateLabel = !$lastRun ? 'Never' : (!$lastRun->status ? 'Failed' : ($isRecent ? 'Healthy' : 'Completed'));
+                    $stateLabel = !$lastRun ? 'Never' : ($isRunning ? 'Running' : (!$lastRun->status ? 'Failed' : ($isRecent ? 'Healthy' : 'Completed')));
                     $stateClasses = !$lastRun
                         ? 'bg-gray-100 text-gray-400 dark:bg-white/5'
-                        : (!$lastRun->status
-                            ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-                            : ($isRecent ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400'));
-                    $dotClasses = !$lastRun ? 'bg-gray-400' : (!$lastRun->status ? 'bg-red-500' : ($isRecent ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'));
+                        : ($isRunning
+                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                            : (!$lastRun->status
+                                ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                                : ($isRecent ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400')));
+                    $dotClasses = !$lastRun ? 'bg-gray-400' : ($isRunning ? 'bg-blue-500 animate-pulse' : (!$lastRun->status ? 'bg-red-500' : ($isRecent ? 'bg-green-500 animate-pulse' : 'bg-yellow-500')));
                 @endphp
                 <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
                     <td class="px-6 py-5">
@@ -74,8 +77,8 @@
                             <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $lastRan->diffForHumans() }}</span>
                             <span class="mt-0.5 block text-xs text-gray-400 dark:text-gray-500">{{ $lastRan->format('d M Y, H:i') }}</span>
                             <div class="mt-2 flex flex-wrap items-center gap-2">
-                                <span class="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest {{ $lastRun->status ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-red-500/10 text-red-600 dark:text-red-400' }}">
-                                    {{ $lastRun->status ? 'Success' : 'Failed' }}@if($lastRun->exit_code !== null) · Exit {{ $lastRun->exit_code }}@endif
+                                <span class="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest {{ $isRunning ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : ($lastRun->status ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-red-500/10 text-red-600 dark:text-red-400') }}">
+                                    {{ $isRunning ? 'Running' : ($lastRun->status ? 'Success' : 'Failed') }}@if($lastRun->exit_code !== null) · Exit {{ $lastRun->exit_code }}@endif
                                 </span>
                                 <span class="rounded-full bg-blue-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">{{ $lastRun->source ?: 'unknown' }}</span>
                                 @if($lastRun->started_at && $lastRun->finished_at)

@@ -11,7 +11,7 @@ use Throwable;
 
 class CronExecutionLogger
 {
-    /** @var array<string, array<int, array{started_at: CarbonImmutable, source: string, ip: ?string}>> */
+    /** @var array<string, array<int, array{log_id: ?int, started_at: CarbonImmutable, source: string, ip: ?string}>> */
     private static array $started = [];
 
     public function starting(CommandStarting $event): void
@@ -20,10 +20,15 @@ class CronExecutionLogger
             return;
         }
 
+        $startedAt = CarbonImmutable::now('Asia/Kolkata');
+        $source = $this->source();
+        $ip = $this->ipAddress();
+
         self::$started[$event->command][] = [
-            'started_at' => CarbonImmutable::now('Asia/Kolkata'),
-            'source' => $this->source(),
-            'ip' => $this->ipAddress(),
+            'log_id' => $this->createStartedLog($event->command, $startedAt, $source, $ip),
+            'started_at' => $startedAt,
+            'source' => $source,
+            'ip' => $ip,
         ];
     }
 
@@ -35,12 +40,14 @@ class CronExecutionLogger
 
         $finishedAt = CarbonImmutable::now('Asia/Kolkata');
         $execution = array_pop(self::$started[$event->command]) ?? [
+            'log_id' => null,
             'started_at' => $finishedAt,
             'source' => $this->source(),
             'ip' => $this->ipAddress(),
         ];
 
-        $this->write(
+        $this->finishLog(
+            $execution['log_id'],
             $event->command,
             (int) $event->exitCode,
             $execution['started_at'],
@@ -56,7 +63,8 @@ class CronExecutionLogger
 
         foreach (self::$started as $command => $executions) {
             while ($execution = array_pop(self::$started[$command])) {
-                $this->write(
+                $this->finishLog(
+                    $execution['log_id'],
                     $command,
                     1,
                     $execution['started_at'],
@@ -68,7 +76,36 @@ class CronExecutionLogger
         }
     }
 
-    private function write(
+    private function createStartedLog(
+        string $command,
+        CarbonImmutable $startedAt,
+        string $source,
+        ?string $ip
+    ): ?int {
+        try {
+            if (! Schema::hasTable('cron_logs')) {
+                return null;
+            }
+
+            return CronLog::create([
+                'title' => $command,
+                'ip' => $ip,
+                'source' => $source,
+                'status' => false,
+                'exit_code' => null,
+                'started_at' => $startedAt,
+                'finished_at' => null,
+                'ran_at' => $startedAt,
+            ])->getKey();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return null;
+        }
+    }
+
+    private function finishLog(
+        ?int $logId,
         string $command,
         int $exitCode,
         CarbonImmutable $startedAt,
@@ -82,7 +119,7 @@ class CronExecutionLogger
                 return;
             }
 
-            CronLog::create([
+            $values = [
                 'title' => $command,
                 'ip' => $ip,
                 'source' => $source,
@@ -91,7 +128,13 @@ class CronExecutionLogger
                 'started_at' => $startedAt,
                 'finished_at' => $finishedAt,
                 'ran_at' => $finishedAt,
-            ]);
+            ];
+
+            if ($logId && ($log = CronLog::find($logId))) {
+                $log->update($values);
+            } else {
+                CronLog::create($values);
+            }
         } catch (Throwable $exception) {
             report($exception);
         }

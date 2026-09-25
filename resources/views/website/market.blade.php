@@ -719,7 +719,7 @@
                         <div class="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
                             <span class="text-xs text-slate-400 flex items-center gap-1.5">
                                 <i class="fas fa-building text-[10px] text-slate-500"></i>
-                                <span x-text="article.source || 'Financial Wire'"></span>
+                                <span>SetuGeo Market News</span>
                             </span>
                             <a :href="article.article_url" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1">
                                 <span>Read Full Story</span>
@@ -1329,11 +1329,7 @@ function marketLiveApp() {
         // --- PAYLOAD PREVIEW & HELPERS ---
         showApiPayload(item) {
             let payload = {};
-            try {
-                payload = item.live_payload ? JSON.parse(item.live_payload) : item;
-            } catch (e) {
-                payload = item;
-            }
+            payload = item;
             this.currentPayloadJson = JSON.stringify(payload, null, 2);
             this.payloadModalOpen = true;
         },

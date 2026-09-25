@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -107,7 +107,7 @@ class MfApiController extends Controller
 
     // -------------------------------------------------------------------------
     // GET /api/v1/mf/details/{isin}
-    // Uses pre-computed chg_* / val_* columns — no runtime return computation
+    // Uses pre-computed chg_* / val_* columns â€” no runtime return computation
     // -------------------------------------------------------------------------
     public function details(string $isin): JsonResponse
     {
@@ -313,7 +313,7 @@ class MfApiController extends Controller
     // -------------------------------------------------------------------------
     // GET /api/v1/mf/analysis/category-returns
     // Average returns grouped by fund category for every period.
-    // One-call market summary — see if Equity is beating Debt, Hybrid, ETF, etc.
+    // One-call market summary â€” see if Equity is beating Debt, Hybrid, ETF, etc.
     // -------------------------------------------------------------------------
     public function categoryReturns(Request $request): JsonResponse
     {
@@ -427,8 +427,8 @@ class MfApiController extends Controller
 
     // -------------------------------------------------------------------------
     // GET /api/v1/mf/{isin}/similar-funds
-    // Funds in the same category with similar 1Y return profile (±10% range).
-    // Discovery feature — helps users find alternatives to a fund they're evaluating.
+    // Funds in the same category with similar 1Y return profile (Â±10% range).
+    // Discovery feature â€” helps users find alternatives to a fund they're evaluating.
     // Query: limit=10
     // -------------------------------------------------------------------------
     public function similarFunds(Request $request, string $isin): JsonResponse
@@ -463,3 +463,4 @@ class MfApiController extends Controller
         return response()->json(['success' => true, 'isin' => $isin, 'scheme_name' => $scheme->scheme_name, 'category' => $scheme->category, 'data' => $similar]);
     }
 }
+

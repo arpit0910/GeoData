@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -382,7 +382,7 @@ class EquityApiController extends Controller
     }
 
     /**
-     * Stocks with the most number of trades — signals retail/institutional activity.
+     * Stocks with the most number of trades â€” signals retail/institutional activity.
      * More meaningful than raw volume for spotting attention stocks.
      */
     public function highActivity(Request $request): JsonResponse
@@ -410,7 +410,7 @@ class EquityApiController extends Controller
 
     /**
      * Stocks with notable price difference between NSE and BSE on the same day.
-     * Real-time arbitrage signal — unique to dual-listed Indian markets.
+     * Real-time arbitrage signal â€” unique to dual-listed Indian markets.
      */
     public function nseBseSpread(Request $request): JsonResponse
     {
@@ -439,7 +439,7 @@ class EquityApiController extends Controller
 
     /**
      * Stocks consistently positive across all selected return periods.
-     * Steady compounders — positive in 1m, 3m, 6m, and 1y simultaneously.
+     * Steady compounders â€” positive in 1m, 3m, 6m, and 1y simultaneously.
      */
     public function consistentPerformers(Request $request): JsonResponse
     {
@@ -521,7 +521,7 @@ class EquityApiController extends Controller
 
     /**
      * Average returns grouped by industry/sector for a given period.
-     * Sector rotation signal — see which sectors are leading and lagging.
+     * Sector rotation signal â€” see which sectors are leading and lagging.
      */
     public function sectorHeatmap(Request $request): JsonResponse
     {
@@ -619,7 +619,7 @@ class EquityApiController extends Controller
     }
 
     /**
-     * Trading activity metrics trend — trades, turnover, avg ticket size over time.
+     * Trading activity metrics trend â€” trades, turnover, avg ticket size over time.
      * Helps identify if institutional (large tickets) or retail (small tickets) are driving price.
      */
     public function activityMetrics(Request $request, string $isin): JsonResponse
@@ -643,3 +643,4 @@ class EquityApiController extends Controller
         return response()->json(['success' => true, 'isin' => $isin, 'company_name' => $equity->company_name, 'data' => $data]);
     }
 }
+

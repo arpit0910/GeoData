@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\Api\V1\EquityApiController;
+use App\Http\Controllers\Api\EquityApiController;
 use App\Models\Equity;
 use App\Services\UpstoxInstrumentSyncService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\City;
@@ -921,7 +921,7 @@ class SetuGeoController extends Controller
             $toRate = $toConversion->usd_conversion_rate;
         }
 
-        // Convert: from → USD → to
+        // Convert: from â†’ USD â†’ to
         // fromRate = how many USD per 1 unit of "from"
         // toRate = how many USD per 1 unit of "to"
         // So: convertedAmount = amount * (fromRate / toRate)
@@ -1227,7 +1227,7 @@ class SetuGeoController extends Controller
 
     /**
      * GET /countries/economic-profile
-     * Filter countries by economic indicators — income level, OECD membership, EU membership, GDP range.
+     * Filter countries by economic indicators â€” income level, OECD membership, EU membership, GDP range.
      * Useful for market research, expansion planning, and compliance screening.
      * Query: income_level=High|Upper-middle|Lower-middle|Low, is_oecd=true, is_eu=true, region_id, sort_by=gdp|population
      */
@@ -1326,7 +1326,7 @@ class SetuGeoController extends Controller
 
     /**
      * GET /country/{country}/economic-summary
-     * Full economic profile for a single country — GDP, population, tax, currency, trade info.
+     * Full economic profile for a single country â€” GDP, population, tax, currency, trade info.
      */
     public function economicSummary(Country $country): JsonResponse
     {
@@ -1347,7 +1347,7 @@ class SetuGeoController extends Controller
     /**
      * GET /banks/digital-coverage
      * Banks ranked by percentage of branches supporting digital payment methods.
-     * Query: capability=upi|neft|rtgs|imps|swift — rank by a specific capability.
+     * Query: capability=upi|neft|rtgs|imps|swift â€” rank by a specific capability.
      */
     public function bankDigitalCoverage(Request $request): JsonResponse
     {
@@ -1450,7 +1450,7 @@ class SetuGeoController extends Controller
 
     /**
      * GET /user/usage-history
-     * Daily API call count for the last N days — trend view of API consumption.
+     * Daily API call count for the last N days â€” trend view of API consumption.
      * Query: days=30 (max 90)
      */
     public function usageHistory(Request $request): JsonResponse
@@ -1478,3 +1478,4 @@ class SetuGeoController extends Controller
         ]);
     }
 }
+

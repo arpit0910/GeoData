@@ -3020,7 +3020,7 @@ curl -X GET "https://setugeo.com/api/v1/market/mutual-funds?category=Equity&per_
                                             <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
                                         </div>
                                         <div class="p-6 text-gray-400">
-                                            <p class="mb-4">Unified ISIN data endpoint. Automatically identifies whether the specified ISIN is an Equity or a Mutual Fund scheme, and returns full company/scheme metadata, real-time Upstox quote, fundamentals, corporate actions, and relevant news. Alternate alias: <code class="text-white">/market/equity/{isin}</code>.</p>
+                                            <p class="mb-4">Unified ISIN data endpoint. Automatically identifies whether the specified ISIN is an Equity or a Mutual Fund scheme, and returns full company/scheme metadata, a real-time market quote, fundamentals, corporate actions, and relevant news. Alternate alias: <code class="text-white">/market/equity/{isin}</code>.</p>
                                             <table class="w-full text-sm mb-6">
                                                 <thead class="text-gray-500 text-left border-b border-gray-800">
                                                     <tr>

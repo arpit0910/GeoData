@@ -12,6 +12,13 @@ class MarketNews extends Model
 
     protected $table = 'market_news';
 
+    /** Provider metadata is internal and must never be serialized to customers. */
+    protected $hidden = [
+        'instrument_key',
+        'source',
+        'raw_data',
+    ];
+
     protected $fillable = [
         'isin',
         'symbol',

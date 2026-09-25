@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\V1\GeoAnalysisController;
-use App\Http\Controllers\Api\V1\SetuGeoController;
+use App\Http\Controllers\Api\GeoAnalysisController;
+use App\Http\Controllers\Api\SetuGeoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/regions', [SetuGeoController::class, 'regions']);

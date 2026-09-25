@@ -6,6 +6,8 @@ return [
 
     'upstox' => [
         'access_token' => env('UPSTOX_ACCESS_TOKEN', env('UPSTOX_TOKEN')),
+        'fundamentals_url' => env('UPSTOX_FUNDAMENTALS_URL', 'https://api.upstox.com/v2/fundamentals'),
+        'global_instruments_url' => env('UPSTOX_GLOBAL_INSTRUMENTS_URL', 'https://assets.upstox.com/market-quote/instruments/exchange/global.json.gz'),
         'quote_url' => env('UPSTOX_QUOTE_URL', 'https://api.upstox.com/v3/market-quote/quotes'),
         'ltp_url' => env('UPSTOX_LTP_URL', 'https://api.upstox.com/v3/market-quote/ltp'),
         'corporate_actions_url' => env('UPSTOX_CORPORATE_ACTIONS_URL', 'https://api.upstox.com/v2/fundamentals'),

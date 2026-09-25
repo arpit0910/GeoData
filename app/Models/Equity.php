@@ -53,4 +53,9 @@ class Equity extends Model
     {
         return $this->hasMany(EquityPrice::class);
     }
+
+    public function companyFundamentals()
+    {
+        return $this->hasMany(CompanyFundamental::class);
+    }
 }

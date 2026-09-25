@@ -71,3 +71,19 @@ php vendor/phpunit/phpunit/phpunit tests/Feature/Api/MarketDataTest.php
 php vendor/phpunit/phpunit/phpunit tests/Feature/Api/UpstoxQuoteSyncTest.php
 php artisan schedule:list
 ```
+
+## Global instruments and company fundamentals
+
+The global instrument master and complete company-fundamentals responses are stored internally in
+`global_instruments` and `company_fundamentals`. Provider instrument keys and raw global-instrument
+payloads are hidden from model serialization.
+
+```bash
+php artisan market:sync-global-instruments
+php artisan market:sync-company-fundamentals --limit=25 --delay=250
+```
+
+Use `--isin=INE002A01018` for a specific company, `--dataset=key_ratios` to limit the dataset,
+or `--all` for an intentionally unbounded fundamentals run. The scheduled job processes 25 companies
+per day, prioritizing companies that have never been synced and then the oldest snapshots. Global
+instruments refresh daily after the provider's instrument-file refresh window.

@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Api\V1\EquityApiController;
-use App\Http\Controllers\Api\V1\ExchangeCalendarController;
-use App\Http\Controllers\Api\V1\IndexApiController;
-use App\Http\Controllers\Api\V1\MarketApiController;
-use App\Http\Controllers\Api\V1\MfApiController;
+use App\Http\Controllers\Api\EquityApiController;
+use App\Http\Controllers\Api\ExchangeCalendarController;
+use App\Http\Controllers\Api\IndexApiController;
+use App\Http\Controllers\Api\MarketApiController;
+use App\Http\Controllers\Api\MfApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/equities', [EquityApiController::class, 'index']);

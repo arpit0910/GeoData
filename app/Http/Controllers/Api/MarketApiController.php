@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -12,7 +12,7 @@ class MarketApiController extends Controller
 {
     /**
      * GET /market/snapshot
-     * Cross-asset market dashboard — latest index levels, top equity movers, and top MF performers in one call.
+     * Cross-asset market dashboard â€” latest index levels, top equity movers, and top MF performers in one call.
      * Designed for dashboard widgets and home screens.
      */
     public function snapshot(Request $request): JsonResponse
@@ -141,7 +141,7 @@ class MarketApiController extends Controller
     /**
      * GET /market/breadth
      * Advance-decline ratio for equities on the latest trading day.
-     * Simple but powerful market sentiment signal — more advancers = bullish breadth.
+     * Simple but powerful market sentiment signal â€” more advancers = bullish breadth.
      * Query: exchange=nse|bse, period=1d
      */
     public function breadth(Request $request): JsonResponse
@@ -200,3 +200,4 @@ class MarketApiController extends Controller
         ]);
     }
 }
+

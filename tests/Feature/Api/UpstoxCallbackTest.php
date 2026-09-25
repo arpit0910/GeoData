@@ -14,12 +14,14 @@ class UpstoxCallbackTest extends TestCase
         Log::shouldReceive('channel')->once()->with('upstox')->andReturnSelf();
 
         $response = $this->withHeader('User-Agent', 'Upstox-Test')
-            ->getJson('/api/v1/upstox/callback?code=test-authorization-code&state=test-state');
+            ->getJson('/api/v1/integrations/market-data/callback?code=test-authorization-code&state=test-state');
 
         $response->assertOk()->assertExactJson([
             'success' => true,
-            'message' => 'Upstox callback received.',
+            'message' => 'Market data authorization received.',
         ]);
+
+        $this->assertStringNotContainsStringIgnoringCase('upstox', $response->getContent());
 
         Log::shouldHaveReceived('info')
             ->once()

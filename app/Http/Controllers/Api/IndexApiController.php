@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\IndexService;
@@ -125,7 +125,7 @@ class IndexApiController extends Controller
 
     /**
      * Latest PE ratio, PB ratio, and dividend yield for a specific index.
-     * Premium valuation data — tells you if the index is cheap or expensive vs history.
+     * Premium valuation data â€” tells you if the index is cheap or expensive vs history.
      */
     public function valuation(Request $request, string $code): JsonResponse
     {
@@ -292,3 +292,4 @@ class IndexApiController extends Controller
         ]);
     }
 }
+

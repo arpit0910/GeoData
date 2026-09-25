@@ -12,6 +12,11 @@ class CorporateAction extends Model
 
     protected $table = 'corporate_actions';
 
+    /** Raw provider responses are internal and must never be serialized to customers. */
+    protected $hidden = [
+        'raw_data',
+    ];
+
     protected $fillable = [
         'isin',
         'symbol',

@@ -167,6 +167,56 @@ class UpstoxMarketDataService
     }
 
     /**
+     * Fetch one company-fundamentals dataset for an ISIN.
+     *
+     * @param array<string, scalar> $query
+     * @return array<string|int, mixed>
+     */
+    public function fundamentals(string $identifier, string $dataset, array $query = []): array
+    {
+        $identifier = trim($identifier);
+        $allowed = [
+            'profile',
+            'balance-sheet',
+            'cash-flow',
+            'income-statement',
+            'share-holdings',
+            'key-ratios',
+            'corporate-actions',
+            'competitors',
+        ];
+
+        $validIdentifier = $dataset === 'competitors'
+            ? preg_match('/^[A-Z0-9_]+\|.+$/', $identifier) === 1
+            : preg_match('/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/', strtoupper($identifier)) === 1;
+        if (!$validIdentifier) {
+            throw new RuntimeException('A valid market identifier is required for fundamentals.');
+        }
+        if (!in_array($dataset, $allowed, true)) {
+            throw new RuntimeException("Unsupported fundamentals dataset: {$dataset}.");
+        }
+
+        $baseUrl = rtrim(config('market_data.upstox.fundamentals_url', 'https://api.upstox.com/v2/fundamentals'), '/');
+        $response = Http::acceptJson()
+            ->withToken($this->token())
+            ->withOptions(['verify' => config('market_data.ca_bundle') ?: false])
+            ->connectTimeout(10)
+            ->timeout(45)
+            ->get($baseUrl.'/'.rawurlencode($identifier).'/'.$dataset, $query);
+
+        if (!$response->successful()) {
+            throw new RuntimeException($this->errorMessage($response));
+        }
+
+        $body = $response->json();
+        if (($body['status'] ?? null) !== 'success' || !is_array($body['data'] ?? null)) {
+            throw new RuntimeException('The fundamentals provider returned an invalid response.');
+        }
+
+        return $body['data'];
+    }
+
+    /**
      * Fetch corporate actions (splits, bonuses, dividends, rights, etc.) for a company by ISIN.
      *
      * @return array<int, array<string, mixed>>
