@@ -507,6 +507,14 @@ class GenerateSalesPostmanCollectionCommand extends Command
             return 'Get Market Breadth';
         }
 
+        if ($segments === ['market', 'global-instruments']) {
+            return 'List Global Instruments';
+        }
+
+        if ($segments === ['market', 'company-fundamentals', '{isin}']) {
+            return 'Get Complete Company Fundamentals';
+        }
+
         if ($segments === ['geospatial', 'statistics']) {
             return 'Get Geospatial Statistics';
         }

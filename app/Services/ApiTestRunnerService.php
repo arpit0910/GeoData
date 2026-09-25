@@ -629,6 +629,12 @@ class ApiTestRunnerService
             case 'api/v1/market/breadth':
                 $query = ['exchange' => 'nse', 'period' => '1d'];
                 break;
+            case 'api/v1/market/global-instruments':
+                $query = ['per_page' => 10];
+                break;
+            case 'api/v1/market/company-fundamentals/{isin}':
+                $query = ['dataset' => 'profile,key_ratios'];
+                break;
         }
 
         return [

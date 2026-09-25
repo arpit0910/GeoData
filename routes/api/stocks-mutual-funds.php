@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\EquityApiController;
 use App\Http\Controllers\Api\ExchangeCalendarController;
 use App\Http\Controllers\Api\IndexApiController;
 use App\Http\Controllers\Api\MarketApiController;
+use App\Http\Controllers\Api\MarketDatasetController;
 use App\Http\Controllers\Api\MfApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +63,8 @@ Route::get('/mf/{isin}/similar-funds', [MfApiController::class, 'similarFunds'])
 Route::get('/market/snapshot', [MarketApiController::class, 'snapshot']);
 Route::get('/market/heatmap', [MarketApiController::class, 'heatmap']);
 Route::get('/market/breadth', [MarketApiController::class, 'breadth']);
+Route::get('/market/global-instruments', [MarketDatasetController::class, 'globalInstruments']);
+Route::get('/market/company-fundamentals/{isin}', [MarketDatasetController::class, 'companyFundamentals']);
 
 Route::get('/market-calendar/holidays', [ExchangeCalendarController::class, 'index']);
 Route::get('/market-calendar/check', [ExchangeCalendarController::class, 'check']);

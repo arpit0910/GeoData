@@ -75,8 +75,48 @@ php artisan schedule:list
 ## Global instruments and company fundamentals
 
 The global instrument master and complete company-fundamentals responses are stored internally in
-`global_instruments` and `company_fundamentals`. Provider instrument keys and raw global-instrument
-payloads are hidden from model serialization.
+`global_instruments` and `company_fundamentals`. Internal source identifiers and source payloads are
+never returned through customer APIs.
+
+Both endpoints require a SetuGeo bearer token, an active subscription with the Stocks & Mutual Funds
+API entitlement, and one API credit per request.
+
+### List global instruments
+
+```http
+GET /api/v1/market/global-instruments
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+Optional query parameters:
+
+- `search`: name, trading symbol, or country search.
+- `segment`: exact segment filter.
+- `country`: exact country filter.
+- `instrument_type`: exact instrument type filter.
+- `page`: result page, starting at 1.
+- `per_page`: 1–100 records; defaults to 25.
+
+The response contains active instruments, trading hours, synchronization time, and standard pagination.
+
+### Get complete company fundamentals
+
+```http
+GET /api/v1/market/company-fundamentals/INE002A01018
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+Optional query parameters:
+
+- `dataset`: one or more comma-separated datasets. Supported values are `profile`, `balance_sheet`,
+  `cash_flow`, `income_statement`, `share_holdings`, `key_ratios`, `corporate_actions`, and `competitors`.
+- `statement_type`: for example, `consolidated` or `standalone`.
+- `time_period`: for example, `yearly` or `quarterly`.
+
+Omit all filters to return every stored dataset for the ISIN. Invalid ISINs and unsupported dataset
+names return HTTP 422; a company without stored fundamentals returns HTTP 404.
+
+### Internal synchronization
 
 ```bash
 php artisan market:sync-global-instruments
@@ -84,6 +124,6 @@ php artisan market:sync-company-fundamentals --limit=25 --delay=250
 ```
 
 Use `--isin=INE002A01018` for a specific company, `--dataset=key_ratios` to limit the dataset,
-or `--all` for an intentionally unbounded fundamentals run. The scheduled job processes 25 companies
-per day, prioritizing companies that have never been synced and then the oldest snapshots. Global
-instruments refresh daily after the provider's instrument-file refresh window.
+`--stale-days=30` for older snapshots, or `--all` for an intentionally unbounded fundamentals run.
+The scheduled job processes 25 companies per day, prioritizing companies that have never been synced
+and then the oldest snapshots.

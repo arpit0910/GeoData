@@ -3261,6 +3261,51 @@ curl -X POST "https://setugeo.com/api/v1/market/sync" \
                                         </div>
                                     </div>
 
+                                    <!-- 7. Global Instruments -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/global-instruments</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Returns the active global index and economic-indicator instrument master. Internal source identifiers and raw source payloads are never exposed.</p>
+                                            <table class="w-full text-sm mb-6"><thead class="text-gray-500 text-left border-b border-gray-800"><tr><th class="pb-2">Parameter</th><th class="pb-2">Description</th></tr></thead>
+                                            <tbody class="divide-y divide-gray-800">
+                                                <tr><td class="py-2 font-mono text-amber-500">search</td><td class="py-2">Search by name, trading symbol, or country.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">segment</td><td class="py-2">Exact market segment filter.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">country</td><td class="py-2">Exact country filter.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">instrument_type</td><td class="py-2">Exact instrument type filter.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">page / per_page</td><td class="py-2">Pagination; <code class="text-white">per_page</code> defaults to 25 and supports 1–100.</td></tr>
+                                            </tbody></table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400">curl -X GET "https://setugeo.com/api/v1/market/global-instruments?country=United%20States&amp;per_page=10" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Accept: application/json"</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 8. Complete Company Fundamentals -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/company-fundamentals/{isin}</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Returns all stored company profiles, financial statements, holdings, ratios, corporate actions, and competitor datasets for an ISIN. Omit filters for the complete response.</p>
+                                            <table class="w-full text-sm mb-6"><thead class="text-gray-500 text-left border-b border-gray-800"><tr><th class="pb-2">Parameter</th><th class="pb-2">Description</th></tr></thead>
+                                            <tbody class="divide-y divide-gray-800">
+                                                <tr><td class="py-2 font-mono text-amber-500">isin</td><td class="py-2">Required 12-character company ISIN in the URL.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">dataset</td><td class="py-2">Comma-separated: <code class="text-white">profile</code>, <code class="text-white">balance_sheet</code>, <code class="text-white">cash_flow</code>, <code class="text-white">income_statement</code>, <code class="text-white">share_holdings</code>, <code class="text-white">key_ratios</code>, <code class="text-white">corporate_actions</code>, or <code class="text-white">competitors</code>.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">statement_type</td><td class="py-2"><code class="text-white">consolidated</code> or <code class="text-white">standalone</code>.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">time_period</td><td class="py-2"><code class="text-white">yearly</code> or <code class="text-white">quarterly</code>.</td></tr>
+                                            </tbody></table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400">curl -X GET "https://setugeo.com/api/v1/market/company-fundamentals/INE002A01018?dataset=profile,key_ratios" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Accept: application/json"</div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </section>
 
