@@ -171,7 +171,7 @@ class MarketDataController extends Controller
                 'market_cap' => $stock->market_cap,
                 'pe_ratio' => $stock->pe_ratio,
                 'quoted_at' => $stock->live_time,
-                'source' => $livePrice !== null ? 'exchange_live' : 'historical',
+                'source' => $livePrice !== null ? 'upstox_live' : 'historical',
             ];
         });
 
@@ -187,7 +187,7 @@ class MarketDataController extends Controller
                 'from' => $paginator->firstItem() ?? 0,
                 'to' => $paginator->lastItem() ?? 0,
             ],
-            'provider' => 'Real-Time Market Feeds',
+            'provider' => 'Upstox Real-Time Feeds',
             'timestamp' => now()->toIso8601String(),
         ]);
     }
@@ -376,7 +376,7 @@ class MarketDataController extends Controller
                         'day_low' => $price ? (float) ($price->nse_low ?: $price->bse_low) : null,
                         'day_volume' => $price ? (int) ($price->nse_volume ?: $price->bse_volume) : null,
                         'quoted_at' => $quote ? $quote->quoted_at : null,
-                        'source' => $quote ? 'exchange_live' : 'database',
+                        'source' => $quote ? 'upstox' : 'database',
                     ],
                     'fundamentals' => [
                         'market_cap' => $price ? $price->market_cap : null,
@@ -497,7 +497,7 @@ class MarketDataController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Successfully synchronized {$syncedCount} stock quotes from real-time market feed.",
+                'message' => "Successfully synchronized {$syncedCount} stock quotes from Upstox live feed.",
                 'requested' => count($keys),
                 'synced' => $syncedCount,
                 'timestamp' => now()->toIso8601String(),
@@ -505,7 +505,7 @@ class MarketDataController extends Controller
         } catch (Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Market data synchronization error: ' . $e->getMessage(),
+                'message' => 'Upstox synchronization error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -581,7 +581,7 @@ class MarketDataController extends Controller
                 'per_page' => $news->perPage(),
                 'total' => $news->total(),
             ],
-            'provider' => 'Financial News Wire',
+            'provider' => 'Upstox Financial News',
         ]);
     }
 
@@ -625,7 +625,7 @@ class MarketDataController extends Controller
                 'per_page' => $actions->perPage(),
                 'total' => $actions->total(),
             ],
-            'provider' => 'Exchange Corporate Actions',
+            'provider' => 'Upstox Corporate Actions',
         ]);
     }
 

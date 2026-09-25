@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
-@section('title', 'Live Indian Stocks, Mutual Funds & Upstox Market Feed - SetuGeo')
-@section('meta_description', 'Real-time feed of Indian Equities (NSE/BSE), Mutual Funds (AMFI), Corporate Actions (Splits, Bonus, Dividends), and News powered by Upstox APIs.')
+@section('title', 'Live Indian Stocks, Mutual Funds & Market Data - SetuGeo')
+@section('meta_description', 'Real-time feed of Indian Equities (NSE/BSE), Mutual Funds (AMFI), Corporate Actions (Splits, Bonus, Dividends), and Financial News from official exchange feeds.')
 
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -56,51 +56,18 @@
     <div class="absolute top-48 right-10 w-[550px] h-[400px] bg-cyan-500/10 rounded-full blur-[150px] pointer-events-none"></div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        {{-- Header & Real-time Market Status Bar --}}
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-8 border-b border-white/10">
-            <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-300">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    UPSTOX &amp; AMFI LIVE MARKET FEED
-                </div>
-                <h1 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
-                    Live Indian Stocks &amp; Mutual Funds <span class="text-gradient">Market</span>
-                </h1>
-                <p class="mt-2 text-slate-400 text-sm sm:text-base max-w-2xl">
-                    Real-time market quotes for NSE/BSE equities, AMFI Mutual Fund NAVs, corporate actions (splits, bonus, dividends), and financial news automatically synchronized every minute.
-                </p>
+        {{-- Header --}}
+        <div class="pb-8 border-b border-white/10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                NSE, BSE &amp; AMFI LIVE MARKET FEED
             </div>
-
-            {{-- Market Status & Auto-Sync Widget --}}
-            <div class="glass-card rounded-2xl p-5 border border-white/10 bg-slate-900/70 backdrop-blur-xl shadow-2xl flex flex-col sm:flex-row items-start sm:items-center gap-5">
-                <div class="flex items-center gap-3">
-                    <div class="w-3.5 h-3.5 rounded-full"
-                        :class="marketStatus.is_open ? 'bg-emerald-400 shadow-lg shadow-emerald-500/50 animate-pulse' : 'bg-rose-500 shadow-lg shadow-rose-500/50'">
-                    </div>
-                    <div>
-                        <div class="text-xs font-bold uppercase tracking-wider"
-                            :class="marketStatus.is_open ? 'text-emerald-400' : 'text-rose-400'"
-                            x-text="marketStatus.status">
-                        </div>
-                        <div class="text-xs font-mono text-slate-300" x-text="liveIstTime"></div>
-                    </div>
-                </div>
-
-                <div class="hidden sm:block h-8 w-[1px] bg-white/10"></div>
-
-                <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        <div class="text-[11px] uppercase tracking-wider text-slate-400">Auto Sync (1m)</div>
-                        <div class="text-xs font-mono font-bold text-amber-400" x-text="'In ' + countdownText"></div>
-                        <div class="text-[10px] font-mono text-slate-400" x-text="'Synced: ' + (lastSyncedAt || stats.last_sync_time || 'Just now')"></div>
-                    </div>
-                    <button @click="refreshAll()" :disabled="isLoading"
-                        class="p-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all disabled:opacity-50"
-                        title="Refresh &amp; Sync Live Quotes Now">
-                        <i class="fas fa-sync-alt text-sm" :class="{ 'fa-spin': isLoading }"></i>
-                    </button>
-                </div>
-            </div>
+            <h1 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
+                Live Indian Stocks &amp; Mutual Funds <span class="text-gradient">Market</span>
+            </h1>
+            <p class="mt-2 text-slate-400 text-sm sm:text-base max-w-2xl">
+                Real-time market quotes for NSE/BSE equities, AMFI Mutual Fund NAVs, corporate actions (splits, bonus, dividends), and financial news automatically synchronized every minute.
+            </p>
         </div>
 
         {{-- Top Summary Stats Bar --}}
@@ -134,7 +101,7 @@
             <div class="col-span-2 md:col-span-1 glass-card rounded-xl p-4 border border-white/10 bg-slate-900/40">
                 <div class="text-[11px] uppercase tracking-wider text-slate-400">Financial News</div>
                 <div class="mt-1 text-xl sm:text-2xl font-black text-purple-400 font-mono" x-text="formatNumberNoDec(stats.total_news)"></div>
-                <div class="text-[10px] text-slate-400 mt-1">Upstox News Stream</div>
+                <div class="text-[10px] text-slate-400 mt-1">Financial News Wire</div>
             </div>
         </div>
 
@@ -373,7 +340,7 @@
 
                                     {{-- Actions --}}
                                     <td class="py-3 px-4 text-center font-sans">
-                                        <button @click="showApiPayload(item)" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-semibold transition-colors" title="View Upstox API JSON">
+                                        <button @click="showApiPayload(item)" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-semibold transition-colors" title="View Live Quote JSON">
                                             <i class="fas fa-code mr-1"></i> JSON
                                         </button>
                                     </td>
@@ -716,7 +683,7 @@
         </div>
 
         {{-- ========================================================================= --}}
-        {{-- TAB 3: UPSTOX FINANCIAL NEWS                                              --}}
+        {{-- TAB 3: FINANCIAL NEWS                                                     --}}
         {{-- ========================================================================= --}}
         <div x-show="activeTab === 'news'" x-transition class="mt-6 space-y-6">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -731,7 +698,7 @@
                 </div>
                 <div class="text-xs text-slate-400 flex items-center gap-2">
                     <i class="fas fa-rss text-amber-400"></i>
-                    <span>Synchronized every minute from Upstox News API</span>
+                    <span>Financial news synchronized automatically every minute</span>
                 </div>
             </div>
 
@@ -752,7 +719,7 @@
                         <div class="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
                             <span class="text-xs text-slate-400 flex items-center gap-1.5">
                                 <i class="fas fa-building text-[10px] text-slate-500"></i>
-                                <span x-text="article.source || 'Upstox'"></span>
+                                <span x-text="article.source || 'Financial Wire'"></span>
                             </span>
                             <a :href="article.article_url" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1">
                                 <span>Read Full Story</span>
@@ -942,7 +909,7 @@
                 <div class="flex items-center justify-between pb-4 border-b border-white/10">
                     <div class="flex items-center gap-2">
                         <i class="fas fa-terminal text-amber-400"></i>
-                        <h3 class="text-base font-bold text-white">Upstox API Payload Preview</h3>
+                        <h3 class="text-base font-bold text-white">Live Quote Payload Preview</h3>
                     </div>
                     <button @click="payloadModalOpen = false" class="text-slate-400 hover:text-white">
                         <i class="fas fa-times text-lg"></i>
@@ -1117,7 +1084,7 @@ function marketLiveApp() {
                     this.stats = json.stats;
                 }
                 await Promise.all([
-                    this.fetchStocks(true, true),
+                    this.fetchStocks(true),
                     this.fetchMf(true),
                     this.fetchNews(true),
                     this.fetchEvents(true)
@@ -1174,7 +1141,7 @@ function marketLiveApp() {
             this.fetchStocks();
         },
 
-        async fetchStocks(silent = false, sync = false) {
+        async fetchStocks(silent = false) {
             if (!silent) this.isStocksLoading = true;
             try {
                 const params = new URLSearchParams({
@@ -1185,7 +1152,6 @@ function marketLiveApp() {
                     sort: this.stockSort,
                     per_page: this.stockPerPage,
                     page: this.stockCurrentPage,
-                    ...(sync ? { sync: 1 } : {})
                 });
                 const json = await this.fetchApi(`{{ route("api.market.data") }}?${params.toString()}`);
                 if (json) {

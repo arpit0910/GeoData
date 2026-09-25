@@ -488,7 +488,7 @@ class GenerateSalesPostmanCollectionCommand extends Command
         }
 
         if ($segments === ['market', 'sync']) {
-            return 'Sync Real-Time Market Quotes';
+            return 'Sync Market Quotes from Upstox';
         }
 
         if ($segments === ['market', 'news']) {

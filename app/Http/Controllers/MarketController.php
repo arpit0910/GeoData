@@ -89,6 +89,45 @@ class MarketController extends Controller
         $section = $request->input('section', 'stocks');
         $page = max((int) $request->input('page', 1), 1);
 
+        // On-demand live Upstox sync during auto-sync or manual refresh
+        if ($request->boolean('sync') && $section === 'stocks') {
+            try {
+                $instrumentType = strtolower(trim((string) $request->input('instrument_type', 'stocks')));
+                $perPage = min(max((int) $request->input('per_page', 25), 10), 100);
+                $query = $this->getStocksQuery($request)->forPage($page, $perPage);
+
+                // For bonds/fixed income whose prices do not change during the day, sync once daily only
+                if ($instrumentType === 'bonds') {
+                    $todayStartUtc = now('Asia/Kolkata')->startOfDay()->utc();
+                    $syncedTodayIsins = DB::table('equity_quotes')
+                        ->where('fetched_at', '>=', $todayStartUtc)
+                        ->pluck('isin')
+                        ->all();
+                    if (!empty($syncedTodayIsins)) {
+                        $query->whereNotIn('equities.isin', $syncedTodayIsins);
+                    }
+                }
+
+                $targets = $query
+                    ->pluck('upstox_nse_instrument_key', 'isin')
+                    ->filter()
+                    ->all();
+                if (!empty($targets)) {
+                    $keys = array_values($targets);
+                    $upstox = app(\App\Services\UpstoxMarketDataService::class);
+                    $quotes = $upstox->ltp($keys);
+                    $store = app(\App\Services\EquityQuoteService::class);
+                    foreach ($targets as $isin => $key) {
+                        if (!empty($quotes[$key])) {
+                            $store->store($isin, 'NSE', $quotes[$key]);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Gracefully fallback to cached data if Upstox is unreachable
+            }
+        }
+
         return match ($section) {
             'stocks' => response()->json([
                 'success' => true,
@@ -362,7 +401,7 @@ class MarketController extends Controller
             'total_news' => $totalNews,
             'total_corporate_actions' => $totalCorporateActions,
             'last_sync_time' => $lastQuote ? Carbon::parse($lastQuote->quoted_at)->setTimezone('Asia/Kolkata')->format('d M, h:i A') : 'Live Now',
-            'provider' => 'NSE, BSE & AMFI Real-Time Feeds',
+            'provider' => 'Upstox & AMFI Official Feeds',
         ];
     }
 }
