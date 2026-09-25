@@ -78,6 +78,9 @@
                                 <li><a href="#market-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Market
                                         Overview</a></li>
+                                <li><a href="#market-sync-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Market
+                                        Data &amp; Real-Time Sync</a></li>
                                 <li><a href="#country-economic-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Country
                                         Economic Data</a></li>
@@ -2816,6 +2819,444 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
   <span class="text-blue-400">"decliners"</span>: <span class="text-blue-400">1204</span>,
   <span class="text-blue-400">"advance_decline_ratio"</span>: <span class="text-blue-400">3.19</span>,
   <span class="text-blue-400">"sentiment"</span>: <span class="text-green-400">"strongly_bullish"</span>
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- LIVE MARKET DATA & REAL-TIME SYNC                          -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="market-sync-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Market Data &amp; Real-Time Sync</h2>
+                                <p class="text-gray-400 mb-8">High-performance bulk synchronization APIs for Indian equities (NSE &amp; BSE), AMFI Mutual Funds, ISIN-based multi-asset lookups, real-time quote sync, financial news, and corporate actions (splits, bonus, dividends). Built for automated schedulers, algorithmic trading feeds, and third-party data synchronization engines.</p>
+                                <div class="space-y-12">
+
+                                    <!-- 1. Bulk Stocks Sync -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/stocks</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Fetch and synchronize listed Indian equities, bonds, and debentures in bulk or paginated batches. Includes latest real-time LTP quotes, day high/low, day volume, 52-week ranges, and company metadata.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Parameter</th>
+                                                        <th class="pb-2">Type</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">page</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Page number for pagination (default: <code class="text-white">1</code>).</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">per_page</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Number of records per page (default: <code class="text-white">50</code>, min: <code class="text-white">1</code>, max: <code class="text-white">1000</code>).</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">instrument_type</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Filter by instrument category: <code class="text-white">stocks</code> (true equities), <code class="text-white">bonds</code> (debt/bonds), or <code class="text-white">all</code>.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">exchange</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Filter by exchange listing: <code class="text-white">all</code>, <code class="text-white">NSE</code>, or <code class="text-white">BSE</code>.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">filter</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Set to <code class="text-white">live</code> to return only instruments with active synchronized live quotes.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">search</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Search query matching company name, ticker symbol (e.g. <code class="text-white">RELIANCE</code>), or ISIN code.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">sort</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Sort ordering: <code class="text-white">volume_desc</code>, <code class="text-white">name_asc</code>, <code class="text-white">name_desc</code>, <code class="text-white">price_desc</code>, <code class="text-white">price_asc</code>, <code class="text-white">gainers</code>, <code class="text-white">losers</code>.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-4">
+curl -X GET "https://setugeo.com/api/v1/market/stocks?instrument_type=stocks&per_page=2&exchange=NSE" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Accept: application/json"
+                                            </div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
+      <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
+      <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+      <span class="text-blue-400">"bse_symbol"</span>: <span class="text-green-400">"500325"</span>,
+      <span class="text-blue-400">"series"</span>: <span class="text-green-400">"EQ"</span>,
+      <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Refineries"</span>,
+      <span class="text-blue-400">"prev_close"</span>: <span class="text-blue-400">2985.40</span>,
+      <span class="text-blue-400">"live_price"</span>: <span class="text-blue-400">3012.75</span>,
+      <span class="text-blue-400">"change"</span>: <span class="text-blue-400">27.35</span>,
+      <span class="text-blue-400">"change_percent"</span>: <span class="text-blue-400">0.92</span>,
+      <span class="text-blue-400">"day_high"</span>: <span class="text-blue-400">3025.00</span>,
+      <span class="text-blue-400">"day_low"</span>: <span class="text-blue-400">2975.10</span>,
+      <span class="text-blue-400">"day_volume"</span>: <span class="text-blue-400">4820150</span>,
+      <span class="text-blue-400">"updated_at"</span>: <span class="text-green-400">"2026-09-25T09:30:00.000000Z"</span>
+    }
+  ],
+  <span class="text-blue-400">"pagination"</span>: {
+    <span class="text-blue-400">"current_page"</span>: <span class="text-blue-400">1</span>,
+    <span class="text-blue-400">"last_page"</span>: <span class="text-blue-400">69</span>,
+    <span class="text-blue-400">"per_page"</span>: <span class="text-blue-400">50</span>,
+    <span class="text-blue-400">"total"</span>: <span class="text-blue-400">3401</span>,
+    <span class="text-blue-400">"from"</span>: <span class="text-blue-400">1</span>,
+    <span class="text-blue-400">"to"</span>: <span class="text-blue-400">50</span>
+  }
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Bulk Mutual Funds Sync -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/mutual-funds</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Fetch and synchronize all mutual fund schemes registered under AMFI. Includes latest daily NAV, asset management company (AMC), scheme category, and trailing returns (1D, 1M, 1Y, 3Y). Alternate alias: <code class="text-white">/market/mf</code>.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Parameter</th>
+                                                        <th class="pb-2">Type</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">page</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Page number for pagination (default: <code class="text-white">1</code>).</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">per_page</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Number of schemes per page (default: <code class="text-white">50</code>, max: <code class="text-white">1000</code>).</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">category</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Filter by scheme category e.g. <code class="text-white">Equity Scheme - Large Cap Fund</code>, <code class="text-white">Debt Scheme</code>, <code class="text-white">Hybrid Scheme</code>.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">amc</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Filter by Asset Management Company name (e.g. <code class="text-white">SBI Funds Management Ltd</code>, <code class="text-white">HDFC Asset Management</code>).</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">search</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Search query matching scheme name or ISIN code.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">sort</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Sort ordering: <code class="text-white">popular</code>, <code class="text-white">name_asc</code>, <code class="text-white">name_desc</code>, <code class="text-white">nav_desc</code>, <code class="text-white">nav_asc</code>, <code class="text-white">return_1y_desc</code>.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-4">
+curl -X GET "https://setugeo.com/api/v1/market/mutual-funds?category=Equity&per_page=2" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Accept: application/json"
+                                            </div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INF200K01131"</span>,
+      <span class="text-blue-400">"scheme_code"</span>: <span class="text-blue-400">119551</span>,
+      <span class="text-blue-400">"scheme_name"</span>: <span class="text-green-400">"SBI Bluechip Fund - Direct Plan - Growth"</span>,
+      <span class="text-blue-400">"amc"</span>: <span class="text-green-400">"SBI Funds Management Ltd"</span>,
+      <span class="text-blue-400">"scheme_type"</span>: <span class="text-green-400">"Open Ended Schemes"</span>,
+      <span class="text-blue-400">"category"</span>: <span class="text-green-400">"Equity Scheme - Large Cap Fund"</span>,
+      <span class="text-blue-400">"nav"</span>: <span class="text-blue-400">98.4520</span>,
+      <span class="text-blue-400">"nav_date"</span>: <span class="text-green-400">"2026-09-24"</span>,
+      <span class="text-blue-400">"returns"</span>: {
+        <span class="text-blue-400">"1d"</span>: <span class="text-blue-400">0.35</span>,
+        <span class="text-blue-400">"1m"</span>: <span class="text-blue-400">2.45</span>,
+        <span class="text-blue-400">"1y"</span>: <span class="text-blue-400">18.20</span>,
+        <span class="text-blue-400">"3y"</span>: <span class="text-blue-400">48.60</span>
+      }
+    }
+  ],
+  <span class="text-blue-400">"pagination"</span>: {
+    <span class="text-blue-400">"current_page"</span>: <span class="text-blue-400">1</span>,
+    <span class="text-blue-400">"last_page"</span>: <span class="text-blue-400">320</span>,
+    <span class="text-blue-400">"per_page"</span>: <span class="text-blue-400">50</span>,
+    <span class="text-blue-400">"total"</span>: <span class="text-blue-400">15980</span>
+  }
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3. Get Stock / Mutual Fund by ISIN -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/isin/{isin}</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Unified ISIN data endpoint. Automatically identifies whether the specified ISIN is an Equity or a Mutual Fund scheme, and returns full company/scheme metadata, real-time Upstox quote, fundamentals, corporate actions, and relevant news. Alternate alias: <code class="text-white">/market/equity/{isin}</code>.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Parameter</th>
+                                                        <th class="pb-2">Type</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">isin (path)</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">12-character International Securities Identification Number (e.g. <code class="text-white">INE002A01018</code> or <code class="text-white">INF200K01131</code>).</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">live</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Set to <code class="text-white">1</code> to force a real-time LTP quote fetch directly from exchange feeds.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-4">
+curl -X GET "https://setugeo.com/api/v1/market/isin/INE002A01018?live=1" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Accept: application/json"
+                                            </div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
+  <span class="text-blue-400">"instrument_type"</span>: <span class="text-green-400">"EQUITY"</span>,
+  <span class="text-blue-400">"data"</span>: {
+    <span class="text-blue-400">"profile"</span>: {
+      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
+      <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
+      <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+      <span class="text-blue-400">"bse_symbol"</span>: <span class="text-green-400">"500325"</span>,
+      <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Refineries"</span>,
+      <span class="text-blue-400">"market_cap_category"</span>: <span class="text-green-400">"Large Cap"</span>
+    },
+    <span class="text-blue-400">"quote"</span>: {
+      <span class="text-blue-400">"ltp"</span>: <span class="text-blue-400">3012.75</span>,
+      <span class="text-blue-400">"prev_close"</span>: <span class="text-blue-400">2985.40</span>,
+      <span class="text-blue-400">"change"</span>: <span class="text-blue-400">27.35</span>,
+      <span class="text-blue-400">"change_percent"</span>: <span class="text-blue-400">0.92</span>,
+      <span class="text-blue-400">"day_high"</span>: <span class="text-blue-400">3025.00</span>,
+      <span class="text-blue-400">"day_low"</span>: <span class="text-blue-400">2975.10</span>,
+      <span class="text-blue-400">"volume"</span>: <span class="text-blue-400">4820150</span>,
+      <span class="text-blue-400">"source"</span>: <span class="text-green-400">"exchange_live"</span>
+    },
+    <span class="text-blue-400">"corporate_actions"</span>: [ ... ],
+    <span class="text-blue-400">"recent_news"</span>: [ ... ]
+  }
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. On-Demand Quote Sync -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-emerald-400 mr-2">POST</span> /market/sync</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Trigger live quote synchronization on demand. Accepts an array of specific ISINs or a limit count. Updates local quote caches and returns the latest synchronized prices.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Parameter</th>
+                                                        <th class="pb-2">Type</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">isins</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">array&lt;string&gt;</td>
+                                                        <td class="py-2">Optional array of target ISIN codes to synchronize (e.g. <code class="text-white">["INE002A01018", "INE467B01029"]</code>). Max 500.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">limit</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">When <code class="text-white">isins</code> is omitted, syncs the top active equities up to this limit (default: <code class="text-white">50</code>, max: <code class="text-white">200</code>).</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-4">
+curl -X POST "https://setugeo.com/api/v1/market/sync" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"isins": ["INE002A01018", "INE467B01029"]}'
+                                            </div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"message"</span>: <span class="text-green-400">"Successfully synchronized 2 stock quotes from real-time market feed."</span>,
+  <span class="text-blue-400">"synced_count"</span>: <span class="text-blue-400">2</span>,
+  <span class="text-blue-400">"quotes"</span>: {
+    <span class="text-blue-400">"INE002A01018"</span>: {
+      <span class="text-blue-400">"ltp"</span>: <span class="text-blue-400">3012.75</span>,
+      <span class="text-blue-400">"change"</span>: <span class="text-blue-400">27.35</span>,
+      <span class="text-blue-400">"change_percent"</span>: <span class="text-blue-400">0.92</span>,
+      <span class="text-blue-400">"day_high"</span>: <span class="text-blue-400">3025.00</span>,
+      <span class="text-blue-400">"day_low"</span>: <span class="text-blue-400">2975.10</span>,
+      <span class="text-blue-400">"volume"</span>: <span class="text-blue-400">4820150</span>
+    }
+  }
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5. Market News Feed -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/news</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Real-time financial news stream powered by real-time financial news wire. Synchronized automatically every minute during market hours with keyword search and company tagging.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Parameter</th>
+                                                        <th class="pb-2">Type</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">search</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Search query across news headline, summary, and stock symbol.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">limit</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Number of articles to return (default: <code class="text-white">15</code>, max: <code class="text-white">50</code>).</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">page</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Page number for pagination (default: <code class="text-white">1</code>).</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"id"</span>: <span class="text-blue-400">1024</span>,
+      <span class="text-blue-400">"title"</span>: <span class="text-green-400">"Reliance Industries expands new energy gigafactory operations"</span>,
+      <span class="text-blue-400">"summary"</span>: <span class="text-green-400">"Reliance Industries announces progress in its solar and battery manufacturing ecosystem."</span>,
+      <span class="text-blue-400">"source"</span>: <span class="text-green-400">"Market Wire"</span>,
+      <span class="text-blue-400">"url"</span>: <span class="text-green-400">"https://..."</span>,
+      <span class="text-blue-400">"symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
+      <span class="text-blue-400">"published_at"</span>: <span class="text-green-400">"2026-09-25T08:45:00.000000Z"</span>
+    }
+  ],
+  <span class="text-blue-400">"pagination"</span>: {
+    <span class="text-blue-400">"current_page"</span>: <span class="text-blue-400">1</span>,
+    <span class="text-blue-400">"last_page"</span>: <span class="text-blue-400">25</span>,
+    <span class="text-blue-400">"per_page"</span>: <span class="text-blue-400">15</span>,
+    <span class="text-blue-400">"total"</span>: <span class="text-blue-400">368</span>
+  }
+}</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 6. Corporate Actions Feed -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/corporate-actions</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Comprehensive corporate actions feed for Indian listed equities. Covers stock splits, bonus share allotments, dividend payouts, rights issues, and special board meetings with verified ex-dates and record dates.</p>
+                                            <table class="w-full text-sm mb-6">
+                                                <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                    <tr>
+                                                        <th class="pb-2">Parameter</th>
+                                                        <th class="pb-2">Type</th>
+                                                        <th class="pb-2">Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">type</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Action type filter: <code class="text-white">ALL</code>, <code class="text-white">SPLIT</code>, <code class="text-white">BONUS</code>, <code class="text-white">DIVIDEND</code>, <code class="text-white">RIGHTS</code>, or <code class="text-white">EVENT</code>.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">search</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">string</td>
+                                                        <td class="py-2">Filter by company name or stock symbol.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">limit</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Number of records per page (default: <code class="text-white">15</code>, max: <code class="text-white">50</code>).</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="py-2 font-mono text-amber-500">page</td>
+                                                        <td class="py-2 font-mono text-xs text-gray-400">integer</td>
+                                                        <td class="py-2">Page number for pagination (default: <code class="text-white">1</code>).</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"id"</span>: <span class="text-blue-400">512</span>,
+      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
+      <span class="text-blue-400">"symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
+      <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
+      <span class="text-blue-400">"type"</span>: <span class="text-green-400">"BONUS"</span>,
+      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"Bonus 1:1"</span>,
+      <span class="text-blue-400">"ratio"</span>: <span class="text-green-400">"1:1"</span>,
+      <span class="text-blue-400">"amount"</span>: <span class="text-blue-400">null</span>,
+      <span class="text-blue-400">"expiry_date"</span>: <span class="text-green-400">"2026-10-28"</span>,
+      <span class="text-blue-400">"record_date"</span>: <span class="text-green-400">"2026-10-29"</span>,
+      <span class="text-blue-400">"details"</span>: <span class="text-green-400">"Issue of 1 bonus equity share for every 1 existing share held"</span>
+    }
+  ],
+  <span class="text-blue-400">"pagination"</span>: {
+    <span class="text-blue-400">"current_page"</span>: <span class="text-blue-400">1</span>,
+    <span class="text-blue-400">"last_page"</span>: <span class="text-blue-400">18</span>,
+    <span class="text-blue-400">"per_page"</span>: <span class="text-blue-400">15</span>,
+    <span class="text-blue-400">"total"</span>: <span class="text-blue-400">260</span>
+  }
 }</pre></div>
                                         </div>
                                     </div>

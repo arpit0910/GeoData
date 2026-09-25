@@ -479,6 +479,26 @@ class GenerateSalesPostmanCollectionCommand extends Command
             return 'List Market Stocks';
         }
 
+        if ($segments === ['market', 'mutual-funds'] || $segments === ['market', 'mf']) {
+            return 'List Market Mutual Funds';
+        }
+
+        if ($segments === ['market', 'isin', '{isin}'] || $segments === ['market', 'equity', '{isin}']) {
+            return 'Get Market Data by ISIN';
+        }
+
+        if ($segments === ['market', 'sync']) {
+            return 'Sync Real-Time Market Quotes';
+        }
+
+        if ($segments === ['market', 'news']) {
+            return 'Get Market News Feed';
+        }
+
+        if ($segments === ['market', 'corporate-actions']) {
+            return 'Get Corporate Actions';
+        }
+
         if ($segments === ['market', 'heatmap']) {
             return 'Get Market Heatmap';
         }

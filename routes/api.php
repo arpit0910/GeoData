@@ -33,9 +33,18 @@ Route::prefix('v1')->group(function () {
     Route::get('/ocr/health', [OcrController::class, 'health']);
     Route::prefix('market')->group(function () {
         Route::get('/stocks', [MarketDataController::class, 'stocks']);
+        Route::get('/mutual-funds', [MarketDataController::class, 'mutualFunds']);
+        Route::get('/mf', [MarketDataController::class, 'mutualFunds']);
+        Route::get('/isin/{isin}', [MarketDataController::class, 'byIsin']);
+        Route::get('/equity/{isin}', [MarketDataController::class, 'byIsin']);
+        Route::post('/sync', [MarketDataController::class, 'sync']);
         Route::get('/indices', [MarketDataController::class, 'indices']);
-        Route::get('/equity/{isin}', [MarketDataController::class, 'equityQuote']);
         Route::get('/quote/{symbol}', [MarketDataController::class, 'quote']);
+        Route::get('/news', [MarketDataController::class, 'news']);
+        Route::get('/corporate-actions', [MarketDataController::class, 'corporateActions']);
+        Route::get('/splits', [MarketDataController::class, 'splits']);
+        Route::get('/bonuses', [MarketDataController::class, 'bonuses']);
+        Route::get('/dividends', [MarketDataController::class, 'dividends']);
     });
 
     Route::middleware(['auth:sanctum', 'subscription', 'api.credits'])->group(function () {

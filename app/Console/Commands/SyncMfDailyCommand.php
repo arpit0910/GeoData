@@ -188,9 +188,25 @@ class SyncMfDailyCommand extends Command
                 continue;
             }
 
+            $fields = array_map('trim', $fields);
             if (count($fields) < 6) continue;
 
-            [$schemeCode, $isinGrowth, $isinReinvest, $schemeName, $nav, $navDate] = array_map('trim', $fields);
+            $schemeCode = $fields[0];
+            $isinGrowth = $fields[1];
+            $isinReinvest = $fields[2];
+            $schemeName = $fields[3];
+            $type = null;
+
+            if (count($fields) >= 8) {
+                $nav = $fields[6];
+                $navDate = $fields[7];
+                $plan = $fields[4];
+                $option = $fields[5];
+                $type = trim("{$plan} - {$option}", " -");
+            } else {
+                $nav = $fields[4];
+                $navDate = $fields[5];
+            }
 
             if (!is_numeric($schemeCode) || strlen($isinGrowth) !== 12) continue;
             if (!is_numeric($nav) || (float) $nav <= 0) continue;
@@ -206,7 +222,7 @@ class SyncMfDailyCommand extends Command
                 'amc_name'      => $currentAmc,
                 'category'      => $currentCategory,
                 'sub_category'  => null,
-                'type'          => null,
+                'type'          => $type,
                 'is_active'     => 1,
                 'created_at'    => now(),
                 'updated_at'    => now(),

@@ -50,6 +50,12 @@ Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
 Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
 Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 Route::view('/market/live', 'market.live')->name('market.live');
+Route::get('/market', [\App\Http\Controllers\MarketController::class, 'index'])->name('market.index');
+Route::get('/market/data', [\App\Http\Controllers\MarketController::class, 'data'])->name('market.data');
+Route::get('/api/market/data', [\App\Http\Controllers\MarketController::class, 'data'])->name('api.market.data');
+Route::get('/market-demo', fn () => redirect()->route('market.index'));
+Route::get('/market/demo', fn () => redirect()->route('market.index'));
+Route::get('/api/market-demo/data', [\App\Http\Controllers\MarketController::class, 'data'])->name('api.market.demo.data');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

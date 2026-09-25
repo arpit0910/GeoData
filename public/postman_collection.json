@@ -1,8 +1,8 @@
 {
     "info": {
-        "_postman_id": "c9aa28bd-7de7-48ac-853c-c8f8f29887da",
+        "_postman_id": "1745f239-a51b-4d32-b742-9976de0fba0b",
         "name": "SetuGeo API - Demo & Sales Collection",
-        "description": "Generated on 2026-07-28 14:40:24 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
+        "description": "Generated on 2026-09-25 15:13:12 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "auth": {
@@ -1930,75 +1930,6 @@
                             ]
                         },
                         {
-                            "name": "List Pincodes",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Accept",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/pincodes?limit=3&city_id=51863",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "pincodes"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "limit",
-                                            "value": "3"
-                                        },
-                                        {
-                                            "key": "city_id",
-                                            "value": "51863"
-                                        }
-                                    ]
-                                },
-                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
-                            },
-                            "response": [
-                                {
-                                    "name": "Success",
-                                    "status": "OK",
-                                    "code": 200,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/pincodes\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
-                                },
-                                {
-                                    "name": "Unauthenticated",
-                                    "status": "Unauthorized",
-                                    "code": 401,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
-                                },
-                                {
-                                    "name": "No Active Subscription",
-                                    "status": "Payment Required",
-                                    "code": 402,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
-                                },
-                                {
-                                    "name": "Credits Exhausted",
-                                    "status": "Payment Required",
-                                    "code": 402,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
-                                },
-                                {
-                                    "name": "Access Denied",
-                                    "status": "Forbidden",
-                                    "code": 403,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
-                                }
-                            ]
-                        },
-                        {
                             "name": "Search Pincodes",
                             "request": {
                                 "method": "GET",
@@ -2095,6 +2026,143 @@
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/pincode/{pincode}/banks\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "List Pincodes",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/pincodes?limit=3&city_id=51863",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "pincodes"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "limit",
+                                            "value": "3"
+                                        },
+                                        {
+                                            "key": "city_id",
+                                            "value": "51863"
+                                        }
+                                    ]
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/pincodes\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Pincode Details",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/pincode/400001",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "pincode",
+                                        "400001"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/pincode/{pincode}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 },
                                 {
                                     "name": "Unauthenticated",
@@ -2646,7 +2714,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-07-28+14%3A40%3A24&from=Asia%2FKolkata&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-09-25+15%3A13%3A12&from=Asia%2FKolkata&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -2657,7 +2725,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-07-28 14:40:24"
+                                            "value": "2026-09-25 15:13:12"
                                         },
                                         {
                                             "key": "from",
@@ -2720,7 +2788,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-07-28+14%3A40%3A24&from=Asia%2FKolkata&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-09-25+15%3A13%3A12&from=Asia%2FKolkata&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -2731,7 +2799,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-07-28 14:40:24"
+                                            "value": "2026-09-25 15:13:12"
                                         },
                                         {
                                             "key": "from",
@@ -3789,13 +3857,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000/ohlc",
+                                    "raw": "{{baseUrl}}/equity/INE002A01018/ohlc",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
-                                        "INE000000000",
+                                        "INE002A01018",
                                         "ohlc"
                                     ],
                                     "query": []
@@ -3929,13 +3997,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000/activity-metrics?exchange=nse",
+                                    "raw": "{{baseUrl}}/equity/INE002A01018/activity-metrics?exchange=nse",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
-                                        "INE000000000",
+                                        "INE002A01018",
                                         "activity-metrics"
                                     ],
                                     "query": [
@@ -4003,13 +4071,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000/history",
+                                    "raw": "{{baseUrl}}/equity/INE002A01018/history",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
-                                        "INE000000000",
+                                        "INE002A01018",
                                         "history"
                                     ],
                                     "query": []
@@ -4696,13 +4764,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000",
+                                    "raw": "{{baseUrl}}/equity/INE002A01018",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
-                                        "INE000000000"
+                                        "INE002A01018"
                                     ],
                                     "query": []
                                 },
@@ -4831,13 +4899,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000/dual-exchange",
+                                    "raw": "{{baseUrl}}/equity/INE002A01018/dual-exchange",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
-                                        "INE000000000",
+                                        "INE002A01018",
                                         "dual-exchange"
                                     ],
                                     "query": []
@@ -4967,13 +5035,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000/metrics",
+                                    "raw": "{{baseUrl}}/equity/INE002A01018/metrics",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
-                                        "INE000000000",
+                                        "INE002A01018",
                                         "metrics"
                                     ],
                                     "query": []
@@ -5103,13 +5171,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000/peers",
+                                    "raw": "{{baseUrl}}/equity/INE002A01018/peers",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
-                                        "INE000000000",
+                                        "INE002A01018",
                                         "peers"
                                     ],
                                     "query": []
@@ -5385,7 +5453,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/indices/NIFTY%2050/history?start_date=2026-06-28&end_date=2026-07-28",
+                                    "raw": "{{baseUrl}}/indices/NIFTY%2050/history?start_date=2026-08-26&end_date=2026-09-25",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -5397,11 +5465,11 @@
                                     "query": [
                                         {
                                             "key": "start_date",
-                                            "value": "2026-06-28"
+                                            "value": "2026-08-26"
                                         },
                                         {
                                             "key": "end_date",
-                                            "value": "2026-07-28"
+                                            "value": "2026-09-25"
                                         }
                                     ]
                                 },
@@ -6001,7 +6069,45 @@
                     "name": "Market",
                     "item": [
                         {
-                            "name": "List Market Stocks",
+                            "name": "Sync Market Quotes from Upstox",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/sync?limit=5",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "sync"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "limit",
+                                            "value": "5"
+                                        }
+                                    ]
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/sync\",\n        \"method\": \"POST\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Splits",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -6011,13 +6117,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/stocks",
+                                    "raw": "{{baseUrl}}/market/splits",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "stocks"
+                                        "splits"
                                     ],
                                     "query": []
                                 },
@@ -6029,7 +6135,90 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/splits\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "List Market Stocks",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/stocks?instrument_type=stocks&per_page=10",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "stocks"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "instrument_type",
+                                            "value": "stocks"
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "10"
+                                        }
+                                    ]
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/stocks\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Market Quote by Symbol",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/quote/{symbol}",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "quote",
+                                        "{symbol}"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/quote/{symbol}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
                                 }
                             ]
                         },
@@ -6095,7 +6284,7 @@
                             ]
                         },
                         {
-                            "name": "Get Market Quote by Symbol",
+                            "name": "List Market Mutual Funds",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -6105,16 +6294,20 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/quote/{symbol}",
+                                    "raw": "{{baseUrl}}/market/mutual-funds?per_page=10",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "quote",
-                                        "{symbol}"
+                                        "mutual-funds"
                                     ],
-                                    "query": []
+                                    "query": [
+                                        {
+                                            "key": "per_page",
+                                            "value": "10"
+                                        }
+                                    ]
                                 },
                                 "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
                             },
@@ -6124,7 +6317,84 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/quote/{symbol}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/mutual-funds\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Market News Feed",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/news?limit=10",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "news"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "limit",
+                                            "value": "10"
+                                        }
+                                    ]
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/news\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Market Data by ISIN",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/isin/INE002A01018?live=1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "isin",
+                                        "INE002A01018"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "live",
+                                            "value": "1"
+                                        }
+                                    ]
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/isin/{isin}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 },
                                 {
                                     "name": "Resource Not Found",
@@ -6136,7 +6406,7 @@
                             ]
                         },
                         {
-                            "name": "List Market Indices",
+                            "name": "List Market Mutual Funds",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -6146,15 +6416,20 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/indices",
+                                    "raw": "{{baseUrl}}/market/mf?per_page=10",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "indices"
+                                        "mf"
                                     ],
-                                    "query": []
+                                    "query": [
+                                        {
+                                            "key": "per_page",
+                                            "value": "10"
+                                        }
+                                    ]
                                 },
                                 "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
                             },
@@ -6164,7 +6439,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/indices\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/mf\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 }
                             ]
                         },
@@ -6231,6 +6506,160 @@
                                     "code": 403,
                                     "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "List Market Indices",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/indices",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "indices"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/indices\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Market Data by ISIN",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/equity/INE002A01018?live=1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "equity",
+                                        "INE002A01018"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "live",
+                                            "value": "1"
+                                        }
+                                    ]
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/equity/{isin}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Dividends",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/dividends",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "dividends"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/dividends\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Corporate Actions",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/corporate-actions?type=ALL&limit=10",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "corporate-actions"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "type",
+                                            "value": "ALL"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "10"
+                                        }
+                                    ]
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/corporate-actions\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 }
                             ]
                         },
@@ -6303,6 +6732,39 @@
                                     "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
                                 }
                             ]
+                        },
+                        {
+                            "name": "Get Bonuses",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/bonuses",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "bonuses"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/bonuses\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
                         }
                     ]
                 },
@@ -6320,13 +6782,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/mf/INE000000000/similar-funds?limit=5",
+                                    "raw": "{{baseUrl}}/mf/INE002A01018/similar-funds?limit=5",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "mf",
-                                        "INE000000000",
+                                        "INE002A01018",
                                         "similar-funds"
                                     ],
                                     "query": [
@@ -6460,7 +6922,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/mf/search?q=SBI",
+                                    "raw": "{{baseUrl}}/mf/search?q=360+ONE",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -6471,7 +6933,7 @@
                                     "query": [
                                         {
                                             "key": "q",
-                                            "value": "SBI"
+                                            "value": "360 ONE"
                                         }
                                     ]
                                 },
@@ -6587,14 +7049,14 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/mf/history/INE000000000?months=6",
+                                    "raw": "{{baseUrl}}/mf/history/INE002A01018?months=6",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "mf",
                                         "history",
-                                        "INE000000000"
+                                        "INE002A01018"
                                     ],
                                     "query": [
                                         {
@@ -6661,7 +7123,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/mf/compare?isins=INF000000001%2CINF000000002",
+                                    "raw": "{{baseUrl}}/mf/compare?isins=INF579M01AZ6%2CINF579M01AV5",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -6672,7 +7134,7 @@
                                     "query": [
                                         {
                                             "key": "isins",
-                                            "value": "INF000000001,INF000000002"
+                                            "value": "INF579M01AZ6,INF579M01AV5"
                                         }
                                     ]
                                 },
@@ -6727,14 +7189,14 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/mf/details/INE000000000",
+                                    "raw": "{{baseUrl}}/mf/details/INE002A01018",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "mf",
                                         "details",
-                                        "INE000000000"
+                                        "INE002A01018"
                                     ],
                                     "query": []
                                 },
@@ -7480,6 +7942,251 @@
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/webhooks/razorpay\",\n        \"method\": \"POST\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "07. Other APIs",
+            "description": "Additional APIs grouped for completeness.",
+            "item": [
+                {
+                    "name": "India",
+                    "item": [
+                        {
+                            "name": "Indium: Pincode Pincode",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/india/pincode/400001",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "india",
+                                        "pincode",
+                                        "400001"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/india/pincode/{pincode}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Market-Calendar",
+                    "item": [
+                        {
+                            "name": "Get Market Calendar Holidays",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market-calendar/holidays",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market-calendar",
+                                        "holidays"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market-calendar/holidays\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Market Calendar Check",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market-calendar/check",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market-calendar",
+                                        "check"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market-calendar/check\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Upstox",
+                    "item": [
+                        {
+                            "name": "Get Upstox Callback",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/upstox/callback",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "upstox",
+                                        "callback"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/upstox/callback\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 }
                             ]
                         }

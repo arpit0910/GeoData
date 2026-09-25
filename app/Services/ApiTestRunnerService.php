@@ -603,6 +603,26 @@ class ApiTestRunnerService
             case 'api/v1/mf/{isin}/similar-funds':
                 $query = ['limit' => 5];
                 break;
+            case 'api/v1/market/stocks':
+                $query = ['instrument_type' => 'stocks', 'per_page' => 10];
+                break;
+            case 'api/v1/market/mutual-funds':
+            case 'api/v1/market/mf':
+                $query = ['per_page' => 10];
+                break;
+            case 'api/v1/market/isin/{isin}':
+            case 'api/v1/market/equity/{isin}':
+                $query = ['live' => 1];
+                break;
+            case 'api/v1/market/sync':
+                $query = ['limit' => 5];
+                break;
+            case 'api/v1/market/news':
+                $query = ['limit' => 10];
+                break;
+            case 'api/v1/market/corporate-actions':
+                $query = ['type' => 'ALL', 'limit' => 10];
+                break;
             case 'api/v1/market/heatmap':
                 $query = ['period' => '1m'];
                 break;
