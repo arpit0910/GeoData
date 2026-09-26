@@ -113,5 +113,38 @@ class MarketDatasetSyncTest extends TestCase
         ]);
         Http::assertSentCount(13);
         Http::assertSent(fn (Request $request) => $request->hasHeader('Authorization', 'Bearer test-token'));
+        Http::assertSent(fn (Request $request) => $request->url() === 'https://provider.test/v2/fundamentals/INE002A01018/competitors');
+        Http::assertNotSent(fn (Request $request) => str_contains($request->url(), rawurlencode('NSE_EQ|INE002A01018')));
+    }
+
+    public function test_company_fundamentals_sync_stops_after_an_authentication_failure(): void
+    {
+        config([
+            'market_data.upstox.access_token' => 'expired-token',
+            'market_data.upstox.fundamentals_url' => 'https://provider.test/v2/fundamentals',
+        ]);
+
+        Equity::create([
+            'isin' => 'INE002A01018',
+            'company_name' => 'Example Company',
+            'nse_symbol' => 'EXAMPLE',
+            'series' => 'EQ',
+            'is_active' => true,
+        ]);
+
+        Http::fake([
+            'https://provider.test/*' => Http::response([
+                'status' => 'error',
+                'errors' => [['message' => 'Invalid token used to access API']],
+            ], 401),
+        ]);
+
+        $this->artisan('market:sync-company-fundamentals', ['--limit' => 1, '--delay' => 0])
+            ->expectsOutputToContain('HTTP 401: Invalid token used to access API')
+            ->expectsOutputToContain('synchronization stopped because the Upstox access token was rejected')
+            ->assertExitCode(1);
+
+        Http::assertSentCount(1);
+        $this->assertDatabaseCount('company_fundamentals', 0);
     }
 }

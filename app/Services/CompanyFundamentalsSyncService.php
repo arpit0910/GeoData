@@ -38,9 +38,7 @@ class CompanyFundamentalsSyncService
 
             try {
                 $payload = $this->marketData->fundamentals(
-                    $definition['identifier'] === 'instrument_key'
-                        ? (string) $equity->upstox_nse_instrument_key
-                        : $equity->isin,
+                    $equity->isin,
                     $definition['endpoint'],
                     $definition['query']
                 );
@@ -64,6 +62,10 @@ class CompanyFundamentalsSyncService
                 $stats['failed']++;
                 $stats['errors'][] = $definition['dataset'].': '.$exception->getMessage();
                 report($exception);
+
+                if (preg_match('/HTTP (401|403)\b/', $exception->getMessage()) === 1) {
+                    break;
+                }
             }
 
             if ($delayMs > 0 && $index < $definitions->count() - 1) {
@@ -74,7 +76,7 @@ class CompanyFundamentalsSyncService
         return $stats;
     }
 
-    /** @return array<int, array{dataset: string, endpoint: string, statement_type: string, time_period: string, query: array<string, scalar>, identifier: string}> */
+    /** @return array<int, array{dataset: string, endpoint: string, statement_type: string, time_period: string, query: array<string, scalar>}> */
     private function definitions(): array
     {
         $definitions = [
@@ -82,7 +84,7 @@ class CompanyFundamentalsSyncService
             $this->definition('share_holdings', 'share-holdings', 'not_applicable', 'quarterly'),
             $this->definition('key_ratios', 'key-ratios'),
             $this->definition('corporate_actions', 'corporate-actions'),
-            $this->definition('competitors', 'competitors', identifier: 'instrument_key'),
+            $this->definition('competitors', 'competitors'),
         ];
 
         foreach (['consolidated', 'standalone'] as $statementType) {
@@ -121,8 +123,7 @@ class CompanyFundamentalsSyncService
         string $endpoint,
         string $statementType = 'not_applicable',
         string $timePeriod = 'not_applicable',
-        array $query = [],
-        string $identifier = 'isin'
+        array $query = []
     ): array {
         return [
             'dataset' => $dataset,
@@ -130,7 +131,6 @@ class CompanyFundamentalsSyncService
             'statement_type' => $statementType,
             'time_period' => $timePeriod,
             'query' => $query,
-            'identifier' => $identifier,
         ];
     }
 }

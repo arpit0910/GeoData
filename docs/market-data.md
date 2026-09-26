@@ -9,10 +9,18 @@ existing daily `equity_prices` history is separate.
 
 ## Setup
 
-Set the current daily Upstox access token in the deployment environment. Never
-commit the token. If configuration is cached, rebuild it after updating the
-token. If PHP reports cURL error 60, set `MARKET_DATA_CA_BUNDLE` to a trusted
-CA bundle. TLS certificate verification stays enabled.
+Set `UPSTOX_CLIENT_ID`, `UPSTOX_CLIENT_SECRET`, and a long random
+`UPSTOX_NOTIFIER_SECRET` in the deployment environment. Configure this URL as
+the app's Notifier Webhook Endpoint in Upstox Developer Apps:
+
+`https://your-domain.example/api/v1/integrations/market-data/upstox-token/{UPSTOX_NOTIFIER_SECRET}`
+
+The application requests a replacement token after expiry. Upstox requires the
+account holder to approve the request; after approval, the notifier stores the
+token encrypted in the database. `UPSTOX_ACCESS_TOKEN` remains a fallback for
+initial setup. Never commit credentials. If configuration is cached, rebuild it
+after updating the environment. If PHP reports cURL error 60, set
+`MARKET_DATA_CA_BUNDLE` to a trusted CA bundle. TLS verification stays enabled.
 
 ```sh
 php artisan migrate --force

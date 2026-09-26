@@ -93,6 +93,15 @@ return [
             'overlap' => true,
         ],
         [
+            'title' => 'market:ensure-upstox-token',
+            'command' => 'market:ensure-upstox-token',
+            'args' => [],
+            'description' => 'Requests an approved replacement when the stored Upstox access token has expired.',
+            'schedule' => 'Daily at 04:00',
+            'timezone' => 'Asia/Kolkata',
+            'overlap' => true,
+        ],
+        [
             'title' => 'market:sync-upstox-quotes (Stocks)',
             'command' => 'market:sync-upstox-quotes',
             'args' => ['--type' => 'stocks', '--mode' => 'ltp'],

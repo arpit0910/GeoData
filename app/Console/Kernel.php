@@ -40,6 +40,9 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:sync-company-fundamentals --limit=25 --delay=250')
             ->dailyAt('02:00')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
+        $this->markScheduled($schedule->command('market:ensure-upstox-token')
+            ->dailyAt('04:00')->timezone('Asia/Kolkata')->withoutOverlapping(30));
+
         // 1. Equities / Stocks: Constantly synced every minute during active trading hours (09:15 to 15:30 IST)
         $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=stocks --mode=ltp')
             ->everyMinute()

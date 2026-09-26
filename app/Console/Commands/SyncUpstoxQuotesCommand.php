@@ -31,11 +31,6 @@ class SyncUpstoxQuotesCommand extends Command
             return self::INVALID;
         }
 
-        if (trim((string) config('market_data.upstox.access_token')) === '') {
-            $this->error('UPSTOX_ACCESS_TOKEN is not configured.');
-            return self::FAILURE;
-        }
-
         $limit = $this->option('limit') ? (int) $this->option('limit') : null;
         $mode = strtolower(trim((string) ($this->option('mode') ?: 'ltp')));
         $type = strtolower(trim((string) ($this->option('type') ?: 'equities')));

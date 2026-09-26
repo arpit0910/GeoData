@@ -6,34 +6,40 @@
 <div class="mx-auto max-w-7xl space-y-6">
     <div>
         <h1 class="text-3xl font-black text-gray-900 dark:text-white">Complete Company Fundamentals</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Browse stored company datasets and run oldest-first historical backfills.</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Browse the latest stored company datasets synchronized from the market-data provider.</p>
     </div>
 
     @if(session('success') || session('error'))
         <div class="rounded-xl border px-4 py-3 text-sm font-semibold {{ session('error') ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300' : 'border-green-200 bg-green-50 text-green-700 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-300' }}">
-            <pre class="max-h-64 overflow-auto whitespace-pre-wrap font-sans">{{ session('error') ?: session('success') }}</pre>
+            {{ session('error') ?: session('success') }}
         </div>
     @endif
+
+    <div class="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-white/5 dark:bg-richdark-surface">
+        <div>
+            <div class="text-xs font-black uppercase tracking-widest text-gray-400">Upstox Access Token</div>
+            @if($upstoxToken)
+                <div class="mt-2 font-black text-green-600 dark:text-green-400">Active</div>
+                <div class="mt-1 text-xs text-gray-500">Expires {{ $upstoxToken->expires_at?->format('d M Y, h:i A') }} UTC. The token is encrypted and never displayed.</div>
+            @else
+                <div class="mt-2 font-black text-red-600 dark:text-red-400">Missing or expired</div>
+                <div class="mt-1 text-xs text-gray-500">Request a replacement, then approve the notification in Upstox.</div>
+            @endif
+            <div class="mt-3 text-xs text-gray-500">Register this Notifier Webhook Endpoint in Upstox:</div>
+            <code class="mt-1 block break-all rounded-lg bg-gray-100 px-3 py-2 text-xs text-gray-700 dark:bg-black/20 dark:text-gray-300">{{ $upstoxNotifierUrl }}</code>
+        </div>
+        <form method="POST" action="{{ route('admin.market-datasets.company-fundamentals.upstox-token') }}">
+            @csrf
+            <button @disabled(!$upstoxTokenConfigured) class="rounded-xl bg-amber-600 px-5 py-3 text-sm font-black text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50">
+                Request New Token
+            </button>
+        </form>
+    </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @foreach(['Stored Records' => $summary['records'], 'Synced Companies' => $summary['companies'], 'Pending Companies' => $summary['pending'], 'Last Sync' => $summary['last_sync'] ? \Carbon\Carbon::parse($summary['last_sync'])->format('d M Y, h:i A') : 'Never'] as $label => $value)
             <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-richdark-surface"><div class="text-xs font-black uppercase tracking-widest text-gray-400">{{ $label }}</div><div class="mt-2 text-xl font-black text-gray-900 dark:text-white">{{ $value }}</div></div>
         @endforeach
-    </div>
-
-    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-500/20 dark:bg-amber-500/5">
-        <h2 class="font-black text-gray-900 dark:text-white">Historical / Old Data Sync</h2>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave ISINs blank to process never-synced and oldest-synced companies first. Every run is recorded in Cron Logs.</p>
-        <form method="POST" action="{{ route('admin.market-datasets.company-fundamentals.sync') }}" class="mt-4 grid gap-3 lg:grid-cols-5">
-            @csrf
-            <textarea name="isins" rows="2" placeholder="Optional ISINs, comma or line separated" class="rounded-xl border-gray-200 bg-white text-sm lg:col-span-2 dark:border-white/10 dark:bg-richdark-surface dark:text-white">{{ old('isins') }}</textarea>
-            <div><label class="mb-1 block text-xs font-bold text-gray-500">Company limit</label><input type="number" name="limit" value="{{ old('limit', 25) }}" min="1" max="1000" class="w-full rounded-xl border-gray-200 bg-white text-sm dark:border-white/10 dark:bg-richdark-surface dark:text-white"></div>
-            <div><label class="mb-1 block text-xs font-bold text-gray-500">Only older than days</label><input type="number" name="stale_days" value="{{ old('stale_days', 30) }}" min="0" max="3650" class="w-full rounded-xl border-gray-200 bg-white text-sm dark:border-white/10 dark:bg-richdark-surface dark:text-white"></div>
-            <div><label class="mb-1 block text-xs font-bold text-gray-500">Request delay (ms)</label><input type="number" name="delay" value="{{ old('delay', 250) }}" min="0" max="5000" class="w-full rounded-xl border-gray-200 bg-white text-sm dark:border-white/10 dark:bg-richdark-surface dark:text-white"></div>
-            <div class="lg:col-span-4"><div class="flex flex-wrap gap-2">@foreach($datasets as $dataset)<label class="inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-600 dark:bg-richdark-surface dark:text-gray-300"><input type="checkbox" name="datasets[]" value="{{ $dataset }}"> {{ str_replace('-', ' ', $dataset) }}</label>@endforeach</div></div>
-            <button class="rounded-xl bg-amber-600 px-5 py-3 text-sm font-black text-white hover:bg-amber-700"><i class="fas fa-clock-rotate-left mr-2"></i>Run Oldest First</button>
-        </form>
-        @if($errors->any())<div class="mt-3 text-sm font-semibold text-red-600">{{ $errors->first() }}</div>@endif
     </div>
 
     <form method="GET" class="grid gap-3 rounded-2xl border border-gray-200 bg-white p-4 md:grid-cols-5 dark:border-white/5 dark:bg-richdark-surface">

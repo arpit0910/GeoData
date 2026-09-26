@@ -264,7 +264,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/global-instruments', [MarketDatasetController::class, 'globalInstruments'])->name('global-instruments');
         Route::post('/global-instruments/sync', [MarketDatasetController::class, 'syncGlobalInstruments'])->name('global-instruments.sync');
         Route::get('/company-fundamentals', [MarketDatasetController::class, 'companyFundamentals'])->name('company-fundamentals');
-        Route::post('/company-fundamentals/sync', [MarketDatasetController::class, 'syncCompanyFundamentals'])->name('company-fundamentals.sync');
+        Route::post('/company-fundamentals/upstox-token', [MarketDatasetController::class, 'requestUpstoxToken'])->name('company-fundamentals.upstox-token');
         Route::get('/company-fundamentals/{companyFundamental}', [MarketDatasetController::class, 'showCompanyFundamental'])->name('company-fundamentals.show');
     });
 

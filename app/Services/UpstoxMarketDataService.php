@@ -13,6 +13,10 @@ class UpstoxMarketDataService
     public const MAX_INSTRUMENTS = 500;
     public const MAX_NEWS_INSTRUMENTS = 30;
 
+    public function __construct(private readonly UpstoxTokenManager $tokens)
+    {
+    }
+
     /**
      * Fetch LTP snapshots for requested instrument keys.
      *
@@ -186,9 +190,7 @@ class UpstoxMarketDataService
             'competitors',
         ];
 
-        $validIdentifier = $dataset === 'competitors'
-            ? preg_match('/^[A-Z0-9_]+\|.+$/', $identifier) === 1
-            : preg_match('/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/', strtoupper($identifier)) === 1;
+        $validIdentifier = preg_match('/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/', strtoupper($identifier)) === 1;
         if (!$validIdentifier) {
             throw new RuntimeException('A valid market identifier is required for fundamentals.');
         }
@@ -448,11 +450,7 @@ class UpstoxMarketDataService
 
     private function token(): string
     {
-        $token = trim((string) config('market_data.upstox.access_token'));
-        if ($token === '') {
-            throw new RuntimeException('UPSTOX_ACCESS_TOKEN or UPSTOX_TOKEN is not configured.');
-        }
-        return $token;
+        return $this->tokens->accessToken();
     }
 
     /**

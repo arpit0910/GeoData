@@ -26,10 +26,9 @@ class UpstoxCallbackTest extends TestCase
         Log::shouldHaveReceived('info')
             ->once()
             ->with('Upstox OAuth callback received.', Mockery::on(function (array $context): bool {
-                return $context['query'] === [
-                    'code' => 'test-authorization-code',
-                    'state' => 'test-state',
-                ] && $context['user_agent'] === 'Upstox-Test';
+                return $context['has_code'] === true
+                    && $context['has_state'] === true
+                    && $context['user_agent'] === 'Upstox-Test';
             }));
     }
 }

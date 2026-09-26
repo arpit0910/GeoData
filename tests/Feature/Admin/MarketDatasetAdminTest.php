@@ -45,7 +45,10 @@ class MarketDatasetAdminTest extends TestCase
         $this->actingAs($admin)->get(route('admin.market-datasets.global-instruments'))
             ->assertOk()->assertSee('Test Global Index');
         $this->actingAs($admin)->get(route('admin.market-datasets.company-fundamentals'))
-            ->assertOk()->assertSee('Test Company Limited')->assertSee('Historical / Old Data Sync');
+            ->assertOk()
+            ->assertSee('Test Company Limited')
+            ->assertDontSee('Historical / Old Data Sync')
+            ->assertDontSee('Run Oldest First');
         $this->actingAs($admin)->get(route('admin.market-datasets.company-fundamentals.show', $fundamental))
             ->assertOk()->assertSee('Stored Payload')->assertSee('Test Company Limited');
     }

@@ -30,6 +30,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/webhooks/razorpay', [SubscriptionController::class, 'handleWebhook'])->name('api.razorpay.webhook');
     Route::get('/integrations/market-data/callback', [UpstoxController::class, 'callback'])
         ->name('api.market-data.callback');
+    Route::post('/integrations/market-data/upstox-token/{secret}', [UpstoxController::class, 'notifier'])
+        ->middleware('throttle:10,1')
+        ->name('api.market-data.upstox-token');
 
     Route::get('/ocr/health', [OcrController::class, 'health']);
     Route::prefix('market')->group(function () {

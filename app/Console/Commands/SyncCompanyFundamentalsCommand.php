@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Equity;
 use App\Services\CompanyFundamentalsSyncService;
+use App\Services\UpstoxTokenManager;
 use Illuminate\Console\Command;
 
 class SyncCompanyFundamentalsCommand extends Command
@@ -18,11 +19,12 @@ class SyncCompanyFundamentalsCommand extends Command
 
     protected $description = 'Synchronize company profiles, statements, ratios, holdings, actions, and competitors';
 
-    public function handle(CompanyFundamentalsSyncService $syncService): int
+    public function handle(CompanyFundamentalsSyncService $syncService, UpstoxTokenManager $tokens): int
     {
-        if (trim((string) config('market_data.upstox.access_token')) === '') {
-            $this->error('The market-data access token is not configured.');
-
+        try {
+            $tokens->accessToken();
+        } catch (\Throwable $exception) {
+            $this->error($exception->getMessage());
             return self::FAILURE;
         }
 
@@ -88,6 +90,8 @@ class SyncCompanyFundamentalsCommand extends Command
         }
 
         $totals = ['companies' => 0, 'requested' => 0, 'saved' => 0, 'failed' => 0];
+        $authenticationFailed = false;
+
         foreach ($equities as $equity) {
             $stats = $syncService->sync($equity, $datasets->all(), $delayMs);
             $totals['companies']++;
@@ -99,6 +103,26 @@ class SyncCompanyFundamentalsCommand extends Command
                 "{$equity->isin}: saved {$stats['saved']} of {$stats['requested']} datasets"
                 .($stats['failed'] > 0 ? "; failed {$stats['failed']}" : '')
             );
+
+            foreach (array_unique($stats['errors']) as $error) {
+                $this->warn("{$equity->isin}: {$error}");
+            }
+
+            $authenticationFailed = collect($stats['errors'])->contains(
+                fn (string $error) => preg_match('/HTTP (401|403)\b/', $error) === 1
+            );
+            if ($authenticationFailed) {
+                $this->error('Company fundamentals synchronization stopped because the Upstox access token was rejected. Configure a fresh UPSTOX_ACCESS_TOKEN and clear the Laravel configuration cache.');
+                try {
+                    $renewal = $tokens->requestRenewal();
+                    $this->warn($renewal['requested']
+                        ? 'A replacement token was requested. Approve the request in Upstox.'
+                        : 'A replacement token request is already awaiting approval in Upstox.');
+                } catch (\Throwable $exception) {
+                    $this->warn('Automatic token renewal could not be initiated: '.$exception->getMessage());
+                }
+                break;
+            }
         }
 
         $this->info(
@@ -106,6 +130,8 @@ class SyncCompanyFundamentalsCommand extends Command
             ."requested: {$totals['requested']}; saved: {$totals['saved']}; failed: {$totals['failed']}."
         );
 
-        return $totals['saved'] > 0 ? self::SUCCESS : self::FAILURE;
+        return $totals['saved'] > 0 && $totals['failed'] === 0 && ! $authenticationFailed
+            ? self::SUCCESS
+            : self::FAILURE;
     }
 }

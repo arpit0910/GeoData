@@ -7,10 +7,11 @@ use App\Models\CompanyFundamental;
 use App\Models\Equity;
 use App\Models\GlobalInstrument;
 use App\Services\CompanyFundamentalsSyncService;
+use App\Services\UpstoxTokenManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
+use Throwable;
 
 class MarketDatasetController extends Controller
 {
@@ -51,7 +52,7 @@ class MarketDatasetController extends Controller
         return back()->with($exitCode === 0 ? 'success' : 'error', trim(Artisan::output()));
     }
 
-    public function companyFundamentals(Request $request): View
+    public function companyFundamentals(Request $request, UpstoxTokenManager $tokens): View
     {
         $query = CompanyFundamental::query()->with('equity');
 
@@ -90,40 +91,29 @@ class MarketDatasetController extends Controller
             'datasets' => CompanyFundamentalsSyncService::DATASETS,
             'statementTypes' => CompanyFundamental::distinct()->orderBy('statement_type')->pluck('statement_type'),
             'timePeriods' => CompanyFundamental::distinct()->orderBy('time_period')->pluck('time_period'),
+            'upstoxToken' => $tokens->current(),
+            'upstoxTokenConfigured' => trim((string) config('market_data.upstox.client_id')) !== ''
+                && trim((string) config('market_data.upstox.client_secret')) !== '',
+            'upstoxNotifierUrl' => route(
+                'api.market-data.upstox-token',
+                ['secret' => config('market_data.upstox.notifier_secret')]
+            ),
         ]);
     }
 
-    public function syncCompanyFundamentals(Request $request): RedirectResponse
+    public function requestUpstoxToken(UpstoxTokenManager $tokens): RedirectResponse
     {
-        $validated = $request->validate([
-            'isins' => ['nullable', 'string', 'max:5000'],
-            'datasets' => ['nullable', 'array'],
-            'datasets.*' => ['string', 'in:'.implode(',', CompanyFundamentalsSyncService::DATASETS)],
-            'limit' => ['required', 'integer', 'min:1', 'max:1000'],
-            'delay' => ['required', 'integer', 'min:0', 'max:5000'],
-            'stale_days' => ['nullable', 'integer', 'min:0', 'max:3650'],
-        ]);
+        try {
+            $result = $tokens->requestRenewal();
+            $message = $result['requested']
+                ? 'A new Upstox token was requested. Approve the request in Upstox; it will be stored automatically.'
+                : 'An Upstox token request is already awaiting approval.';
 
-        $isins = collect(preg_split('/[\s,]+/', $validated['isins'] ?? ''))
-            ->map(fn ($isin) => strtoupper(trim((string) $isin)))->filter()->unique()->values()->all();
-        $arguments = [
-            '--limit' => $validated['limit'],
-            '--delay' => $validated['delay'],
-        ];
-        if ($isins) {
-            $arguments['--isin'] = $isins;
+            return back()->with('success', $message);
+        } catch (Throwable $exception) {
+            report($exception);
+            return back()->with('error', $exception->getMessage());
         }
-        if (! empty($validated['datasets'])) {
-            $arguments['--dataset'] = $validated['datasets'];
-        }
-        if ($request->filled('stale_days') && ! $isins) {
-            $arguments['--stale-days'] = $validated['stale_days'];
-        }
-
-        set_time_limit(0);
-        $exitCode = Artisan::call('market:sync-company-fundamentals', $arguments);
-
-        return back()->with($exitCode === 0 ? 'success' : 'error', trim(Artisan::output()));
     }
 
     public function showCompanyFundamental(CompanyFundamental $companyFundamental): View
