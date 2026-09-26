@@ -13,7 +13,7 @@ class SyncUpstoxNewsCommand extends Command
 {
     protected $signature = 'market:sync-upstox-news
         {--batch-size=30 : Instrument keys per Upstox news request (max 30)}
-        {--limit=60 : Maximum instruments to query per run}
+        {--limit= : Optional maximum instruments to query; all eligible instruments when omitted}
         {--isin=* : Specific ISINs to fetch news for}';
 
     protected $description = 'Sync latest market and stock news from Upstox API';
@@ -21,12 +21,21 @@ class SyncUpstoxNewsCommand extends Command
     public function handle(UpstoxMarketDataService $upstox): int
     {
         $batchSize = min(30, max(1, (int) $this->option('batch-size')));
-        $limit = max(1, (int) $this->option('limit'));
+        $limit = $this->option('limit') !== null
+            ? max(1, (int) $this->option('limit'))
+            : null;
 
         $query = Equity::query()
             ->where('is_active', true)
-            ->whereNotNull('upstox_nse_instrument_key')
-            ->where('upstox_nse_instrument_key', '<>', '');
+            ->where(function ($query) {
+                $query->where(function ($query) {
+                    $query->whereNotNull('upstox_nse_instrument_key')
+                        ->where('upstox_nse_instrument_key', '<>', '');
+                })->orWhere(function ($query) {
+                    $query->whereNotNull('upstox_bse_instrument_key')
+                        ->where('upstox_bse_instrument_key', '<>', '');
+                });
+            });
 
         $isinFilter = collect($this->option('isin'))
             ->map(fn ($isin) => strtoupper(trim((string) $isin)))
@@ -37,18 +46,26 @@ class SyncUpstoxNewsCommand extends Command
             $query->whereIn('isin', $isinFilter->all());
         }
 
-        // Get instruments (prioritizing equities with nse symbols or recently active)
-        $equities = $query->orderBy('id')
-            ->limit($limit)
-            ->get(['id', 'isin', 'nse_symbol', 'upstox_nse_instrument_key']);
+        $query->orderBy('id');
+        if ($limit !== null) {
+            $query->limit($limit);
+        }
+        $equities = $query->get([
+            'id', 'isin', 'nse_symbol', 'bse_symbol',
+            'upstox_nse_instrument_key', 'upstox_bse_instrument_key',
+        ]);
 
         if ($equities->isEmpty()) {
             $this->warn('No active equities found with Upstox instrument keys.');
             return self::SUCCESS;
         }
 
-        $symbolMap = $equities->pluck('nse_symbol', 'isin')->all();
-        $instrumentKeys = $equities->pluck('upstox_nse_instrument_key')->filter()->values()->all();
+        $symbolMap = $equities->mapWithKeys(fn ($equity) => [
+            $equity->isin => $equity->nse_symbol ?: $equity->bse_symbol,
+        ])->all();
+        $instrumentKeys = $equities->map(
+            fn ($equity) => $equity->upstox_nse_instrument_key ?: $equity->upstox_bse_instrument_key
+        )->filter()->unique()->values()->all();
 
         $this->info("Fetching news for up to {$equities->count()} instruments in batches of {$batchSize}...");
 

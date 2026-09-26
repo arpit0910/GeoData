@@ -7,11 +7,8 @@ use App\Models\CompanyFundamental;
 use App\Models\Equity;
 use App\Models\GlobalInstrument;
 use App\Services\CompanyFundamentalsSyncService;
-use App\Services\UpstoxTokenManager;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Throwable;
 
 class MarketDatasetController extends Controller
 {
@@ -52,7 +49,7 @@ class MarketDatasetController extends Controller
         return back()->with($exitCode === 0 ? 'success' : 'error', trim(Artisan::output()));
     }
 
-    public function companyFundamentals(Request $request, UpstoxTokenManager $tokens): View
+    public function companyFundamentals(Request $request): View
     {
         $query = CompanyFundamental::query()->with('equity');
 
@@ -91,29 +88,7 @@ class MarketDatasetController extends Controller
             'datasets' => CompanyFundamentalsSyncService::DATASETS,
             'statementTypes' => CompanyFundamental::distinct()->orderBy('statement_type')->pluck('statement_type'),
             'timePeriods' => CompanyFundamental::distinct()->orderBy('time_period')->pluck('time_period'),
-            'upstoxToken' => $tokens->current(),
-            'upstoxTokenConfigured' => trim((string) config('market_data.upstox.client_id')) !== ''
-                && trim((string) config('market_data.upstox.client_secret')) !== '',
-            'upstoxNotifierUrl' => route(
-                'api.market-data.upstox-token',
-                ['secret' => config('market_data.upstox.notifier_secret')]
-            ),
         ]);
-    }
-
-    public function requestUpstoxToken(UpstoxTokenManager $tokens): RedirectResponse
-    {
-        try {
-            $result = $tokens->requestRenewal();
-            $message = $result['requested']
-                ? 'A new Upstox token was requested. Approve the request in Upstox; it will be stored automatically.'
-                : 'An Upstox token request is already awaiting approval.';
-
-            return back()->with('success', $message);
-        } catch (Throwable $exception) {
-            report($exception);
-            return back()->with('error', $exception->getMessage());
-        }
     }
 
     public function showCompanyFundamental(CompanyFundamental $companyFundamental): View

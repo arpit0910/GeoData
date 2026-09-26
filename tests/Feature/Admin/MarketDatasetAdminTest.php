@@ -48,7 +48,9 @@ class MarketDatasetAdminTest extends TestCase
             ->assertOk()
             ->assertSee('Test Company Limited')
             ->assertDontSee('Historical / Old Data Sync')
-            ->assertDontSee('Run Oldest First');
+            ->assertDontSee('Run Oldest First')
+            ->assertDontSee('Upstox Access Token')
+            ->assertDontSee('Request New Token');
         $this->actingAs($admin)->get(route('admin.market-datasets.company-fundamentals.show', $fundamental))
             ->assertOk()->assertSee('Stored Payload')->assertSee('Test Company Limited');
     }

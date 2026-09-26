@@ -22,9 +22,6 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('sync:mf-daily --force')
             ->dailyAt('21:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        $this->markScheduled($schedule->command('sync:mf-daily --force')
-            ->dailyAt('23:15')->timezone('Asia/Kolkata')->withoutOverlapping(180));
-
         $this->markScheduled($schedule->command('mf:sync-and-calculate')
             ->dailyAt('23:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
@@ -40,9 +37,6 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:sync-company-fundamentals --limit=25 --delay=250')
             ->dailyAt('02:00')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        $this->markScheduled($schedule->command('market:ensure-upstox-token')
-            ->dailyAt('04:00')->timezone('Asia/Kolkata')->withoutOverlapping(30));
-
         // 1. Equities / Stocks: Constantly synced every minute during active trading hours (09:15 to 15:30 IST)
         $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=stocks --mode=ltp')
             ->everyMinute()
@@ -56,41 +50,14 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=bonds --mode=ltp --once-daily')
             ->dailyAt('18:00')
             ->timezone('Asia/Kolkata')
-            ->weekdays()
             ->runInBackground()
             ->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --limit=60')
-            ->everyMinute()
+        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30')
+            ->hourly()
             ->timezone('Asia/Kolkata')
-            ->weekdays()
-            ->between('09:15', '15:30')
             ->runInBackground()
-            ->withoutOverlapping(2));
-
-        $this->markScheduled($schedule->command('market:sync-upstox-events --limit=25')
-            ->everyMinute()
-            ->timezone('Asia/Kolkata')
-            ->weekdays()
-            ->between('09:15', '15:30')
-            ->runInBackground()
-            ->withoutOverlapping(2));
-
-        $this->markScheduled($schedule->command('market:sync-upstox-splits --limit=25')
-            ->everyMinute()
-            ->timezone('Asia/Kolkata')
-            ->weekdays()
-            ->between('09:15', '15:30')
-            ->runInBackground()
-            ->withoutOverlapping(2));
-
-        $this->markScheduled($schedule->command('market:sync-upstox-bonuses --limit=25')
-            ->everyMinute()
-            ->timezone('Asia/Kolkata')
-            ->weekdays()
-            ->between('09:15', '15:30')
-            ->runInBackground()
-            ->withoutOverlapping(2));
+            ->withoutOverlapping(120));
 
         $this->markScheduled($schedule->command('exchange-calendar:sync')
             ->dailyAt('06:00')->timezone('Asia/Kolkata')->withoutOverlapping(60));

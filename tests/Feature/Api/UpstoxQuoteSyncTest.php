@@ -35,6 +35,7 @@ class UpstoxQuoteSyncTest extends TestCase
                 'isin' => $isin,
                 'company_name' => 'Company '.$index,
                 'nse_symbol' => 'STOCK'.$index,
+                'series' => 'EQ',
                 'upstox_nse_instrument_key' => 'NSE_EQ|'.$isin,
                 'is_active' => true,
                 'created_at' => $now,
@@ -73,6 +74,7 @@ class UpstoxQuoteSyncTest extends TestCase
             'isin' => 'INE002A01018',
             'company_name' => 'Reliance Industries',
             'nse_symbol' => 'RELIANCE',
+            'series' => 'EQ',
             'upstox_nse_instrument_key' => 'NSE_EQ|INE002A01018',
             'is_active' => true,
             'created_at' => now(),
@@ -81,7 +83,7 @@ class UpstoxQuoteSyncTest extends TestCase
         config(['market_data.upstox.access_token' => null]);
 
         $this->artisan('market:sync-upstox-quotes')
-            ->expectsOutputToContain('UPSTOX_ACCESS_TOKEN is not configured.')
+            ->expectsOutputToContain('No active Upstox token is available.')
             ->assertExitCode(1);
         Http::assertNothingSent();
         $this->assertSame(0, DB::table('equity_quotes')->count());

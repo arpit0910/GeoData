@@ -89,6 +89,10 @@ class UpstoxMarketDataService
                 $symbol = $parts[1] ?? '';
             }
 
+            // The provider key is only needed to match the response to the
+            // requested instrument and should not be persisted in snapshots.
+            unset($item['instrument_token']);
+
             $quotes[$instrumentKey] = [
                 'symbol' => $symbol,
                 'price' => $price,
