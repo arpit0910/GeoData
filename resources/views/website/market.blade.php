@@ -1,8 +1,8 @@
 @extends('layouts.public')
 @section('title', 'Indian Market Data, News & Fundamentals - SetuGeo')
 @section('meta_description', 'Explore Indian stocks, mutual funds, company fundamentals, corporate actions and financial news on fast, focused pages.')
-@section('market_heading', 'Markets')
-@section('market_subheading', 'Stocks, funds, fundamentals and news - organized in one clear workspace.')
+@section('market_heading', 'Market overview')
+@section('market_subheading', 'A current snapshot of Indian equities, mutual funds, company fundamentals, financial news and upcoming corporate actions.')
 
 @section('content')
 <div class="market-shell">

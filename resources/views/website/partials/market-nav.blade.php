@@ -18,7 +18,6 @@
 @endonce
 
 @php
-    $isMarketOverview = request()->routeIs('market.index');
     $marketLinks = [
         ['market.index', 'Overview'],
         ['market.stocks', 'Stocks'],
@@ -30,15 +29,14 @@
 @endphp
 
 <div class="border-b border-white/10 bg-[#090d14]">
-    <div class="market-wrap">
-        <div>
-            @if(!$isMarketOverview)
-                <div class="pt-5 sm:pt-6 mb-3">
-                    <a href="{{ route('market.index') }}" class="text-[11px] font-bold uppercase tracking-[.16em] text-amber-400">Markets</a>
-                    <h1 class="text-xl sm:text-3xl font-extrabold text-white mt-1">@yield('market_heading', 'Market intelligence')</h1>
-                    <p class="market-muted text-sm mt-1 max-w-2xl">@yield('market_subheading', 'Indian market data, organized for quick research.')</p>
-                </div>
-            @endif
+    <div class="market-wrap pt-5 sm:pt-7">
+        <header>
+            <a href="{{ route('market.index') }}" class="text-[11px] font-bold uppercase tracking-[.16em] text-amber-400">Markets</a>
+            <h1 class="mt-1.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-white">@yield('market_heading', 'Market intelligence')</h1>
+            <p class="mt-2 max-w-3xl text-sm leading-6 market-muted">@yield('market_subheading', 'Indian market data, organized for quick research.')</p>
+        </header>
+
+        <div class="mt-5 sm:mt-6 border-t border-white/[.07]">
             <nav class="market-nav-scroll flex items-center gap-6 sm:gap-8 overflow-x-auto" aria-label="Market sections">
                 @foreach($marketLinks as [$routeName, $label])
                     <a href="{{ route($routeName) }}"
