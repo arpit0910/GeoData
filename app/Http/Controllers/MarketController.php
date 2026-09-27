@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CorporateAction;
-use App\Models\Equity;
+use App\Models\CompanyFundamental;
 use App\Models\MarketNews;
-use App\Models\MfMaster;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,65 +19,91 @@ class MarketController extends Controller
     {
         $marketStatus = $this->getMarketStatus();
         $stats = $this->getSummaryStats();
+        $latestNews = MarketNews::select(['id', 'title', 'summary', 'symbol', 'thumbnail', 'article_url', 'published_at'])
+            ->orderByDesc('published_at')->orderByDesc('id')->limit(3)->get();
+        $upcomingActions = CorporateAction::select(['id', 'symbol', 'company_name', 'type', 'name', 'expiry_date'])
+            ->where(function ($query) {
+                $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()->toDateString());
+            })->orderBy('expiry_date')->limit(5)->get();
 
-        // Initial snapshot of stocks with full pagination
-        $stocksPaginator = $this->getStocksQuery($request)->paginate(25);
-        $stocks = $stocksPaginator->items();
-        $stocksPagination = $this->formatPagination($stocksPaginator);
+        return view('website.market', compact('marketStatus', 'stats', 'latestNews', 'upcomingActions'));
+    }
 
-        // Initial snapshot of mutual funds with full pagination
-        $mfPaginator = $this->getMfQuery($request)->paginate(24);
-        $mutualFunds = $mfPaginator->items();
-        $mfPagination = $this->formatPagination($mfPaginator);
+    public function stocks(Request $request)
+    {
+        $stocks = $this->getStocksQuery($request)->paginate(25)->withQueryString();
+        return view('website.market-stocks', ['stocks' => $stocks, 'marketStatus' => $this->getMarketStatus()]);
+    }
 
-        // Initial snapshot of news
-        $newsPaginator = MarketNews::orderByDesc('published_at')->orderByDesc('id')->paginate(10);
-        $news = $newsPaginator->items();
-        $newsPagination = $this->formatPagination($newsPaginator);
+    public function mutualFunds(Request $request)
+    {
+        $funds = $this->getMfQuery($request)->paginate(24)->withQueryString();
+        $categories = DB::table('mutual_funds')->whereNotNull('category')->where('category', '<>', '')
+            ->distinct()->orderBy('category')->pluck('category');
 
-        // Initial snapshot of corporate actions
-        $eventsPaginator = CorporateAction::orderByDesc('expiry_date')->orderByDesc('id')->paginate(12);
-        $corporateActions = $eventsPaginator->items();
-        $eventsPagination = $this->formatPagination($eventsPaginator);
+        return view('website.market-mutual-funds', compact('funds', 'categories'));
+    }
 
-        // Instrument type breakdown counts
-        $instrumentCounts = [
-            'stocks' => DB::table('equities')->where('is_active', true)->whereIn('series', ['EQ', 'BE', 'SM', 'BZ'])->count(),
-            'bonds' => DB::table('equities')->where('is_active', true)->whereNotIn('series', ['EQ', 'BE', 'SM', 'BZ'])->count(),
-            'all' => DB::table('equities')->where('is_active', true)->count(),
-        ];
+    public function news(Request $request)
+    {
+        $search = trim((string) $request->input('search'));
+        $news = MarketNews::select(['id', 'isin', 'symbol', 'title', 'summary', 'thumbnail', 'article_url', 'published_at'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($nested) use ($search) {
+                    $nested->where('title', 'like', "%{$search}%")
+                        ->orWhere('summary', 'like', "%{$search}%")
+                        ->orWhere('symbol', 'like', "%{$search}%");
+                });
+            })->orderByDesc('published_at')->orderByDesc('id')->paginate(12)->withQueryString();
 
-        // Distinct AMCs and Categories for filters
-        $amcs = DB::table('mutual_funds')
-            ->whereNotNull('amc_name')
-            ->where('amc_name', '<>', '')
-            ->distinct()
-            ->orderBy('amc_name')
-            ->limit(50)
-            ->pluck('amc_name');
+        return view('website.market-news', compact('news'));
+    }
 
-        $categories = DB::table('mutual_funds')
-            ->whereNotNull('category')
-            ->where('category', '<>', '')
-            ->distinct()
-            ->orderBy('category')
-            ->pluck('category');
+    public function fundamentals(Request $request)
+    {
+        $search = trim((string) $request->input('search'));
+        $dataset = trim((string) $request->input('dataset'));
+        $fundamentals = CompanyFundamental::query()
+            ->with('equity:id,isin,company_name,nse_symbol,bse_symbol')
+            ->select(['id', 'equity_id', 'isin', 'dataset', 'statement_type', 'time_period', 'synced_at'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($nested) use ($search) {
+                    $nested->where('isin', 'like', "%{$search}%")
+                        ->orWhereHas('equity', function ($equity) use ($search) {
+                            $equity->where('company_name', 'like', "%{$search}%")
+                                ->orWhere('nse_symbol', 'like', "%{$search}%")
+                                ->orWhere('bse_symbol', 'like', "%{$search}%");
+                        });
+                });
+            })->when($dataset !== '', fn ($query) => $query->where('dataset', $dataset))
+            ->orderByDesc('synced_at')->paginate(24)->withQueryString();
+        $datasets = CompanyFundamental::distinct()->orderBy('dataset')->pluck('dataset');
 
-        return view('website.market', compact(
-            'marketStatus',
-            'stats',
-            'stocks',
-            'stocksPagination',
-            'mutualFunds',
-            'mfPagination',
-            'news',
-            'newsPagination',
-            'corporateActions',
-            'eventsPagination',
-            'instrumentCounts',
-            'amcs',
-            'categories'
-        ));
+        return view('website.market-fundamentals', compact('fundamentals', 'datasets'));
+    }
+
+    public function fundamental(CompanyFundamental $companyFundamental)
+    {
+        $companyFundamental->load('equity:id,isin,company_name,nse_symbol,bse_symbol');
+        return view('website.market-fundamental-show', compact('companyFundamental'));
+    }
+
+    public function corporateActions(Request $request)
+    {
+        $search = trim((string) $request->input('search'));
+        $type = strtoupper(trim((string) $request->input('type')));
+        $actions = CorporateAction::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($nested) use ($search) {
+                    $nested->where('company_name', 'like', "%{$search}%")
+                        ->orWhere('symbol', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%")
+                        ->orWhere('isin', 'like', "%{$search}%");
+                });
+            })->when($type !== '', fn ($query) => $query->where('type', $type))
+            ->orderByDesc('expiry_date')->orderByDesc('id')->paginate(20)->withQueryString();
+
+        return view('website.market-actions', compact('actions'));
     }
 
     /**
@@ -350,18 +375,6 @@ class MarketController extends Controller
                 ->orderByRaw('CASE WHEN mutual_fund_prices.nav IS NOT NULL THEN 0 ELSE 1 END')
                 ->orderBy('mutual_funds.scheme_name'),
         };
-    }
-
-    private function formatPagination($paginator): array
-    {
-        return [
-            'current_page' => $paginator->currentPage(),
-            'last_page' => $paginator->lastPage(),
-            'per_page' => $paginator->perPage(),
-            'total' => $paginator->total(),
-            'from' => $paginator->firstItem() ?? 0,
-            'to' => $paginator->lastItem() ?? 0,
-        ];
     }
 
     private function getMarketStatus(): array

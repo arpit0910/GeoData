@@ -64,8 +64,6 @@
     </script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Axios -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- FontAwesome -->
@@ -115,7 +113,7 @@
                         <a href="{{ route('docs') }}" class="{{ request()->routeIs('docs') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
                             Docs
                         </a>
-                        <a href="{{ route('market.index') }}" class="{{ request()->routeIs('market.index') ? 'border-amber-500 text-amber-400' : 'border-transparent text-gray-300 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
+                        <a href="{{ route('market.index') }}" class="{{ request()->routeIs('market.*') ? 'border-amber-500 text-amber-400' : 'border-transparent text-gray-300 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
                             <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
                             Live Market
                         </a>
@@ -164,7 +162,7 @@
                 <a href="{{ route('pricing') }}" class="{{ request()->routeIs('pricing') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Pricing</a>
                 <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Contact</a>
                 <a href="{{ route('docs') }}" class="{{ request()->routeIs('docs') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Docs</a>
-                <a href="{{ route('market.index') }}" class="{{ request()->routeIs('market.index') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">
+                <a href="{{ route('market.index') }}" class="{{ request()->routeIs('market.*') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
                     Live Market
                 </a>
