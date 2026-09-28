@@ -5,7 +5,7 @@
 <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Latest Stock Quotes</h1>
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">One latest saved price per ISIN. NSE is preferred and BSE is used as a fallback. All times are in IST.</p>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">One record per ISIN, with the latest NSE and BSE values kept together. All times are in IST.</p>
     </div>
     <div class="flex items-center gap-3">
         <form method="POST" action="{{ route('equities.quotes.sync') }}" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=&quot;fas fa-spinner fa-spin mr-2&quot;></i>Syncing…';">
@@ -35,27 +35,42 @@
     <button class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium">Apply filters</button>
     <a href="{{ route('equities.quotes') }}" class="px-3 py-2.5 text-sm text-gray-600 dark:text-gray-300 underline">Reset</a>
 </form>
-<p class="mb-3 text-sm text-gray-500 dark:text-gray-400">{{ number_format($quotes->total()) }} saved quotes matching your filters. Refresh reloads stored data. Quotes may be older outside trading hours.</p>
+<p class="mb-3 text-sm text-gray-500 dark:text-gray-400">{{ number_format($quotes->total()) }} ISIN records matching your filters. Refresh reloads stored data. Quotes may be older outside trading hours.</p>
 <div class="rounded-2xl bg-white dark:bg-richdark-card border border-gray-200 dark:border-white/10 overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-sm text-left whitespace-nowrap">
             <thead class="bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300">
-                <tr>@foreach (['Company / ISIN', 'Symbol', 'Exchange', 'Price', 'Change (%)', 'Quote time (IST)', 'Fetched at (IST)', 'Quote age'] as $heading)<th scope="col" class="px-5 py-4">{{ $heading }}</th>@endforeach</tr>
+                <tr>@foreach (['Company / ISIN', 'NSE latest quote', 'BSE latest quote'] as $heading)<th scope="col" class="px-5 py-4">{{ $heading }}</th>@endforeach</tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-white/10 text-gray-700 dark:text-gray-300">
                 @forelse ($quotes as $quote)
                 <tr>
-                    <td class="px-5 py-4"><div class="font-semibold text-gray-900 dark:text-white">{{ $quote->company_name ?: $quote->symbol }}</div><div class="text-xs text-gray-500 mt-1 font-mono">{{ $quote->isin }}</div></td>
-                    <td class="px-5 py-4">{{ $quote->symbol }}</td>
-                    <td class="px-5 py-4">{{ $quote->exchange }}</td>
-                    <td class="px-5 py-4 font-semibold">{{ $quote->details['currency'] ?? '' }} {{ number_format($quote->price, 2) }}</td>
-                    <td class="px-5 py-4">{{ isset($quote->details['dp']) ? number_format($quote->details['dp'], 2).'%' : '—' }}</td>
-                    <td class="px-5 py-4">{{ $quote->quoted_time->format('d M Y, H:i:s') }}</td>
-                    <td class="px-5 py-4">{{ $quote->fetched_time->format('d M Y, H:i:s') }}</td>
-                    <td class="px-5 py-4"><span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium {{ $quote->stale ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300' : 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' }}">{{ $quote->stale ? 'Older than 15 min' : 'Within 15 min' }}</span><div class="text-xs text-gray-500 mt-1">{{ $quote->quoted_time->diffForHumans() }}</div></td>
+                    <td class="px-5 py-4 align-top"><div class="font-semibold text-gray-900 dark:text-white">{{ $quote->company_name ?: $quote->nse_symbol ?: $quote->bse_symbol }}</div><div class="text-xs text-gray-500 mt-1 font-mono">{{ $quote->isin }}</div></td>
+                    @foreach (['nse' => 'NSE', 'bse' => 'BSE'] as $prefix => $exchange)
+                        @php
+                            $price = $quote->{$prefix.'_price'};
+                            $symbol = $quote->{$prefix.'_symbol'};
+                            $details = $quote->{$prefix.'_details'};
+                            $quotedTime = $quote->{$prefix.'_quoted_time'};
+                            $fetchedTime = $quote->{$prefix.'_fetched_time'};
+                            $stale = $quote->{$prefix.'_stale'};
+                        @endphp
+                        <td class="px-5 py-4 align-top">
+                            @if($price !== null)
+                                <div class="flex items-center gap-2"><span class="font-semibold text-gray-900 dark:text-white">{{ $symbol }}</span><span class="rounded bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-500 dark:bg-white/10 dark:text-gray-300">{{ $exchange }}</span></div>
+                                <div class="mt-2 text-base font-bold text-gray-900 dark:text-white">{{ $details['currency'] ?? 'INR' }} {{ number_format($price, 2) }}</div>
+                                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Change: {{ isset($details['dp']) ? number_format($details['dp'], 2).'%' : '—' }}</div>
+                                <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">Quoted {{ $quotedTime?->format('d M Y, H:i:s') ?: '—' }}</div>
+                                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Fetched {{ $fetchedTime?->format('d M Y, H:i:s') ?: '—' }}</div>
+                                <span class="mt-2 inline-block rounded-full px-2.5 py-1 text-xs font-medium {{ $stale ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300' : 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' }}">{{ $stale ? 'Older than 15 min' : 'Within 15 min' }}</span>
+                            @else
+                                <span class="text-gray-400">Not available</span>
+                            @endif
+                        </td>
+                    @endforeach
                 </tr>
                 @empty
-                <tr><td colspan="8" class="px-5 py-14 text-center text-gray-500 dark:text-gray-400">No saved quotes found. Try clearing your filters or check again after the next stock fetch.</td></tr>
+                <tr><td colspan="3" class="px-5 py-14 text-center text-gray-500 dark:text-gray-400">No saved quotes found. Try clearing your filters or check again after the next stock fetch.</td></tr>
                 @endforelse
             </tbody>
         </table>

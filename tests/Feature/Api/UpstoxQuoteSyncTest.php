@@ -89,6 +89,73 @@ class UpstoxQuoteSyncTest extends TestCase
         $this->assertSame(0, DB::table('equity_quotes')->count());
     }
 
+    public function test_command_stores_nse_and_bse_quotes_in_the_same_isin_record(): void
+    {
+        DB::table('equities')->insert([
+            'isin' => 'INE002A01018',
+            'company_name' => 'Reliance Industries',
+            'nse_symbol' => 'RELIANCE',
+            'bse_symbol' => '500325',
+            'series' => 'EQ',
+            'upstox_nse_instrument_key' => 'NSE_EQ|INE002A01018',
+            'upstox_bse_instrument_key' => 'BSE_EQ|INE002A01018',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Http::fake(fn (Request $request) => Http::response($this->quoteResponse($request)));
+
+        $this->artisan('market:sync-upstox-quotes', ['--isin' => ['INE002A01018']])
+            ->expectsOutputToContain('Batches: 1; requested: 2; saved: 2')
+            ->assertExitCode(0);
+
+        $this->assertSame(1, DB::table('equity_quotes')->count());
+        $row = DB::table('equity_quotes')->first();
+        $this->assertNotNull($row->nse_price);
+        $this->assertNotNull($row->bse_price);
+        $this->assertSame('NSE', $row->exchange);
+    }
+
+    public function test_command_stops_after_the_first_unauthorized_batch(): void
+    {
+        $now = now();
+        $rows = [];
+        foreach (range(1, 501) as $index) {
+            $isin = sprintf('INE%06d%03d', $index, $index % 1000);
+            $rows[] = [
+                'isin' => $isin,
+                'company_name' => 'Company '.$index,
+                'nse_symbol' => 'STOCK'.$index,
+                'series' => 'EQ',
+                'upstox_nse_instrument_key' => 'NSE_EQ|'.$isin,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+        foreach (array_chunk($rows, 100) as $chunk) {
+            DB::table('equities')->insert($chunk);
+        }
+
+        config([
+            'market_data.upstox.client_id' => null,
+            'market_data.upstox.client_secret' => null,
+        ]);
+        Http::fake([
+            '*' => Http::response(['status' => 'error', 'message' => 'Unauthorized'], 401),
+        ]);
+
+        $this->artisan('market:sync-upstox-quotes')
+            ->expectsOutputToContain('Upstox batch 1 failed')
+            ->expectsOutputToContain('Remaining Upstox batches were skipped')
+            ->doesntExpectOutputToContain('Upstox batch 2 failed')
+            ->assertExitCode(1);
+
+        Http::assertSentCount(1);
+        $this->assertSame(0, DB::table('equity_quotes')->count());
+    }
+
     /** @return array<string, mixed> */
     private function quoteResponse(Request $request): array
     {

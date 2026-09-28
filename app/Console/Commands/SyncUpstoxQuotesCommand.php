@@ -6,6 +6,7 @@ use App\Events\StockPriceUpdated;
 use App\Models\Equity;
 use App\Services\EquityQuoteService;
 use App\Services\UpstoxMarketDataService;
+use App\Services\UpstoxTokenManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -24,7 +25,11 @@ class SyncUpstoxQuotesCommand extends Command
 
     protected $description = 'Fetch and save latest Upstox quotes/LTP for mapped equities or bonds (constantly for equities, once daily after close for bonds)';
 
-    public function handle(UpstoxMarketDataService $upstox, EquityQuoteService $quoteStore): int
+    public function handle(
+        UpstoxMarketDataService $upstox,
+        EquityQuoteService $quoteStore,
+        UpstoxTokenManager $tokens
+    ): int
     {
         $batchSize = (int) $this->option('batch-size');
         if ($batchSize < 1 || $batchSize > UpstoxMarketDataService::MAX_INSTRUMENTS) {
@@ -77,11 +82,19 @@ class SyncUpstoxQuotesCommand extends Command
             return self::FAILURE;
         }
 
+        try {
+            $tokens->accessToken();
+        } catch (Throwable $exception) {
+            $this->error('Upstox quote synchronization stopped: '.$exception->getMessage());
+            return self::FAILURE;
+        }
+
         $batches = 0;
         $requested = 0;
         $saved = 0;
         $missing = 0;
         $failedBatches = 0;
+        $authenticationFailed = false;
 
         $processChunk = function ($equities) use (
             $upstox,
@@ -93,7 +106,8 @@ class SyncUpstoxQuotesCommand extends Command
             &$requested,
             &$saved,
             &$missing,
-            &$failedBatches
+            &$failedBatches,
+            &$authenticationFailed
         ) {
             $targets = $equities->flatMap(fn (Equity $equity) => $this->targets($equity, $exchangeFilter))->values();
             if ($targets->isEmpty()) {
@@ -113,6 +127,13 @@ class SyncUpstoxQuotesCommand extends Command
                     $failedBatches++;
                     $missing += $targetBatch->count();
                     $this->error("Upstox batch {$batches} failed: {$exception->getMessage()}");
+
+                    if (preg_match('/HTTP 401\b/', $exception->getMessage())) {
+                        $authenticationFailed = true;
+                        $this->warn('Remaining Upstox batches were skipped while the replacement token awaits approval.');
+                        return false;
+                    }
+
                     continue;
                 }
 
@@ -168,7 +189,7 @@ class SyncUpstoxQuotesCommand extends Command
             $this->info("EOD equity price rows saved: {$snapshots}.");
         }
 
-        return ($saved > 0 || $requested === 0) && $failedBatches === 0
+        return ($saved > 0 || $requested === 0) && $failedBatches === 0 && !$authenticationFailed
             ? self::SUCCESS
             : self::FAILURE;
     }
@@ -226,9 +247,8 @@ class SyncUpstoxQuotesCommand extends Command
             ];
         }
 
-        // The latest quote table contains one row per ISIN. Prefer NSE and use
-        // BSE only when explicitly requested or when no NSE mapping exists.
-        if (($exchangeFilter === 'BSE' || ($exchangeFilter === '' && empty($targets))) && !empty($equity->upstox_bse_instrument_key)) {
+        // Both exchanges are stored in separate fields on the same ISIN row.
+        if (($exchangeFilter === '' || $exchangeFilter === 'BSE') && !empty($equity->upstox_bse_instrument_key)) {
             $targets[] = (object) [
                 'id' => $equity->id,
                 'isin' => $equity->isin,

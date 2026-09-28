@@ -22,23 +22,45 @@ class EquityQuoteController extends Controller
         if ($search = trim($filters['search'] ?? '')) {
             $query->where(function ($query) use ($search) {
                 $query->where('q.isin', 'like', "%{$search}%")
-                    ->orWhere('q.symbol', 'like', "%{$search}%")
+                    ->orWhere('q.nse_symbol', 'like', "%{$search}%")
+                    ->orWhere('q.bse_symbol', 'like', "%{$search}%")
                     ->orWhere('e.company_name', 'like', "%{$search}%");
             });
         }
         if ($filters['exchange'] ?? null) {
-            $query->where('q.exchange', $filters['exchange']);
+            $query->whereNotNull('q.'.strtolower($filters['exchange']).'_price');
         }
         if ($filters['freshness'] ?? null) {
-            $query->where('q.quoted_at', $filters['freshness'] === 'recent' ? '>=' : '<', $cutoff);
+            $fields = ($filters['exchange'] ?? null)
+                ? ['q.'.strtolower($filters['exchange']).'_quoted_at']
+                : ['q.nse_quoted_at', 'q.bse_quoted_at'];
+
+            $query->where(function ($query) use ($fields, $filters, $cutoff) {
+                foreach ($fields as $field) {
+                    if ($filters['freshness'] === 'recent') {
+                        $query->orWhere($field, '>=', $cutoff);
+                    } else {
+                        $query->where(function ($query) use ($field, $cutoff) {
+                            $query->whereNull($field)->orWhere($field, '<', $cutoff);
+                        });
+                    }
+                }
+            });
         }
         $quotes = $query->select('q.*', 'e.company_name')->orderByDesc('q.fetched_at')->orderBy('q.id')
             ->paginate(25)->withQueryString();
         foreach ($quotes as $quote) {
-            $quote->details = json_decode($quote->payload, true) ?: [];
-            $quote->quoted_time = Carbon::parse($quote->quoted_at, 'UTC')->timezone('Asia/Kolkata');
-            $quote->fetched_time = Carbon::parse($quote->fetched_at, 'UTC')->timezone('Asia/Kolkata');
-            $quote->stale = $quote->quoted_at < $cutoff;
+            foreach (['nse', 'bse'] as $prefix) {
+                $payload = $quote->{$prefix.'_payload'};
+                $quote->{$prefix.'_details'} = $payload ? (json_decode($payload, true) ?: []) : [];
+                $quote->{$prefix.'_quoted_time'} = $quote->{$prefix.'_quoted_at'}
+                    ? Carbon::parse($quote->{$prefix.'_quoted_at'}, 'UTC')->timezone('Asia/Kolkata')
+                    : null;
+                $quote->{$prefix.'_fetched_time'} = $quote->{$prefix.'_fetched_at'}
+                    ? Carbon::parse($quote->{$prefix.'_fetched_at'}, 'UTC')->timezone('Asia/Kolkata')
+                    : null;
+                $quote->{$prefix.'_stale'} = !$quote->{$prefix.'_quoted_at'} || $quote->{$prefix.'_quoted_at'} < $cutoff;
+            }
         }
         return view('equities.quotes', compact('quotes', 'filters'));
     }

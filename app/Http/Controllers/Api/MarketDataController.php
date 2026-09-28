@@ -68,6 +68,10 @@ class MarketDataController extends Controller
                 'equities.sector',
                 'equity_quotes.price as live_price',
                 'equity_quotes.quoted_at as live_time',
+                'equity_quotes.nse_price as nse_live_price',
+                'equity_quotes.nse_quoted_at as nse_live_time',
+                'equity_quotes.bse_price as bse_live_price',
+                'equity_quotes.bse_quoted_at as bse_live_time',
                 DB::raw('COALESCE(equity_prices.nse_prev_close, equity_prices.bse_prev_close) as prev_close'),
                 DB::raw('COALESCE(equity_prices.nse_open, equity_prices.bse_open) as day_open'),
                 DB::raw('COALESCE(equity_prices.nse_high, equity_prices.bse_high) as day_high'),
@@ -158,6 +162,8 @@ class MarketDataController extends Controller
                 'industry' => $stock->industry,
                 'sector' => $stock->sector,
                 'live_price' => $livePrice,
+                'nse_price' => $stock->nse_live_price !== null ? (float) $stock->nse_live_price : null,
+                'bse_price' => $stock->bse_live_price !== null ? (float) $stock->bse_live_price : null,
                 'previous_close' => $prevClose,
                 'change' => $change,
                 'change_percent' => $changePercent,
@@ -168,6 +174,8 @@ class MarketDataController extends Controller
                 'market_cap' => $stock->market_cap,
                 'pe_ratio' => $stock->pe_ratio,
                 'quoted_at' => $stock->live_time,
+                'nse_quoted_at' => $stock->nse_live_time,
+                'bse_quoted_at' => $stock->bse_live_time,
                 'source' => $livePrice !== null ? 'live' : 'historical',
             ];
         });
@@ -364,6 +372,16 @@ class MarketDataController extends Controller
                     ],
                     'live_quote' => [
                         'price' => $livePrice,
+                        'nse' => [
+                            'symbol' => $quote?->nse_symbol,
+                            'price' => $quote?->nse_price !== null ? (float) $quote->nse_price : null,
+                            'quoted_at' => $quote?->nse_quoted_at,
+                        ],
+                        'bse' => [
+                            'symbol' => $quote?->bse_symbol,
+                            'price' => $quote?->bse_price !== null ? (float) $quote->bse_price : null,
+                            'quoted_at' => $quote?->bse_quoted_at,
+                        ],
                         'previous_close' => $prevClose,
                         'change' => $change,
                         'change_percent' => $changePercent,

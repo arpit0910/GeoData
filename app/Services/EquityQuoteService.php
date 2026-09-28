@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Equity;
-use App\Models\EquityPrice;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -11,14 +10,16 @@ class EquityQuoteService
 {
     public function symbols(Equity $equity): array
     {
+        $symbols = [];
+
         foreach (['NSE' => ['nse_symbol', '.NS'], 'BSE' => ['bse_symbol', '.BO']] as $exchange => [$field, $suffix]) {
             $symbol = strtoupper(trim((string) $equity->$field));
             if ($symbol !== '') {
-                return [$exchange => str_ends_with($symbol, $suffix) ? $symbol : $symbol.$suffix];
+                $symbols[$exchange] = str_ends_with($symbol, $suffix) ? $symbol : $symbol.$suffix;
             }
         }
 
-        return [];
+        return $symbols;
     }
 
     public function store(string $isin, string $exchange, array $quote): bool
@@ -27,32 +28,86 @@ class EquityQuoteService
             return false;
         }
 
+        $exchange = strtoupper(trim($exchange));
+        if (!in_array($exchange, ['NSE', 'BSE'], true)) {
+            return false;
+        }
+
         $key = ['isin' => strtoupper(trim($isin))];
-        $values = [
-            'exchange' => strtoupper(trim($exchange)),
+        $prefix = strtolower($exchange);
+        $quotedAt = Carbon::parse($quote['quoted_at'])->utc()->format('Y-m-d H:i:s');
+        $fetchedAt = Carbon::parse($quote['fetched_at'] ?? now())->utc()->format('Y-m-d H:i:s');
+        $payload = json_encode(array_merge($quote, $key, ['exchange' => $exchange]), JSON_THROW_ON_ERROR);
+        $exchangeValues = [
+            "{$prefix}_symbol" => $quote['symbol'],
+            "{$prefix}_price" => $quote['price'],
+            "{$prefix}_quoted_at" => $quotedAt,
+            "{$prefix}_fetched_at" => $fetchedAt,
+            "{$prefix}_payload" => $payload,
+        ];
+        $legacyValues = [
+            'exchange' => $exchange,
             'symbol' => $quote['symbol'],
             'price' => $quote['price'],
-            'quoted_at' => Carbon::parse($quote['quoted_at'])->utc()->format('Y-m-d H:i:s'),
-            'fetched_at' => Carbon::parse($quote['fetched_at'])->utc()->format('Y-m-d H:i:s'),
-            'payload' => json_encode(array_merge($quote, $key), JSON_THROW_ON_ERROR),
+            'quoted_at' => $quotedAt,
+            'fetched_at' => $fetchedAt,
+            'payload' => $payload,
         ];
-        // One mutable latest-quote row per ISIN. Older provider responses must
-        // never replace a newer snapshot.
-        DB::table('equity_quotes')->insertOrIgnore(array_merge($key, $values));
-        DB::table('equity_quotes')->where($key)->where('quoted_at', '<=', $values['quoted_at'])->update($values);
+
+        DB::transaction(function () use ($key, $prefix, $quotedAt, $exchangeValues, $legacyValues) {
+            DB::table('equity_quotes')->insertOrIgnore(array_merge($key, $legacyValues, $exchangeValues));
+
+            // NSE and BSE advance independently; a delayed response from one
+            // exchange must not overwrite that exchange's newer quote.
+            DB::table('equity_quotes')
+                ->where($key)
+                ->where(function ($query) use ($prefix, $quotedAt) {
+                    $query->whereNull("{$prefix}_quoted_at")
+                        ->orWhere("{$prefix}_quoted_at", '<=', $quotedAt);
+                })
+                ->update($exchangeValues);
+
+            // Keep the original columns as a backward-compatible preferred
+            // quote: NSE when present, otherwise BSE.
+            $row = DB::table('equity_quotes')->where($key)->lockForUpdate()->first();
+            $preferred = $row?->nse_price !== null ? 'nse' : 'bse';
+            DB::table('equity_quotes')->where($key)->update([
+                'exchange' => strtoupper($preferred),
+                'symbol' => $row->{$preferred.'_symbol'},
+                'price' => $row->{$preferred.'_price'},
+                'quoted_at' => $row->{$preferred.'_quoted_at'},
+                'fetched_at' => $row->{$preferred.'_fetched_at'},
+                'payload' => $row->{$preferred.'_payload'},
+            ]);
+        });
+
         return true;
     }
 
     public function latest(string $isin): array
     {
-        return DB::table('equity_quotes')->where('isin', $isin)->get()
-            ->map(function ($row) {
-                $quote = json_decode($row->payload, true, 512, JSON_THROW_ON_ERROR);
+        $row = DB::table('equity_quotes')->where('isin', strtoupper(trim($isin)))->first();
+        if (!$row) {
+            return [];
+        }
+
+        return collect(['NSE' => 'nse', 'BSE' => 'bse'])
+            ->map(function ($prefix, $exchange) use ($row) {
+                $payload = $row->{$prefix.'_payload'} ?? null;
+                if (!$payload) {
+                    return null;
+                }
+
+                $quote = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+                $quote['exchange'] = $exchange;
                 $quote['source'] = 'database';
                 $quote['age_seconds'] = max(0, now()->timestamp - Carbon::parse($quote['quoted_at'])->timestamp);
                 $quote['is_stale'] = $quote['age_seconds'] > 900;
                 return $quote;
-            })->all();
+            })
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /**
@@ -71,31 +126,35 @@ class EquityQuoteService
             ->orderBy('q.id')
             ->chunkById(500, function ($quotes) use ($dateString, &$saved) {
                 foreach ($quotes as $quote) {
-                    $quotedDate = Carbon::parse($quote->quoted_at, 'UTC')
-                        ->timezone('Asia/Kolkata')
-                        ->toDateString();
+                    $values = [
+                        'equity_id' => $quote->equity_id,
+                        'isin' => $quote->isin,
+                        'traded_date' => $dateString,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                    $hasCurrentQuote = false;
 
-                    // Do not turn Friday's stale quote into a weekend/holiday row.
-                    if ($quotedDate !== $dateString) {
-                        continue;
-                    }
+                    foreach (['nse', 'bse'] as $prefix) {
+                        $quotedAt = $quote->{$prefix.'_quoted_at'} ?? null;
+                        $payloadJson = $quote->{$prefix.'_payload'} ?? null;
+                        if (!$quotedAt || !$payloadJson) {
+                            continue;
+                        }
 
-                    $payload = json_decode((string) $quote->payload, true);
-                    $marketData = is_array($payload) ? ($payload['market_data'] ?? []) : [];
-                    $ohlc = is_array($marketData) ? ($marketData['ohlc'] ?? []) : [];
-                    $prefix = strtoupper((string) $quote->exchange) === 'BSE' ? 'bse' : 'nse';
-                    $price = (float) $quote->price;
+                        $quotedDate = Carbon::parse($quotedAt, 'UTC')
+                            ->timezone('Asia/Kolkata')
+                            ->toDateString();
+                        if ($quotedDate !== $dateString) {
+                            continue;
+                        }
 
-                    $equityPrice = EquityPrice::query()
-                        ->where('isin', $quote->isin)
-                        ->whereDate('traded_date', $dateString)
-                        ->first() ?? new EquityPrice([
-                            'isin' => $quote->isin,
-                            'traded_date' => $dateString,
-                        ]);
+                        $payload = json_decode((string) $payloadJson, true);
+                        $marketData = is_array($payload) ? ($payload['market_data'] ?? []) : [];
+                        $ohlc = is_array($marketData) ? ($marketData['ohlc'] ?? []) : [];
+                        $price = (float) $quote->{$prefix.'_price'};
 
-                    $equityPrice->fill(array_filter([
-                            'equity_id' => $quote->equity_id,
+                        $values = array_merge($values, array_filter([
                             "{$prefix}_open" => $this->numericOrNull($ohlc['open'] ?? null),
                             "{$prefix}_high" => $this->numericOrNull($ohlc['high'] ?? null),
                             "{$prefix}_low" => $this->numericOrNull($ohlc['low'] ?? null),
@@ -105,8 +164,20 @@ class EquityQuoteService
                             "{$prefix}_volume" => $this->integerOrNull($marketData['volume'] ?? $ohlc['volume'] ?? null),
                             "{$prefix}_avg_price" => $this->numericOrNull($marketData['average_price'] ?? null),
                         ], fn ($value) => $value !== null));
-                    $equityPrice->save();
-                    $saved++;
+                        $hasCurrentQuote = true;
+                    }
+
+                    if ($hasCurrentQuote) {
+                        // The database has a unique ISIN + traded_date key.
+                        // One atomic upsert writes both exchanges into that row
+                        // and makes overlapping EOD jobs safe.
+                        DB::table('equity_prices')->upsert(
+                            [$values],
+                            ['isin', 'traded_date'],
+                            array_values(array_diff(array_keys($values), ['isin', 'traded_date', 'created_at']))
+                        );
+                        $saved++;
+                    }
                 }
             }, 'q.id', 'id');
 

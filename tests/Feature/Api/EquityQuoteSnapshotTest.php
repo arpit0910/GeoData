@@ -12,16 +12,24 @@ class EquityQuoteSnapshotTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_latest_quotes_keep_only_one_record_per_isin(): void
+    public function test_latest_quotes_keep_nse_and_bse_values_in_one_record_per_isin(): void
     {
         $service = app(EquityQuoteService::class);
         $quotedAt = now()->utc()->toIso8601String();
 
         $service->store('INE002A01018', 'NSE', $this->quote(100, $quotedAt, 'RELIANCE'));
         $service->store('INE002A01018', 'NSE', $this->quote(101, now()->utc()->addMinute()->toIso8601String(), 'RELIANCE'));
+        $service->store('INE002A01018', 'BSE', $this->quote(102, now()->utc()->addMinute()->toIso8601String(), '500325'));
+        $service->store('INE002A01018', 'BSE', $this->quote(90, now()->utc()->subMinute()->toIso8601String(), '500325'));
 
         $this->assertSame(1, DB::table('equity_quotes')->where('isin', 'INE002A01018')->count());
-        $this->assertSame(101.0, (float) DB::table('equity_quotes')->where('isin', 'INE002A01018')->value('price'));
+        $row = DB::table('equity_quotes')->where('isin', 'INE002A01018')->first();
+        $this->assertSame(101.0, (float) $row->nse_price);
+        $this->assertSame(102.0, (float) $row->bse_price);
+        $this->assertSame('RELIANCE', $row->nse_symbol);
+        $this->assertSame('500325', $row->bse_symbol);
+        $this->assertSame('NSE', $row->exchange);
+        $this->assertCount(2, $service->latest('INE002A01018'));
     }
 
     public function test_eod_snapshot_upserts_one_equity_price_per_isin_and_date(): void
@@ -48,6 +56,17 @@ class EquityQuoteSnapshotTest extends TestCase
                 'volume' => 10000,
             ])
         );
+        $service->store(
+            'INE002A01018',
+            'BSE',
+            $this->quote(126.10, now()->utc()->toIso8601String(), '500325', [
+                'open' => 124.40,
+                'high' => 126.50,
+                'low' => 123.60,
+                'close' => 123.90,
+                'volume' => 8000,
+            ])
+        );
 
         $this->assertSame(1, $service->snapshotEndOfDay());
 
@@ -70,6 +89,9 @@ class EquityQuoteSnapshotTest extends TestCase
         $this->assertSame(126.25, (float) $row->nse_close);
         $this->assertSame(127.0, (float) $row->nse_high);
         $this->assertSame(12000, (int) $row->nse_volume);
+        $this->assertSame(126.10, (float) $row->bse_close);
+        $this->assertSame(126.50, (float) $row->bse_high);
+        $this->assertSame(8000, (int) $row->bse_volume);
     }
 
     private function quote(float $price, string $quotedAt, string $symbol, array $ohlc = []): array

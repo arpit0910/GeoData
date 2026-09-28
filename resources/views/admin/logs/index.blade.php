@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Server Logs')
+@section('header', 'Server Logs')
 
 @section('content')
 <div class="space-y-6">
@@ -37,7 +38,7 @@
             <section class="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-slate-950">
                 <div class="border-b border-slate-200 px-5 py-4 dark:border-white/10">
                     <h2 class="text-base font-black text-slate-900 dark:text-white">Log Files</h2>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Switch between files in `storage/logs`.</p>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Switch between files in <code>storage/logs</code>.</p>
                 </div>
                 <div class="max-h-[420px] space-y-3 overflow-y-auto p-4">
                     @forelse($logFiles as $file)
@@ -48,7 +49,7 @@
                         </a>
                     @empty
                         <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
-                            No `.log` files found in `storage/logs`.
+                            No <code>.log</code> files found in <code>storage/logs</code>.
                         </div>
                     @endforelse
                 </div>
@@ -81,14 +82,18 @@
                     </div>
                     @if($selectedFileName)
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            Updated {{ $selectedFileUpdatedAt }} • {{ $selectedFileSizeKb }} KB
+                            Updated {{ $selectedFileUpdatedAt }} &middot; {{ $selectedFileSizeKb }} KB
                         </div>
                     @endif
                 </div>
             </div>
 
             <div class="p-6">
-                @if($selectedFileName && $visibleLineCount > 0)
+                @if($readError)
+                    <div class="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-5 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+                        {{ $readError }}
+                    </div>
+                @elseif($selectedFileName && $visibleLineCount > 0)
                     <div class="mb-4">
                         <input id="logSearch" type="text" placeholder="Filter visible log lines"
                             class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-amber-500 dark:focus:ring-amber-500/10">
@@ -108,7 +113,7 @@
                                     $tone = 'text-emerald-300';
                                 }
                             @endphp
-                            <div class="log-line {{ $tone }} break-words border-b border-white/5 py-1 last:border-b-0">{{ $line }}</div>
+                            <div class="log-line {{ $tone }} whitespace-pre-wrap break-words border-b border-white/5 py-1 last:border-b-0">{{ $line }}</div>
                         @endforeach
                     </div>
                 @else
@@ -125,6 +130,11 @@
 @push('scripts')
 <script>
     const logSearch = document.getElementById('logSearch');
+    const logViewer = document.getElementById('logViewer');
+
+    if (logViewer) {
+        logViewer.scrollTop = logViewer.scrollHeight;
+    }
 
     if (logSearch) {
         logSearch.addEventListener('input', () => {
