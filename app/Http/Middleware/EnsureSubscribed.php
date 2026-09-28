@@ -28,11 +28,6 @@ class EnsureSubscribed
 
             // Whitelisted routes that don't require an active subscription
             $allowedRoutes = [
-                'pricing', 
-                'subscription.pricing',
-                'pricing.order', 
-                'pricing.verify', 
-                'pricing.validate-coupon',
                 'logout', 
                 'profile.complete', 
                 'profile.complete.post',
@@ -47,7 +42,9 @@ class EnsureSubscribed
             if ($currentRoute && !in_array($currentRoute, $allowedRoutes)) {
                 // User must have status 1 (active) and an active subscription to access other routes
                 if ($user->status != 1 || !$user->hasActiveSubscription()) {
-                    return redirect()->route('subscription.pricing')->with('error', 'Please subscribe to a plan to access the dashboard.');
+                    return redirect()->route('contact', [
+                        'subject' => 'Business Plan Enquiry',
+                    ])->with('error', 'Your account does not have active access. Please contact our team and we will help you.');
                 }
             }
         }

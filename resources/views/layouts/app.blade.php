@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}?v=1.0.1">
-    <link rel="apple-touch-icon" href="{{ asset('assets/img/apple-touch-icon.png') }}?v=1.0.1">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/favicon.png') }}?v=1.0.1">
     <title>@yield('title', 'Admin Dashboard') | {{ config('app.name', 'SetuGeo') }}</title>
+    <meta name="robots" content="noindex, nofollow, noarchive">
 
     <!-- Tailwind CSS via CDN for instant visual improvement -->
     <script src="https://cdn.tailwindcss.com"></script>

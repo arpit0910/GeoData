@@ -8,17 +8,17 @@
     api documentation')
 
 @section('content')
-    <div class="min-h-screen bg-[#020617] text-gray-300 antialiased font-inter">
+    <div id="api-docs" class="min-h-screen w-full max-w-full overflow-x-hidden bg-[#020617] text-gray-300 antialiased font-inter">
         <!-- Hero Section -->
         <div class="border-b border-gray-800/50 bg-[#020617]">
             <div
                 class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-center">
-                <div>
+                <div class="min-w-0">
                     <h1 class="text-2xl font-extrabold text-white tracking-tight sm:text-5xl">API Documentation</h1>
                     <p class="mt-4 text-xl text-gray-400 max-w-2xl">Comprehensive guide for integrating SetuGeo's geographic
                         intelligence into your applications.</p>
                 </div>
-                <div class="mt-8 md:mt-0">
+                <div class="mt-8 md:mt-0 shrink-0">
                     <a href="{{ asset('postman_collection.json') }}" download
                         class="inline-flex items-center px-6 py-3 border border-amber-600/30 text-base font-bold rounded-xl text-white bg-amber-600/10 hover:bg-amber-600 hover:border-amber-600 transition-all shadow-lg group">
                         <i class="fas fa-rocket mr-3 text-amber-500 group-hover:text-white"></i>
@@ -28,8 +28,8 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="lg:grid lg:grid-cols-12 lg:gap-12">
+        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 min-w-0">
+            <div class="w-full min-w-0 lg:grid lg:grid-cols-12 lg:gap-12">
                 <!-- Sidebar Navigation -->
                 <aside class="hidden lg:block lg:col-span-3">
                     <nav class="sticky top-24 space-y-8">
@@ -108,7 +108,7 @@
                 </aside>
 
                 <!-- Main Documentation Content -->
-                <div class="lg:col-span-9 space-y-24 pb-24">
+                <div id="api-docs-content" class="w-full min-w-0 max-w-full lg:col-span-9 space-y-16 sm:space-y-24 pb-16 sm:pb-24">
 
                     <!-- Getting Started -->
                     <section id="getting-started">
@@ -4552,15 +4552,51 @@ curl -X POST "https://setugeo.com/api/v1/market/sync" \
                 background: #334155;
             }
 
-            /* Mobile Responsive Tables */
-            @media (max-width: 1024px) {
-                .lg\:col-span-9 div[class*="p-"] {
-                    overflow-x: auto !important;
-                    -webkit-overflow-scrolling: touch;
+            #api-docs-content,
+            #api-docs-content section,
+            #api-docs-content section > div {
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            #api-docs-content pre {
+                width: max-content;
+                min-width: 100%;
+                max-width: none;
+            }
+
+            #api-docs-content code:not(pre code),
+            #api-docs-content h3,
+            #api-docs-content p {
+                overflow-wrap: anywhere;
+            }
+
+            #api-docs-content table {
+                display: block;
+                width: 100%;
+                max-width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #api-docs-content .justify-between {
+                flex-wrap: wrap;
+                gap: .75rem;
+            }
+
+            @media (max-width: 640px) {
+                #api-docs-content .p-8,
+                #api-docs-content .p-6 {
+                    padding: 1rem;
                 }
 
-                .lg\:col-span-9 table {
-                    min-width: 600px;
+                #api-docs-content .px-6 {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+
+                #api-docs-content table {
+                    font-size: .75rem;
                 }
             }
         </style>

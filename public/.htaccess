@@ -5,6 +5,14 @@
 
     RewriteEngine On
 
+    # Consolidate the public site on one HTTPS hostname for search engines.
+    RewriteCond %{HTTP_HOST} ^www\.setugeo\.com$ [NC]
+    RewriteRule ^ https://setugeo.com%{REQUEST_URI} [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^setugeo\.com$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^ https://setugeo.com%{REQUEST_URI} [R=301,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

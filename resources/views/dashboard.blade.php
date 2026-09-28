@@ -349,16 +349,16 @@
                         @endif
                     </div>
                     @if (!$dashboardSub || ($dashboardPlan && ($dashboardPlan->amount ?? 1) <= 0))
-                        <a href="{{ route('subscription.pricing') }}"
+                        <a href="{{ route('contact', ['subject' => 'Business Plan Enquiry']) }}"
                             class="group/btn relative inline-flex items-center px-10 py-5 border border-transparent text-lg font-black rounded-[1.5rem] text-white bg-gradient-to-br from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-[0_10px_30px_-10px_rgba(217,119,6,0.5)] hover:shadow-[0_15px_40px_-10px_rgba(217,119,6,0.6)] transition-all active:scale-95 whitespace-nowrap z-10">
-                            Upgrade Account
+                            Contact Our Team
                             <i
                                 class="fas fa-crown ml-3 transition-transform group-hover/btn:scale-110 group-hover/btn:rotate-6"></i>
                         </a>
                     @else
-                        <a href="{{ route('pricing') }}"
+                        <a href="{{ route('contact', ['subject' => 'Business Plan Enquiry']) }}"
                             class="group/btn relative inline-flex items-center px-10 py-5 border border-amber-600/20 text-lg font-black rounded-[1.5rem] text-amber-700 dark:text-amber-300 bg-amber-600/5 hover:bg-amber-600 hover:text-white dark:hover:text-white transition-all active:scale-95 whitespace-nowrap z-10 overflow-hidden">
-                            <span class="relative z-10">Switch Plan</span>
+                            <span class="relative z-10">Discuss Business Plan</span>
                             <i
                                 class="fas fa-exchange-alt ml-3 transition-transform group-hover/btn:translate-x-1 relative z-10"></i>
                         </a>

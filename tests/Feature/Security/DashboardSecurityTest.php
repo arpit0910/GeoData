@@ -120,14 +120,13 @@ class DashboardSecurityTest extends TestCase
     // ─── SUBSCRIPTION ENFORCEMENT ────────────────────────────────────
 
     /** @test */
-    public function unsubscribed_user_is_redirected_to_pricing()
+    public function unsubscribed_user_is_redirected_to_business_enquiry()
     {
         $user = $this->createUser(['status' => null]);
 
         $response = $this->actingAs($user)->get('/dashboard');
 
-        // Should redirect to subscription pricing
-        $response->assertRedirect();
+        $response->assertRedirect(route('contact', ['subject' => 'Business Plan Enquiry']));
     }
 
     // ─── CSRF PROTECTION ON WEB ROUTES ───────────────────────────────

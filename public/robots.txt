@@ -1,7 +1,22 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /dashboard/
 Disallow: /api/
+Disallow: /dashboard
+Disallow: /api-keys
+Disallow: /api-logs
+Disallow: /profile
+Disallow: /transactions
+Disallow: /help-support
+Disallow: /user/
+Disallow: /plans
+Disallow: /countries
+Disallow: /regions
+Disallow: /subregions
+Disallow: /states
+Disallow: /cities
+Disallow: /pincodes
+Disallow: /banks
+Disallow: /bank-branches
+Disallow: /admin/
 
 Sitemap: https://setugeo.com/sitemap.xml

@@ -34,16 +34,18 @@ use App\Http\Controllers\CurrencyConversionController;
 use App\Http\Controllers\ApiAccessController;
 use App\Http\Controllers\Admin\ExchangeCalendarEventController;
 use App\Http\Controllers\Admin\MarketDatasetController;
+use App\Http\Controllers\SitemapController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/landing-v1', [HomeController::class, 'landingV1'])->name('landing.v1');
 Route::get('/landing-v2', [HomeController::class, 'landingV2'])->name('landing.v2');
 Route::get('/landing-v3', [HomeController::class, 'landingV3'])->name('landing.v3');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.post');
-Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
-Route::get('/subscribe', [SubscriptionController::class, 'pricing'])->name('subscription.pricing')->middleware('auth');
+Route::redirect('/pricing', '/#plans')->name('pricing');
+Route::redirect('/subscribe', '/#plans')->name('subscription.pricing');
 
 Route::get('/docs', [HomeController::class, 'docs'])->name('docs');
 Route::get('/status', [HomeController::class, 'status'])->name('status');
@@ -299,9 +301,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/currency/{currency}', [CurrencyConversionController::class, 'lookup'])->name('api.currency.lookup');
 
     Route::middleware(['profile.complete.check'])->group(function () {
-        Route::post('/pricing/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
-        Route::post('/pricing/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
-        Route::post('/pricing/validate-coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.validate-coupon');
         Route::post('/pricing/topup/order', [SubscriptionController::class, 'createTopupOrder'])->name('pricing.topup.order');
         Route::post('/pricing/topup/verify', [SubscriptionController::class, 'verifyTopupPayment'])->name('pricing.topup.verify');
 

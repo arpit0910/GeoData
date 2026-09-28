@@ -43,8 +43,8 @@
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Monitor your current plan status and remaining API credits.</p>
             </div>
             @if(!$subscription)
-            <a href="{{ route('pricing') }}" class="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-xl transition-all shadow-sm">
-                Upgrade Plan
+            <a href="{{ route('contact', ['subject' => 'Business Plan Enquiry']) }}" class="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-xl transition-all shadow-sm">
+                Contact Our Team
             </a>
             @endif
         </div>

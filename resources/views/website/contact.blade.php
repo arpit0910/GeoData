@@ -28,6 +28,19 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-8 rounded-xl bg-amber-50 p-4 border border-amber-200 justify-center max-w-4xl mx-auto">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-amber-600 mt-1"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-bold text-amber-900">{{ session('error') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @if($errors->any())
             <div class="mb-8 rounded-xl bg-red-50 p-4 border border-red-200 justify-center max-w-4xl mx-auto">
                 <div class="flex">
@@ -51,31 +64,31 @@
                 <div>
                     <label for="first-name" class="block text-sm font-bold text-white/80">First name</label>
                     <div class="mt-2">
-                        <input type="text" name="first-name" id="first-name" autocomplete="given-name" placeholder="John" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
+                        <input type="text" name="first-name" id="first-name" value="{{ old('first-name') }}" autocomplete="given-name" placeholder="John" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
                     </div>
                 </div>
                 <div>
                     <label for="last-name" class="block text-sm font-bold text-white/80">Last name</label>
                     <div class="mt-2">
-                        <input type="text" name="last-name" id="last-name" autocomplete="family-name" placeholder="Doe" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
+                        <input type="text" name="last-name" id="last-name" value="{{ old('last-name') }}" autocomplete="family-name" placeholder="Doe" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
                     </div>
                 </div>
                 <div class="md:col-span-2">
                     <label for="email" class="block text-sm font-bold text-white/80">Email address</label>
                     <div class="mt-2">
-                        <input id="email" name="email" type="email" autocomplete="email" placeholder="john.doe@company.com" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
+                        <input id="email" name="email" type="email" value="{{ old('email', auth()->user()?->email) }}" autocomplete="email" placeholder="john.doe@company.com" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
                     </div>
                 </div>
                 <div class="md:col-span-2">
                     <label for="subject" class="block text-sm font-bold text-white/80">Subject</label>
                     <div class="mt-2">
-                        <input id="subject" name="subject" type="text" placeholder="Inquiry about API Pricing" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
+                        <input id="subject" name="subject" type="text" value="{{ old('subject', request('subject')) }}" placeholder="How can we help?" class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>
                     </div>
                 </div>
                 <div class="md:col-span-2">
                     <label for="message" class="block text-sm font-bold text-white/80">How can we help you?</label>
                     <div class="mt-2">
-                        <textarea id="message" name="message" rows="5" placeholder="Tell us about your project, integration questions, or support needs..." class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required></textarea>
+                        <textarea id="message" name="message" rows="5" placeholder="Tell us about your project, expected API volume, and any enterprise requirements..." class="block w-full rounded-xl border-gray-200 px-5 py-3.5 text-gray-900 shadow-sm focus:border-amber-500 focus:ring-amber-500 border bg-gray-50 focus:bg-white transition-colors outline-none font-medium" required>{{ old('message', request('message')) }}</textarea>
                     </div>
                 </div>
                 <div class="md:col-span-2 pt-2">

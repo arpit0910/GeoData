@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
 @section('title', '404 - Page Not Found')
+@section('robots', 'noindex, follow')
 
 @section('content')
 <div class="min-h-[70vh] flex items-center justify-center px-4">

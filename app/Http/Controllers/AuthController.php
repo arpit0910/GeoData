@@ -151,6 +151,6 @@ class AuthController extends Controller
             'city_id' => $request->city_id,
         ]);
 
-        return redirect()->route('pricing')->with('success', 'Profile completed successfully! Please choose a plan to continue.');
+        return redirect()->route('dashboard')->with('success', 'Profile completed successfully! Your free account is ready.');
     }
 }

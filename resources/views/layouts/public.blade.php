@@ -4,18 +4,25 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#d97706">
+    <meta name="application-name" content="SetuGeo">
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}?v=1.0.1">
-    <link rel="apple-touch-icon" href="{{ asset('assets/img/apple-touch-icon.png') }}?v=1.0.1">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/favicon.png') }}?v=1.0.1">
     
     <title>@yield('title', 'SetuGeo - World-Class Geographic Data API Platform')</title>
     <meta name="description" content="@yield('meta_description', 'SetuGeo provides high-speed, accurate geographic data APIs for countries, states, cities, pincodes, timezones, and currency conversions. Build faster with reliable location data.')">
     <meta name="keywords" content="@yield('meta_keywords', 'geographic api, location data api, pincode api, zip code api, city state country api, currency conversion api, timezone api, setugeo')">
-    <link rel="canonical" href="@yield('canonical_url', request()->url())">
-    <meta name="robots" content="index, follow">
+    @php
+        $canonicalBase = rtrim(config('app.url'), '/');
+        $canonicalPath = request()->path() === '/' ? '' : '/' . request()->path();
+        $canonicalUrl = $canonicalBase . $canonicalPath;
+    @endphp
+    <link rel="canonical" href="@yield('canonical_url', $canonicalUrl)">
+    <meta name="robots" content="@yield('robots', 'index, follow, max-image-preview:large')">
+    <meta name="googlebot" content="@yield('robots', 'index, follow, max-image-preview:large')">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request()->url() }}">
+    <meta property="og:url" content="@yield('canonical_url', $canonicalUrl)">
     <meta property="og:site_name" content="SetuGeo">
     <meta property="og:locale" content="en_US">
     <meta property="og:title" content="@yield('title', 'SetuGeo - World-Class Geographic Data API Platform')">
@@ -24,7 +31,7 @@
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ request()->url() }}">
+    <meta property="twitter:url" content="@yield('canonical_url', $canonicalUrl)">
     <meta property="twitter:title" content="@yield('title', 'SetuGeo - World-Class Geographic Data API Platform')">
     <meta property="twitter:description" content="@yield('meta_description', 'SetuGeo provides high-speed, accurate geographic data APIs for countries, states, cities, pincodes, timezones, and currency conversions.')">
     <meta property="twitter:image" content="@yield('og_image', asset('assets/img/og-image.jpg'))">
@@ -56,7 +63,7 @@
           "@type": "ListItem",
           "position": 2,
           "name": "@yield('title')",
-          "item": "{{ request()->url() }}"
+          "item": "{{ $canonicalUrl }}"
         }
         @endif
       ]
@@ -71,6 +78,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        html, body { max-width: 100%; overflow-x: hidden; }
         body { font-family: 'Inter', sans-serif; background-color: #000000; color: #ffffff; }
         .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .text-gradient { background: linear-gradient(to right, #f59e0b, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -79,7 +87,7 @@
         label { color: rgba(255,255,255,0.7) !important; }
     </style>
 </head>
-<body class="bg-[#000000] text-gray-100 antialiased selection:bg-amber-500 selection:text-white flex flex-col min-h-screen">
+<body class="bg-[#000000] text-gray-100 antialiased selection:bg-amber-500 selection:text-white flex flex-col min-h-screen overflow-x-hidden">
     @if(request()->routeIs('home'))
     <!-- Globe Background Container (Top Right Only) -->
     <div id="globe-canvas-container" class="absolute top-0 right-0 w-full lg:w-[60%] h-[850px] sm:h-[900px] lg:h-[1100px] z-0 pointer-events-none opacity-100 overflow-hidden" style="mask-image: linear-gradient(to bottom, black 60%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);"></div>
@@ -104,8 +112,8 @@
                         <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
                             About Us
                         </a>
-                        <a href="{{ route('pricing') }}" class="{{ request()->routeIs('pricing') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
-                            Pricing
+                        <a href="{{ route('home') }}#plans" class="border-transparent text-gray-400 hover:text-white hover:border-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
+                            Plans
                         </a>
                         <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
                             Contact
@@ -159,7 +167,7 @@
             <div class="pt-2 pb-3 space-y-1">
                 <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Home</a>
                 <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">About</a>
-                <a href="{{ route('pricing') }}" class="{{ request()->routeIs('pricing') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Pricing</a>
+                <a href="{{ route('home') }}#plans" class="border-transparent text-gray-400 hover:bg-white/5 hover:text-white block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Plans</a>
                 <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Contact</a>
                 <a href="{{ route('docs') }}" class="{{ request()->routeIs('docs') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Docs</a>
                 <a href="{{ route('market.index') }}" class="{{ request()->routeIs('market.*') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">
@@ -183,7 +191,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow relative z-10">
+    <main class="flex-grow relative z-10 min-w-0 w-full max-w-full overflow-x-hidden">
         @yield('content')
     </main>
 
@@ -208,7 +216,7 @@
                 <div>
                     <h3 class="text-xs font-bold text-gray-300 tracking-widest uppercase mb-5">Product</h3>
                     <ul class="space-y-4">
-                        <li><a href="{{ route('pricing') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="{{ route('home') }}#plans" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Plans</a></li>
                         <li><a href="{{ route('docs') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Documentation</a></li>
                         <li><a href="{{ route('faq') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">FAQ</a></li>
                         <li><a href="{{ route('status') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">API Status</a></li>
