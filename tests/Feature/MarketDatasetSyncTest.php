@@ -147,4 +147,49 @@ class MarketDatasetSyncTest extends TestCase
         Http::assertSentCount(1);
         $this->assertDatabaseCount('company_fundamentals', 0);
     }
+
+    public function test_unavailable_fundamentals_dataset_does_not_fail_the_company_batch(): void
+    {
+        config([
+            'market_data.upstox.access_token' => 'test-token',
+            'market_data.upstox.fundamentals_url' => 'https://provider.test/v2/fundamentals',
+        ]);
+
+        $equity = Equity::create([
+            'isin' => 'INE411H01032',
+            'company_name' => 'Partially Covered Company',
+            'nse_symbol' => 'PARTIAL',
+            'series' => 'EQ',
+            'is_active' => true,
+        ]);
+
+        Http::fake(function (Request $request) {
+            if (str_ends_with($request->url(), '/competitors')) {
+                return Http::response([
+                    'status' => 'error',
+                    'errors' => [['message' => 'Invalid Instrument key']],
+                ], 400);
+            }
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['request_url' => $request->url()],
+            ]);
+        });
+
+        $this->artisan('market:sync-company-fundamentals', [
+            '--isin' => [$equity->isin],
+            '--delay' => 0,
+        ])
+            ->expectsOutputToContain('unavailable 1 (competitors)')
+            ->expectsOutputToContain('saved: 12; unavailable: 1; failed: 0')
+            ->assertExitCode(0);
+
+        Http::assertSentCount(13);
+        $this->assertDatabaseCount('company_fundamentals', 12);
+        $this->assertDatabaseMissing('company_fundamentals', [
+            'isin' => $equity->isin,
+            'dataset' => 'competitors',
+        ]);
+    }
 }

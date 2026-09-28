@@ -94,6 +94,21 @@ class EquityQuoteSnapshotTest extends TestCase
         $this->assertSame(8000, (int) $row->bse_volume);
     }
 
+    public function test_provider_epoch_placeholder_uses_the_fetch_time(): void
+    {
+        $fetchedAt = '2026-09-17T05:01:22+00:00';
+        $quote = $this->quote(1000000, '1970-01-01T00:00:00+00:00', '975UPPCL25.BO');
+        $quote['fetched_at'] = $fetchedAt;
+
+        app(EquityQuoteService::class)->store('INE540P07244', 'BSE', $quote);
+
+        $this->assertDatabaseHas('equity_quotes', [
+            'isin' => 'INE540P07244',
+            'bse_quoted_at' => '2026-09-17 05:01:22',
+            'bse_fetched_at' => '2026-09-17 05:01:22',
+        ]);
+    }
+
     private function quote(float $price, string $quotedAt, string $symbol, array $ohlc = []): array
     {
         return [

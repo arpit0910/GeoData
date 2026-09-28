@@ -89,7 +89,7 @@ class SyncCompanyFundamentalsCommand extends Command
             return self::SUCCESS;
         }
 
-        $totals = ['companies' => 0, 'requested' => 0, 'saved' => 0, 'failed' => 0];
+        $totals = ['companies' => 0, 'requested' => 0, 'saved' => 0, 'skipped' => 0, 'failed' => 0];
         $authenticationFailed = false;
 
         foreach ($equities as $equity) {
@@ -97,10 +97,12 @@ class SyncCompanyFundamentalsCommand extends Command
             $totals['companies']++;
             $totals['requested'] += $stats['requested'];
             $totals['saved'] += $stats['saved'];
+            $totals['skipped'] += $stats['skipped'];
             $totals['failed'] += $stats['failed'];
 
             $this->line(
                 "{$equity->isin}: saved {$stats['saved']} of {$stats['requested']} datasets"
+                .($stats['skipped'] > 0 ? "; unavailable {$stats['skipped']} (".implode(', ', array_unique($stats['unavailable'])).')' : '')
                 .($stats['failed'] > 0 ? "; failed {$stats['failed']}" : '')
             );
 
@@ -119,10 +121,13 @@ class SyncCompanyFundamentalsCommand extends Command
 
         $this->info(
             "Company fundamentals synchronized. Companies: {$totals['companies']}; "
-            ."requested: {$totals['requested']}; saved: {$totals['saved']}; failed: {$totals['failed']}."
+            ."requested: {$totals['requested']}; saved: {$totals['saved']}; "
+            ."unavailable: {$totals['skipped']}; failed: {$totals['failed']}."
         );
 
-        return $totals['saved'] > 0 && $totals['failed'] === 0 && ! $authenticationFailed
+        return ($totals['saved'] > 0 || $totals['skipped'] > 0)
+            && $totals['failed'] === 0
+            && ! $authenticationFailed
             ? self::SUCCESS
             : self::FAILURE;
     }

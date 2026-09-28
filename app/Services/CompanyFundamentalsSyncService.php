@@ -24,14 +24,21 @@ class CompanyFundamentalsSyncService
     ) {
     }
 
-    /** @return array{requested: int, saved: int, failed: int, errors: array<int, string>} */
+    /** @return array{requested: int, saved: int, skipped: int, failed: int, errors: array<int, string>, unavailable: array<int, string>} */
     public function sync(Equity $equity, array $datasets = [], int $delayMs = 250): array
     {
         $definitions = collect($this->definitions())
             ->when($datasets !== [], fn ($items) => $items->whereIn('dataset', $datasets))
             ->values();
 
-        $stats = ['requested' => 0, 'saved' => 0, 'failed' => 0, 'errors' => []];
+        $stats = [
+            'requested' => 0,
+            'saved' => 0,
+            'skipped' => 0,
+            'failed' => 0,
+            'errors' => [],
+            'unavailable' => [],
+        ];
 
         foreach ($definitions as $index => $definition) {
             $stats['requested']++;
@@ -59,12 +66,17 @@ class CompanyFundamentalsSyncService
 
                 $stats['saved']++;
             } catch (Throwable $exception) {
-                $stats['failed']++;
-                $stats['errors'][] = $definition['dataset'].': '.$exception->getMessage();
-                report($exception);
+                if ($this->isUnavailableInstrument($exception)) {
+                    $stats['skipped']++;
+                    $stats['unavailable'][] = $definition['dataset'];
+                } else {
+                    $stats['failed']++;
+                    $stats['errors'][] = $definition['dataset'].': '.$exception->getMessage();
+                    report($exception);
 
-                if (preg_match('/HTTP (401|403)\b/', $exception->getMessage()) === 1) {
-                    break;
+                    if (preg_match('/HTTP (401|403)\b/', $exception->getMessage()) === 1) {
+                        break;
+                    }
                 }
             }
 
@@ -74,6 +86,14 @@ class CompanyFundamentalsSyncService
         }
 
         return $stats;
+    }
+
+    private function isUnavailableInstrument(Throwable $exception): bool
+    {
+        return preg_match(
+            '/HTTP (400|404)\b.*(?:Invalid Instrument key|instrument.*not found)/i',
+            $exception->getMessage()
+        ) === 1;
     }
 
     /** @return array<int, array{dataset: string, endpoint: string, statement_type: string, time_period: string, query: array<string, scalar>}> */

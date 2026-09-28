@@ -35,8 +35,11 @@ class EquityQuoteService
 
         $key = ['isin' => strtoupper(trim($isin))];
         $prefix = strtolower($exchange);
-        $quotedAt = Carbon::parse($quote['quoted_at'])->utc()->format('Y-m-d H:i:s');
         $fetchedAt = Carbon::parse($quote['fetched_at'] ?? now())->utc()->format('Y-m-d H:i:s');
+        $quoteTime = Carbon::parse($quote['quoted_at'])->utc();
+        $quotedAt = $quoteTime->year >= 2000
+            ? $quoteTime->format('Y-m-d H:i:s')
+            : $fetchedAt;
         $payload = json_encode(array_merge($quote, $key, ['exchange' => $exchange]), JSON_THROW_ON_ERROR);
         $exchangeValues = [
             "{$prefix}_symbol" => $quote['symbol'],
