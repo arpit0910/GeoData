@@ -5,7 +5,7 @@
 <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Latest Stock Quotes</h1>
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Latest saved price per ISIN and exchange. All times are in IST.</p>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">One latest saved price per ISIN. NSE is preferred and BSE is used as a fallback. All times are in IST.</p>
     </div>
     <div class="flex items-center gap-3">
         <form method="POST" action="{{ route('equities.quotes.sync') }}" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerHTML='<i class=&quot;fas fa-spinner fa-spin mr-2&quot;></i>Syncing…';">

@@ -231,10 +231,7 @@ class MarketController extends Controller
             ->groupBy('isin');
 
         $query = DB::table('equities')
-            ->leftJoin('equity_quotes', function ($join) {
-                $join->on('equities.isin', '=', 'equity_quotes.isin')
-                    ->where('equity_quotes.exchange', '=', 'NSE');
-            })
+            ->leftJoin('equity_quotes', 'equities.isin', '=', 'equity_quotes.isin')
             ->leftJoinSub($latestPriceSub, 'latest_ep', function ($join) {
                 $join->on('equities.isin', '=', 'latest_ep.isin');
             })

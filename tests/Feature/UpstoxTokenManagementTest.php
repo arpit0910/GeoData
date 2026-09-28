@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\UpstoxAccessToken;
 use App\Services\UpstoxTokenManager;
+use App\Services\UpstoxMarketDataService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -80,5 +81,60 @@ class UpstoxTokenManagementTest extends TestCase
         $this->postJson('/api/v1/integrations/market-data/upstox-token/wrong-secret', [])
             ->assertNotFound();
         $this->assertDatabaseCount('upstox_access_tokens', 0);
+    }
+
+    public function test_expiry_metadata_does_not_replace_a_token_before_upstox_rejects_it(): void
+    {
+        UpstoxAccessToken::create([
+            'client_id' => 'client-123',
+            'access_token' => 'still-accepted-token',
+            'status' => 'active',
+            'issued_at' => now()->subDays(2),
+            'expires_at' => now()->subDay(),
+        ]);
+
+        $this->assertSame('still-accepted-token', app(UpstoxTokenManager::class)->accessToken());
+        Http::assertNothingSent();
+        $this->assertDatabaseCount('upstox_access_tokens', 1);
+    }
+
+    public function test_http_401_invalidates_the_token_and_requests_one_replacement(): void
+    {
+        UpstoxAccessToken::create([
+            'client_id' => 'client-123',
+            'access_token' => 'rejected-token',
+            'status' => 'active',
+            'issued_at' => now()->subHour(),
+            'expires_at' => now()->addHours(12),
+        ]);
+
+        config(['market_data.upstox.ltp_url' => 'https://provider.test/v3/market-quote/ltp']);
+        Http::fake(function ($request) {
+            if (str_contains($request->url(), '/market-quote/ltp')) {
+                return Http::response([
+                    'status' => 'error',
+                    'errors' => [['message' => 'Invalid token used to access API']],
+                ], 401);
+            }
+
+            return Http::response([
+                'status' => 'success',
+                'data' => [
+                    'authorization_expiry' => (string) now()->addHour()->getTimestampMs(),
+                    'notifier_url' => 'https://example.test/upstox/notifier',
+                ],
+            ]);
+        });
+
+        try {
+            app(UpstoxMarketDataService::class)->ltp(['NSE_EQ|INE002A01018']);
+            $this->fail('The rejected Upstox request should throw an exception.');
+        } catch (\RuntimeException $exception) {
+            $this->assertStringContainsString('HTTP 401', $exception->getMessage());
+        }
+
+        $this->assertDatabaseHas('upstox_access_tokens', ['status' => 'unauthorized']);
+        $this->assertDatabaseHas('upstox_access_tokens', ['status' => 'pending']);
+        Http::assertSentCount(2);
     }
 }

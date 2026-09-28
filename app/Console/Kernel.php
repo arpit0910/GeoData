@@ -46,9 +46,17 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->withoutOverlapping(2));
 
-        // 2. Bonds, Debentures & Fixed Income: Synced once daily after market closing (18:00 IST)
-        $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=bonds --mode=ltp --once-daily')
+        // Capture the final full quote as the day's EOD history. The snapshot
+        // is idempotent on ISIN + date, so retries update instead of duplicate.
+        $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=stocks --mode=full --snapshot-eod')
             ->dailyAt('18:00')
+            ->timezone('Asia/Kolkata')
+            ->runInBackground()
+            ->withoutOverlapping(120));
+
+        // 2. Bonds, Debentures & Fixed Income: Synced once daily after market closing.
+        $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=bonds --mode=ltp --once-daily')
+            ->dailyAt('18:10')
             ->timezone('Asia/Kolkata')
             ->runInBackground()
             ->withoutOverlapping(120));

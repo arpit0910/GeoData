@@ -19,7 +19,8 @@ class SyncUpstoxQuotesCommand extends Command
         {--type=equities : Instrument category: equities (stocks only), bonds (bonds/debentures only), or all}
         {--exchange= : Fetch only NSE or BSE}
         {--isin=* : Fetch only these ISINs; all mapped stocks are fetched when omitted}
-        {--once-daily : Skip instruments that have already been synced today}';
+        {--once-daily : Skip instruments that have already been synced today}
+        {--snapshot-eod : Upsert the final quotes into equity_prices after syncing}';
 
     protected $description = 'Fetch and save latest Upstox quotes/LTP for mapped equities or bonds (constantly for equities, once daily after close for bonds)';
 
@@ -162,6 +163,11 @@ class SyncUpstoxQuotesCommand extends Command
             ."missing/failed: {$missing}; failed batches: {$failedBatches}."
         );
 
+        if ($this->option('snapshot-eod') && $failedBatches === 0) {
+            $snapshots = $quoteStore->snapshotEndOfDay();
+            $this->info("EOD equity price rows saved: {$snapshots}.");
+        }
+
         return ($saved > 0 || $requested === 0) && $failedBatches === 0
             ? self::SUCCESS
             : self::FAILURE;
@@ -220,7 +226,9 @@ class SyncUpstoxQuotesCommand extends Command
             ];
         }
 
-        if (($exchangeFilter === '' || $exchangeFilter === 'BSE') && !empty($equity->upstox_bse_instrument_key)) {
+        // The latest quote table contains one row per ISIN. Prefer NSE and use
+        // BSE only when explicitly requested or when no NSE mapping exists.
+        if (($exchangeFilter === 'BSE' || ($exchangeFilter === '' && empty($targets))) && !empty($equity->upstox_bse_instrument_key)) {
             $targets[] = (object) [
                 'id' => $equity->id,
                 'isin' => $equity->isin,

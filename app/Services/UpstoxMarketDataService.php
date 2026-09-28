@@ -5,6 +5,7 @@ namespace App\Services;
 use Carbon\Carbon;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
 
@@ -493,6 +494,20 @@ class UpstoxMarketDataService
 
     private function errorMessage(Response $response): string
     {
+        if ($response->status() === 401) {
+            try {
+                $renewal = $this->tokens->handleUnauthorized();
+                Log::channel('upstox')->warning('Upstox rejected the stored access token.', [
+                    'renewal_requested' => $renewal['requested'],
+                    'authorization_expires_at' => $renewal['authorization_expires_at']?->toIso8601String(),
+                ]);
+            } catch (Throwable $exception) {
+                Log::channel('upstox')->error('Upstox token replacement could not be requested.', [
+                    'message' => $exception->getMessage(),
+                ]);
+            }
+        }
+
         $message = data_get($response->json(), 'errors.0.message')
             ?? data_get($response->json(), 'message');
 

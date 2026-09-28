@@ -112,15 +112,7 @@ class SyncCompanyFundamentalsCommand extends Command
                 fn (string $error) => preg_match('/HTTP (401|403)\b/', $error) === 1
             );
             if ($authenticationFailed) {
-                $this->error('Company fundamentals synchronization stopped because the Upstox access token was rejected. Configure a fresh UPSTOX_ACCESS_TOKEN and clear the Laravel configuration cache.');
-                try {
-                    $renewal = $tokens->requestRenewal();
-                    $this->warn($renewal['requested']
-                        ? 'A replacement token was requested. Approve the request in Upstox.'
-                        : 'A replacement token request is already awaiting approval in Upstox.');
-                } catch (\Throwable $exception) {
-                    $this->warn('Automatic token renewal could not be initiated: '.$exception->getMessage());
-                }
+                $this->error('Company fundamentals synchronization stopped because the Upstox access token was rejected. A replacement authorization request has been initiated.');
                 break;
             }
         }

@@ -15,15 +15,26 @@ class UpstoxTokenManager
         return UpstoxAccessToken::query()
             ->where('status', 'active')
             ->whereNotNull('access_token')
-            ->where('expires_at', '>', now()->addMinute())
             ->latest('issued_at')
             ->first();
     }
 
     public function accessToken(): string
     {
-        $token = $this->current()?->access_token
-            ?: trim((string) config('market_data.upstox.access_token'));
+        if ($current = $this->current()) {
+            return $current->access_token;
+        }
+
+        $pending = UpstoxAccessToken::query()
+            ->where('status', 'pending')
+            ->where('authorization_expires_at', '>', now())
+            ->exists();
+
+        if ($pending) {
+            throw new RuntimeException('No active Upstox token is available. Approve the pending Upstox token request.');
+        }
+
+        $token = trim((string) config('market_data.upstox.access_token'));
 
         if ($token === '') {
             throw new RuntimeException('No active Upstox token is available. Approve the pending Upstox token request.');
@@ -83,6 +94,20 @@ class UpstoxTokenManager
             'authorization_expires_at' => $authorizationExpiry,
             'notifier_url' => $notifierUrl,
         ];
+    }
+
+    /**
+     * Reject the current database token and request one replacement after the
+     * provider has explicitly returned HTTP 401. Expiry metadata alone must
+     * never initiate a replacement request.
+     */
+    public function handleUnauthorized(): array
+    {
+        UpstoxAccessToken::query()
+            ->where('status', 'active')
+            ->update(['status' => 'unauthorized']);
+
+        return $this->requestRenewal();
     }
 
     public function storeNotifierToken(array $payload): UpstoxAccessToken
