@@ -78,6 +78,9 @@
                                 <li><a href="#market-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Market
                                         Overview</a></li>
+                                <li><a href="#exchange-calendar-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">NSE/BSE
+                                        Holidays</a></li>
                                 <li><a href="#market-sync-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Market
                                         Data &amp; Real-Time Sync</a></li>
@@ -2829,6 +2832,54 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             <!-- ═══════════════════════════════════════════════════════ -->
                             <!-- LIVE MARKET DATA & REAL-TIME SYNC                          -->
                             <!-- ═══════════════════════════════════════════════════════ -->
+                            <section id="exchange-calendar-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">NSE/BSE Holiday Calendar</h2>
+                                <p class="text-gray-400 mb-8">Retrieve the complete stored equity-market holiday list for NSE, BSE, or both exchanges. Matching NSE/BSE holidays are returned once with <code class="text-white">exchanges: ["NSE", "BSE"]</code>.</p>
+
+                                <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                    <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                        <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market-calendar/holidays</h3>
+                                        <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                    </div>
+                                    <div class="p-6 text-gray-400">
+                                        <p class="mb-4">To get every official NSE and BSE holiday currently stored, call:</p>
+                                        <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-white mb-6">GET /api/v1/market-calendar/holidays?exchange=all&amp;type=holiday</div>
+
+                                        <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters</h4>
+                                        <table class="w-full text-sm mb-8">
+                                            <thead class="text-gray-500 text-left border-b border-gray-800">
+                                                <tr><th class="pb-2">Parameter</th><th class="pb-2">Values</th><th class="pb-2">Description</th></tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-800">
+                                                <tr><td class="py-2 font-mono text-amber-500">exchange</td><td class="py-2"><code class="text-white">all | nse | bse</code></td><td class="py-2">Defaults to <code class="text-white">all</code>.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">type</td><td class="py-2"><code class="text-white">holiday | muhurat | weekend</code></td><td class="py-2">Use <code class="text-white">holiday</code> for official full-day exchange holidays.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">year</td><td class="py-2">2000–2100</td><td class="py-2">Optional calendar-year filter, for example <code class="text-white">2026</code>.</td></tr>
+                                                <tr><td class="py-2 font-mono text-amber-500">from / to</td><td class="py-2"><code class="text-white">YYYY-MM-DD</code></td><td class="py-2">Optional inclusive date range.</td></tr>
+                                            </tbody>
+                                        </table>
+
+                                        <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
+                                        <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"filters"</span>: { <span class="text-blue-400">"exchange"</span>: <span class="text-green-400">"all"</span>, <span class="text-blue-400">"type"</span>: <span class="text-green-400">"holiday"</span> },
+  <span class="text-blue-400">"count"</span>: <span class="text-blue-400">1</span>,
+  <span class="text-blue-400">"data"</span>: [
+    {
+      <span class="text-blue-400">"exchange"</span>: <span class="text-green-400">"NSE_BSE"</span>,
+      <span class="text-blue-400">"exchanges"</span>: [<span class="text-green-400">"NSE"</span>, <span class="text-green-400">"BSE"</span>],
+      <span class="text-blue-400">"segment"</span>: <span class="text-green-400">"equity"</span>,
+      <span class="text-blue-400">"date"</span>: <span class="text-green-400">"2026-01-26"</span>,
+      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"Republic Day"</span>,
+      <span class="text-blue-400">"type"</span>: <span class="text-green-400">"holiday"</span>,
+      <span class="text-blue-400">"session_start"</span>: <span class="text-blue-400">null</span>,
+      <span class="text-blue-400">"session_end"</span>: <span class="text-blue-400">null</span>
+    }
+  ]
+}</pre></div>
+                                    </div>
+                                </div>
+                            </section>
+
                             <section id="market-sync-api" class="pt-8">
                                 <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Market Data &amp; Real-Time Sync</h2>
                                 <p class="text-gray-400 mb-8">High-performance bulk synchronization APIs for Indian equities (NSE &amp; BSE), AMFI Mutual Funds, ISIN-based multi-asset lookups, real-time quote sync, financial news, and corporate actions (splits, bonus, dividends). Built for automated schedulers, algorithmic trading feeds, and third-party data synchronization engines.</p>

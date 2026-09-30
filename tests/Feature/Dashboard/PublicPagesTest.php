@@ -42,7 +42,23 @@ class PublicPagesTest extends TestCase
     public function docs_page_loads()
     {
         $response = $this->get('/docs');
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertSee('NSE/BSE Holiday Calendar')
+            ->assertSee('/api/v1/market-calendar/holidays?exchange=all&amp;type=holiday', false);
+    }
+
+    /** @test */
+    public function postman_collection_includes_the_nse_bse_holiday_request()
+    {
+        $collection = json_decode(file_get_contents(public_path('postman_collection.json')), true, 512, JSON_THROW_ON_ERROR);
+        $encoded = json_encode($collection, JSON_UNESCAPED_SLASHES);
+
+        $this->assertStringContainsString(
+            '{{baseUrl}}/market-calendar/holidays?exchange=all&type=holiday',
+            $encoded
+        );
+        $this->assertStringContainsString('official NSE and BSE equity-market holidays', $encoded);
+        $this->assertStringContainsString('Republic Day', $encoded);
     }
 
     /** @test */

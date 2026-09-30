@@ -163,9 +163,13 @@
 
                 @if(!auth()->user()->is_admin)
                 <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500" x-show="isEditing" style="display: none;">*</span></label>
-                    <div class="mt-1">
-                        <input id="phone" name="phone" type="tel" value="{{ old('phone', $user->phone) }}" required placeholder="+91 98765 43210" pattern="^(?:\+?91[\-\s]?)?[6-9]\d{9}$" title="Please enter a valid 10-digit Indian mobile number"
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Mobile Number <span class="text-red-500" x-show="isEditing" style="display: none;">*</span></label>
+                    <div class="mt-1 flex gap-2">
+                        <input id="country_code" name="country_code" type="text" value="{{ old('country_code', $user->country_code ?? '+91') }}" required placeholder="+91" pattern="^\+[1-9][0-9]{0,3}$" maxlength="5" title="Enter a country code such as +91"
+                            :readonly="!isEditing"
+                            :class="isEditing ? 'bg-white border-gray-300 focus:ring-amber-500 focus:border-amber-500 shadow-sm' : 'bg-gray-50/50 border-transparent text-gray-600 cursor-not-allowed'"
+                            class="appearance-none block w-24 px-3 py-3 border rounded-lg sm:text-sm transition-all duration-200">
+                        <input id="phone" name="phone" type="number" value="{{ old('phone', $user->phone) }}" required placeholder="9876543210" min="1000000" max="999999999999999" inputmode="numeric" title="Enter 7 to 15 digits only"
                             :readonly="!isEditing"
                             :class="isEditing ? 'bg-white border-gray-300 focus:ring-amber-500 focus:border-amber-500 shadow-sm' : 'bg-gray-50/50 border-transparent text-gray-600 cursor-not-allowed'"
                             class="appearance-none block w-full px-4 py-3 border rounded-lg sm:text-sm transition-all duration-200">
@@ -196,7 +200,7 @@
                 <div class="md:col-span-2">
                     <label for="gst_number" class="block text-sm font-medium text-gray-700">GSTIN</label>
                     <div class="mt-1">
-                        <input id="gst_number" name="gst_number" type="text" value="{{ old('gst_number', $user->gst_number) }}" placeholder="27AAAAA0000A1Z5" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$" title="Please enter a valid 15-character Indian GSTIN"
+                        <input id="gst_number" name="gst_number" type="text" value="{{ old('gst_number', $user->gst_number) }}" placeholder="27AAAAA0000A1Z5" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$" maxlength="15" oninput="this.value = this.value.toUpperCase()" title="Please enter a valid 15-character Indian GSTIN"
                             :readonly="!isEditing"
                             :class="isEditing ? 'bg-white border-gray-300 focus:ring-amber-500 focus:border-amber-500 shadow-sm' : 'bg-gray-50 border-transparent text-gray-700 border-gray-100 cursor-not-allowed'"
                             class="appearance-none block w-full px-4 py-3 border rounded-lg sm:text-sm transition-colors">

@@ -37,6 +37,7 @@ as the existing stocks/mutual-funds APIs.
 
 ```text
 GET /api/v1/market-calendar/holidays?exchange=nse&year=2026
+GET /api/v1/market-calendar/holidays?exchange=all&type=holiday
 GET /api/v1/market-calendar/holidays?exchange=all&from=2026-10-01&to=2026-12-31&type=holiday
 GET /api/v1/market-calendar/holidays?exchange=all&year=2026&type=weekend
 GET /api/v1/market-calendar/check?date=2026-11-08&exchange=all
@@ -51,6 +52,11 @@ remain null until an exchange publishes them in its calendar source.
 For a weekday in a year that has not been synchronized, the endpoint returns
 `calendar_available=false`, `status=unknown`, and `is_trading_day=null` rather
 than incorrectly assuming that the exchange is open.
+
+Omit `year`, `from`, and `to` to return all stored dates. For the complete list
+of official full-day holidays across both exchanges, use
+`exchange=all&type=holiday`. The response includes `count`, the applied
+`filters`, and a `data` array ordered by date and exchange.
 
 ## Admin CRUD
 

@@ -174,8 +174,8 @@
                         let userName = row.user ? row.user.name : 'User';
                         return `
                             <div class="flex justify-end space-x-2">
-                                <button onclick="openPlanModal(${data}, '${userName.replace(/'/g, "\\'")}')" class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Assign Subscription"><i class="fas fa-id-card"></i></button>
-                                <button onclick="openAssignModal(${data}, '${userName.replace(/'/g, "\\'")}')" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Assign Credits"><i class="fas fa-coins"></i></button>
+                                <button type="button" data-subscription-id="${data}" data-user-name="${escapeHtml(userName)}" class="js-open-plan p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Assign Subscription"><i class="fas fa-id-card"></i></button>
+                                <button type="button" data-subscription-id="${data}" data-user-name="${escapeHtml(userName)}" class="js-open-credits p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Assign Credits"><i class="fas fa-coins"></i></button>
                                 <a href="${showUrl}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details"><i class="fas fa-eye"></i></a>
                             </div>
                         `;
@@ -229,10 +229,27 @@
                     closePlanModal();
                     table.ajax.reload(null, false);
                 },
-                error: function(xhr) { toastr.error(xhr.responseJSON?.message || 'Could not assign subscription'); }
+                error: function(xhr) {
+                    const validationMessage = xhr.responseJSON?.errors
+                        ? Object.values(xhr.responseJSON.errors).flat()[0]
+                        : null;
+                    toastr.error(validationMessage || xhr.responseJSON?.message || 'Could not assign subscription');
+                }
             });
         });
+
+        $('#subscriptionsTable').on('click', '.js-open-plan', function () {
+            openPlanModal(this.dataset.subscriptionId, this.dataset.userName);
+        });
+
+        $('#subscriptionsTable').on('click', '.js-open-credits', function () {
+            openAssignModal(this.dataset.subscriptionId, this.dataset.userName);
+        });
     });
+
+    function escapeHtml(value) {
+        return $('<div>').text(value ?? '').html();
+    }
 
     function openAssignModal(id, name) {
         $('#subscription_id').val(id);

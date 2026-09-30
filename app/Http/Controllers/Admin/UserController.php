@@ -71,13 +71,17 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->normalizeContactFields($request);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:8|confirmed',
             'company_name' => 'nullable|string',
             'company_website' => 'nullable|url',
-            'gst_number' => 'nullable|string',
+            'gst_number' => ['nullable', 'string', 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/'],
+            'country_code' => ['nullable', 'required_with:phone', 'string', 'regex:/^\+[1-9][0-9]{0,3}$/'],
+            'phone' => ['nullable', 'required_with:country_code', 'string', 'regex:/^[0-9]{7,15}$/'],
             'status' => 'required|in:1,0',
         ]);
 
@@ -138,13 +142,17 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->normalizeContactFields($request);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
             'password' => 'nullable|min:8|confirmed',
             'company_name' => 'nullable|string',
             'company_website' => 'nullable|url',
-            'gst_number' => 'nullable|string',
+            'gst_number' => ['nullable', 'string', 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/'],
+            'country_code' => ['nullable', 'required_with:phone', 'string', 'regex:/^\+[1-9][0-9]{0,3}$/'],
+            'phone' => ['nullable', 'required_with:country_code', 'string', 'regex:/^[0-9]{7,15}$/'],
             'status' => 'required|in:1,0',
             'plan_id' => 'nullable|exists:plans,id',
         ]);
@@ -175,6 +183,18 @@ class UserController extends Controller
         }
 
         return redirect()->route('user.list')->with('success', 'User updated successfully');
+    }
+
+    private function normalizeContactFields(Request $request): void
+    {
+        $request->merge([
+            'country_code' => $request->filled('country_code')
+                ? '+' . ltrim($request->input('country_code'), '+')
+                : null,
+            'gst_number' => $request->filled('gst_number')
+                ? strtoupper($request->input('gst_number'))
+                : null,
+        ]);
     }
 
     private function syncManualPlanAssignment(User $user, ?Plan $plan): void

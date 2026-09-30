@@ -1,8 +1,8 @@
 {
     "info": {
-        "_postman_id": "82cf2684-5648-4ecb-9264-cf3e4746a075",
+        "_postman_id": "edb90585-1ad1-4cf9-bf92-94e05de85029",
         "name": "SetuGeo API - Demo & Sales Collection",
-        "description": "Generated on 2026-09-25 23:40:19 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
+        "description": "Generated on 2026-09-30 13:21:41 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "auth": {
@@ -2714,7 +2714,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-09-25+23%3A40%3A18&from=Asia%2FKolkata&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-09-30+13%3A21%3A41&from=Asia%2FKolkata&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -2725,7 +2725,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-09-25 23:40:18"
+                                            "value": "2026-09-30 13:21:41"
                                         },
                                         {
                                             "key": "from",
@@ -2788,7 +2788,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-09-25+23%3A40%3A18&from=Asia%2FKolkata&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-09-30+13%3A21%3A41&from=Asia%2FKolkata&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -2799,7 +2799,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-09-25 23:40:18"
+                                            "value": "2026-09-30 13:21:41"
                                         },
                                         {
                                             "key": "from",
@@ -5453,7 +5453,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/indices/NIFTY%2050/history?start_date=2026-08-26&end_date=2026-09-25",
+                                    "raw": "{{baseUrl}}/indices/NIFTY%2050/history?start_date=2026-08-31&end_date=2026-09-30",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -5465,11 +5465,11 @@
                                     "query": [
                                         {
                                             "key": "start_date",
-                                            "value": "2026-08-26"
+                                            "value": "2026-08-31"
                                         },
                                         {
                                             "key": "end_date",
-                                            "value": "2026-09-25"
+                                            "value": "2026-09-30"
                                         }
                                     ]
                                 },
@@ -8171,6 +8171,48 @@
                     "name": "Integrations",
                     "item": [
                         {
+                            "name": "Integrations Market Data Upstox Token Secret",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/integrations/market-data/upstox-token/{secret}",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "integrations",
+                                        "market-data",
+                                        "upstox-token",
+                                        "{secret}"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/integrations/market-data/upstox-token/{secret}\",\n        \"method\": \"POST\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
                             "name": "Integration: Market Data Callback",
                             "request": {
                                 "method": "GET",
@@ -8220,7 +8262,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market-calendar/holidays",
+                                    "raw": "{{baseUrl}}/market-calendar/holidays?exchange=all&type=holiday",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -8228,9 +8270,18 @@
                                         "market-calendar",
                                         "holidays"
                                     ],
-                                    "query": []
+                                    "query": [
+                                        {
+                                            "key": "exchange",
+                                            "value": "all"
+                                        },
+                                        {
+                                            "key": "type",
+                                            "value": "holiday"
+                                        }
+                                    ]
                                 },
-                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                                "description": "Requires bearer token. Returns all stored official NSE and BSE equity-market holidays. Use exchange=nse or exchange=bse for one exchange, and optionally filter by year or date range."
                             },
                             "response": [
                                 {
@@ -8238,7 +8289,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market-calendar/holidays\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"filters\": {\n        \"exchange\": \"all\",\n        \"type\": \"holiday\"\n    },\n    \"count\": 2,\n    \"data\": [\n        {\n            \"exchange\": \"NSE_BSE\",\n            \"exchanges\": [\n                \"NSE\",\n                \"BSE\"\n            ],\n            \"segment\": \"equity\",\n            \"date\": \"2026-01-26\",\n            \"name\": \"Republic Day\",\n            \"type\": \"holiday\",\n            \"session_start\": null,\n            \"session_end\": null,\n            \"source\": \"nse_bse\",\n            \"synced_at\": \"2026-01-01T06:00:00+05:30\"\n        },\n        {\n            \"exchange\": \"NSE_BSE\",\n            \"exchanges\": [\n                \"NSE\",\n                \"BSE\"\n            ],\n            \"segment\": \"equity\",\n            \"date\": \"2026-03-04\",\n            \"name\": \"Holi\",\n            \"type\": \"holiday\",\n            \"session_start\": null,\n            \"session_end\": null,\n            \"source\": \"nse_bse\",\n            \"synced_at\": \"2026-01-01T06:00:00+05:30\"\n        }\n    ]\n}"
                                 },
                                 {
                                     "name": "Unauthenticated",
@@ -8281,7 +8332,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market-calendar/check",
+                                    "raw": "{{baseUrl}}/market-calendar/check?date=2026-09-30&exchange=all",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -8289,7 +8340,16 @@
                                         "market-calendar",
                                         "check"
                                     ],
-                                    "query": []
+                                    "query": [
+                                        {
+                                            "key": "date",
+                                            "value": "2026-09-30"
+                                        },
+                                        {
+                                            "key": "exchange",
+                                            "value": "all"
+                                        }
+                                    ]
                                 },
                                 "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
                             },

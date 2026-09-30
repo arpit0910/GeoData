@@ -172,4 +172,21 @@ class AuthFlowTest extends TestCase
         $response->assertSee('value="Near Demo Landmark"', false);
         $response->assertSee('value="400001"', false);
     }
+
+    /** @test */
+    public function complete_profile_rejects_invalid_mobile_country_code_and_gstin()
+    {
+        $user = $this->createIncompleteUser();
+
+        $response = $this->actingAs($user)->post(route('profile.complete.post'), [
+            'company_name' => 'Invalid Contact Ltd',
+            'gst_number' => 'anything',
+            'country_code' => 'India',
+            'phone' => '98AB76',
+        ]);
+
+        $response->assertSessionHasErrors(['gst_number', 'country_code', 'phone']);
+        $this->assertNull($user->fresh()->country_code);
+        $this->assertNull($user->fresh()->phone);
+    }
 }

@@ -44,6 +44,42 @@ class AdminDashboardTest extends TestCase
     }
 
     /** @test */
+    public function admin_user_creation_validates_and_stores_contact_fields()
+    {
+        $invalid = $this->actingAs($this->admin)->post('/user/store', [
+            'name' => 'Invalid Contact',
+            'email' => 'invalid-contact@test.com',
+            'password' => 'Password@123',
+            'password_confirmation' => 'Password@123',
+            'gst_number' => 'not-a-gstin',
+            'country_code' => '+91',
+            'phone' => '98AB76',
+            'status' => 1,
+        ]);
+
+        $invalid->assertSessionHasErrors(['gst_number', 'phone']);
+
+        $valid = $this->actingAs($this->admin)->post('/user/store', [
+            'name' => 'Valid Contact',
+            'email' => 'valid-contact@test.com',
+            'password' => 'Password@123',
+            'password_confirmation' => 'Password@123',
+            'gst_number' => '27aaaaa0000a1z5',
+            'country_code' => '91',
+            'phone' => '9876543210',
+            'status' => 1,
+        ]);
+
+        $valid->assertRedirect(route('user.list'));
+        $this->assertDatabaseHas('users', [
+            'email' => 'valid-contact@test.com',
+            'gst_number' => '27AAAAA0000A1Z5',
+            'country_code' => '+91',
+            'phone' => '9876543210',
+        ]);
+    }
+
+    /** @test */
     public function admin_can_view_user_details()
     {
         $user = $this->createUser();
@@ -227,6 +263,29 @@ class AdminDashboardTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get('/admin/subscriptions');
         $response->assertStatus(200);
+    }
+
+    /** @test */
+    public function admin_can_assign_a_subscription_plan()
+    {
+        $user = $this->createUser(['name' => "O'Reilly <Client>"]);
+        $oldPlan = $this->createPlan(['name' => 'Old Plan']);
+        $newPlan = $this->createPlan(['name' => 'New Plan', 'api_hits_limit' => 2500]);
+        $oldSubscription = $this->createActiveSubscription($user, $oldPlan);
+
+        $response = $this->actingAs($this->admin)->postJson(
+            route('admin.subscriptions.assign-plan', $oldSubscription),
+            ['plan_id' => $newPlan->id]
+        );
+
+        $response->assertOk()->assertJson(['status' => true]);
+        $this->assertSame('expired', $oldSubscription->fresh()->status);
+        $this->assertDatabaseHas('subscriptions', [
+            'user_id' => $user->id,
+            'plan_id' => $newPlan->id,
+            'status' => 'active',
+            'available_credits' => 2500,
+        ]);
     }
 
     // ─── WEBSITE QUERIES ──────────────────────────────────────────────

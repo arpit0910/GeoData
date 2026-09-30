@@ -635,6 +635,12 @@ class ApiTestRunnerService
             case 'api/v1/market/company-fundamentals/{isin}':
                 $query = ['dataset' => 'profile,key_ratios'];
                 break;
+            case 'api/v1/market-calendar/holidays':
+                $query = ['exchange' => 'all', 'type' => 'holiday'];
+                break;
+            case 'api/v1/market-calendar/check':
+                $query = ['date' => now(config('exchange_calendar.timezone'))->toDateString(), 'exchange' => 'all'];
+                break;
         }
 
         return [

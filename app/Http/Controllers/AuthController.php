@@ -119,11 +119,21 @@ class AuthController extends Controller
 
     public function saveProfile(Request $request)
     {
+        $request->merge([
+            'country_code' => $request->filled('country_code')
+                ? '+' . ltrim($request->input('country_code'), '+')
+                : null,
+            'gst_number' => $request->filled('gst_number')
+                ? strtoupper($request->input('gst_number'))
+                : null,
+        ]);
+
         $request->validate([
             'company_name' => 'required|string|max:255',
             'company_website' => 'nullable|url|max:255',
             'gst_number' => ['nullable', 'string', 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/'],
-            'phone' => ['required', 'string', 'min:7', 'max:20'],
+            'country_code' => ['required', 'string', 'regex:/^\+[1-9][0-9]{0,3}$/'],
+            'phone' => ['required', 'string', 'regex:/^[0-9]{7,15}$/'],
             'address_line_1' => 'required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
             'country_id' => 'required|exists:countries,id',
@@ -132,8 +142,8 @@ class AuthController extends Controller
             'city_id' => 'required|exists:cities,id',
         ], [
             'gst_number.regex' => 'Please enter a valid 15-character Indian GSTIN.',
-            'phone.min' => 'Please enter a valid phone number with at least 7 digits.',
-            'phone.max' => 'Phone number cannot exceed 20 characters.',
+            'country_code.regex' => 'Please enter a valid country code, for example +91.',
+            'phone.regex' => 'Mobile number must contain only 7 to 15 digits.',
             'pincode.regex' => 'Please enter a valid 6-digit Indian PIN code.'
         ]);
 
@@ -142,6 +152,7 @@ class AuthController extends Controller
             'company_name' => $request->company_name,
             'company_website' => $request->company_website,
             'gst_number' => $request->gst_number,
+            'country_code' => $request->country_code,
             'phone' => $request->phone,
             'address_line_1' => $request->address_line_1,
             'address_line_2' => $request->address_line_2,

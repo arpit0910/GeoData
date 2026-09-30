@@ -92,7 +92,15 @@
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                                 <i class="fas fa-file-invoice-dollar"></i>
                             </span>
-                            <input type="text" name="gst_number" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" placeholder="22AAAAA0000A1Z5">
+                            <input type="text" name="gst_number" value="{{ old('gst_number') }}" maxlength="15" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$" oninput="this.value = this.value.toUpperCase()" title="Enter a valid 15-character Indian GSTIN" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all uppercase" placeholder="22AAAAA0000A1Z5">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-gray-700">Mobile Number</label>
+                        <div class="flex gap-2">
+                            <input type="text" name="country_code" value="{{ old('country_code') }}" placeholder="+91" pattern="^\+[1-9][0-9]{0,3}$" maxlength="5" title="Enter a country code such as +91" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all">
+                            <input type="number" name="phone" value="{{ old('phone') }}" placeholder="9876543210" min="1000000" max="999999999999999" inputmode="numeric" title="Enter 7 to 15 digits only" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all">
                         </div>
                     </div>
 

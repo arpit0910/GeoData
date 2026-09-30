@@ -25,6 +25,15 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
+        $request->merge([
+            'country_code' => $request->filled('country_code')
+                ? '+' . ltrim($request->input('country_code'), '+')
+                : null,
+            'gst_number' => $request->filled('gst_number')
+                ? strtoupper($request->input('gst_number'))
+                : null,
+        ]);
+
         $user = Auth::user();
 
         if ($user->is_admin) {
@@ -39,7 +48,8 @@ class ProfileController extends Controller
                 'company_name' => 'required|string|max:255',
                 'company_website' => 'nullable|url|max:255',
                 'gst_number' => ['nullable', 'string', 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/'],
-                'phone' => ['required', 'string', 'regex:/^(?:\+?91[\-\s]?)?[6-9]\d{9}$/'],
+                'country_code' => ['required', 'string', 'regex:/^\+[1-9][0-9]{0,3}$/'],
+                'phone' => ['required', 'string', 'regex:/^[0-9]{7,15}$/'],
                 'address_line_1' => 'required|string|max:255',
                 'address_line_2' => 'nullable|string|max:255',
                 'country_id' => 'required|exists:countries,id',
@@ -48,12 +58,13 @@ class ProfileController extends Controller
                 'city_id' => 'required|exists:cities,id',
             ], [
                 'gst_number.regex' => 'Please enter a valid 15-character Indian GSTIN.',
-                'phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
+                'country_code.regex' => 'Please enter a valid country code, for example +91.',
+                'phone.regex' => 'Mobile number must contain only 7 to 15 digits.',
                 'pincode.regex' => 'Please enter a valid 6-digit Indian PIN code.'
             ]);
 
             $user->update($request->only([
-                'name', 'company_name', 'company_website', 'gst_number',
+                'name', 'company_name', 'company_website', 'gst_number', 'country_code',
                 'phone', 'address_line_1', 'address_line_2', 'country_id', 'pincode', 'state_id', 'city_id'
             ]));
         }

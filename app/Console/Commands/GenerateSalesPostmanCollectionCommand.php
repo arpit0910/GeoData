@@ -255,6 +255,10 @@ class GenerateSalesPostmanCollectionCommand extends Command
 
     private function buildRequestDescription(array $endpoint): string
     {
+        if ($endpoint['uri'] === 'api/v1/market-calendar/holidays') {
+            return 'Requires bearer token. Returns all stored official NSE and BSE equity-market holidays. Use exchange=nse or exchange=bse for one exchange, and optionally filter by year or date range.';
+        }
+
         $authNote = $endpoint['requires_auth']
             ? 'Requires bearer token.'
             : 'Does not require bearer token.';
@@ -343,20 +347,54 @@ class GenerateSalesPostmanCollectionCommand extends Command
 
     private function buildStandardResponses(array $endpoint): array
     {
+        $successBody = $endpoint['uri'] === 'api/v1/market-calendar/holidays'
+            ? [
+                'success' => true,
+                'filters' => ['exchange' => 'all', 'type' => 'holiday'],
+                'count' => 2,
+                'data' => [
+                    [
+                        'exchange' => 'NSE_BSE',
+                        'exchanges' => ['NSE', 'BSE'],
+                        'segment' => 'equity',
+                        'date' => '2026-01-26',
+                        'name' => 'Republic Day',
+                        'type' => 'holiday',
+                        'session_start' => null,
+                        'session_end' => null,
+                        'source' => 'nse_bse',
+                        'synced_at' => '2026-01-01T06:00:00+05:30',
+                    ],
+                    [
+                        'exchange' => 'NSE_BSE',
+                        'exchanges' => ['NSE', 'BSE'],
+                        'segment' => 'equity',
+                        'date' => '2026-03-04',
+                        'name' => 'Holi',
+                        'type' => 'holiday',
+                        'session_start' => null,
+                        'session_end' => null,
+                        'source' => 'nse_bse',
+                        'synced_at' => '2026-01-01T06:00:00+05:30',
+                    ],
+                ],
+            ]
+            : [
+                'success' => true,
+                'message' => 'Request completed successfully.',
+                'data' => [
+                    'endpoint' => $endpoint['uri'],
+                    'method' => $endpoint['method'],
+                    'sample' => 'Example response payload for demo purposes.',
+                ],
+            ];
+
         $responses = [
             $this->makeJsonResponse(
                 'Success',
                 'OK',
                 200,
-                [
-                    'success' => true,
-                    'message' => 'Request completed successfully.',
-                    'data' => [
-                        'endpoint' => $endpoint['uri'],
-                        'method' => $endpoint['method'],
-                        'sample' => 'Example response payload for demo purposes.',
-                    ],
-                ]
+                $successBody
             ),
         ];
 

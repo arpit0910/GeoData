@@ -35,6 +35,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'country_code',
         'address',
         'address_line_1',
         'address_line_2',

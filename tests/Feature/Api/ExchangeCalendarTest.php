@@ -191,6 +191,34 @@ class ExchangeCalendarTest extends TestCase
         }
     }
 
+    public function test_lists_all_official_nse_and_bse_holidays(): void
+    {
+        ExchangeCalendarEvent::create($this->event([
+            'exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH,
+            'event_date' => '2026-01-26',
+        ]));
+        ExchangeCalendarEvent::create($this->event([
+            'exchange' => 'BSE',
+            'event_date' => '2026-03-04',
+            'name' => 'Holi',
+        ]));
+        ExchangeCalendarEvent::create($this->event([
+            'exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH,
+            'event_date' => '2026-01-03',
+            'name' => 'Saturday',
+            'event_type' => ExchangeCalendarEvent::TYPE_WEEKEND,
+        ]));
+
+        $this->getJson('/api/v1/market-calendar/holidays?exchange=all&type=holiday')
+            ->assertOk()
+            ->assertJsonPath('filters.exchange', 'all')
+            ->assertJsonPath('filters.type', 'holiday')
+            ->assertJsonPath('count', 2)
+            ->assertJsonPath('data.0.name', 'Republic Day')
+            ->assertJsonPath('data.1.name', 'Holi')
+            ->assertJsonMissing(['name' => 'Saturday']);
+    }
+
     private function bseHtml(): string
     {
         return <<<'HTML'

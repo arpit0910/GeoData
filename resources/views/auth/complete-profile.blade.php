@@ -79,15 +79,17 @@
                 <div>
                     <label for="gst_number" class="block text-sm font-medium text-gray-700">GSTIN <span class="text-gray-400 font-normal">(Optional)</span></label>
                     <div class="mt-1">
-                        <input id="gst_number" name="gst_number" type="text" value="{{ old('gst_number', $user->gst_number) }}" placeholder="e.g. 27AAAAA0000A1Z5" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$" title="Please enter a valid 15-character Indian GSTIN"
+                        <input id="gst_number" name="gst_number" type="text" value="{{ old('gst_number', $user->gst_number) }}" placeholder="e.g. 27AAAAA0000A1Z5" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$" maxlength="15" oninput="this.value = this.value.toUpperCase()" title="Please enter a valid 15-character Indian GSTIN"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>
 
                 <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
-                    <div class="mt-1">
-                        <input id="phone" name="phone" type="tel" value="{{ old('phone', $user->phone) }}" required placeholder="e.g. 90909 09090" title="Please enter your phone number without country code"
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Mobile Number <span class="text-red-500">*</span></label>
+                    <div class="mt-1 flex gap-2">
+                        <input id="country_code" name="country_code" type="text" value="{{ old('country_code', $user->country_code ?? '+91') }}" required placeholder="+91" pattern="^\+[1-9][0-9]{0,3}$" maxlength="5" title="Enter a country code such as +91"
+                            class="appearance-none block w-24 px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
+                        <input id="phone" name="phone" type="number" value="{{ old('phone', $user->phone) }}" required placeholder="9090909090" min="1000000" max="999999999999999" inputmode="numeric" title="Enter 7 to 15 digits only"
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors">
                     </div>
                 </div>
@@ -123,7 +125,7 @@
                             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors bg-white">
                             <option value="">Select Country</option>
                             @foreach($countries as $country)
-                                <option value="{{ $country->id }}" {{ old('country_id', $user->country_id ?? 101) == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
+                                <option value="{{ $country->id }}" data-phonecode="{{ $country->phonecode ? '+' . ltrim($country->phonecode, '+') : '' }}" {{ old('country_id', $user->country_id ?? 101) == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -217,6 +219,13 @@
             document.getElementById('state_name').value = '';
             document.getElementById('city_name').value = '';
         }
+
+        document.getElementById('country_id').addEventListener('change', function () {
+            const phoneCode = this.options[this.selectedIndex]?.dataset.phonecode;
+            if (phoneCode) {
+                document.getElementById('country_code').value = phoneCode;
+            }
+        });
         
         // Auto-run if pincode has old value
         window.onload = function() {
