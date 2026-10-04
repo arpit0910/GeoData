@@ -15,12 +15,53 @@ the app's Notifier Webhook Endpoint in Upstox Developer Apps:
 
 `https://your-domain.example/api/v1/integrations/market-data/upstox-token/{UPSTOX_NOTIFIER_SECRET}`
 
-The application requests a replacement token after expiry. Upstox requires the
-account holder to approve the request; after approval, the notifier stores the
-token encrypted in the database. `UPSTOX_ACCESS_TOKEN` remains a fallback for
-initial setup. Never commit credentials. If configuration is cached, rebuild it
-after updating the environment. If PHP reports cURL error 60, set
+The application limits every received access token to 24 hours, even if Upstox
+reports a longer expiry, and requests a replacement after that effective expiry.
+Upstox requires the account holder to approve the request; after approval, the
+notifier stores the token encrypted in the database. `UPSTOX_ACCESS_TOKEN`
+remains a fallback for initial setup. Never commit credentials. If configuration
+is cached, rebuild it after updating the environment. If PHP reports cURL error 60, set
 `MARKET_DATA_CA_BUNDLE` to a trusted CA bundle. TLS verification stays enabled.
+
+### News rewriting workflow
+
+Upstox news is stored as private source material. The scheduled
+`market:rewrite-news` command asks Gemini for a low-temperature, structured
+rewrite and stores it on the same `market_news` record. There is no manual review
+queue. A rewrite is published automatically only after all deterministic and
+semantic checks pass. Source copy, incomplete rewrites, and rejected rewrites
+remain private.
+
+Before rewriting, the editor fetches the trusted Upstox article page and stores
+its JSON-LD `articleBody` as private source content. Gemini receives this full
+body instead of the short API teaser and must return a concise headline plus an
+explicit array of paragraphs. The application enforces proportional article
+length, paragraph count, headline length, prohibited process language, and exact
+preservation of numerical facts. A separate zero-temperature verification pass
+rejects changed intent, omitted material facts, unsupported additions, changed
+causality or uncertainty, attribution shifts, and tone changes. Temporary Gemini
+capacity failures are retried and can fall back through
+`GEMINI_NEWS_FALLBACK_MODELS`.
+
+The Upstox news synchronizer requests the maximum 100 records per page and
+follows every reported page (up to Upstox's 100-page limit) for each batch of
+30 instrument keys. It validates the returned page numbers and total record
+count, retries temporary connection, rate-limit, and server failures, and fails
+fast when authorization is unavailable. Upstox only exposes news from the most
+recent seven days, so the hourly sync persists that rolling window over time.
+
+Set `GEMINI_API_KEY` in the deployment environment. Optional settings are
+`GEMINI_NEWS_MODEL`, `GEMINI_NEWS_TEMPERATURE`, and `GEMINI_API_TIMEOUT`. After
+changing environment values on a cached deployment, run `php artisan config:cache`.
+If PHP has no trusted system CA store, point `GEMINI_CA_BUNDLE` to a trusted PEM
+bundle; TLS verification remains enabled.
+
+Manual processing and retry commands:
+
+```sh
+php artisan market:rewrite-news --limit=20
+php artisan market:rewrite-news --retry --limit=20
+```
 
 ```sh
 php artisan migrate --force

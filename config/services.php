@@ -41,6 +41,16 @@ return [
         'overview_endpoint' => env('FINANCIAL_API_OVERVIEW_ENDPOINT'),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_NEWS_MODEL', 'gemini-3.8-flash'),
+        'fallback_models' => env('GEMINI_NEWS_FALLBACK_MODELS', 'gemini-3.6-flash,gemini-3.5-flash'),
+        'endpoint' => env('GEMINI_API_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta'),
+        'temperature' => (float) env('GEMINI_NEWS_TEMPERATURE', 0.1),
+        'timeout' => (int) env('GEMINI_API_TIMEOUT', 60),
+        'ca_bundle' => env('GEMINI_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
+    ],
+
     'subscriptions' => [
         // Keep paid checkout off until the live Razorpay keys are configured.
         'purchases_enabled' => (bool) env('SUBSCRIPTION_PURCHASES_ENABLED', false),

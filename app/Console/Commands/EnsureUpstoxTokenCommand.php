@@ -15,7 +15,7 @@ class EnsureUpstoxTokenCommand extends Command
     {
         $current = $tokens->current();
         if ($current && ! $this->option('force')) {
-            $this->info('The stored Upstox token will be reused until Upstox rejects it with HTTP 401.');
+            $this->info('The stored Upstox token is active until '.$current->expires_at->toIso8601String().'.');
             return self::SUCCESS;
         }
 

@@ -19,7 +19,8 @@ class MarketController extends Controller
     {
         $marketStatus = $this->getMarketStatus();
         $stats = $this->getSummaryStats();
-        $latestNews = MarketNews::select(['id', 'title', 'summary', 'symbol', 'thumbnail', 'article_url', 'published_at'])
+        $latestNews = MarketNews::published()
+            ->select(['id', 'title', 'summary', 'symbol', 'thumbnail', 'article_url', 'published_at'])
             ->orderByDesc('published_at')->orderByDesc('id')->limit(3)->get();
         $upcomingActions = CorporateAction::select(['id', 'symbol', 'company_name', 'type', 'name', 'expiry_date'])
             ->where(function ($query) {
@@ -47,7 +48,8 @@ class MarketController extends Controller
     public function news(Request $request)
     {
         $search = trim((string) $request->input('search'));
-        $news = MarketNews::select(['id', 'isin', 'symbol', 'title', 'summary', 'thumbnail', 'article_url', 'published_at'])
+        $news = MarketNews::published()
+            ->select(['id', 'isin', 'symbol', 'title', 'summary', 'thumbnail', 'article_url', 'published_at'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($nested) use ($search) {
                     $nested->where('title', 'like', "%{$search}%")
@@ -176,7 +178,7 @@ class MarketController extends Controller
             ]),
             'news' => response()->json([
                 'success' => true,
-                'data' => MarketNews::when($request->filled('search'), function ($q) use ($request) {
+                'data' => MarketNews::published()->when($request->filled('search'), function ($q) use ($request) {
                     $search = trim((string) $request->input('search'));
                     if ($search !== '') {
                         $q->where(function ($sq) use ($search) {
@@ -397,7 +399,7 @@ class MarketController extends Controller
         $totalStocks = DB::table('equities')->where('is_active', true)->whereIn('series', ['EQ', 'BE', 'SM', 'BZ'])->count();
         $totalQuotes = DB::table('equity_quotes')->count();
         $totalMfs = DB::table('mutual_funds')->count();
-        $totalNews = DB::table('market_news')->count();
+        $totalNews = MarketNews::published()->count();
         $totalCorporateActions = DB::table('corporate_actions')->count();
 
         $lastQuote = DB::table('equity_quotes')->orderByDesc('quoted_at')->first();

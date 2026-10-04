@@ -120,6 +120,15 @@ return [
             'overlap' => false,
         ],
         [
+            'title' => 'market:rewrite-news',
+            'command' => 'market:rewrite-news',
+            'args' => ['--limit' => 20],
+            'description' => 'Rewrites, verifies, and publishes synchronized news whose meaning and facts are preserved.',
+            'schedule' => 'Every 10 minutes at :05, :15, :25, :35, :45 and :55',
+            'timezone' => 'Asia/Kolkata',
+            'overlap' => false,
+        ],
+        [
             'title' => 'exchange-calendar:sync',
             'command' => 'exchange-calendar:sync',
             'args' => [],

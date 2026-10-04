@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,8 @@ class UpstoxMarketDataService
 {
     public const MAX_INSTRUMENTS = 500;
     public const MAX_NEWS_INSTRUMENTS = 30;
+    public const NEWS_PAGE_SIZE = 100;
+    public const MAX_NEWS_PAGES = 100;
 
     public function __construct(private readonly UpstoxTokenManager $tokens)
     {
@@ -324,27 +327,12 @@ class UpstoxMarketDataService
         $verify = config('market_data.ca_bundle') ?: false;
         $url = config('market_data.upstox.news_url', 'https://api.upstox.com/v2/news');
 
-        try {
-            $response = Http::acceptJson()
-                ->withToken($token)
-                ->withOptions(['verify' => $verify])
-                ->connectTimeout(10)
-                ->timeout(30)
-                ->get($url, [
-                    'category' => 'instrument_keys',
-                    'instrument_keys' => implode(',', $instrumentKeys),
-                ]);
+        $articles = [];
+        $pageNumber = 1;
+        $expectedTotalRecords = null;
 
-            if (!$response->successful()) {
-                throw new RuntimeException($this->errorMessage($response));
-            }
-
-            $body = $response->json();
-            if (($body['status'] ?? null) !== 'success' || !is_array($body['data'] ?? null)) {
-                return [];
-            }
-
-            $articles = [];
+        do {
+            $body = $this->newsPage($url, $token, $verify, $instrumentKeys, $pageNumber);
             foreach ($body['data'] as $instrumentKey => $items) {
                 if (!is_array($items)) {
                     continue;
@@ -380,11 +368,82 @@ class UpstoxMarketDataService
                 }
             }
 
-            return $articles;
-        } catch (Throwable $e) {
-            report($e);
-            return [];
+            $totalPages = (int) data_get($body, 'metadata.page.total_pages', 1);
+            $reportedPageNumber = (int) data_get($body, 'metadata.page.page_number', $pageNumber);
+            $reportedTotalRecords = data_get($body, 'metadata.page.total_records');
+            if ($reportedPageNumber !== $pageNumber) {
+                throw new RuntimeException('Upstox returned an unexpected news page number.');
+            }
+            if (is_numeric($reportedTotalRecords)) {
+                $reportedTotalRecords = (int) $reportedTotalRecords;
+                if ($expectedTotalRecords !== null && $expectedTotalRecords !== $reportedTotalRecords) {
+                    throw new RuntimeException('Upstox changed the total news count during pagination.');
+                }
+                $expectedTotalRecords = $reportedTotalRecords;
+            }
+            if ($totalPages < 1 || $totalPages > self::MAX_NEWS_PAGES) {
+                throw new RuntimeException('Upstox returned invalid news pagination metadata.');
+            }
+            $pageNumber++;
+        } while ($pageNumber <= $totalPages);
+
+        if ($expectedTotalRecords !== null && count($articles) !== $expectedTotalRecords) {
+            throw new RuntimeException(
+                "Upstox reported {$expectedTotalRecords} news records but returned ".count($articles).'.'
+            );
         }
+
+        return $articles;
+    }
+
+    /**
+     * @param array<int, string> $instrumentKeys
+     * @return array<string, mixed>
+     */
+    private function newsPage(string $url, string $token, mixed $verify, array $instrumentKeys, int $pageNumber): array
+    {
+        $response = null;
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                $response = Http::acceptJson()
+                    ->withToken($token)
+                    ->withOptions(['verify' => $verify])
+                    ->connectTimeout(10)
+                    ->timeout(30)
+                    ->get($url, [
+                        'category' => 'instrument_keys',
+                        'instrument_keys' => implode(',', $instrumentKeys),
+                        'page_number' => $pageNumber,
+                        'page_size' => self::NEWS_PAGE_SIZE,
+                    ]);
+            } catch (ConnectionException $exception) {
+                if ($attempt === 3) {
+                    throw $exception;
+                }
+                usleep($attempt * 250000);
+                continue;
+            }
+
+            if ($response->successful() || ! in_array($response->status(), [429, 500, 502, 503, 504], true)) {
+                break;
+            }
+            if ($attempt < 3) {
+                usleep($attempt * 250000);
+            }
+        }
+
+        if (! $response || ! $response->successful()) {
+            throw new RuntimeException($response
+                ? $this->errorMessage($response)
+                : 'Upstox news request did not return a response.');
+        }
+
+        $body = $response->json();
+        if (($body['status'] ?? null) !== 'success' || ! is_array($body['data'] ?? null)) {
+            throw new RuntimeException('Upstox returned an invalid news response.');
+        }
+
+        return $body;
     }
 
     /** @param array<string, mixed> $providerQuote */

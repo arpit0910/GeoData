@@ -57,4 +57,96 @@ class UpstoxNewsSyncTest extends TestCase
         $this->assertCount(61, array_unique($requestedKeys));
         $this->assertContains('BSE_EQ|INE000061061', $requestedKeys);
     }
+
+    public function test_news_sync_fetches_and_stores_every_page_returned_by_upstox(): void
+    {
+        config([
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.news_url' => 'https://provider.test/v2/news',
+        ]);
+        $isin = 'INE002A01018';
+        DB::table('equities')->insert([
+            'isin' => $isin,
+            'company_name' => 'Reliance Industries',
+            'nse_symbol' => 'RELIANCE',
+            'upstox_nse_instrument_key' => 'NSE_EQ|'.$isin,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Http::fake(function (Request $request) use ($isin) {
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+            $page = (int) ($query['page_number'] ?? 1);
+
+            return Http::response([
+                'status' => 'success',
+                'data' => [
+                    'NSE_EQ|'.$isin => [[
+                        'heading' => "News page {$page}",
+                        'summary' => "Summary from page {$page}",
+                        'thumbnail' => null,
+                        'article_link' => "https://provider.test/news/{$page}",
+                        'published_time' => now()->subMinutes($page)->getTimestampMs(),
+                    ]],
+                ],
+                'metadata' => ['page' => [
+                    'page_number' => $page,
+                    'page_size' => 100,
+                    'total_records' => 3,
+                    'total_pages' => 3,
+                ]],
+            ]);
+        });
+
+        $this->artisan('market:sync-upstox-news')
+            ->expectsOutputToContain('3 articles fetched, 3 saved/updated, 0 batches failed')
+            ->assertExitCode(0);
+
+        Http::assertSentCount(3);
+        Http::assertSent(function (Request $request): bool {
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+
+            return ($query['page_size'] ?? null) === '100'
+                && in_array((int) ($query['page_number'] ?? 0), [1, 2, 3], true);
+        });
+        $this->assertDatabaseCount('market_news', 3);
+        $this->assertSame(
+            ['News page 1', 'News page 2', 'News page 3'],
+            DB::table('market_news')->orderBy('id')->pluck('original_title')->all()
+        );
+    }
+
+    public function test_news_sync_stops_remaining_batches_after_an_unauthorized_response(): void
+    {
+        config([
+            'market_data.upstox.access_token' => 'expired-access-token',
+            'market_data.upstox.client_id' => null,
+            'market_data.upstox.client_secret' => null,
+            'market_data.upstox.news_url' => 'https://provider.test/v2/news',
+        ]);
+        $now = now();
+        foreach (range(1, 61) as $index) {
+            $isin = sprintf('INE%06d%03d', $index, $index % 1000);
+            DB::table('equities')->insert([
+                'isin' => $isin,
+                'company_name' => 'Company '.$index,
+                'nse_symbol' => 'STOCK'.$index,
+                'upstox_nse_instrument_key' => 'NSE_EQ|'.$isin,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+        Http::fake(['https://provider.test/*' => Http::response([
+            'status' => 'error',
+            'errors' => [['message' => 'Invalid token used to access API']],
+        ], 401)]);
+
+        $this->artisan('market:sync-upstox-news')
+            ->expectsOutputToContain('Remaining 2 news batches were skipped')
+            ->assertExitCode(1);
+
+        Http::assertSentCount(1);
+    }
 }

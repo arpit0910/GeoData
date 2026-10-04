@@ -76,6 +76,31 @@ class UpstoxTokenManagementTest extends TestCase
         $this->assertSame('live-secret-token', app(UpstoxTokenManager::class)->accessToken());
     }
 
+    public function test_notifier_limits_a_long_provider_expiry_to_one_day(): void
+    {
+        $issuedAt = Carbon::now()->startOfSecond();
+        $providerExpiresAt = $issuedAt->copy()->addYears(10);
+
+        $response = $this->postJson('/api/v1/integrations/market-data/upstox-token/webhook-secret', [
+            'client_id' => 'client-123',
+            'user_id' => 'USER1',
+            'access_token' => 'long-lived-provider-token',
+            'token_type' => 'Bearer',
+            'issued_at' => (string) $issuedAt->getTimestampMs(),
+            'expires_at' => (string) $providerExpiresAt->getTimestampMs(),
+            'message_type' => 'access_token',
+        ]);
+
+        $response->assertOk();
+        $token = UpstoxAccessToken::firstOrFail();
+
+        $this->assertTrue($token->expires_at->equalTo($issuedAt->copy()->addDay()));
+        $this->assertSame(
+            $providerExpiresAt->toIso8601String(),
+            data_get($token->metadata, 'provider_expires_at')
+        );
+    }
+
     public function test_notifier_rejects_an_invalid_secret(): void
     {
         $this->postJson('/api/v1/integrations/market-data/upstox-token/wrong-secret', [])
@@ -83,19 +108,20 @@ class UpstoxTokenManagementTest extends TestCase
         $this->assertDatabaseCount('upstox_access_tokens', 0);
     }
 
-    public function test_expiry_metadata_does_not_replace_a_token_before_upstox_rejects_it(): void
+    public function test_a_token_older_than_one_day_is_not_reused_even_with_a_future_expiry(): void
     {
         UpstoxAccessToken::create([
             'client_id' => 'client-123',
-            'access_token' => 'still-accepted-token',
+            'access_token' => 'old-long-lived-token',
             'status' => 'active',
             'issued_at' => now()->subDays(2),
-            'expires_at' => now()->subDay(),
+            'expires_at' => now()->addYears(10),
         ]);
 
-        $this->assertSame('still-accepted-token', app(UpstoxTokenManager::class)->accessToken());
-        Http::assertNothingSent();
-        $this->assertDatabaseCount('upstox_access_tokens', 1);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('No active Upstox token is available.');
+
+        app(UpstoxTokenManager::class)->accessToken();
     }
 
     public function test_http_401_invalidates_the_token_and_requests_one_replacement(): void

@@ -336,11 +336,14 @@ class MarketDataController extends Controller
 
             // News for this ISIN or Symbol
             $symbol = $equity->nse_symbol ?: $equity->bse_symbol;
-            $news = MarketNews::where('isin', $isin)
-                ->orWhere(function ($q) use ($symbol) {
-                    if ($symbol) {
-                        $q->where('symbol', $symbol);
-                    }
+            $news = MarketNews::published()
+                ->where(function ($query) use ($isin, $symbol) {
+                    $query->where('isin', $isin)
+                        ->orWhere(function ($q) use ($symbol) {
+                            if ($symbol) {
+                                $q->where('symbol', $symbol);
+                            }
+                        });
                 })
                 ->orderByDesc('published_at')
                 ->limit(5)
@@ -561,7 +564,7 @@ class MarketDataController extends Controller
      */
     public function news(Request $request): JsonResponse
     {
-        $query = MarketNews::query();
+        $query = MarketNews::published();
 
         if ($request->filled('isin')) {
             $query->where('isin', strtoupper(trim((string) $request->input('isin'))));

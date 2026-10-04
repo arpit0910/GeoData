@@ -10,11 +10,15 @@ use RuntimeException;
 
 class UpstoxTokenManager
 {
+    private const TOKEN_LIFETIME_HOURS = 24;
+
     public function current(): ?UpstoxAccessToken
     {
         return UpstoxAccessToken::query()
             ->where('status', 'active')
             ->whereNotNull('access_token')
+            ->where('expires_at', '>', now()->addMinute())
+            ->where('issued_at', '>', now()->subHours(self::TOKEN_LIFETIME_HOURS)->addMinute())
             ->latest('issued_at')
             ->first();
     }
@@ -96,11 +100,7 @@ class UpstoxTokenManager
         ];
     }
 
-    /**
-     * Reject the current database token and request one replacement after the
-     * provider has explicitly returned HTTP 401. Expiry metadata alone must
-     * never initiate a replacement request.
-     */
+    /** Reject the current database token and request one replacement. */
     public function handleUnauthorized(): array
     {
         UpstoxAccessToken::query()
@@ -125,7 +125,13 @@ class UpstoxTokenManager
             throw new RuntimeException('The Upstox notifier message type is invalid.');
         }
 
-        return DB::transaction(function () use ($payload, $clientId) {
+        $issuedAt = $this->fromMilliseconds($payload['issued_at']);
+        $providerExpiresAt = $this->fromMilliseconds($payload['expires_at']);
+        $expiresAt = $providerExpiresAt->min(
+            $issuedAt->copy()->addHours(self::TOKEN_LIFETIME_HOURS)
+        );
+
+        return DB::transaction(function () use ($payload, $clientId, $issuedAt, $providerExpiresAt, $expiresAt) {
             UpstoxAccessToken::where('status', 'active')->update(['status' => 'expired']);
             $record = UpstoxAccessToken::query()
                 ->where('client_id', $clientId)
@@ -138,9 +144,12 @@ class UpstoxTokenManager
                 'token_type' => (string) ($payload['token_type'] ?? 'Bearer'),
                 'upstox_user_id' => isset($payload['user_id']) ? (string) $payload['user_id'] : null,
                 'status' => 'active',
-                'issued_at' => $this->fromMilliseconds($payload['issued_at']),
-                'expires_at' => $this->fromMilliseconds($payload['expires_at']),
-                'metadata' => ['message_type' => 'access_token'],
+                'issued_at' => $issuedAt,
+                'expires_at' => $expiresAt,
+                'metadata' => [
+                    'message_type' => 'access_token',
+                    'provider_expires_at' => $providerExpiresAt->toIso8601String(),
+                ],
             ]);
             $record->save();
 

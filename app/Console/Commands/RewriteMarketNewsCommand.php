@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\MarketNews;
+use App\Services\GeminiNewsRewriter;
+use Illuminate\Console\Command;
+use Throwable;
+
+class RewriteMarketNewsCommand extends Command
+{
+    protected $signature = 'market:rewrite-news
+        {--limit=20 : Maximum news records to rewrite and verify}
+        {--id=* : Rewrite specific news record IDs}
+        {--retry : Include previously failed rewrites}';
+
+    protected $description = 'Rewrite, verify, and publish market news automatically';
+
+    public function handle(GeminiNewsRewriter $rewriter): int
+    {
+        $statuses = [MarketNews::STATUS_PENDING];
+        if ($this->option('retry')) {
+            $statuses[] = MarketNews::STATUS_FAILED;
+        }
+
+        $ids = collect($this->option('id'))->map(fn ($id) => (int) $id)->filter()->unique()->values();
+        $items = MarketNews::query()
+            ->when(
+                $ids->isNotEmpty(),
+                fn ($query) => $query->whereIn('id', $ids->all()),
+                fn ($query) => $query->whereIn('editorial_status', $statuses)
+            )
+            ->orderBy('id')
+            ->limit(max(1, min(100, (int) $this->option('limit'))))
+            ->get();
+
+        $completed = 0;
+        $failed = 0;
+        foreach ($items as $news) {
+            try {
+                $rewriter->rewrite($news);
+                $completed++;
+                $this->line("Published news #{$news->id}");
+            } catch (Throwable $exception) {
+                $failed++;
+                $this->warn("News #{$news->id}: {$exception->getMessage()}");
+            }
+        }
+
+        $this->info("News rewrite complete: {$completed} published, {$failed} failed.");
+
+        return $failed > 0 ? self::FAILURE : self::SUCCESS;
+    }
+}

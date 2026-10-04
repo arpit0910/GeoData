@@ -4,7 +4,7 @@ return [
     'timezone' => 'Asia/Kolkata',
     'segment' => 'equity',
     'verify_tls' => env('EXCHANGE_CALENDAR_VERIFY_TLS', true),
-    'ca_bundle' => env('EXCHANGE_CALENDAR_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
+    'ca_bundle' => env('EXCHANGE_CALENDAR_CA_BUNDLE') ?: env('MARKET_DATA_CA_BUNDLE'),
     'nse' => [
         'url' => env('NSE_HOLIDAY_URL', 'https://www.nseindia.com/api/holiday-master?type=trading'),
         'page_url' => 'https://www.nseindia.com/resources/exchange-communication-holidays',
