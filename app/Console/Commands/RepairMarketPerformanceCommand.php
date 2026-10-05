@@ -213,7 +213,7 @@ class RepairMarketPerformanceCommand extends Command
     private function repairIndexDate(Carbon $date): void
     {
         $dateStr = $date->format('Y-m-d');
-        $prices = IndexPrice::where('traded_date', $dateStr)->get();
+        $prices = IndexPrice::whereDate('traded_date', $dateStr)->get();
 
         if ($prices->isEmpty()) {
             return;
@@ -226,7 +226,7 @@ class RepairMarketPerformanceCommand extends Command
         $historicalData = empty($targetDates) || empty($indexCodes)
             ? collect()
             : IndexPrice::whereIn('index_code', $indexCodes)
-                ->whereIn('traded_date', $targetDates)
+                ->whereIn(DB::raw('DATE(traded_date)'), $targetDates)
                 ->get()
                 ->groupBy('index_code');
 
@@ -239,12 +239,25 @@ class RepairMarketPerformanceCommand extends Command
                 ? $history->keyBy(fn($item) => $item->traded_date instanceof Carbon ? $item->traded_date->format('Y-m-d') : (string) $item->traded_date)
                 : collect();
 
+            $previousClose = null;
+            foreach ($windowMap['1d'] ?? [] as $candidateDate) {
+                $pastPrice = $historyByDate->get($candidateDate);
+                if ($pastPrice && $pastPrice->close > 0) {
+                    $previousClose = $pastPrice->close;
+                    break;
+                }
+            }
+
+            $oneDayBaseline = $previousClose ?? ($price->prev_close > 0 ? $price->prev_close : null);
+
             $update = [
                 'id' => $price->id,
-                'gap_pct' => $price->prev_close > 0 && $price->open ? (($price->open - $price->prev_close) / $price->prev_close) * 100 : null,
-                'range_pct' => $price->prev_close > 0 ? (($price->high - $price->low) / $price->prev_close) * 100 : null,
+                'prev_close' => $oneDayBaseline,
+                'val_1d' => $oneDayBaseline,
+                'gap_pct' => $oneDayBaseline && $price->open ? (($price->open - $oneDayBaseline) / $oneDayBaseline) * 100 : null,
+                'range_pct' => $oneDayBaseline ? (($price->high - $price->low) / $oneDayBaseline) * 100 : null,
                 'intraday_chg_pct' => $price->open > 0 ? (($price->close - $price->open) / $price->open) * 100 : null,
-                'chg_1d' => $price->prev_close > 0 && $price->close > 0 ? (($price->close - $price->prev_close) / $price->prev_close) * 100 : null,
+                'chg_1d' => $oneDayBaseline && $price->close > 0 ? (($price->close - $oneDayBaseline) / $oneDayBaseline) * 100 : null,
                 'updated_at' => $now,
             ];
 
@@ -347,12 +360,18 @@ class RepairMarketPerformanceCommand extends Command
         $windowMap = [];
         foreach ($periodTargets as $period => $target) {
             $windowMap[$period] = $tradingDates
-                ->filter(fn($tradedDate) => abs($tradedDate->diffInDays($target)) <= 10)
-                ->sortBy(fn($tradedDate) => abs($tradedDate->diffInDays($target)))
+                ->filter(fn($tradedDate) => $tradedDate->lte($target) && $tradedDate->diffInDays($target) <= 10)
+                ->sortByDesc(fn($tradedDate) => $tradedDate->timestamp)
                 ->map(fn($tradedDate) => $tradedDate->format('Y-m-d'))
                 ->values()
                 ->toArray();
         }
+
+        $windowMap['1d'] = $tradingDates
+            ->take(15)
+            ->map(fn($tradedDate) => $tradedDate->format('Y-m-d'))
+            ->values()
+            ->toArray();
 
         return $windowMap;
     }
@@ -458,7 +477,9 @@ class RepairMarketPerformanceCommand extends Command
             'gap_pct',
             'range_pct',
             'intraday_chg_pct',
+            'prev_close',
             'chg_1d',
+            'val_1d',
             'chg_3d',
             'val_3d',
             'chg_7d',

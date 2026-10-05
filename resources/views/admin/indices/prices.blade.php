@@ -90,7 +90,7 @@
         <div class="flex items-center justify-center min-h-screen px-4 py-8">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeDetailModal()"></div>
             <div
-                class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-6xl p-8 z-10">
+                class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[calc(100vh-4rem)] overflow-y-auto p-8 z-10">
                 <div class="flex items-center justify-between mb-8">
                     <div>
                         <h3 id="modalIndexName"
@@ -545,7 +545,9 @@
                     composition.total_constituents ? `${composition.total_constituents} Constituents` : 'Constituent Count N/A'
                 );
                 $('#detHoldingsCount').text(
-                    holdings.length ? `${holdings.length} Holdings Shown` : 'No Holdings'
+                    holdings.length
+                        ? `${holdings.length} Holdings - As of ${data.holdings_as_of || 'latest available date'}`
+                        : 'No Holdings'
                 );
 
                 let sectorHtml = '';
@@ -611,6 +613,10 @@
 
                 loading.addClass('hidden');
                 content.removeClass('hidden');
+            }).fail(function() {
+                loading.addClass('hidden');
+                content.removeClass('hidden');
+                $('#detHoldingsRows').html('<tr><td colspan="3" class="py-4 text-sm text-rose-500">Details could not be loaded. Please refresh and try again.</td></tr>');
             });
         }
 

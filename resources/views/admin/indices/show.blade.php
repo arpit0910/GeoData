@@ -105,6 +105,46 @@
         </div>
     </div>
 
+    @php
+        $holdings = $holdingsPrice?->holdings ?? [];
+    @endphp
+    <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-layer-group text-amber-500"></i> Index Holdings
+            </h3>
+            @if($holdingsPrice)
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    {{ count($holdings) }} constituents - As of {{ $holdingsPrice->traded_date->format('d M Y') }}
+                </span>
+            @endif
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[640px] text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-white/5">
+                        <th class="p-4 text-xs font-bold text-gray-400">Company</th>
+                        <th class="p-4 text-xs font-bold text-gray-400">Symbol</th>
+                        <th class="p-4 text-xs font-bold text-gray-400 text-right">Weightage</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+                    @forelse($holdings as $holding)
+                        <tr>
+                            <td class="p-4 text-sm font-semibold text-gray-900 dark:text-white">{{ $holding['company_name'] ?? 'N/A' }}</td>
+                            <td class="p-4 text-sm text-gray-600 dark:text-gray-300">{{ $holding['symbol'] ?? 'N/A' }}</td>
+                            <td class="p-4 text-sm font-bold text-right text-amber-600 dark:text-amber-300">
+                                {{ isset($holding['weightage_percentage']) ? number_format((float) $holding['weightage_percentage'], 2).'%' : 'N/A' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="3" class="p-10 text-center text-sm text-gray-500 dark:text-gray-400">No holdings have been stored for this index yet. Run the index sync with overview refresh to fetch available constituents.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="bg-white dark:bg-[#0f172a]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
         <div class="p-6">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">

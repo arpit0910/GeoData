@@ -54,7 +54,9 @@ class IndexController extends Controller
     public function show(Index $index)
     {
         $prices = $index->prices()->orderBy('traded_date', 'desc')->paginate(100);
-        return view('admin.indices.show', compact('index', 'prices'));
+        $holdingsPrice = $this->latestPriceWithHoldings($index->index_code);
+
+        return view('admin.indices.show', compact('index', 'prices', 'holdingsPrice'));
     }
 
     /**
@@ -139,7 +141,32 @@ class IndexController extends Controller
      */
     public function priceDetail(IndexPrice $price)
     {
-        return response()->json($price);
+        $payload = $price->toArray();
+        $payload['holdings_as_of'] = $price->traded_date?->format('Y-m-d');
+
+        if (empty($price->holdings)) {
+            $holdingsPrice = $this->latestPriceWithHoldings($price->index_code);
+            if ($holdingsPrice) {
+                $payload['holdings'] = $holdingsPrice->holdings;
+                $payload['holdings_as_of'] = $holdingsPrice->traded_date?->format('Y-m-d');
+
+                if (empty($payload['overview'])) {
+                    $payload['overview'] = $holdingsPrice->overview;
+                }
+            }
+        }
+
+        return response()->json($payload);
+    }
+
+    private function latestPriceWithHoldings(string $indexCode): ?IndexPrice
+    {
+        return IndexPrice::query()
+            ->where('index_code', $indexCode)
+            ->whereNotNull('holdings')
+            ->where('holdings', '!=', '[]')
+            ->orderByDesc('traded_date')
+            ->first();
     }
 
     /**

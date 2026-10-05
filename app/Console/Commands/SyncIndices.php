@@ -25,7 +25,7 @@ class SyncIndices extends Command
     {
         // Reconnect upfront — this command may be invoked after a long idle gap
         // (scheduler, history loop) and the connection may already be dead.
-        try { DB::reconnect(); } catch (\Exception $e) {}
+        $this->reconnectDatabase();
 
         $dateArg        = $this->argument('date');
         $exchange       = strtoupper($this->argument('exchange') ?? '');
@@ -36,7 +36,7 @@ class SyncIndices extends Command
         // ── Analytics-only mode ──────────────────────────────────────────────
         if ($this->option('analytics-only')) {
             $dateStr = $currentDateObj->format('Y-m-d');
-            if (!IndexPrice::where('traded_date', $dateStr)->exists()) {
+            if (!IndexPrice::whereDate('traded_date', $dateStr)->exists()) {
                 $this->warn("No data found for {$dateStr}, skipping analytics.");
                 return Command::SUCCESS;
             }
@@ -111,7 +111,7 @@ class SyncIndices extends Command
             }
 
             // ── Reconnect after potentially long HTTP work ───────────────────
-            try { DB::reconnect(); } catch (\Exception $e) {}
+            $this->reconnectDatabase();
 
             // ── Verify and calculate analytics ───────────────────────────────
             $saved = IndexPrice::where('traded_date', $dateStr)->count();
@@ -155,14 +155,18 @@ class SyncIndices extends Command
 
     // ── Analytics ────────────────────────────────────────────────────────────
 
-    private function calculateAnalytics(Carbon $date): void
+    public function calculateAnalytics(Carbon $date): void
     {
-        $this->info("  Calculating analytical metrics...");
+        if ($this->output) {
+            $this->info("  Calculating analytical metrics...");
+        }
 
-        $prices = IndexPrice::where('traded_date', $date->format('Y-m-d'))->get();
+        $prices = IndexPrice::whereDate('traded_date', $date->format('Y-m-d'))->get();
 
         if ($prices->isEmpty()) {
-            $this->warn("  No prices found for {$date->format('d/m/Y')} to calculate analytics.");
+            if ($this->output) {
+                $this->warn("  No prices found for {$date->format('d/m/Y')} to calculate analytics.");
+            }
             return;
         }
 
@@ -189,16 +193,23 @@ class SyncIndices extends Command
         $dateWindowMap = [];
         foreach ($periodCalendarTargets as $period => $target) {
             $dateWindowMap[$period] = $tradingDates
-                ->filter(fn($d) => abs($d->diffInDays($target)) <= 10)
-                ->sortBy(fn($d) => abs($d->diffInDays($target)))
+                ->filter(fn($d) => $d->lte($target) && $d->diffInDays($target) <= 10)
+                ->sortByDesc(fn($d) => $d->timestamp)
                 ->map(fn($d) => $d->format('Y-m-d'))
                 ->values()
                 ->toArray();
         }
 
+        // One day means the immediately preceding available trading close.
+        $dateWindowMap['1d'] = $tradingDates
+            ->take(15)
+            ->map(fn($d) => $d->format('Y-m-d'))
+            ->values()
+            ->toArray();
+
         $allTargetDates = collect($dateWindowMap)->flatten()->filter()->unique()->values()->toArray();
 
-        $historicalData = IndexPrice::whereIn('traded_date', $allTargetDates)
+        $historicalData = IndexPrice::whereIn(DB::raw('DATE(traded_date)'), $allTargetDates)
             ->get()
             ->groupBy('index_code');
 
@@ -211,15 +222,25 @@ class SyncIndices extends Command
                     : (string)$item->traded_date)
                 : null;
 
-            // Auto-fill prev_close from 1d window if missing
-            if (!$price->prev_close && $historyByDate) {
+            $previousClose = null;
+            if ($historyByDate) {
                 foreach ($dateWindowMap['1d'] as $pd) {
                     $last = $historyByDate->get($pd);
                     if ($last && $last->close > 0) {
-                        $price->prev_close = $last->close;
+                        $previousClose = $last->close;
                         break;
                     }
                 }
+            }
+
+            if ($previousClose !== null) {
+                $price->prev_close = $previousClose;
+                $price->val_1d = $previousClose;
+            } elseif ($price->prev_close && $price->prev_close > 0) {
+                $price->val_1d = $price->prev_close;
+            } else {
+                $price->val_1d = null;
+                $price->chg_1d = null;
             }
 
             // Core OHLC analytics
@@ -233,7 +254,7 @@ class SyncIndices extends Command
                 $price->intraday_chg_pct = (($price->close - $price->open) / $price->open) * 100;
             }
 
-            // chg_1d — calculated from prev_close (val_1d column does not exist in schema)
+            // Store the one-day return together with its exact baseline value.
             if ($price->prev_close && $price->prev_close > 0 && $price->close > 0) {
                 $price->chg_1d = (($price->close - $price->prev_close) / $price->prev_close) * 100;
             }
@@ -242,6 +263,8 @@ class SyncIndices extends Command
             if ($historyByDate) {
                 foreach ($dateWindowMap as $key => $candidates) {
                     if ($key === '1d') continue; // handled above via prev_close
+                    $price->{"val_{$key}"} = null;
+                    $price->{"chg_{$key}"} = null;
                     foreach ($candidates as $candidateDate) {
                         $pastPrice = $historyByDate->get($candidateDate);
                         if ($pastPrice && $pastPrice->close > 0) {
@@ -258,7 +281,25 @@ class SyncIndices extends Command
             $price->save();
         }
 
-        $this->info("  Analytics done for " . count($prices) . " indices.");
+        if ($this->output) {
+            $this->info("  Analytics done for " . count($prices) . " indices.");
+        }
+    }
+
+    private function reconnectDatabase(): void
+    {
+        // Reconnecting an in-memory SQLite database destroys its schema and
+        // data. Production connections still get the long-running sync safety.
+        if (DB::getDefaultConnection() === 'sqlite'
+            && DB::connection()->getDatabaseName() === ':memory:') {
+            return;
+        }
+
+        try {
+            DB::reconnect();
+        } catch (\Exception $e) {
+            // The following query will surface a useful connection error.
+        }
     }
 
     // ── NSE Sync ─────────────────────────────────────────────────────────────
