@@ -35,6 +35,16 @@ return new class extends Migration
 
                 $updates[] = [
                     'id' => $quote->id,
+                    // Include every non-null legacy column so MySQL can
+                    // validate the INSERT side of INSERT ... ON DUPLICATE KEY.
+                    // Only the four derived columns are changed on conflict.
+                    'isin' => $quote->isin,
+                    'exchange' => $quote->exchange,
+                    'symbol' => $quote->symbol,
+                    'price' => $quote->price,
+                    'quoted_at' => $quote->quoted_at,
+                    'fetched_at' => $quote->fetched_at,
+                    'payload' => $quote->payload,
                     'previous_close' => $this->numeric($payload['previous_close'] ?? null),
                     'change' => $this->numeric($payload['d'] ?? null),
                     'change_percent' => $this->numeric($payload['dp'] ?? null),
