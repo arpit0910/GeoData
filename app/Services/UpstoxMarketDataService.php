@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\TlsCaBundle;
 use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
@@ -39,7 +40,7 @@ class UpstoxMarketDataService
         }
 
         $token = $this->token();
-        $verify = config('market_data.ca_bundle') ?: false;
+        $verify = TlsCaBundle::resolve(config('market_data.ca_bundle'));
 
         $response = Http::acceptJson()
             ->withToken($token)
@@ -136,7 +137,7 @@ class UpstoxMarketDataService
         }
 
         $token = $this->token();
-        $verify = config('market_data.ca_bundle') ?: false;
+        $verify = TlsCaBundle::resolve(config('market_data.ca_bundle'));
 
         $response = Http::acceptJson()
             ->withToken($token)
@@ -209,7 +210,7 @@ class UpstoxMarketDataService
         $baseUrl = rtrim(config('market_data.upstox.fundamentals_url', 'https://api.upstox.com/v2/fundamentals'), '/');
         $response = Http::acceptJson()
             ->withToken($this->token())
-            ->withOptions(['verify' => config('market_data.ca_bundle') ?: false])
+            ->withOptions(['verify' => TlsCaBundle::resolve(config('market_data.ca_bundle'))])
             ->connectTimeout(10)
             ->timeout(45)
             ->get($baseUrl.'/'.rawurlencode($identifier).'/'.$dataset, $query);
@@ -239,7 +240,7 @@ class UpstoxMarketDataService
         }
 
         $token = $this->token();
-        $verify = config('market_data.ca_bundle') ?: false;
+        $verify = TlsCaBundle::resolve(config('market_data.ca_bundle'));
         $baseUrl = rtrim(config('market_data.upstox.corporate_actions_url', 'https://api.upstox.com/v2/fundamentals'), '/');
         $url = "{$baseUrl}/{$isin}/corporate-actions";
 
@@ -324,7 +325,7 @@ class UpstoxMarketDataService
         }
 
         $token = $this->token();
-        $verify = config('market_data.ca_bundle') ?: false;
+        $verify = TlsCaBundle::resolve(config('market_data.ca_bundle'));
         $url = config('market_data.upstox.news_url', 'https://api.upstox.com/v2/news');
 
         $articles = [];

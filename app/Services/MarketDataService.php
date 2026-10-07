@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\TlsCaBundle;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -77,7 +78,7 @@ class MarketDataService
         foreach (array_chunk($this->normalizeSymbols($symbols), self::BATCH_SIZE) as $batch) {
             try {
                 $response = Http::acceptJson()
-                    ->withOptions(['verify' => config('market_data.ca_bundle') ?: true])
+                    ->withOptions(['verify' => TlsCaBundle::resolve(config('market_data.ca_bundle'))])
                     ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
                     ->connectTimeout(5)
                     ->timeout(15)
@@ -193,7 +194,7 @@ class MarketDataService
     private function fetchLivePayload(string $symbol): array
     {
         $response = Http::acceptJson()
-            ->withOptions(['verify' => config('market_data.ca_bundle') ?: true])
+            ->withOptions(['verify' => TlsCaBundle::resolve(config('market_data.ca_bundle'))])
             ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
             ->connectTimeout(5)
             ->timeout(10)

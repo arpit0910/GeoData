@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\UpstoxAccessToken;
+use App\Support\TlsCaBundle;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -73,7 +74,7 @@ class UpstoxTokenManager
 
         $url = rtrim((string) config('market_data.upstox.token_request_url'), '/').'/'.rawurlencode($clientId);
         $response = Http::acceptJson()
-            ->withOptions(['verify' => config('market_data.ca_bundle') ?: false])
+            ->withOptions(['verify' => TlsCaBundle::resolve(config('market_data.ca_bundle'))])
             ->connectTimeout(10)
             ->timeout(30)
             ->post($url, ['client_secret' => $clientSecret]);

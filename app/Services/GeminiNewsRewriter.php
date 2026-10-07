@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\MarketNews;
+use App\Support\TlsCaBundle;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -49,11 +50,10 @@ class GeminiNewsRewriter
             $request = Http::acceptJson()
                 ->withHeaders(['x-goog-api-key' => $apiKey])
                 ->connectTimeout(10)
-                ->timeout((int) config('services.gemini.timeout', 60));
-            $caBundle = trim((string) config('services.gemini.ca_bundle'));
-            if ($caBundle !== '') {
-                $request = $request->withOptions(['verify' => $caBundle]);
-            }
+                ->timeout((int) config('services.gemini.timeout', 60))
+                ->withOptions([
+                    'verify' => TlsCaBundle::resolve(config('services.gemini.ca_bundle')),
+                ]);
 
             $payload = [
                     'systemInstruction' => [

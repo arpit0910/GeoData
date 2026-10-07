@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\MarketNews;
+use App\Support\TlsCaBundle;
 use DOMDocument;
 use DOMXPath;
 use Illuminate\Support\Facades\Http;
@@ -27,11 +28,12 @@ class NewsArticleExtractor
         $request = Http::accept('text/html')
             ->withUserAgent('SetuGeo News Editor/1.0')
             ->connectTimeout(10)
-            ->timeout(30);
-        $caBundle = trim((string) (config('market_data.ca_bundle') ?: config('services.gemini.ca_bundle')));
-        if ($caBundle !== '') {
-            $request = $request->withOptions(['verify' => $caBundle]);
-        }
+            ->timeout(30)
+            ->withOptions([
+                'verify' => TlsCaBundle::resolve(
+                    config('market_data.ca_bundle') ?: config('services.gemini.ca_bundle')
+                ),
+            ]);
         $response = $request->get($url);
         if (! $response->successful()) {
             throw new RuntimeException('The source article could not be fetched (HTTP '.$response->status().').');

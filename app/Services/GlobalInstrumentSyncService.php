@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GlobalInstrument;
+use App\Support\TlsCaBundle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use JsonException;
@@ -19,7 +20,7 @@ class GlobalInstrumentSyncService
         }
 
         $response = Http::acceptJson()
-            ->withOptions(['verify' => config('market_data.ca_bundle') ?: false])
+            ->withOptions(['verify' => TlsCaBundle::resolve(config('market_data.ca_bundle'))])
             ->connectTimeout(15)
             ->timeout(120)
             ->get($url);

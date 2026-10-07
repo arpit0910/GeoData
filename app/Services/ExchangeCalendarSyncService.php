@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ExchangeCalendarEvent;
+use App\Support\TlsCaBundle;
 use Carbon\Carbon;
 use GuzzleHttp\Cookie\CookieJar;
 use Illuminate\Http\Client\PendingRequest;
@@ -370,7 +371,10 @@ class ExchangeCalendarSyncService
 
     private function request(string $referer, ?CookieJar $cookies = null): PendingRequest
     {
-        $verify = config('exchange_calendar.ca_bundle') ?: config('exchange_calendar.verify_tls', true);
+        $verify = TlsCaBundle::resolve(
+            config('exchange_calendar.ca_bundle'),
+            (bool) config('exchange_calendar.verify_tls', true)
+        );
 
         return Http::withHeaders([
             'User-Agent' => self::USER_AGENT,
