@@ -27,10 +27,10 @@ is cached, rebuild it after updating the environment. If PHP reports cURL error 
 
 Upstox news is stored as private source material. The scheduled
 `market:rewrite-news` command asks Gemini for a low-temperature, structured
-rewrite and stores it on the same `market_news` record. There is no manual review
-queue. A rewrite is published automatically only after all deterministic and
-semantic checks pass. Source copy, incomplete rewrites, and rejected rewrites
-remain private.
+rewrite and stores it on the same `market_news` record. An administrator reviews
+and approves a successfully verified draft before it is published. Only drafts
+that pass all deterministic and semantic checks enter the ready-for-review
+queue. Source copy, incomplete rewrites, and rejected rewrites remain private.
 
 Before rewriting, the editor fetches the trusted Upstox article page and stores
 its JSON-LD `articleBody` as private source content. Gemini receives this full

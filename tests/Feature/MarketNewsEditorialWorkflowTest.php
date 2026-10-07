@@ -15,7 +15,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_verified_rewrite_is_published_automatically_with_low_temperature(): void
+    public function test_verified_rewrite_waits_for_admin_approval_with_low_temperature(): void
     {
         $this->configureGemini();
         $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
@@ -55,15 +55,15 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         app(GeminiNewsRewriter::class)->rewrite($news);
 
         $news->refresh();
-        $this->assertSame(MarketNews::STATUS_PUBLISHED, $news->editorial_status);
-        $this->assertTrue($news->is_published);
+        $this->assertSame(MarketNews::STATUS_READY, $news->editorial_status);
+        $this->assertFalse($news->is_published);
         $this->assertSame('Company reports flat quarterly revenue at Rs 100 crore', $news->title);
         $this->assertSame('gemini-test-model', $news->rewrite_model);
         $this->assertSame(3, $news->rewrite_version);
         $this->assertSame($sourceBody, $news->original_content);
         $this->get('/market/news')
             ->assertOk()
-            ->assertSee('Company reports flat quarterly revenue at Rs 100 crore')
+            ->assertDontSee('Company reports flat quarterly revenue at Rs 100 crore')
             ->assertDontSee('Company revenue flat');
 
         Http::assertSent(function (Request $request): bool {
@@ -81,7 +81,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         });
     }
 
-    public function test_semantically_rejected_rewrite_remains_private_without_a_review_system(): void
+    public function test_semantically_rejected_rewrite_remains_private(): void
     {
         $this->configureGemini();
         $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';

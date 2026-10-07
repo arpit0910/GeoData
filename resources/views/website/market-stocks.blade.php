@@ -14,7 +14,7 @@
     </form>
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4"><p class="text-sm market-muted"><strong class="text-white">{{ number_format($stocks->total()) }}</strong> instruments found</p><p class="text-xs market-muted"><span class="inline-block w-2 h-2 rounded-full {{ $marketStatus['is_open'] ? 'bg-emerald-400' : 'bg-slate-500' }} mr-1"></span>{{ $marketStatus['status'] }}</p></div>
     <div class="market-panel overflow-x-auto"><table class="market-table">
-        <thead><tr><th>Company</th><th>Exchange</th><th class="text-right">Latest price</th><th class="text-right">Change</th><th class="text-right">Day range</th><th class="text-right">Volume</th></tr></thead>
+        <thead><tr><th>Company</th><th>Exchange</th><th class="text-right">Latest price</th><th class="text-right">Change</th><th class="text-right">Latest range</th><th class="text-right">Volume</th></tr></thead>
         <tbody>@forelse($stocks as $stock)
             @php
                 $isLive = $stock->live_price !== null;
@@ -23,15 +23,14 @@
                 $change = $isLive && $stock->live_change_percent !== null
                     ? (float) $stock->live_change_percent
                     : ($previous > 0 && $price > 0 ? (($price - $previous) / $previous) * 100 : null);
-                $sameTradingDay = ! $isLive || ($stock->live_time && $stock->price_date
-                    && \Carbon\Carbon::parse($stock->live_time, 'UTC')->timezone('Asia/Kolkata')->toDateString() === \Carbon\Carbon::parse($stock->price_date)->toDateString());
                 $volume = $isLive ? $stock->live_volume : $stock->day_volume;
+                $rangeDate = $stock->price_date ? \Carbon\Carbon::parse($stock->price_date)->format('d M') : null;
             @endphp
             <tr><td><div class="font-bold text-white">{{ $stock->nse_symbol ?: ($stock->bse_symbol ?: $stock->isin) }} <span class="market-chip ml-1">{{ $stock->series ?: 'EQ' }}</span></div><div class="text-sm market-muted mt-1 max-w-sm truncate">{{ $stock->company_name }}</div></td>
                 <td><span class="market-chip">{{ $stock->nse_symbol ? 'NSE' : 'BSE' }}</span></td>
                 <td class="text-right font-mono font-bold text-white">{{ $price > 0 ? '₹'.number_format($price, 2) : '—' }}</td>
                 <td class="text-right font-mono font-bold {{ $change === null ? 'text-slate-500' : ($change >= 0 ? 'text-emerald-400' : 'text-rose-400') }}">{{ $change === null ? '—' : (($change >= 0 ? '+' : '').number_format($change, 2).'%') }}</td>
-                <td class="text-right text-sm"><span class="text-emerald-400">{{ $sameTradingDay && $stock->day_high ? number_format($stock->day_high, 2) : '—' }}</span><span class="market-muted"> / </span><span class="text-rose-400">{{ $sameTradingDay && $stock->day_low ? number_format($stock->day_low, 2) : '—' }}</span></td>
+                <td class="text-right text-sm"><div><span class="text-emerald-400">{{ $stock->day_high ? number_format($stock->day_high, 2) : '—' }}</span><span class="market-muted"> / </span><span class="text-rose-400">{{ $stock->day_low ? number_format($stock->day_low, 2) : '—' }}</span></div>@if($rangeDate)<div class="mt-1 text-[10px] text-slate-500">{{ $rangeDate }}</div>@endif</td>
                 <td class="text-right font-mono text-sm">{{ $volume ? number_format($volume) : '—' }}</td></tr>
         @empty<tr><td colspan="6" class="text-center market-muted py-12">No stocks match these filters.</td></tr>@endforelse</tbody>
     </table></div>

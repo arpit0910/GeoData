@@ -278,6 +278,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('admin/market-news', [MarketNewsController::class, 'index'])
         ->name('admin.market-news.index');
+    Route::post('admin/market-news/{marketNews}/regenerate', [MarketNewsController::class, 'regenerate'])
+        ->name('admin.market-news.regenerate');
+    Route::post('admin/market-news/{marketNews}/approve', [MarketNewsController::class, 'approve'])
+        ->name('admin.market-news.approve');
+    Route::post('admin/market-news/{marketNews}/unpublish', [MarketNewsController::class, 'unpublish'])
+        ->name('admin.market-news.unpublish');
 
     Route::prefix('admin/api-tester')->name('admin.api-tester.')->group(function () {
         Route::get('/', [ApiTesterController::class, 'index'])->name('index');

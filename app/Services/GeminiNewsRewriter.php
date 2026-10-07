@@ -119,8 +119,8 @@ class GeminiNewsRewriter
             $news->forceFill([
                 'title' => $title,
                 'summary' => $summary,
-                'editorial_status' => MarketNews::STATUS_PUBLISHED,
-                'is_published' => true,
+                'editorial_status' => MarketNews::STATUS_READY,
+                'is_published' => false,
                 'rewrite_model' => $usedModel,
                 'rewrite_version' => self::REWRITE_VERSION,
                 'rewrite_error' => null,

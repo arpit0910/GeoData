@@ -12,6 +12,7 @@ class MarketNews extends Model
 
     public const STATUS_PENDING = 'pending';
     public const STATUS_PROCESSING = 'processing';
+    public const STATUS_READY = 'ready';
     public const STATUS_PUBLISHED = 'published';
     public const STATUS_FAILED = 'failed';
 
@@ -67,6 +68,7 @@ class MarketNews extends Model
         'is_published' => 'boolean',
         'rewritten_at' => 'datetime',
         'source_fetched_at' => 'datetime',
+        'reviewed_at' => 'datetime',
     ];
 
     public function equity()

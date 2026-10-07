@@ -40,14 +40,14 @@ class RewriteMarketNewsCommand extends Command
             try {
                 $rewriter->rewrite($news);
                 $completed++;
-                $this->line("Published news #{$news->id}");
+                $this->line("Generated news #{$news->id}; awaiting admin approval.");
             } catch (Throwable $exception) {
                 $failed++;
                 $this->warn("News #{$news->id}: {$exception->getMessage()}");
             }
         }
 
-        $this->info("News rewrite complete: {$completed} published, {$failed} failed.");
+        $this->info("News rewrite complete: {$completed} generated for review, {$failed} failed.");
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }

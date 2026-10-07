@@ -65,6 +65,7 @@ class MarketPagesTest extends TestCase
             ->assertSee('QUOTEMATCH')
             ->assertSee('+10.00%')
             ->assertSee('1,000')
-            ->assertDontSee('60.00');
+            ->assertSee('60.00')
+            ->assertSee(now('Asia/Kolkata')->subDay()->format('d M'));
     }
 }
