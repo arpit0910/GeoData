@@ -56,6 +56,13 @@ class EquityQuoteSnapshotTest extends TestCase
                 'volume' => 10000,
             ])
         );
+
+        $this->assertDatabaseHas('equity_quotes', [
+            'isin' => 'INE002A01018',
+            'previous_close' => 124.0000,
+            'change_percent' => null,
+            'live_volume' => 10000,
+        ]);
         $service->store(
             'INE002A01018',
             'BSE',

@@ -132,7 +132,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->get('/market/news')
             ->assertOk()
             ->assertDontSee('Company reports flat quarterly revenue at Rs 100 crore');
-        $this->assertFalse(Route::has('admin.market-news.index'));
+        $this->assertTrue(Route::has('admin.market-news.index'));
     }
 
     public function test_failed_regeneration_keeps_the_last_verified_article_public(): void

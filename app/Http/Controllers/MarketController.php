@@ -249,6 +249,11 @@ class MarketController extends Controller
                 'equities.sector',
                 'equity_quotes.price as live_price',
                 'equity_quotes.quoted_at as live_time',
+                'equity_quotes.previous_close as live_previous_close',
+                'equity_quotes.change_percent as live_change_percent',
+                'equity_quotes.live_volume',
+                'equity_prices.traded_date as price_date',
+                DB::raw('COALESCE(equity_prices.nse_close, equity_prices.bse_close) as latest_close'),
                 DB::raw('COALESCE(equity_prices.nse_prev_close, equity_prices.bse_prev_close) as prev_close'),
                 DB::raw('COALESCE(equity_prices.nse_open, equity_prices.bse_open) as day_open'),
                 DB::raw('COALESCE(equity_prices.nse_high, equity_prices.bse_high) as day_high'),
@@ -299,13 +304,11 @@ class MarketController extends Controller
             'price_desc' => $query->orderByRaw('COALESCE(equity_quotes.price, equity_prices.nse_prev_close, equity_prices.bse_prev_close, 0) DESC'),
             'price_asc' => $query->orderByRaw('COALESCE(equity_quotes.price, equity_prices.nse_prev_close, equity_prices.bse_prev_close, 99999999) ASC'),
             'gainers' => $query->whereNotNull('equity_quotes.price')
-                ->whereNotNull('equity_prices.nse_prev_close')
-                ->where('equity_prices.nse_prev_close', '>', 0)
-                ->orderByRaw('((equity_quotes.price - equity_prices.nse_prev_close) / equity_prices.nse_prev_close) DESC'),
+                ->whereNotNull('equity_quotes.change_percent')
+                ->orderByDesc('equity_quotes.change_percent'),
             'losers' => $query->whereNotNull('equity_quotes.price')
-                ->whereNotNull('equity_prices.nse_prev_close')
-                ->where('equity_prices.nse_prev_close', '>', 0)
-                ->orderByRaw('((equity_quotes.price - equity_prices.nse_prev_close) / equity_prices.nse_prev_close) ASC'),
+                ->whereNotNull('equity_quotes.change_percent')
+                ->orderBy('equity_quotes.change_percent'),
             default => $query->orderByRaw('CASE WHEN equity_quotes.price IS NOT NULL THEN 0 ELSE 1 END')
                 ->orderByRaw('COALESCE(equity_prices.nse_volume, equity_prices.bse_volume, 0) DESC')
                 ->orderBy('equities.company_name'),

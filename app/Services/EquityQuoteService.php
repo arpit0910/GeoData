@@ -74,6 +74,8 @@ class EquityQuoteService
             // quote: NSE when present, otherwise BSE.
             $row = DB::table('equity_quotes')->where($key)->lockForUpdate()->first();
             $preferred = $row?->nse_price !== null ? 'nse' : 'bse';
+            $preferredPayload = json_decode((string) ($row->{$preferred.'_payload'} ?? ''), true);
+            $preferredPayload = is_array($preferredPayload) ? $preferredPayload : [];
             DB::table('equity_quotes')->where($key)->update([
                 'exchange' => strtoupper($preferred),
                 'symbol' => $row->{$preferred.'_symbol'},
@@ -81,6 +83,12 @@ class EquityQuoteService
                 'quoted_at' => $row->{$preferred.'_quoted_at'},
                 'fetched_at' => $row->{$preferred.'_fetched_at'},
                 'payload' => $row->{$preferred.'_payload'},
+                'previous_close' => $this->numericOrNull($preferredPayload['previous_close'] ?? null),
+                'change' => $this->numericOrNull($preferredPayload['d'] ?? null),
+                'change_percent' => $this->numericOrNull($preferredPayload['dp'] ?? null),
+                'live_volume' => $this->integerOrNull(
+                    $preferredPayload['volume'] ?? data_get($preferredPayload, 'market_data.volume')
+                ),
             ]);
         });
 

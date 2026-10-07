@@ -34,6 +34,7 @@ use App\Http\Controllers\CurrencyConversionController;
 use App\Http\Controllers\ApiAccessController;
 use App\Http\Controllers\Admin\ExchangeCalendarEventController;
 use App\Http\Controllers\Admin\MarketDatasetController;
+use App\Http\Controllers\Admin\MarketNewsController;
 use App\Http\Controllers\SitemapController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -274,6 +275,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/company-fundamentals', [MarketDatasetController::class, 'companyFundamentals'])->name('company-fundamentals');
         Route::get('/company-fundamentals/{companyFundamental}', [MarketDatasetController::class, 'showCompanyFundamental'])->name('company-fundamentals.show');
     });
+
+    Route::get('admin/market-news', [MarketNewsController::class, 'index'])
+        ->name('admin.market-news.index');
 
     Route::prefix('admin/api-tester')->name('admin.api-tester.')->group(function () {
         Route::get('/', [ApiTesterController::class, 'index'])->name('index');
