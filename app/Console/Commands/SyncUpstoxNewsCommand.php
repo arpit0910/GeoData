@@ -7,26 +7,32 @@ use App\Models\MarketNews;
 use App\Services\UpstoxMarketDataService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 class SyncUpstoxNewsCommand extends Command
 {
     protected $signature = 'market:sync-upstox-news
         {--batch-size=30 : Instrument keys per Upstox news request (max 30)}
+        {--max-batches= : Maximum batches in a normal rotating run}
         {--limit= : Optional maximum instruments to query; all eligible instruments when omitted}
-        {--isin=* : Specific ISINs to fetch news for}';
+        {--isin=* : Specific ISINs to fetch news for}
+        {--reset-cursor : Restart the rotating scan from the first eligible equity}';
 
     protected $description = 'Sync latest market and stock news from Upstox API';
 
     public function handle(UpstoxMarketDataService $upstox): int
     {
         $batchSize = min(30, max(1, (int) $this->option('batch-size')));
+        $maxBatches = min(100, max(1, (int) ($this->option('max-batches')
+            ?: config('market_data.upstox.news_max_batches', 20))));
         $limit = $this->option('limit') !== null
             ? max(1, (int) $this->option('limit'))
             : null;
 
         $query = Equity::query()
             ->where('is_active', true)
+            ->whereIn('series', ['EQ', 'BE', 'SM', 'BZ'])
             ->where(function ($query) {
                 $query->where(function ($query) {
                     $query->whereNotNull('upstox_nse_instrument_key')
@@ -46,14 +52,25 @@ class SyncUpstoxNewsCommand extends Command
             $query->whereIn('isin', $isinFilter->all());
         }
 
-        $query->orderBy('id');
-        if ($limit !== null) {
-            $query->limit($limit);
+        $totalEligible = (clone $query)->count();
+        $cursorKey = 'market_news_sync:last_equity_id';
+        $usesCursor = $isinFilter->isEmpty() && $limit === null;
+        if ($this->option('reset-cursor')) {
+            Cache::forget($cursorKey);
         }
-        $equities = $query->get([
+        $cursor = $usesCursor ? max(0, (int) Cache::get($cursorKey, 0)) : 0;
+        $selectionLimit = $limit ?? ($batchSize * $maxBatches);
+        $columns = [
             'id', 'isin', 'nse_symbol', 'bse_symbol',
             'upstox_nse_instrument_key', 'upstox_bse_instrument_key',
-        ]);
+        ];
+        $selection = (clone $query)->when($cursor > 0, fn ($query) => $query->where('id', '>', $cursor));
+        $equities = $selection->orderBy('id')->limit($selectionLimit)->get($columns);
+        if ($usesCursor && $equities->isEmpty() && $cursor > 0) {
+            $cursor = 0;
+            Cache::forget($cursorKey);
+            $equities = (clone $query)->orderBy('id')->limit($selectionLimit)->get($columns);
+        }
 
         if ($equities->isEmpty()) {
             $this->warn('No active equities found with Upstox instrument keys.');
@@ -63,23 +80,36 @@ class SyncUpstoxNewsCommand extends Command
         $symbolMap = $equities->mapWithKeys(fn ($equity) => [
             $equity->isin => $equity->nse_symbol ?: $equity->bse_symbol,
         ])->all();
-        $instrumentKeys = $equities->map(
-            fn ($equity) => $equity->upstox_nse_instrument_key ?: $equity->upstox_bse_instrument_key
-        )->filter()->unique()->values()->all();
-
-        $this->info("Fetching news for up to {$equities->count()} instruments in batches of {$batchSize}...");
+        $this->info("Fetching news for {$equities->count()} of {$totalEligible} eligible stocks in batches of {$batchSize} (max {$maxBatches} batches)...");
 
         $totalFetched = 0;
-        $totalSaved = 0;
+        $uniqueFetched = 0;
+        $created = 0;
+        $updated = 0;
+        $unchanged = 0;
+        $duplicates = 0;
         $failedBatches = 0;
+        $seenArticles = [];
 
-        $batches = array_chunk($instrumentKeys, $batchSize);
+        $batches = $equities->chunk($batchSize)->values();
         foreach ($batches as $batchIndex => $batch) {
+            $batchKeys = $batch->map(
+                fn ($equity) => $equity->upstox_nse_instrument_key ?: $equity->upstox_bse_instrument_key
+            )->filter()->unique()->values()->all();
             try {
-                $articles = $upstox->news($batch);
+                $articles = $upstox->news($batchKeys);
                 $totalFetched += count($articles);
 
                 foreach ($articles as $article) {
+                    $dedupeKey = ! empty($article['article_url'])
+                        ? 'url:'.strtolower(rtrim(trim((string) $article['article_url']), '/'))
+                        : 'content:'.hash('sha256', trim((string) $article['title'])."\n".trim((string) ($article['summary'] ?? '')));
+                    if (isset($seenArticles[$dedupeKey])) {
+                        $duplicates++;
+                        continue;
+                    }
+                    $seenArticles[$dedupeKey] = true;
+                    $uniqueFetched++;
                     $isin = $article['isin'] ?? null;
                     $symbol = $isin && isset($symbolMap[$isin]) ? $symbolMap[$isin] : null;
 
@@ -93,6 +123,7 @@ class SyncUpstoxNewsCommand extends Command
                         $newsQuery->where('original_title', $originalTitle)->where('isin', $isin);
                     }
                     $news = $newsQuery->first() ?: new MarketNews();
+                    $isNew = ! $news->exists;
                     $sourceChanged = ! $news->exists || ! hash_equals((string) $news->source_hash, $sourceHash);
 
                     $news->fill([
@@ -124,8 +155,17 @@ class SyncUpstoxNewsCommand extends Command
                         ]);
                     }
                     $news->save();
+                    if ($isNew) {
+                        $created++;
+                    } elseif ($sourceChanged) {
+                        $updated++;
+                    } else {
+                        $unchanged++;
+                    }
+                }
 
-                    $totalSaved++;
+                if ($usesCursor && ($lastEquity = $batch->last())) {
+                    Cache::forever($cursorKey, $lastEquity->id);
                 }
             } catch (Throwable $e) {
                 $failedBatches++;
@@ -139,10 +179,13 @@ class SyncUpstoxNewsCommand extends Command
                     }
                     break;
                 }
+                if ($usesCursor && ($lastEquity = $batch->last())) {
+                    Cache::forever($cursorKey, $lastEquity->id);
+                }
             }
         }
 
-        $this->info("News sync complete: {$totalFetched} articles fetched, {$totalSaved} saved/updated, {$failedBatches} batches failed.");
+        $this->info("News sync complete: {$totalFetched} fetched, {$uniqueFetched} unique, {$duplicates} duplicate; {$created} created, {$updated} updated, {$unchanged} unchanged; {$failedBatches} batches failed.");
 
         return $failedBatches > 0 ? self::FAILURE : self::SUCCESS;
     }

@@ -45,10 +45,18 @@ capacity failures are retried and can fall back through
 
 The Upstox news synchronizer requests the maximum 100 records per page and
 follows every reported page (up to Upstox's 100-page limit) for each batch of
-30 instrument keys. It validates the returned page numbers and total record
-count, retries temporary connection, rate-limit, and server failures, and fails
-fast when authorization is unavailable. Upstox only exposes news from the most
-recent seven days, so the hourly sync persists that rolling window over time.
+30 instrument keys. Normal runs are bounded by `UPSTOX_NEWS_MAX_BATCHES`
+(20 by default) and retain a cache-backed equity cursor, so consecutive hourly
+runs rotate through the eligible EQ, BE, SM, and BZ stock universe instead of
+requesting every mapped bond and equity every hour. Duplicate article URLs in
+the same run are stored once, and the command reports created, updated,
+unchanged, and duplicate counts separately. It validates returned pagination,
+retries temporary connection, rate-limit, and server failures, and fails fast
+when authorization is unavailable. Upstox only exposes news from the most
+recent seven days, so the rotating sync persists that rolling window over time.
+
+Use `--reset-cursor` to restart a full rotation, `--max-batches=N` to override
+the per-run request budget, or `--isin=...` for a targeted fetch.
 
 Set `GEMINI_API_KEY` in the deployment environment. Optional settings are
 `GEMINI_NEWS_MODEL`, `GEMINI_NEWS_TEMPERATURE`, and `GEMINI_API_TIMEOUT`. After

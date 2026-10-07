@@ -61,9 +61,10 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30')
+        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --max-batches=20')
             ->hourly()
             ->timezone('Asia/Kolkata')
+            ->between('07:00', '23:00')
             ->runInBackground()
             ->withoutOverlapping(120));
 

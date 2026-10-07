@@ -13,6 +13,7 @@ class NewsArticleExtractor
     public function extract(MarketNews $news): string
     {
         if ($news->original_content && mb_strlen($news->original_content) >= 200) {
+            $this->assertRelevant($news, $news->original_content);
             return $news->original_content;
         }
 
@@ -40,6 +41,7 @@ class NewsArticleExtractor
         if (mb_strlen($content) < 200) {
             throw new RuntimeException('The source article did not contain enough extractable content.');
         }
+        $this->assertRelevant($news, $content);
 
         $news->forceFill([
             'original_content' => $content,
@@ -101,5 +103,28 @@ class NewsArticleExtractor
         )));
 
         return mb_substr(implode("\n\n", $paragraphs), 0, 30000);
+    }
+
+    private function assertRelevant(MarketNews $news, string $content): void
+    {
+        $reference = trim((string) $news->original_title.' '.(string) $news->original_summary);
+        preg_match_all('/[\pL\pN]+/u', mb_strtolower($reference), $referenceMatches);
+        preg_match_all('/[\pL\pN]+/u', mb_strtolower($content), $contentMatches);
+        $stopWords = [
+            'about', 'after', 'among', 'before', 'check', 'company', 'could', 'from',
+            'have', 'into', 'market', 'more', 'news', 'shares', 'stock', 'their',
+            'today', 'with', 'will', 'would',
+        ];
+        $referenceTokens = collect($referenceMatches[0] ?? [])
+            ->filter(fn ($token) => mb_strlen($token) >= 4 || is_numeric($token))
+            ->reject(fn ($token) => in_array($token, $stopWords, true))
+            ->unique()->values();
+        $contentTokens = array_fill_keys(array_unique($contentMatches[0] ?? []), true);
+        $matched = $referenceTokens->filter(fn ($token) => isset($contentTokens[$token]))->count();
+        $required = min(3, max(1, (int) ceil($referenceTokens->count() * 0.2)));
+
+        if ($matched < $required) {
+            throw new RuntimeException('The extracted article does not match the supplied Upstox title and summary.');
+        }
     }
 }

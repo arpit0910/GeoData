@@ -70,6 +70,8 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             return $request->hasHeader('x-goog-api-key', 'test-gemini-key')
                 && data_get($request->data(), 'generationConfig.temperature') === 0.1
                 && data_get($request->data(), 'generationConfig.responseMimeType') === 'application/json'
+                && str_contains((string) data_get($request->data(), 'contents.0.parts.0.text'), '<source_summary>')
+                && str_contains((string) data_get($request->data(), 'contents.0.parts.0.text'), 'Revenue was Rs 100 crore')
                 && str_contains((string) data_get($request->data(), 'contents.0.parts.0.text'), 'Management said demand remained stable');
         });
         Http::assertSent(function (Request $request): bool {
@@ -175,6 +177,32 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->get('/market/news')
             ->assertOk()
             ->assertSee('Previously verified market article remains available');
+    }
+
+    public function test_unrelated_extracted_article_is_rejected_before_generation(): void
+    {
+        $this->configureGemini();
+        Http::fake([
+            'https://upstox.com/news/test-article' => Http::response(
+                '<script type="application/ld+json">'.json_encode([
+                    '@type' => 'NewsArticle',
+                    'articleBody' => str_repeat('A football tournament discussed players, stadium conditions, coaching and international fixtures. ', 5),
+                ]).'</script>'
+            ),
+        ]);
+        $news = $this->createNews('Unused source body for this test.');
+
+        try {
+            app(GeminiNewsRewriter::class)->rewrite($news);
+            $this->fail('An unrelated source article should be rejected.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('does not match', $exception->getMessage());
+        }
+
+        $news->refresh();
+        $this->assertSame(MarketNews::STATUS_FAILED, $news->editorial_status);
+        $this->assertFalse($news->is_published);
+        Http::assertSentCount(1);
     }
 
     private function configureGemini(): void

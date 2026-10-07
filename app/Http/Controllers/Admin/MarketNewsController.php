@@ -7,6 +7,7 @@ use App\Models\MarketNews;
 use App\Services\GeminiNewsRewriter;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Throwable;
 
@@ -54,15 +55,33 @@ class MarketNewsController extends Controller
         return view('admin.market-news.index', compact('news', 'summary'));
     }
 
+    public function show(MarketNews $marketNews): View
+    {
+        return view('admin.market-news.show', compact('marketNews'));
+    }
+
     public function regenerate(MarketNews $marketNews, GeminiNewsRewriter $rewriter): RedirectResponse
     {
         set_time_limit(180);
+        $cachedContent = $marketNews->original_content;
+        $cachedAt = $marketNews->source_fetched_at;
+        $marketNews->forceFill([
+            'original_content' => null,
+            'source_fetched_at' => null,
+        ])->save();
 
         try {
             $rewriter->rewrite($marketNews);
 
             return back()->with('success', "News #{$marketNews->id} was regenerated and is ready for approval.");
         } catch (Throwable $exception) {
+            $marketNews->refresh();
+            if (! $marketNews->original_content && $cachedContent) {
+                $marketNews->forceFill([
+                    'original_content' => $cachedContent,
+                    'source_fetched_at' => $cachedAt,
+                ])->save();
+            }
             report($exception);
 
             return back()->with('error', "News #{$marketNews->id} could not be regenerated: {$exception->getMessage()}");
@@ -78,14 +97,47 @@ class MarketNewsController extends Controller
             return back()->with('error', 'Only a successfully regenerated news draft can be approved.');
         }
 
-        $marketNews->forceFill([
-            'editorial_status' => MarketNews::STATUS_PUBLISHED,
-            'is_published' => true,
-            'reviewed_at' => now(),
-            'reviewed_by' => $request->user()->id,
-        ])->save();
+        $this->approveDraft($marketNews, $request->user()->id);
 
         return back()->with('success', "News #{$marketNews->id} was approved and published.");
+    }
+
+    public function bulkApprove(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'news_ids' => ['required', 'array', 'min:1', 'max:100'],
+            'news_ids.*' => ['integer', 'distinct', 'exists:market_news,id'],
+        ]);
+        $ids = array_values(array_unique(array_map('intval', $validated['news_ids'])));
+        $approved = 0;
+
+        DB::transaction(function () use ($ids, $request, &$approved) {
+            $drafts = MarketNews::query()
+                ->whereIn('id', $ids)
+                ->where('editorial_status', MarketNews::STATUS_READY)
+                ->whereNotNull('rewritten_at')
+                ->whereNotNull('title')->where('title', '<>', '')
+                ->whereNotNull('summary')->where('summary', '<>', '')
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($drafts as $draft) {
+                $this->approveDraft($draft, $request->user()->id);
+                $approved++;
+            }
+        });
+
+        $skipped = count($ids) - $approved;
+        if ($approved === 0) {
+            return back()->with('error', 'None of the selected stories had a verified draft ready for approval.');
+        }
+
+        $message = "{$approved} news ".($approved === 1 ? 'story was' : 'stories were').' approved and published.';
+        if ($skipped > 0) {
+            $message .= " {$skipped} ineligible ".($skipped === 1 ? 'story was' : 'stories were').' skipped.';
+        }
+
+        return back()->with('success', $message);
     }
 
     public function unpublish(MarketNews $marketNews): RedirectResponse
@@ -100,5 +152,15 @@ class MarketNewsController extends Controller
         ])->save();
 
         return back()->with('success', "News #{$marketNews->id} was removed from the public website.");
+    }
+
+    private function approveDraft(MarketNews $marketNews, int $userId): void
+    {
+        $marketNews->forceFill([
+            'editorial_status' => MarketNews::STATUS_PUBLISHED,
+            'is_published' => true,
+            'reviewed_at' => now(),
+            'reviewed_by' => $userId,
+        ])->save();
     }
 }

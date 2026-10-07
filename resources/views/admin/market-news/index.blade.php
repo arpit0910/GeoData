@@ -40,10 +40,18 @@
         <button class="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white dark:bg-white dark:text-gray-900">Filter</button>
     </form>
 
+    <form id="bulk-approve-form" method="POST" action="{{ route('admin.market-news.bulk-approve') }}" onsubmit="return confirm('Approve and publish all selected ready drafts?');">
+        @csrf
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-500/20 dark:bg-purple-500/10">
+            <p class="text-sm font-semibold text-purple-800 dark:text-purple-200">Select multiple “Ready for approval” stories below.</p>
+            <button class="rounded-xl bg-purple-700 px-4 py-2 text-sm font-black text-white hover:bg-purple-800"><i class="fas fa-check-double mr-2"></i>Approve Selected</button>
+        </div>
+    </form>
+
     <div class="overflow-x-auto rounded-2xl border border-gray-200 bg-white dark:border-white/5 dark:bg-richdark-surface">
         <table class="w-full min-w-[1200px] text-left text-sm">
             <thead class="border-b border-gray-100 text-xs uppercase tracking-wider text-gray-400 dark:border-white/5">
-                <tr><th class="p-4">Upstox title</th><th class="p-4">Regenerated title</th><th class="p-4">Instrument</th><th class="p-4">Status</th><th class="p-4">Story date</th><th class="p-4 text-right">Actions</th></tr>
+                <tr><th class="p-4"><input type="checkbox" aria-label="Select all ready drafts" onchange="document.querySelectorAll('.news-ready-checkbox').forEach((box) => box.checked = this.checked)"></th><th class="p-4">Upstox title</th><th class="p-4">Regenerated title</th><th class="p-4">Instrument</th><th class="p-4">Status</th><th class="p-4">Story date</th><th class="p-4 text-right">Actions</th></tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-white/5">
                 @forelse($news as $story)
@@ -57,19 +65,21 @@
                         };
                     @endphp
                     <tr class="align-top">
+                        <td class="p-4">@if($story->editorial_status === 'ready')<input class="news-ready-checkbox" type="checkbox" name="news_ids[]" value="{{ $story->id }}" form="bulk-approve-form" aria-label="Select news {{ $story->id }}">@else<span class="text-gray-300">—</span>@endif</td>
                         <td class="p-4"><div class="max-w-sm font-bold text-gray-900 dark:text-white">{{ $story->original_title ?: '—' }}</div>@if($story->article_url)<a href="{{ $story->article_url }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-xs font-semibold text-amber-600 hover:text-amber-700">Open source article</a>@endif @if($story->original_summary)<details class="mt-2 max-w-sm text-xs text-gray-500"><summary class="cursor-pointer font-semibold">Upstox summary</summary><p class="mt-2 whitespace-pre-line leading-5">{{ $story->original_summary }}</p></details>@endif</td>
                         <td class="p-4"><div class="max-w-sm font-bold text-gray-900 dark:text-white">{{ $story->rewritten_at ? $story->title : 'Not regenerated yet' }}</div>@if($story->rewritten_at && $story->summary)<details class="mt-2 max-w-sm text-xs text-gray-500"><summary class="cursor-pointer font-semibold">Regenerated article</summary><p class="mt-2 whitespace-pre-line leading-5">{{ $story->summary }}</p></details>@endif @if($story->rewrite_model)<div class="mt-2 text-[11px] text-gray-400">{{ $story->rewrite_model }} · v{{ $story->rewrite_version }}</div>@endif @if($story->rewrite_error)<div class="mt-2 max-w-sm rounded-lg bg-red-50 p-2 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-300">{{ $story->rewrite_error }}</div>@endif</td>
                         <td class="p-4"><div class="font-bold text-gray-700 dark:text-gray-200">{{ $story->symbol ?: '—' }}</div><div class="text-xs text-gray-400">{{ $story->isin ?: '—' }}</div></td>
                         <td class="p-4"><span class="whitespace-nowrap rounded-full px-2 py-1 text-xs font-bold {{ $statusClasses }}">{{ $story->editorial_status === 'ready' ? 'Ready for approval' : ucfirst($story->editorial_status) }}</span>@if($story->reviewed_at)<div class="mt-2 text-[11px] text-gray-400">Approved {{ $story->reviewed_at->timezone('Asia/Kolkata')->format('d M, h:i A') }}</div>@endif</td>
                         <td class="p-4 text-gray-600 dark:text-gray-300">{{ $story->published_at?->timezone('Asia/Kolkata')->format('d M Y, h:i A') ?: '—' }}</td>
                         <td class="p-4"><div class="flex min-w-[150px] flex-col items-stretch gap-2">
+                            <a href="{{ route('admin.market-news.show', $story) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-center text-xs font-bold text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5"><i class="fas fa-eye mr-1"></i>View Details</a>
                             <form method="POST" action="{{ route('admin.market-news.regenerate', $story) }}" onsubmit="return confirm('Regenerate this story with Gemini?');">@csrf<button class="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"><i class="fas fa-rotate mr-1"></i>{{ $story->rewritten_at ? 'Regenerate' : 'Generate' }}</button></form>
                             @if($story->editorial_status === 'ready')<form method="POST" action="{{ route('admin.market-news.approve', $story) }}">@csrf<button class="w-full rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700"><i class="fas fa-check mr-1"></i>Approve & Publish</button></form>@endif
                             @if($story->is_published)<form method="POST" action="{{ route('admin.market-news.unpublish', $story) }}" onsubmit="return confirm('Remove this story from the public website?');">@csrf<button class="w-full rounded-lg bg-gray-700 px-3 py-2 text-xs font-bold text-white hover:bg-gray-800"><i class="fas fa-eye-slash mr-1"></i>Unpublish</button></form>@endif
                         </div></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="p-10 text-center text-gray-400">No market news records found.</td></tr>
+                    <tr><td colspan="7" class="p-10 text-center text-gray-400">No market news records found.</td></tr>
                 @endforelse
             </tbody>
         </table>

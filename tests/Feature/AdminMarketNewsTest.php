@@ -38,8 +38,58 @@ class AdminMarketNewsTest extends TestCase
             ->assertSee('Failed source story')
             ->assertSee('Upstox title')
             ->assertSee('Regenerated title')
+            ->assertSee('View Details')
             ->assertSee('Draft changed a numerical fact.')
             ->assertDontSee('Published market story');
+    }
+
+    public function test_admin_can_view_full_comparison_and_bulk_approve_ready_drafts(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $readyStories = collect([1, 2])->map(fn ($number) => MarketNews::create([
+            'title' => "Regenerated headline {$number} with verified market details",
+            'summary' => "Regenerated article {$number} with verified market details.",
+            'original_title' => "Upstox source headline {$number}",
+            'original_summary' => "Upstox source summary {$number}.",
+            'original_content' => str_repeat("Full source article {$number}. ", 20),
+            'editorial_status' => MarketNews::STATUS_READY,
+            'is_published' => false,
+            'rewritten_at' => now(),
+            'published_at' => now(),
+        ]));
+        $pending = MarketNews::create([
+            'title' => 'Pending source headline',
+            'original_title' => 'Pending source headline',
+            'editorial_status' => MarketNews::STATUS_PENDING,
+            'is_published' => false,
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.market-news.show', $readyStories->first()))
+            ->assertOk()
+            ->assertSee('Upstox source headline 1')
+            ->assertSee('Regenerated headline 1')
+            ->assertSee('Extracted source article')
+            ->assertSee('Approve & Publish', false);
+
+        $this->post(route('admin.market-news.bulk-approve'), [
+            'news_ids' => $readyStories->pluck('id')->push($pending->id)->all(),
+        ])->assertRedirect()->assertSessionHas('success');
+
+        foreach ($readyStories as $story) {
+            $this->assertDatabaseHas('market_news', [
+                'id' => $story->id,
+                'editorial_status' => MarketNews::STATUS_PUBLISHED,
+                'is_published' => true,
+                'reviewed_by' => $admin->id,
+            ]);
+        }
+        $this->assertDatabaseHas('market_news', [
+            'id' => $pending->id,
+            'editorial_status' => MarketNews::STATUS_PENDING,
+            'is_published' => false,
+        ]);
     }
 
     public function test_admin_can_regenerate_approve_and_unpublish_news(): void

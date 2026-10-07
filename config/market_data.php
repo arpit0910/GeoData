@@ -17,5 +17,6 @@ return [
         'ltp_url' => env('UPSTOX_LTP_URL', 'https://api.upstox.com/v3/market-quote/ltp'),
         'corporate_actions_url' => env('UPSTOX_CORPORATE_ACTIONS_URL', 'https://api.upstox.com/v2/fundamentals'),
         'news_url' => env('UPSTOX_NEWS_URL', 'https://api.upstox.com/v2/news'),
+        'news_max_batches' => (int) env('UPSTOX_NEWS_MAX_BATCHES', 20),
     ],
 ];
