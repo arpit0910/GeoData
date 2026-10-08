@@ -55,6 +55,11 @@ is rate-limited, the story remains pending with `rewrite_retry_at` instead of
 being marked failed. The scheduler skips it until that time and then retries it
 automatically. Bulk generation stops at the first pool-wide quota limit so it
 does not repeat the same rejected request for every selected story.
+Verification responses are capped by `GROQ_NEWS_VERIFICATION_MAX_TOKENS` because
+the verdict is a small JSON object. Article generation uses
+`GROQ_NEWS_REWRITE_MAX_TOKENS`; Qwen calls are additionally capped by
+`GROQ_NEWS_QWEN_MAX_TOKENS` so an on-demand account's lower output-tokens-per-
+minute allowance is not exceeded merely by the request's expected output size.
 
 When Groq returns a draft that fails an editorial check, the application sends
 the rejected draft and the exact validation failure back to Groq for correction.
@@ -87,7 +92,9 @@ Set `GROQ_API_KEY` in the deployment environment. Optional settings are
 `GROQ_NEWS_MODEL_STRATEGY`, `GROQ_NEWS_TEMPERATURE`,
 `GROQ_NEWS_EDITORIAL_ATTEMPTS`, and
 `GROQ_API_TIMEOUT`. `GROQ_RATE_LIMIT_RETRY_SECONDS` is the fallback cooldown
-when Groq does not provide a `Retry-After` value. After
+when Groq does not provide a `Retry-After` value. Output ceilings can be tuned
+with `GROQ_NEWS_REWRITE_MAX_TOKENS`, `GROQ_NEWS_VERIFICATION_MAX_TOKENS`, and
+`GROQ_NEWS_QWEN_MAX_TOKENS`. After
 changing environment values on a cached deployment, run `php artisan config:cache`.
 If PHP has no trusted system CA store, point `GROQ_CA_BUNDLE` to a trusted PEM
 bundle; TLS verification remains enabled.

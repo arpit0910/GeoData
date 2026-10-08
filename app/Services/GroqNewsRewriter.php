@@ -90,7 +90,10 @@ class GroqNewsRewriter
                     'temperature' => (float) config('services.groq.temperature', 0.1),
                     'top_p' => 0.2,
                     'reasoning_effort' => 'low',
-                    'max_completion_tokens' => 8192,
+                    'max_completion_tokens' => max(
+                        512,
+                        (int) config('services.groq.rewrite_max_tokens', 2048)
+                    ),
                     'response_format' => $this->responseFormat('news_rewrite', [
                         'type' => 'object',
                         'properties' => [
@@ -262,7 +265,12 @@ class GroqNewsRewriter
             'temperature' => 0,
             'top_p' => 0.1,
             'reasoning_effort' => 'low',
-            'max_completion_tokens' => 4096,
+            // The verifier returns only four booleans and a short issue list.
+            // Keeping this low avoids reserving more Qwen OTPM than needed.
+            'max_completion_tokens' => max(
+                128,
+                (int) config('services.groq.verification_max_tokens', 512)
+            ),
             'response_format' => $this->responseFormat('news_verification', [
                 'type' => 'object',
                 'properties' => [
@@ -503,6 +511,13 @@ class GroqNewsRewriter
         // defaults and may reject a GPT-OSS reasoning value with HTTP 400.
         if (! str_starts_with($model, 'openai/gpt-oss-')) {
             unset($payload['reasoning_effort']);
+        }
+        if (str_starts_with($model, 'qwen/')) {
+            $qwenLimit = max(256, (int) config('services.groq.qwen_max_tokens', 900));
+            $payload['max_completion_tokens'] = min(
+                (int) ($payload['max_completion_tokens'] ?? $qwenLimit),
+                $qwenLimit
+            );
         }
 
         return $payload;

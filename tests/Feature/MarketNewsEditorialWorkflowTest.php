@@ -285,8 +285,9 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         ]);
         $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
         $models = [];
+        $calls = [];
 
-        Http::fake(function (Request $request) use ($sourceBody, &$models) {
+        Http::fake(function (Request $request) use ($sourceBody, &$models, &$calls) {
             if ($request->url() === 'https://upstox.com/news/test-article') {
                 return Http::response('<script type="application/ld+json">'.json_encode([
                     '@type' => 'NewsArticle',
@@ -295,7 +296,13 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             }
 
             $models[] = (string) data_get($request->data(), 'model');
-            if (str_contains((string) data_get($request->data(), 'messages.0.content'), 'independent financial-news fact checker')) {
+            $isVerification = str_contains((string) data_get($request->data(), 'messages.0.content'), 'independent financial-news fact checker');
+            $calls[] = [
+                'model' => (string) data_get($request->data(), 'model'),
+                'max_tokens' => (int) data_get($request->data(), 'max_completion_tokens'),
+                'verification' => $isVerification,
+            ];
+            if ($isVerification) {
                 return $this->groqResponse([
                     'intent_preserved' => true,
                     'facts_preserved' => true,
@@ -330,6 +337,12 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             $this->assertSame($pool[($previousPosition + 1) % count($pool)], $models[$index]);
         }
         $this->assertSame($models[2], $news->refresh()->rewrite_model);
+        $this->assertTrue(collect($calls)->where('verification', true)->every(
+            fn (array $call) => $call['max_tokens'] <= 512
+        ));
+        $this->assertTrue(collect($calls)->where('model', 'qwen/rotation-b')->every(
+            fn (array $call) => $call['max_tokens'] <= 900
+        ));
     }
 
     public function test_rate_limited_story_is_deferred_until_provider_retry_time(): void
@@ -454,6 +467,9 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             'services.groq.retry_initial_delay_ms' => 0,
             'services.groq.retry_max_delay_ms' => 0,
             'services.groq.retry_jitter_ms' => 0,
+            'services.groq.rewrite_max_tokens' => 2048,
+            'services.groq.verification_max_tokens' => 512,
+            'services.groq.qwen_max_tokens' => 900,
         ]);
     }
 
