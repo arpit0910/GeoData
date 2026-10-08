@@ -45,11 +45,8 @@ class MarketNewsEditorialWorkflowTest extends TestCase
 
             return $this->groqResponse([
                 'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
-                'paragraphs' => [
-                    'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period.',
-                    'Management said demand remained stable across its principal business segments during the quarter.',
-                    'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter.',
-                ],
+                'paragraph_1' => 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its principal business segments during the quarter.',
+                'paragraph_2' => 'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter, maintaining the pattern described for the previous period.',
             ]);
         });
 
@@ -61,7 +58,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->assertFalse($news->is_published);
         $this->assertSame('Company reports flat quarterly revenue at Rs 100 crore', $news->title);
         $this->assertSame('groq-test-model', $news->rewrite_model);
-        $this->assertSame(6, $news->rewrite_version);
+        $this->assertSame(7, $news->rewrite_version);
         $this->assertSame($sourceBody, $news->original_content);
         $this->get('/market/news')
             ->assertOk()
@@ -73,6 +70,9 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 && data_get($request->data(), 'temperature') === 0.1
                 && data_get($request->data(), 'response_format.type') === 'json_schema'
                 && data_get($request->data(), 'response_format.json_schema.strict') === true
+                && in_array('paragraph_1', data_get($request->data(), 'response_format.json_schema.schema.required', []), true)
+                && in_array('paragraph_2', data_get($request->data(), 'response_format.json_schema.schema.required', []), true)
+                && data_get($request->data(), 'response_format.json_schema.schema.properties.paragraphs') === null
                 && str_contains((string) data_get($request->data(), 'messages.1.content'), '<source_summary>')
                 && str_contains((string) data_get($request->data(), 'messages.1.content'), 'Revenue was Rs 100 crore')
                 && str_contains((string) data_get($request->data(), 'messages.1.content'), 'Management said demand remained stable');

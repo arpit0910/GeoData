@@ -35,9 +35,13 @@ queue. Source copy, incomplete rewrites, and rejected rewrites remain private.
 Before rewriting, the editor fetches the trusted Upstox article page and stores
 its JSON-LD `articleBody` as private source content. Groq receives this full
 body instead of the short API teaser and must return a concise headline plus an
-explicit array of paragraphs. The application enforces proportional article
+exact number of individually required paragraph fields. The prompt calculates
+and states both the total article target and a word range for every paragraph;
+Groq's strict schema prevents a one-paragraph response when several paragraphs
+are required. The application enforces proportional article
 length, paragraph count, headline length, prohibited process language, and exact
-preservation of numerical facts. A separate zero-temperature verification pass
+preservation of numerical facts, and also rejects individually thin paragraphs.
+A separate zero-temperature verification pass
 rejects changed intent, omitted material facts, unsupported additions, changed
 causality or uncertainty, attribution shifts, and tone changes. Temporary Groq
 capacity failures are retried and can fall back through
