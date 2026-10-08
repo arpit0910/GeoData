@@ -1606,7 +1606,9 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         </div>
                                         <div class="p-6">
                                             <p class="mb-4">Get a paginated list of all active equities. Supports
-                                                discovery by industry or specific symbols.</p>
+                                                discovery by industry or specific symbols and includes exchange trading
+                                                metadata refreshed from the Upstox instrument master. Provider keys and
+                                                raw provider payloads are never exposed.</p>
                                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Query Parameters
                                             </h4>
                                             <table class="w-full text-sm mb-8">
@@ -1650,7 +1652,15 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
         <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
         <span class="text-blue-400">"bse_symbol"</span>: <span class="text-green-400">"500325"</span>,
         <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Oil & Gas"</span>,
-        <span class="text-blue-400">"market_cap"</span>: <span class="text-green-400">"Large Cap"</span>
+        <span class="text-blue-400">"market_cap"</span>: <span class="text-green-400">"Large Cap"</span>,
+        <span class="text-blue-400">"market_lot"</span>: <span class="text-blue-400">1</span>,
+        <span class="text-blue-400">"qty_multiplier"</span>: <span class="text-blue-400">1</span>,
+        <span class="text-blue-400">"mtf_enabled"</span>: <span class="text-blue-400">true</span>,
+        <span class="text-blue-400">"mtf_bracket"</span>: <span class="text-blue-400">26.5</span>,
+        <span class="text-blue-400">"cas_eligible"</span>: <span class="text-blue-400">true</span>,
+        <span class="text-blue-400">"intraday_margin"</span>: <span class="text-blue-400">20</span>,
+        <span class="text-blue-400">"intraday_leverage"</span>: <span class="text-blue-400">5</span>,
+        <span class="text-blue-400">"nse_tick_size"</span>: <span class="text-blue-400">5</span>
       }
     ]
   }
@@ -2198,7 +2208,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                             <section id="mf-api" class="pt-8">
                                 <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">
                                     Mutual Fund Intelligence</h2>
-                                <p class="text-gray-400 mb-8">Access India's complete AMFI mutual fund universe — 13,000+ schemes with pre-computed multi-period returns (1D to 3Y), NAV history, and analytical rankings. All endpoints are prefixed with <code class="text-amber-400">/mf</code>.</p>
+                                <p class="text-gray-400 mb-8">Access India's complete AMFI mutual fund universe — 13,000+ schemes with pre-computed multi-period returns (1D to 3Y), NAV history, and analytical rankings. Daily NAV synchronization uses AMFI as the primary source and automatically falls back to Upstox daily mutual-fund rates when the AMFI feed is unavailable or incomplete. All endpoints are prefixed with <code class="text-amber-400">/mf</code>.</p>
 
                                 <div class="space-y-12">
 
@@ -2239,6 +2249,10 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
       <span class="text-blue-400">"chg_1y"</span>: <span class="text-blue-400">18.74</span>
     }
   ],
+  <span class="text-blue-400">"sources"</span>: {
+    <span class="text-blue-400">"primary"</span>: <span class="text-green-400">"AMFI"</span>,
+    <span class="text-blue-400">"fallback"</span>: <span class="text-green-400">"Upstox mutual-fund instruments"</span>
+  },
   <span class="text-blue-400">"meta"</span>: { <span class="text-blue-400">"total"</span>: 13241, <span class="text-blue-400">"per_page"</span>: 20, <span class="text-blue-400">"current_page"</span>: 1, <span class="text-blue-400">"last_page"</span>: 663 }
 }</pre>
                                             </div>
@@ -2892,7 +2906,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
                                         </div>
                                         <div class="p-6 text-gray-400">
-                                            <p class="mb-4">Fetch and synchronize listed Indian equities, bonds, and debentures in bulk or paginated batches. Includes latest real-time LTP quotes, day high/low, day volume, 52-week ranges, and company metadata.</p>
+                                            <p class="mb-4">Fetch listed Indian equities, bonds, and debentures in bulk or paginated batches. Includes latest LTP quotes, day statistics, company metadata, market lot, quantity multiplier, MTF/CAS eligibility, intraday limits, tick sizes, and exchange freeze quantities. Internal provider keys and tokens are never returned.</p>
                                             <table class="w-full text-sm mb-6">
                                                 <thead class="text-gray-500 text-left border-b border-gray-800">
                                                     <tr>
@@ -2956,14 +2970,22 @@ curl -X GET "https://setugeo.com/api/v1/market/stocks?instrument_type=stocks&per
       <span class="text-blue-400">"bse_symbol"</span>: <span class="text-green-400">"500325"</span>,
       <span class="text-blue-400">"series"</span>: <span class="text-green-400">"EQ"</span>,
       <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Refineries"</span>,
-      <span class="text-blue-400">"prev_close"</span>: <span class="text-blue-400">2985.40</span>,
+      <span class="text-blue-400">"market_lot"</span>: <span class="text-blue-400">1</span>,
+      <span class="text-blue-400">"qty_multiplier"</span>: <span class="text-blue-400">1</span>,
+      <span class="text-blue-400">"mtf_enabled"</span>: <span class="text-blue-400">true</span>,
+      <span class="text-blue-400">"cas_eligible"</span>: <span class="text-blue-400">true</span>,
+      <span class="text-blue-400">"intraday_margin"</span>: <span class="text-blue-400">20</span>,
+      <span class="text-blue-400">"intraday_leverage"</span>: <span class="text-blue-400">5</span>,
+      <span class="text-blue-400">"tick_size"</span>: { <span class="text-blue-400">"nse"</span>: <span class="text-blue-400">5</span>, <span class="text-blue-400">"bse"</span>: <span class="text-blue-400">5</span> },
+      <span class="text-blue-400">"freeze_quantity"</span>: { <span class="text-blue-400">"nse"</span>: <span class="text-blue-400">100000</span>, <span class="text-blue-400">"bse"</span>: <span class="text-blue-400">null</span> },
+      <span class="text-blue-400">"previous_close"</span>: <span class="text-blue-400">2985.40</span>,
       <span class="text-blue-400">"live_price"</span>: <span class="text-blue-400">3012.75</span>,
       <span class="text-blue-400">"change"</span>: <span class="text-blue-400">27.35</span>,
       <span class="text-blue-400">"change_percent"</span>: <span class="text-blue-400">0.92</span>,
       <span class="text-blue-400">"day_high"</span>: <span class="text-blue-400">3025.00</span>,
       <span class="text-blue-400">"day_low"</span>: <span class="text-blue-400">2975.10</span>,
       <span class="text-blue-400">"day_volume"</span>: <span class="text-blue-400">4820150</span>,
-      <span class="text-blue-400">"updated_at"</span>: <span class="text-green-400">"2026-09-25T09:30:00.000000Z"</span>
+      <span class="text-blue-400">"quoted_at"</span>: <span class="text-green-400">"2026-10-08T09:30:00.000000Z"</span>
     }
   ],
   <span class="text-blue-400">"pagination"</span>: {
@@ -2985,7 +3007,7 @@ curl -X GET "https://setugeo.com/api/v1/market/stocks?instrument_type=stocks&per
                                             <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
                                         </div>
                                         <div class="p-6 text-gray-400">
-                                            <p class="mb-4">Fetch and synchronize all mutual fund schemes registered under AMFI. Includes latest daily NAV, asset management company (AMC), scheme category, and trailing returns (1D, 1M, 1Y, 3Y). Alternate alias: <code class="text-white">/market/mf</code>.</p>
+                                            <p class="mb-4">Fetch all mutual fund schemes registered under AMFI. Includes latest daily NAV, asset management company (AMC), scheme category, and trailing returns (1D, 1M, 1Y, 3Y). AMFI is the primary daily source and Upstox daily rates are the automatic fallback. Alternate alias: <code class="text-white">/market/mf</code>.</p>
                                             <table class="w-full text-sm mb-6">
                                                 <thead class="text-gray-500 text-left border-b border-gray-800">
                                                     <tr>
@@ -3041,17 +3063,15 @@ curl -X GET "https://setugeo.com/api/v1/market/mutual-funds?category=Equity&per_
       <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INF200K01131"</span>,
       <span class="text-blue-400">"scheme_code"</span>: <span class="text-blue-400">119551</span>,
       <span class="text-blue-400">"scheme_name"</span>: <span class="text-green-400">"SBI Bluechip Fund - Direct Plan - Growth"</span>,
-      <span class="text-blue-400">"amc"</span>: <span class="text-green-400">"SBI Funds Management Ltd"</span>,
-      <span class="text-blue-400">"scheme_type"</span>: <span class="text-green-400">"Open Ended Schemes"</span>,
+      <span class="text-blue-400">"amc_name"</span>: <span class="text-green-400">"SBI Funds Management Ltd"</span>,
+      <span class="text-blue-400">"type"</span>: <span class="text-green-400">"Open Ended Schemes"</span>,
       <span class="text-blue-400">"category"</span>: <span class="text-green-400">"Equity Scheme - Large Cap Fund"</span>,
       <span class="text-blue-400">"nav"</span>: <span class="text-blue-400">98.4520</span>,
       <span class="text-blue-400">"nav_date"</span>: <span class="text-green-400">"2026-09-24"</span>,
-      <span class="text-blue-400">"returns"</span>: {
-        <span class="text-blue-400">"1d"</span>: <span class="text-blue-400">0.35</span>,
-        <span class="text-blue-400">"1m"</span>: <span class="text-blue-400">2.45</span>,
-        <span class="text-blue-400">"1y"</span>: <span class="text-blue-400">18.20</span>,
-        <span class="text-blue-400">"3y"</span>: <span class="text-blue-400">48.60</span>
-      }
+      <span class="text-blue-400">"chg_1d"</span>: <span class="text-blue-400">0.35</span>,
+      <span class="text-blue-400">"chg_1m"</span>: <span class="text-blue-400">2.45</span>,
+      <span class="text-blue-400">"chg_1y"</span>: <span class="text-blue-400">18.20</span>,
+      <span class="text-blue-400">"chg_3y"</span>: <span class="text-blue-400">48.60</span>
     }
   ],
   <span class="text-blue-400">"pagination"</span>: {
@@ -3059,6 +3079,11 @@ curl -X GET "https://setugeo.com/api/v1/market/mutual-funds?category=Equity&per_
     <span class="text-blue-400">"last_page"</span>: <span class="text-blue-400">320</span>,
     <span class="text-blue-400">"per_page"</span>: <span class="text-blue-400">50</span>,
     <span class="text-blue-400">"total"</span>: <span class="text-blue-400">15980</span>
+  },
+  <span class="text-blue-400">"provider"</span>: <span class="text-green-400">"AMFI Official Mutual Fund Feeds with Upstox daily-rates fallback"</span>,
+  <span class="text-blue-400">"sources"</span>: {
+    <span class="text-blue-400">"primary"</span>: <span class="text-green-400">"AMFI"</span>,
+    <span class="text-blue-400">"fallback"</span>: <span class="text-green-400">"Upstox mutual-fund instruments"</span>
   }
 }</pre></div>
                                         </div>
@@ -3103,28 +3128,34 @@ curl -X GET "https://setugeo.com/api/v1/market/isin/INE002A01018?live=1" \
                                             <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
   <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
-  <span class="text-blue-400">"instrument_type"</span>: <span class="text-green-400">"EQUITY"</span>,
+  <span class="text-blue-400">"type"</span>: <span class="text-green-400">"equity"</span>,
   <span class="text-blue-400">"data"</span>: {
-    <span class="text-blue-400">"profile"</span>: {
-      <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
-      <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
+    <span class="text-blue-400">"company"</span>: {
+      <span class="text-blue-400">"name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
       <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
       <span class="text-blue-400">"bse_symbol"</span>: <span class="text-green-400">"500325"</span>,
       <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Refineries"</span>,
-      <span class="text-blue-400">"market_cap_category"</span>: <span class="text-green-400">"Large Cap"</span>
+      <span class="text-blue-400">"market_lot"</span>: <span class="text-blue-400">1</span>,
+      <span class="text-blue-400">"qty_multiplier"</span>: <span class="text-blue-400">1</span>,
+      <span class="text-blue-400">"mtf_enabled"</span>: <span class="text-blue-400">true</span>,
+      <span class="text-blue-400">"cas_eligible"</span>: <span class="text-blue-400">true</span>,
+      <span class="text-blue-400">"intraday_margin"</span>: <span class="text-blue-400">20</span>,
+      <span class="text-blue-400">"intraday_leverage"</span>: <span class="text-blue-400">5</span>,
+      <span class="text-blue-400">"tick_size"</span>: { <span class="text-blue-400">"nse"</span>: <span class="text-blue-400">5</span>, <span class="text-blue-400">"bse"</span>: <span class="text-blue-400">5</span> },
+      <span class="text-blue-400">"freeze_quantity"</span>: { <span class="text-blue-400">"nse"</span>: <span class="text-blue-400">100000</span>, <span class="text-blue-400">"bse"</span>: <span class="text-blue-400">null</span> }
     },
-    <span class="text-blue-400">"quote"</span>: {
-      <span class="text-blue-400">"ltp"</span>: <span class="text-blue-400">3012.75</span>,
-      <span class="text-blue-400">"prev_close"</span>: <span class="text-blue-400">2985.40</span>,
+    <span class="text-blue-400">"live_quote"</span>: {
+      <span class="text-blue-400">"price"</span>: <span class="text-blue-400">3012.75</span>,
+      <span class="text-blue-400">"previous_close"</span>: <span class="text-blue-400">2985.40</span>,
       <span class="text-blue-400">"change"</span>: <span class="text-blue-400">27.35</span>,
       <span class="text-blue-400">"change_percent"</span>: <span class="text-blue-400">0.92</span>,
       <span class="text-blue-400">"day_high"</span>: <span class="text-blue-400">3025.00</span>,
       <span class="text-blue-400">"day_low"</span>: <span class="text-blue-400">2975.10</span>,
-      <span class="text-blue-400">"volume"</span>: <span class="text-blue-400">4820150</span>,
-      <span class="text-blue-400">"source"</span>: <span class="text-green-400">"exchange_live"</span>
+      <span class="text-blue-400">"day_volume"</span>: <span class="text-blue-400">4820150</span>,
+      <span class="text-blue-400">"source"</span>: <span class="text-green-400">"live"</span>
     },
     <span class="text-blue-400">"corporate_actions"</span>: [ ... ],
-    <span class="text-blue-400">"recent_news"</span>: [ ... ]
+    <span class="text-blue-400">"news"</span>: [ ... ]
   }
 }</pre></div>
                                         </div>

@@ -73,6 +73,38 @@
         </div>
     </div>
 
+    <div class="mb-8 bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4 mb-5">
+            <h3 class="text-xs font-black text-gray-700 dark:text-gray-200 uppercase tracking-widest">
+                <i class="fas fa-sliders-h text-violet-500 mr-2"></i> Exchange Trading Metadata
+            </h3>
+            <span class="text-[10px] text-gray-400">Upstox synced {{ $equity->upstox_synced_at?->format('d M Y, H:i') ?? 'not yet' }}</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+            @foreach([
+                'Short Name' => $equity->short_name,
+                'Security Type' => $equity->security_type,
+                'Series' => $equity->series,
+                'Market Lot' => $equity->market_lot,
+                'Quantity Multiplier' => $equity->qty_multiplier,
+                'MTF Enabled' => is_null($equity->mtf_enabled) ? null : ($equity->mtf_enabled ? 'Yes' : 'No'),
+                'MTF Bracket' => $equity->mtf_bracket,
+                'CAS Eligible' => is_null($equity->cas_eligible) ? null : ($equity->cas_eligible ? 'Yes' : 'No'),
+                'Intraday Margin' => $equity->intraday_margin,
+                'Intraday Leverage' => $equity->intraday_leverage,
+                'NSE Tick Size' => $equity->nse_tick_size,
+                'BSE Tick Size' => $equity->bse_tick_size,
+                'NSE Freeze Quantity' => $equity->nse_freeze_quantity,
+                'BSE Freeze Quantity' => $equity->bse_freeze_quantity,
+            ] as $label => $value)
+                <div class="bg-gray-50 dark:bg-white/5 rounded-xl p-3 border border-gray-100 dark:border-white/5">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">{{ $label }}</p>
+                    <p class="font-bold text-gray-800 dark:text-gray-200 break-words">{{ $value ?? 'N/A' }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <!-- Intraday & Volatility Analytics (NSE) -->
         <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">

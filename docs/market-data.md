@@ -121,6 +121,29 @@ Upstox V3 full market quotes are the scheduled equity source. Quote time and
 fetch time are distinct. Provider instrument tokens are removed before quote
 payloads are stored or broadcast and are not returned by public APIs.
 
+### Equity instrument metadata
+
+The daily `equities:sync-upstox-instruments` job refreshes public instrument
+metadata such as company/short name, exchange symbols, security type, series,
+market lot, quantity multiplier, MTF and CAS eligibility, intraday margin and
+leverage, tick sizes, and freeze quantities. These fields are returned by the
+equity list/detail APIs and the market stock listing. Provider instrument keys,
+exchange tokens, raw provider payloads, and provider synchronization timestamps
+remain internal and are shown only to administrators.
+
+### Mutual-fund NAV resilience
+
+`sync:mf-daily` uses the official AMFI daily feed as its primary source. If that
+feed is unavailable, invalid, or does not provide adequate current-day coverage,
+the command automatically imports matching daily NAV rates from the Upstox
+mutual-fund instrument file. The same `mutual_fund_prices` records power the
+public `/api/v1/mf/*` and `/api/v1/market/mutual-funds` responses and the admin
+mutual-fund screens, so the latest `nav` and `nav_date` are consistent everywhere.
+
+The API identifies the primary and fallback feeds at response level. It does not
+claim a per-row source because AMFI and Upstox values are upserted into the same
+canonical NAV record.
+
 ## Verification
 
 ```sh

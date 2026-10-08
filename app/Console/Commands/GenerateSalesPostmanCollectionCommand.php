@@ -347,7 +347,7 @@ class GenerateSalesPostmanCollectionCommand extends Command
 
     private function buildStandardResponses(array $endpoint): array
     {
-        $successBody = $endpoint['uri'] === 'api/v1/market-calendar/holidays'
+        $successBody = $this->documentedMarketSuccessBody($endpoint['uri']) ?? ($endpoint['uri'] === 'api/v1/market-calendar/holidays'
             ? [
                 'success' => true,
                 'filters' => ['exchange' => 'all', 'type' => 'holiday'],
@@ -387,7 +387,7 @@ class GenerateSalesPostmanCollectionCommand extends Command
                     'method' => $endpoint['method'],
                     'sample' => 'Example response payload for demo purposes.',
                 ],
-            ];
+            ]);
 
         $responses = [
             $this->makeJsonResponse(
@@ -455,6 +455,127 @@ class GenerateSalesPostmanCollectionCommand extends Command
         }
 
         return $responses;
+    }
+
+    private function documentedMarketSuccessBody(string $uri): ?array
+    {
+        $stock = [
+            'isin' => 'INE002A01018',
+            'company_name' => 'RELIANCE INDUSTRIES LTD',
+            'short_name' => 'Reliance',
+            'nse_symbol' => 'RELIANCE',
+            'bse_symbol' => '500325',
+            'series' => 'EQ',
+            'security_type' => 'NORMAL',
+            'industry' => 'Oil & Gas',
+            'market_lot' => 1,
+            'qty_multiplier' => 1.0,
+            'mtf_enabled' => true,
+            'mtf_bracket' => 26.5,
+            'cas_eligible' => true,
+            'intraday_margin' => 20.0,
+            'intraday_leverage' => 5.0,
+            'nse_tick_size' => 5.0,
+            'bse_tick_size' => 5.0,
+            'nse_freeze_quantity' => 100000.0,
+            'bse_freeze_quantity' => null,
+        ];
+        $marketStock = $stock;
+        unset(
+            $marketStock['nse_tick_size'],
+            $marketStock['bse_tick_size'],
+            $marketStock['nse_freeze_quantity'],
+            $marketStock['bse_freeze_quantity']
+        );
+        $fund = [
+            'isin' => 'INF109K01VQ0',
+            'scheme_code' => '120503',
+            'scheme_name' => 'Axis Bluechip Fund - Growth',
+            'amc_name' => 'Axis Mutual Fund',
+            'category' => 'Equity',
+            'nav' => 54.32,
+            'nav_date' => '2026-10-07',
+            'chg_1d' => 0.42,
+            'chg_1y' => 18.74,
+        ];
+
+        return match ($uri) {
+            'api/v1/equities' => [
+                'success' => true,
+                'data' => [
+                    'current_page' => 1,
+                    'data' => [$stock],
+                    'per_page' => 100,
+                    'total' => 1,
+                ],
+            ],
+            'api/v1/equity/{isin}' => [
+                'success' => true,
+                'data' => $stock,
+            ],
+            'api/v1/market/stocks' => [
+                'success' => true,
+                'type' => 'stocks',
+                'data' => [$marketStock + [
+                    'live_price' => 1450.25,
+                    'change' => 12.25,
+                    'change_percent' => 0.85,
+                    'tick_size' => ['nse' => 5.0, 'bse' => 5.0],
+                    'freeze_quantity' => ['nse' => 100000.0, 'bse' => null],
+                ]],
+                'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 10, 'total' => 1],
+            ],
+            'api/v1/mf/list' => [
+                'success' => true,
+                'data' => [$fund],
+                'sources' => [
+                    'primary' => 'AMFI',
+                    'fallback' => 'Upstox mutual-fund instruments',
+                ],
+                'meta' => ['total' => 13241, 'per_page' => 5, 'current_page' => 1, 'last_page' => 2649],
+            ],
+            'api/v1/market/mutual-funds', 'api/v1/market/mf' => [
+                'success' => true,
+                'type' => 'mutual_funds',
+                'data' => [$fund],
+                'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 10, 'total' => 1],
+                'provider' => 'AMFI Official Mutual Fund Feeds with Upstox daily-rates fallback',
+                'sources' => [
+                    'primary' => 'AMFI',
+                    'fallback' => 'Upstox mutual-fund instruments',
+                ],
+            ],
+            'api/v1/market/isin/{isin}', 'api/v1/market/equity/{isin}' => [
+                'success' => true,
+                'type' => 'equity',
+                'isin' => 'INE002A01018',
+                'data' => [
+                    'company' => [
+                        'name' => 'RELIANCE INDUSTRIES LTD',
+                        'short_name' => 'Reliance',
+                        'nse_symbol' => 'RELIANCE',
+                        'bse_symbol' => '500325',
+                        'series' => 'EQ',
+                        'security_type' => 'NORMAL',
+                        'industry' => 'Oil & Gas',
+                        'market_lot' => 1,
+                        'qty_multiplier' => 1.0,
+                        'mtf_enabled' => true,
+                        'mtf_bracket' => 26.5,
+                        'cas_eligible' => true,
+                        'intraday_margin' => 20.0,
+                        'intraday_leverage' => 5.0,
+                        'tick_size' => ['nse' => 5.0, 'bse' => 5.0],
+                        'freeze_quantity' => ['nse' => 100000.0, 'bse' => null],
+                    ],
+                    'live_quote' => ['price' => 1450.25, 'change' => 12.25, 'change_percent' => 0.85],
+                    'fundamentals' => ['market_cap' => null, 'pe_ratio' => null],
+                    'corporate_actions' => [],
+                    'news' => [],
+                ],
+            ],
+            default => null,
+        };
     }
 
     private function makeJsonResponse(string $name, string $status, int $code, array $body): array

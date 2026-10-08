@@ -14,6 +14,22 @@
         </div>
     </div>
 
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-4 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Latest NAV Date</p>
+            <p class="mt-1 text-xl font-black text-amber-600 dark:text-amber-400">{{ $latestNavDate ? \Carbon\Carbon::parse($latestNavDate)->format('d M Y') : 'No data' }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-4 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Funds Updated</p>
+            <p class="mt-1 text-xl font-black text-gray-900 dark:text-white">{{ number_format($latestNavCount) }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-4 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Daily NAV Sources</p>
+            <p class="mt-1 text-sm font-bold text-gray-900 dark:text-white">AMFI <span class="text-gray-400">→</span> Upstox fallback</p>
+            <p class="text-[10px] text-gray-400 mt-1">Upstox is used automatically when the AMFI daily feed is unavailable or incomplete.</p>
+        </div>
+    </div>
+
     <div class="bg-white dark:bg-[#0f172a]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
         <div class="p-6 overflow-x-auto">
             <table id="mfTable" class="w-full text-left border-collapse">

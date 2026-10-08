@@ -139,6 +139,8 @@
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Industry</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
+                            Trading Metadata</th>
+                        <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Category</th>
                         <th
                             class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4 text-center">
@@ -207,6 +209,19 @@
                         name: 'industry',
                         render: function(data) {
                             return data ? data : '<span class="text-gray-400">N/A</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        name: 'trading_metadata',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-xs whitespace-nowrap',
+                        render: function(data, type, row) {
+                            const lot = row.market_lot ?? 'N/A';
+                            const mtf = row.mtf_enabled === null ? 'N/A' : (row.mtf_enabled ? 'Yes' : 'No');
+                            const cas = row.cas_eligible === null ? 'N/A' : (row.cas_eligible ? 'Yes' : 'No');
+                            return `<div>Lot: <strong>${lot}</strong></div><div class="text-gray-400">MTF: ${mtf} · CAS: ${cas}</div>`;
                         }
                     },
                     {

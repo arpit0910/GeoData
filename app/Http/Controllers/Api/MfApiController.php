@@ -58,6 +58,10 @@ class MfApiController extends Controller
         return response()->json([
             'success' => true,
             'data'    => $paginated->items(),
+            'sources' => [
+                'primary' => 'AMFI',
+                'fallback' => 'Upstox mutual-fund instruments',
+            ],
             'meta'    => [
                 'total'        => $paginated->total(),
                 'per_page'     => $paginated->perPage(),

@@ -83,7 +83,12 @@ class MfController extends Controller
             ]);
         }
 
-        return view('mutual-funds.index');
+        $latestNavDate = DB::table('mutual_fund_prices')->max('nav_date');
+        $latestNavCount = $latestNavDate
+            ? DB::table('mutual_fund_prices')->where('nav_date', $latestNavDate)->count()
+            : 0;
+
+        return view('mutual-funds.index', compact('latestNavDate', 'latestNavCount'));
     }
 
     public function show(Request $request, string $isin)

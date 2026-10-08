@@ -40,7 +40,9 @@ class EquityApiController extends Controller
             'isin', 'company_name', 'short_name', 'nse_symbol', 'bse_symbol',
             'series', 'security_type', 'industry', 'sector', 'market_cap',
             'market_cap_category', 'listing_date', 'face_value', 'market_lot',
-            'mtf_enabled', 'cas_eligible'
+            'qty_multiplier', 'mtf_enabled', 'mtf_bracket', 'cas_eligible',
+            'intraday_margin', 'intraday_leverage', 'nse_tick_size', 'bse_tick_size',
+            'nse_freeze_quantity', 'bse_freeze_quantity'
         )
             ->paginate(100);
 
@@ -135,7 +137,9 @@ class EquityApiController extends Controller
                 'isin', 'company_name', 'short_name', 'nse_symbol', 'bse_symbol',
                 'series', 'security_type', 'industry', 'sector', 'market_cap',
                 'market_cap_category', 'listing_date', 'face_value', 'market_lot',
-                'mtf_enabled', 'cas_eligible'
+                'qty_multiplier', 'mtf_enabled', 'mtf_bracket', 'cas_eligible',
+                'intraday_margin', 'intraday_leverage', 'nse_tick_size', 'bse_tick_size',
+                'nse_freeze_quantity', 'bse_freeze_quantity'
             )
             ->paginate(100);
 
@@ -164,7 +168,9 @@ class EquityApiController extends Controller
             ->select(
                 'isin', 'company_name', 'short_name', 'nse_symbol', 'bse_symbol',
                 'series', 'security_type', 'industry', 'sector', 'market_cap',
-                'market_cap_category', 'mtf_enabled', 'cas_eligible'
+                'market_cap_category', 'market_lot', 'qty_multiplier',
+                'mtf_enabled', 'mtf_bracket', 'cas_eligible',
+                'intraday_margin', 'intraday_leverage', 'nse_tick_size', 'bse_tick_size'
             )
             ->limit(20)
             ->get();
