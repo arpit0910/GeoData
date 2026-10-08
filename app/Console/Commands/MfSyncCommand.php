@@ -209,11 +209,11 @@ class MfSyncCommand extends Command
                 'isin'          => $isinGrowth,
                 'scheme_code'   => $schemeCode,
                 'isin_reinvest' => strlen($isinReinvest) === 12 ? $isinReinvest : null,
-                'scheme_name'   => substr($schemeName, 0, 300),
-                'amc_name'      => $currentAmc,
-                'category'      => $currentCategory,
+                'scheme_name'   => mb_substr($schemeName, 0, 300),
+                'amc_name'      => $this->limit($currentAmc, 150),
+                'category'      => $this->limit($currentCategory, 100),
                 'sub_category'  => null,
-                'type'          => $type,
+                'type'          => $this->limit($type, 255),
                 'is_active'     => 1,
                 'created_at'    => now(),
                 'updated_at'    => now(),
@@ -237,7 +237,7 @@ class MfSyncCommand extends Command
             DB::table('mutual_funds')->upsert(
                 $chunk,
                 ['isin'],
-                ['scheme_code', 'isin_reinvest', 'scheme_name', 'amc_name', 'category', 'is_active', 'updated_at']
+                ['scheme_code', 'isin_reinvest', 'scheme_name', 'amc_name', 'category', 'type', 'is_active', 'updated_at']
             );
         }
         $this->info(sprintf('  Upserted %d scheme records.', count($rows)));
@@ -407,6 +407,11 @@ class MfSyncCommand extends Command
             if (stripos($raw, $key) !== false) return $label;
         }
         return 'Other';
+    }
+
+    private function limit(?string $value, int $length): ?string
+    {
+        return $value === null ? null : mb_substr(trim($value), 0, $length);
     }
 
     private function parseDate(string $d): ?string
