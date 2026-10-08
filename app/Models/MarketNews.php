@@ -33,6 +33,7 @@ class MarketNews extends Model
         'rewrite_model',
         'rewrite_version',
         'rewrite_error',
+        'rewrite_retry_at',
         'rewritten_at',
         'reviewed_at', // Legacy database columns; no review workflow is exposed.
         'reviewed_by',
@@ -59,6 +60,7 @@ class MarketNews extends Model
         'rewrite_model',
         'rewrite_version',
         'rewrite_error',
+        'rewrite_retry_at',
         'rewritten_at',
     ];
 
@@ -67,6 +69,7 @@ class MarketNews extends Model
         'raw_data' => 'array',
         'is_published' => 'boolean',
         'rewritten_at' => 'datetime',
+        'rewrite_retry_at' => 'datetime',
         'source_fetched_at' => 'datetime',
         'reviewed_at' => 'datetime',
     ];

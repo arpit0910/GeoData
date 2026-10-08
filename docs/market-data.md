@@ -49,6 +49,12 @@ Each call still retains the complete model list as its failover chain, starting
 with that call's selected model. Set the strategy to `primary` to always try
 `GROQ_NEWS_MODEL` first and use the other models only after a failure. Requests
 are adjusted for model-family differences, such as Groq reasoning controls.
+When a model returns HTTP 429, its provider retry window is stored as a model
+cooldown and the next available model is tried immediately. If the entire pool
+is rate-limited, the story remains pending with `rewrite_retry_at` instead of
+being marked failed. The scheduler skips it until that time and then retries it
+automatically. Bulk generation stops at the first pool-wide quota limit so it
+does not repeat the same rejected request for every selected story.
 
 When Groq returns a draft that fails an editorial check, the application sends
 the rejected draft and the exact validation failure back to Groq for correction.
@@ -80,7 +86,8 @@ Set `GROQ_API_KEY` in the deployment environment. Optional settings are
 `GROQ_NEWS_MODEL`, `GROQ_NEWS_FALLBACK_MODELS`,
 `GROQ_NEWS_MODEL_STRATEGY`, `GROQ_NEWS_TEMPERATURE`,
 `GROQ_NEWS_EDITORIAL_ATTEMPTS`, and
-`GROQ_API_TIMEOUT`. After
+`GROQ_API_TIMEOUT`. `GROQ_RATE_LIMIT_RETRY_SECONDS` is the fallback cooldown
+when Groq does not provide a `Retry-After` value. After
 changing environment values on a cached deployment, run `php artisan config:cache`.
 If PHP has no trusted system CA store, point `GROQ_CA_BUNDLE` to a trusted PEM
 bundle; TLS verification remains enabled.

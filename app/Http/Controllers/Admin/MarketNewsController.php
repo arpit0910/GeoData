@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\GroqRateLimitException;
 use App\Http\Controllers\Controller;
 use App\Models\MarketNews;
 use App\Services\GroqNewsRewriter;
@@ -68,6 +69,8 @@ class MarketNewsController extends Controller
             $this->regenerateDraft($marketNews, $rewriter);
 
             return back()->with('success', "News #{$marketNews->id} was regenerated and is ready for approval.");
+        } catch (GroqRateLimitException $exception) {
+            return back()->with('error', "News #{$marketNews->id} was deferred until Groq quota is available again. It will retry automatically.");
         } catch (Throwable $exception) {
             report($exception);
 
@@ -91,11 +94,15 @@ class MarketNewsController extends Controller
         set_time_limit(max(180, count($ids) * 120));
         $generated = 0;
         $failures = [];
+        $quotaDeferred = false;
 
         foreach ($stories as $story) {
             try {
                 $this->regenerateDraft($story, $rewriter);
                 $generated++;
+            } catch (GroqRateLimitException) {
+                $quotaDeferred = true;
+                break;
             } catch (Throwable $exception) {
                 report($exception);
                 $failures[] = "#{$story->id}: ".$exception->getMessage();
@@ -104,6 +111,9 @@ class MarketNewsController extends Controller
 
         $skipped = count($ids) - $stories->count();
         if ($generated === 0) {
+            if ($quotaDeferred) {
+                return back()->with('error', 'Generation was deferred because the Groq model pool reached its rate limit. The pending story will retry automatically after the provider cooldown.');
+            }
             $details = $failures !== [] ? ' '.implode(' | ', array_slice($failures, 0, 3)) : '';
 
             return back()->with('error', 'No selected stories could be generated.'.$details);
@@ -115,6 +125,9 @@ class MarketNewsController extends Controller
         }
         if ($skipped > 0) {
             $message .= " {$skipped} processing ".($skipped === 1 ? 'story was' : 'stories were').' skipped.';
+        }
+        if ($quotaDeferred) {
+            $message .= ' Remaining stories were left pending because the Groq pool reached its rate limit; processing will resume automatically after cooldown.';
         }
 
         return back()->with('success', $message);

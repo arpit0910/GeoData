@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\GroqRateLimitException;
 use App\Models\MarketNews;
 use App\Support\TlsCaBundle;
 use Illuminate\Http\Client\ConnectionException;
@@ -41,6 +42,7 @@ class GroqNewsRewriter
         $news->forceFill([
             'editorial_status' => MarketNews::STATUS_PROCESSING,
             'rewrite_error' => null,
+            'rewrite_retry_at' => null,
         ])->save();
 
         try {
@@ -149,17 +151,22 @@ class GroqNewsRewriter
                 'rewrite_model' => $usedModel,
                 'rewrite_version' => self::REWRITE_VERSION,
                 'rewrite_error' => null,
+                'rewrite_retry_at' => null,
                 'rewritten_at' => now(),
             ])->save();
 
             return compact('title', 'summary');
         } catch (Throwable $exception) {
+            $rateLimited = $exception instanceof GroqRateLimitException;
             $news->forceFill([
                 'editorial_status' => $wasPublished
                     ? MarketNews::STATUS_PUBLISHED
-                    : MarketNews::STATUS_FAILED,
+                    : ($rateLimited ? MarketNews::STATUS_PENDING : MarketNews::STATUS_FAILED),
                 'is_published' => $wasPublished,
                 'rewrite_error' => mb_substr($exception->getMessage(), 0, 5000),
+                'rewrite_retry_at' => $rateLimited
+                    ? now()->addSeconds($exception->retryAfterSeconds)
+                    : null,
             ])->save();
 
             throw $exception;
@@ -311,12 +318,13 @@ class GroqNewsRewriter
         $usedModel = '';
         $lastConnectionException = null;
         $transientStatuses = [408, 429, 500, 502, 503, 504];
-        $modelQueue = $this->orderedModels(array_values($models));
+        $modelQueue = $this->availableModels($this->orderedModels(array_values($models)));
         $maximumAttempts = max(
             count($modelQueue),
             max(1, (int) config('services.groq.retry_attempts', 4))
         );
         $transientFailures = 0;
+        $soonestRateLimitRetry = null;
 
         for ($attempt = 1; $attempt <= $maximumAttempts && $modelQueue !== []; $attempt++) {
             $candidateModel = array_shift($modelQueue);
@@ -348,6 +356,15 @@ class GroqNewsRewriter
                 continue;
             }
 
+            if ($response->status() === 429) {
+                $retryAfter = $this->rateLimitRetrySeconds($response);
+                $this->cooldownModel($usedModel, $retryAfter);
+                $soonestRateLimitRetry = $soonestRateLimitRetry === null
+                    ? $retryAfter
+                    : min($soonestRateLimitRetry, $retryAfter);
+                continue;
+            }
+
             $modelQueue[] = $usedModel;
             $transientFailures++;
             if ($attempt < $maximumAttempts) {
@@ -355,6 +372,12 @@ class GroqNewsRewriter
             }
         }
 
+        if ($soonestRateLimitRetry !== null) {
+            throw new GroqRateLimitException(
+                "All currently available Groq models reached a rate limit. News generation was deferred and will retry automatically in {$soonestRateLimitRetry} seconds.",
+                $soonestRateLimitRetry
+            );
+        }
         if (! $response) {
             if ($lastConnectionException) {
                 throw $lastConnectionException;
@@ -373,6 +396,76 @@ class GroqNewsRewriter
         }
 
         return [$response, $usedModel];
+    }
+
+    /** @param array<int, string> $models
+     *  @return array<int, string>
+     */
+    private function availableModels(array $models): array
+    {
+        $available = [];
+        $soonestRetryAt = null;
+
+        foreach ($models as $model) {
+            try {
+                $retryAt = (int) Cache::get($this->modelCooldownKey($model), 0);
+            } catch (Throwable) {
+                $retryAt = 0;
+            }
+
+            if ($retryAt <= time()) {
+                $available[] = $model;
+                continue;
+            }
+
+            $soonestRetryAt = $soonestRetryAt === null ? $retryAt : min($soonestRetryAt, $retryAt);
+        }
+
+        if ($available === []) {
+            $retryAfter = max(1, ($soonestRetryAt ?? (time() + 300)) - time());
+            throw new GroqRateLimitException(
+                "Every configured Groq model is cooling down after a rate limit. News generation was deferred and will retry automatically in {$retryAfter} seconds.",
+                $retryAfter
+            );
+        }
+
+        return $available;
+    }
+
+    private function cooldownModel(string $model, int $seconds): void
+    {
+        try {
+            Cache::put($this->modelCooldownKey($model), time() + $seconds, $seconds);
+        } catch (Throwable) {
+            // The database retry timestamp still prevents a tight retry loop.
+        }
+    }
+
+    private function modelCooldownKey(string $model): string
+    {
+        return 'groq-news-model-cooldown:'.sha1($model);
+    }
+
+    private function rateLimitRetrySeconds(Response $response): int
+    {
+        $default = max(60, (int) config('services.groq.rate_limit_retry_seconds', 300));
+        $retryAfter = trim((string) $response->header('Retry-After'));
+
+        if (is_numeric($retryAfter)) {
+            return max(1, (int) ceil((float) $retryAfter));
+        }
+        if ($retryAfter !== '' && ($timestamp = strtotime($retryAfter)) !== false) {
+            return max(1, $timestamp - time());
+        }
+
+        $message = (string) (data_get($response->json(), 'error.message') ?: $response->body());
+        if (preg_match('/try again in\s+(?:(\d+)h)?(?:(\d+)m)?([\d.]+)s/i', $message, $matches)) {
+            return max(1, ((int) ($matches[1] ?? 0) * 3600)
+                + ((int) ($matches[2] ?? 0) * 60)
+                + (int) ceil((float) ($matches[3] ?? 0)));
+        }
+
+        return $default;
     }
 
     /** @param array<int, string> $models

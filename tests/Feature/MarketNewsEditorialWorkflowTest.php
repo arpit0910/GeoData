@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\GroqRateLimitException;
 use App\Models\MarketNews;
 use App\Services\GroqNewsRewriter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use RuntimeException;
@@ -330,6 +332,46 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->assertSame($models[2], $news->refresh()->rewrite_model);
     }
 
+    public function test_rate_limited_story_is_deferred_until_provider_retry_time(): void
+    {
+        $this->configureGroq();
+        config(['services.groq.fallback_models' => '']);
+        $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
+
+        Http::fake(function (Request $request) use ($sourceBody) {
+            if ($request->url() === 'https://upstox.com/news/test-article') {
+                return Http::response('<script type="application/ld+json">'.json_encode([
+                    '@type' => 'NewsArticle',
+                    'articleBody' => $sourceBody,
+                ]).'</script>');
+            }
+
+            return Http::response([
+                'error' => ['message' => 'Rate limit reached. Please try again in 3m48.096s.'],
+            ], 429, ['Retry-After' => '228.096']);
+        });
+
+        $news = $this->createNews($sourceBody);
+
+        try {
+            app(GroqNewsRewriter::class)->rewrite($news);
+            $this->fail('The simulated quota limit should defer the story.');
+        } catch (GroqRateLimitException $exception) {
+            $this->assertSame(229, $exception->retryAfterSeconds);
+        }
+
+        $news->refresh();
+        $this->assertSame(MarketNews::STATUS_PENDING, $news->editorial_status);
+        $this->assertTrue($news->rewrite_retry_at->isFuture());
+        $this->assertStringContainsString('retry automatically', $news->rewrite_error);
+        Http::assertSentCount(2);
+
+        $this->artisan('market:rewrite-news', ['--limit' => 20])
+            ->expectsOutputToContain('0 generated for review, 0 deferred, 0 failed')
+            ->assertSuccessful();
+        Http::assertSentCount(2);
+    }
+
     public function test_failed_regeneration_keeps_the_last_verified_article_public(): void
     {
         $this->configureGroq();
@@ -400,6 +442,8 @@ class MarketNewsEditorialWorkflowTest extends TestCase
 
     private function configureGroq(): void
     {
+        Cache::forget('groq-news-model-cooldown:'.sha1('groq-test-model'));
+        Cache::forget('groq-news-model-cooldown:'.sha1('groq-fallback-model'));
         config([
             'services.groq.api_key' => 'test-groq-key',
             'services.groq.model' => 'groq-test-model',

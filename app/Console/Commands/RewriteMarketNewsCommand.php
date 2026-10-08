@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Exceptions\GroqRateLimitException;
 use App\Models\MarketNews;
 use App\Services\GroqNewsRewriter;
 use Illuminate\Console\Command;
@@ -30,24 +31,33 @@ class RewriteMarketNewsCommand extends Command
                 fn ($query) => $query->whereIn('id', $ids->all()),
                 fn ($query) => $query->whereIn('editorial_status', $statuses)
             )
+            ->where(function ($query) {
+                $query->whereNull('rewrite_retry_at')
+                    ->orWhere('rewrite_retry_at', '<=', now());
+            })
             ->orderBy('id')
             ->limit(max(1, min(100, (int) $this->option('limit'))))
             ->get();
 
         $completed = 0;
         $failed = 0;
+        $deferred = 0;
         foreach ($items as $news) {
             try {
                 $rewriter->rewrite($news);
                 $completed++;
                 $this->line("Generated news #{$news->id}; awaiting admin approval.");
+            } catch (GroqRateLimitException $exception) {
+                $deferred++;
+                $this->warn("News #{$news->id} deferred until the Groq quota is available again.");
+                break;
             } catch (Throwable $exception) {
                 $failed++;
                 $this->warn("News #{$news->id}: {$exception->getMessage()}");
             }
         }
 
-        $this->info("News rewrite complete: {$completed} generated for review, {$failed} failed.");
+        $this->info("News rewrite complete: {$completed} generated for review, {$deferred} deferred, {$failed} failed.");
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }

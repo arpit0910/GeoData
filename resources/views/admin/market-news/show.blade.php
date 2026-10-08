@@ -29,7 +29,7 @@
     @if(session('success') || session('error'))
         <div class="rounded-xl border px-4 py-3 text-sm font-semibold {{ session('error') ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300' : 'border-green-200 bg-green-50 text-green-700 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-300' }}">{{ session('error') ?: session('success') }}</div>
     @endif
-    @if($marketNews->rewrite_error)<div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300"><div class="font-black">Regeneration error</div><div class="mt-1 whitespace-pre-wrap">{{ $marketNews->rewrite_error }}</div></div>@endif
+    @if($marketNews->rewrite_error)<div class="rounded-xl border {{ $marketNews->rewrite_retry_at?->isFuture() ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300' : 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300' }} p-4 text-sm"><div class="font-black">{{ $marketNews->rewrite_retry_at?->isFuture() ? 'Generation deferred' : 'Regeneration error' }}</div><div class="mt-1 whitespace-pre-wrap">{{ $marketNews->rewrite_error }}</div>@if($marketNews->rewrite_retry_at?->isFuture())<div class="mt-2 font-bold">Automatic retry after {{ $marketNews->rewrite_retry_at->timezone('Asia/Kolkata')->format('d M Y, h:i:s A') }}</div>@endif</div>@endif
 
     <div class="grid gap-6 xl:grid-cols-2">
         <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-richdark-surface">

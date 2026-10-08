@@ -53,6 +53,7 @@ return [
         'retry_initial_delay_ms' => (int) env('GROQ_RETRY_INITIAL_DELAY_MS', 1000),
         'retry_max_delay_ms' => (int) env('GROQ_RETRY_MAX_DELAY_MS', 8000),
         'retry_jitter_ms' => (int) env('GROQ_RETRY_JITTER_MS', 250),
+        'rate_limit_retry_seconds' => (int) env('GROQ_RATE_LIMIT_RETRY_SECONDS', 300),
         'editorial_attempts' => (int) env('GROQ_NEWS_EDITORIAL_ATTEMPTS', 3),
         'ca_bundle' => env('GROQ_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
     ],
