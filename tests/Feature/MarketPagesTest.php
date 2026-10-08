@@ -99,6 +99,14 @@ class MarketPagesTest extends TestCase
             ->assertDontSee('FULL_ARTICLE_END_MARKER')
             ->assertDontSee('Private pending company update');
 
+        $this->get(route('market.index'))
+            ->assertOk()
+            ->assertSee('Published company update with complete verified details')
+            ->assertSee('View details')
+            ->assertSee(route('market.news.show', $published), false)
+            ->assertDontSee('FULL_ARTICLE_END_MARKER')
+            ->assertDontSee('Private pending company update');
+
         $this->get(route('market.news.show', $published))
             ->assertOk()
             ->assertSee('FULL_ARTICLE_END_MARKER')

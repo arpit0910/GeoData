@@ -237,6 +237,44 @@
                                     {{ number_format($stat['count']) }}</h5>
                             </div>
                         @endforeach
+                        <a href="{{ route('admin.corporate-actions.index') }}"
+                            class="bg-amber-50/50 dark:bg-amber-500/5 border border-amber-100 dark:border-amber-500/10 rounded-xl p-4 transition-all hover:shadow-lg hover:-translate-y-0.5">
+                            <div class="flex items-center justify-between mb-2">
+                                <i class="fas fa-calendar-check text-amber-600 dark:text-amber-500"></i>
+                                <i class="fas fa-arrow-right text-[10px] text-amber-500"></i>
+                            </div>
+                            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter">Corporate Actions</p>
+                            <h5 class="text-lg font-black text-gray-900 dark:text-white mt-0.5">{{ number_format(\App\Models\CorporateAction::count()) }}</h5>
+                        </a>
+                    </div>
+                </div>
+
+                @php
+                    $latestCorporateActions = \App\Models\CorporateAction::query()
+                        ->orderByDesc('expiry_date')
+                        ->orderByDesc('id')
+                        ->limit(5)
+                        ->get();
+                @endphp
+                <div>
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-calendar-check text-amber-600 dark:text-amber-500 text-sm"></i>
+                            <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Latest Corporate Actions</h4>
+                        </div>
+                        <a href="{{ route('admin.corporate-actions.index') }}" class="text-xs font-black text-amber-600 hover:text-amber-700">Sync & View All <i class="fas fa-arrow-right ml-1"></i></a>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/5">
+                        <table class="w-full min-w-[680px] text-left text-sm">
+                            <thead class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-400 dark:bg-white/[0.02]"><tr><th class="p-3">Company</th><th class="p-3">Event</th><th class="p-3">Ex date</th><th class="p-3">Value</th><th class="p-3 text-right">View</th></tr></thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+                                @forelse($latestCorporateActions as $action)
+                                    <tr><td class="p-3"><div class="font-bold text-gray-900 dark:text-white">{{ $action->company_name ?: $action->isin }}</div><div class="text-[10px] text-gray-400">{{ $action->symbol ?: $action->isin }}</div></td><td class="p-3"><span class="text-[10px] font-black text-amber-600">{{ $action->type }}</span><div class="text-xs text-gray-600 dark:text-gray-300">{{ $action->name }}</div></td><td class="p-3 text-xs text-gray-600 dark:text-gray-300">{{ $action->expiry_date?->format('d M Y') ?: '—' }}</td><td class="p-3 text-xs text-gray-600 dark:text-gray-300">{{ $action->amount !== null ? '₹'.number_format((float) $action->amount, 4) : ($action->ratio ?: '—') }}</td><td class="p-3 text-right"><a href="{{ route('admin.corporate-actions.show', $action) }}" class="text-xs font-bold text-amber-600">Details</a></td></tr>
+                                @empty
+                                    <tr><td colspan="5" class="p-6 text-center text-sm text-gray-400">No corporate actions stored yet. Use Sync & View All to fetch them.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

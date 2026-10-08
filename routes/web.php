@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\ApiTesterController;
 use App\Http\Controllers\CurrencyConversionController;
 use App\Http\Controllers\ApiAccessController;
 use App\Http\Controllers\Admin\ExchangeCalendarEventController;
+use App\Http\Controllers\Admin\CorporateActionController;
 use App\Http\Controllers\Admin\MarketDatasetController;
 use App\Http\Controllers\Admin\MarketNewsController;
 use App\Http\Controllers\SitemapController;
@@ -275,6 +276,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/global-instruments/sync', [MarketDatasetController::class, 'syncGlobalInstruments'])->name('global-instruments.sync');
         Route::get('/company-fundamentals', [MarketDatasetController::class, 'companyFundamentals'])->name('company-fundamentals');
         Route::get('/company-fundamentals/{companyFundamental}', [MarketDatasetController::class, 'showCompanyFundamental'])->name('company-fundamentals.show');
+    });
+
+    Route::prefix('admin/corporate-actions')->name('admin.corporate-actions.')->group(function () {
+        Route::get('/', [CorporateActionController::class, 'index'])->name('index');
+        Route::post('/sync', [CorporateActionController::class, 'sync'])->name('sync');
+        Route::get('/{corporateAction}', [CorporateActionController::class, 'show'])->name('show');
     });
 
     Route::get('admin/market-news', [MarketNewsController::class, 'index'])

@@ -64,26 +64,29 @@
 
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                     @forelse($latestNews as $story)
-                        <article class="market-panel overflow-hidden flex flex-col min-w-0">
-                            @if($story->thumbnail && filter_var($story->thumbnail, FILTER_VALIDATE_URL))
-                                <div class="relative aspect-[16/9] overflow-hidden bg-slate-900 border-b border-white/[.07]">
-                                    <img src="{{ $story->thumbnail }}" alt="News image for {{ $story->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.025]" onerror="this.parentElement.remove()">
+                        <article class="market-panel overflow-hidden flex h-full flex-col min-w-0">
+                            <div class="relative aspect-[16/9] overflow-hidden bg-slate-900 border-b border-white/[.07]">
+                                @if($story->thumbnail && filter_var($story->thumbnail, FILTER_VALIDATE_URL))
+                                    <img src="{{ $story->thumbnail }}" alt="News image for {{ $story->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.025]" onerror="this.parentElement.innerHTML='<div class=&quot;grid h-full place-items-center bg-gradient-to-br from-slate-900 to-slate-950 text-slate-700&quot;><i class=&quot;far fa-newspaper text-4xl&quot;></i></div>'">
                                     <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0e131d] to-transparent pointer-events-none"></div>
-                                </div>
-                            @endif
-                            <div class="p-5 sm:p-6 flex flex-col flex-1">
-                                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-4">
+                                @else
+                                    <div class="grid h-full place-items-center bg-gradient-to-br from-slate-900 to-slate-950 text-slate-700"><i class="far fa-newspaper text-4xl"></i></div>
+                                @endif
+                            </div>
+                            <div class="p-5 flex flex-col flex-1">
+                                <div class="flex min-h-[28px] flex-wrap items-center gap-x-3 gap-y-2 mb-3">
                                     <span class="inline-flex items-center rounded-md bg-amber-400/10 px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-amber-300 ring-1 ring-inset ring-amber-400/20">{{ $story->symbol ?: 'MARKET' }}</span>
                                     <time class="text-xs market-muted" datetime="{{ optional($story->published_at)->toIso8601String() }}"><i class="far fa-clock mr-1.5 text-slate-500"></i>{{ optional($story->published_at)->format('d M Y, h:i A') ?: 'Recently' }}</time>
                                 </div>
-                                <h3 class="text-lg sm:text-xl font-extrabold leading-snug text-white break-words">{{ $story->title }}</h3>
+                                <h3 class="market-clamp-3 text-lg font-extrabold leading-snug text-white break-words"><a href="{{ route('market.news.show', $story) }}" class="hover:text-amber-300 transition-colors">{{ $story->title }}</a></h3>
                                 @if($story->summary)
-                                    <p class="mt-3 text-sm sm:text-[15px] leading-7 text-slate-300 whitespace-pre-line break-words">{{ trim(strip_tags($story->summary)) }}</p>
+                                    <p class="market-clamp-3 mt-3 text-sm leading-6 text-slate-300 break-words">{{ \Illuminate\Support\Str::limit(preg_replace('/\s+/u', ' ', trim(strip_tags($story->summary))), 190) }}</p>
                                 @else
-                                    <p class="mt-3 text-sm italic market-muted">No additional description is available for this story.</p>
+                                    <p class="market-clamp-3 mt-3 text-sm italic leading-6 market-muted">No additional description is available for this story.</p>
                                 @endif
-                                <div class="mt-auto pt-5">
-                                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500"><i class="fas fa-circle-info"></i> Full available description</span>
+                                <div class="mt-auto flex items-center justify-between gap-3 border-t border-white/[.06] pt-5">
+                                    <span class="text-xs market-muted">Read the full report</span>
+                                    <a href="{{ route('market.news.show', $story) }}" class="inline-flex items-center text-xs font-extrabold text-amber-400 hover:text-amber-300">View details <i class="fas fa-arrow-right ml-2"></i></a>
                                 </div>
                             </div>
                         </article>

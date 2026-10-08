@@ -11,10 +11,12 @@
     .market-button{display:inline-flex;align-items:center;justify-content:center;border-radius:11px;background:#f59e0b;color:#111827;font-weight:800;padding:.72rem 1rem;transition:.15s}.market-button:hover{background:#fbbf24}
     .market-kicker{font-size:.7rem;line-height:1rem;text-transform:uppercase;letter-spacing:.16em;color:#fbbf24;font-weight:800}
     .market-grid-line{background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:32px 32px}
+    .market-clamp-2,.market-clamp-3{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}.market-clamp-2{-webkit-line-clamp:2}.market-clamp-3{-webkit-line-clamp:3}
+    .market-news-detail-wrap{width:100%;max-width:920px;min-width:0;margin:0 auto;padding-left:1rem;padding-right:1rem}
     .market-nav-scroll{scrollbar-width:none;-ms-overflow-style:none}.market-nav-scroll::-webkit-scrollbar{display:none}
     .market-pagination{width:100%;min-width:0;max-width:100%;overflow:hidden}.market-pagination nav{width:100%;min-width:0}.market-pagination nav>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:.75rem}.market-pagination nav>div:last-child{display:none!important}.market-pagination nav span,.market-pagination nav a{border-color:#293445!important;background:#0e131d!important;color:#cbd5e1!important}.market-pagination nav a:hover{background:#192231!important;color:#fff!important}
     @media(min-width:640px){.market-pagination nav>div:first-child{display:none}.market-pagination nav>div:last-child{display:flex!important;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem}.market-pagination nav>div:last-child>div:last-child{max-width:100%;overflow-x:auto;padding-bottom:.25rem}}
-    @media(max-width:639px){.market-wrap{padding:0 .85rem}.market-pagination nav>div:first-child a,.market-pagination nav>div:first-child span{min-width:0;max-width:48%;padding:.65rem .85rem!important;text-align:center}.market-table th,.market-table td{padding:.75rem}}
+    @media(max-width:639px){.market-wrap,.market-news-detail-wrap{padding-left:.85rem;padding-right:.85rem}.market-pagination nav>div:first-child a,.market-pagination nav>div:first-child span{min-width:0;max-width:48%;padding:.65rem .85rem!important;text-align:center}.market-table th,.market-table td{padding:.75rem}}
 </style>
 @endonce
 

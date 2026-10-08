@@ -126,6 +126,10 @@ For a targeted repair, use `--isin=INE002A01018`; for a smaller rotating batch,
 use `--limit=100`. Keep the server's once-per-minute `schedule:run` cron enabled
 for ongoing synchronization.
 
+Administrators can monitor stored events, company coverage, last attempts,
+failures, and manually synchronize either a specific ISIN or the next rotating
+batch at `/admin/corporate-actions`. Each event also has an admin detail view.
+
 Set `GROQ_API_KEY` in the deployment environment. Optional settings are
 `GROQ_NEWS_MODEL`, `GROQ_NEWS_FALLBACK_MODELS`,
 `GROQ_NEWS_VERIFICATION_MODELS`, `GROQ_NEWS_STRICT_JSON_MODELS`,

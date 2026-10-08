@@ -236,6 +236,10 @@
                         <i class="fas fa-file-invoice mr-3 w-5"></i>
                         Company Fundamentals
                     </a>
+                    <a href="{{ route('admin.corporate-actions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
+                        <i class="fas fa-calendar-check mr-3 w-5"></i>
+                        Corporate Actions
+                    </a>
                     <a href="{{ route('admin.exchange-calendar.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.exchange-calendar.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
                         <i class="fas fa-calendar-days mr-3 w-5"></i>
                         Exchange Calendar
