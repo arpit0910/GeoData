@@ -2,11 +2,15 @@
 
 namespace App\Console\Commands;
 
+use App\Services\UpstoxMutualFundNavSyncService;
+use App\Support\TlsCaBundle;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
+use RuntimeException;
+use Throwable;
 
 class SyncMfDailyCommand extends Command
 {
@@ -25,7 +29,7 @@ class SyncMfDailyCommand extends Command
 
     protected bool $shouldStop = false;
 
-    public function handle(): int
+    public function handle(UpstoxMutualFundNavSyncService $upstoxFallback): int
     {
         @ini_set('memory_limit', '-1');
         set_time_limit(0);
@@ -51,20 +55,23 @@ class SyncMfDailyCommand extends Command
         $t = microtime(true);
 
         try {
-            $response = Http::timeout(120)
-                ->withoutVerifying()
+            $response = Http::retry(4, 1000, null, false)
+                ->connectTimeout(15)
+                ->timeout(120)
+                ->withOptions(['verify' => TlsCaBundle::resolve(config('market_data.amfi_ca_bundle'))])
                 ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
                 ->get(self::AMFI_URL);
 
             if (!$response->successful()) {
-                $this->error('AMFI download failed: HTTP ' . $response->status());
-                Log::error('[sync:mf-daily] download failed', ['status' => $response->status()]);
-                return Command::FAILURE;
+                throw new RuntimeException('HTTP '.$response->status());
             }
-        } catch (\Exception $e) {
-            $this->error('AMFI download failed: ' . $e->getMessage());
+            if (!str_contains($response->body(), 'Scheme Code;')) {
+                throw new RuntimeException('unexpected response format');
+            }
+        } catch (Throwable $e) {
+            $this->warn('AMFI download failed: '.$e->getMessage());
             Log::error('[sync:mf-daily] download exception', ['error' => $e->getMessage()]);
-            return Command::FAILURE;
+            return $this->syncFromUpstox($upstoxFallback, 'AMFI download failed');
         }
 
         $downloadMs = round((microtime(true) - $t) * 1000);
@@ -92,6 +99,23 @@ class SyncMfDailyCommand extends Command
             'elapsed_ms' => $parseMs,
         ]);
 
+        $knownFunds = DB::table('mutual_funds')->where('is_active', true)->count();
+        $minimumExpected = $knownFunds >= 100 ? (int) floor($knownFunds * 0.20) : 1;
+        if (count($navRows) < $minimumExpected) {
+            $this->warn(sprintf(
+                'AMFI response contained too few usable NAV rows (%d; expected at least %d).',
+                count($navRows),
+                $minimumExpected
+            ));
+            Log::warning('[sync:mf-daily] AMFI coverage check failed', [
+                'nav_rows' => count($navRows),
+                'known_funds' => $knownFunds,
+                'minimum_expected' => $minimumExpected,
+            ]);
+
+            return $this->syncFromUpstox($upstoxFallback, 'AMFI coverage check failed');
+        }
+
         if ($this->option('dry-run')) {
             $this->info('[Dry-run] No writes performed.');
             Log::info('[sync:mf-daily] dry-run complete');
@@ -103,10 +127,10 @@ class SyncMfDailyCommand extends Command
         $t = microtime(true);
         try {
             $this->upsertMaster($masterRows);
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->error('upsertMaster failed: ' . $e->getMessage());
             Log::error('[sync:mf-daily] upsertMaster failed', ['error' => $e->getMessage()]);
-            return Command::FAILURE;
+            return $this->syncFromUpstox($upstoxFallback, 'AMFI master upsert failed');
         }
         unset($masterRows);
         gc_collect_cycles();
@@ -118,10 +142,10 @@ class SyncMfDailyCommand extends Command
         $t = microtime(true);
         try {
             $this->upsertNav($navRows);
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->error('upsertNav failed: ' . $e->getMessage());
             Log::error('[sync:mf-daily] upsertNav failed', ['error' => $e->getMessage()]);
-            return Command::FAILURE;
+            return $this->syncFromUpstox($upstoxFallback, 'AMFI NAV upsert failed');
         }
         unset($navRows);
         gc_collect_cycles();
@@ -156,6 +180,50 @@ class SyncMfDailyCommand extends Command
             'master_ms'   => $masterMs,
             'nav_ms'      => $navMs,
         ]);
+
+        return Command::SUCCESS;
+    }
+
+    private function syncFromUpstox(
+        UpstoxMutualFundNavSyncService $upstoxFallback,
+        string $reason
+    ): int {
+        $this->warn($reason.'. Trying the Upstox daily mutual-fund rates fallback...');
+
+        try {
+            $stats = $upstoxFallback->sync((bool) $this->option('dry-run'));
+        } catch (Throwable $exception) {
+            $this->error('Upstox mutual-fund fallback failed: '.$exception->getMessage());
+            Log::error('[sync:mf-daily] Upstox fallback failed', [
+                'reason' => $reason,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return Command::FAILURE;
+        }
+
+        $this->info(sprintf(
+            'Upstox fallback complete: received=%s, matched=%s, saved=%s, NAV date=%s.',
+            number_format($stats['received']),
+            number_format($stats['matched']),
+            number_format($stats['saved']),
+            $stats['latest_date'] ?? 'none'
+        ));
+        Log::warning('[sync:mf-daily] recovered with Upstox fallback', array_merge($stats, [
+            'reason' => $reason,
+        ]));
+
+        if ($stats['latest_date'] && ! $this->option('dry-run') && ! $this->option('skip-returns')) {
+            try {
+                $this->computeReturnsForDate($stats['latest_date']);
+            } catch (Throwable $exception) {
+                $this->warn('Fallback NAVs were saved, but returns could not be computed: '.$exception->getMessage());
+                Log::error('[sync:mf-daily] fallback returns failed', [
+                    'nav_date' => $stats['latest_date'],
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
 
         return Command::SUCCESS;
     }

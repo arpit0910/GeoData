@@ -18,11 +18,19 @@ class Equity extends Model
     protected $hidden = [
         'upstox_nse_instrument_key',
         'upstox_bse_instrument_key',
+        'nse_exchange_token',
+        'bse_exchange_token',
+        'upstox_nse_metadata',
+        'upstox_bse_metadata',
+        'upstox_synced_at',
     ];
 
     protected $fillable = [
         'isin',
         'company_name',
+        'short_name',
+        'security_type',
+        'company_profile',
         'nse_symbol',
         'bse_symbol',
         'industry',
@@ -39,6 +47,16 @@ class Equity extends Model
         'index_membership',
         'company_website',
         'cin',
+        'nse_tick_size',
+        'bse_tick_size',
+        'nse_freeze_quantity',
+        'bse_freeze_quantity',
+        'qty_multiplier',
+        'mtf_enabled',
+        'mtf_bracket',
+        'cas_eligible',
+        'intraday_margin',
+        'intraday_leverage',
     ];
 
     protected $casts = [
@@ -47,6 +65,11 @@ class Equity extends Model
         'listing_date' => 'date',
         'index_membership' => 'array',
         'market_lot' => 'integer',
+        'mtf_enabled' => 'boolean',
+        'cas_eligible' => 'boolean',
+        'upstox_nse_metadata' => 'array',
+        'upstox_bse_metadata' => 'array',
+        'upstox_synced_at' => 'datetime',
     ];
 
     public function prices()

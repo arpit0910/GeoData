@@ -9,20 +9,24 @@ use Throwable;
 class SyncUpstoxInstrumentsCommand extends Command
 {
     protected $signature = 'equities:sync-upstox-instruments
-        {file : Absolute or project-relative path to the Upstox complete.json file}
+        {file? : Optional absolute or project-relative path; downloads the current file when omitted}
         {--dry-run : Analyse the file without changing the database}';
 
     protected $description = 'Add and update equities from the Upstox instrument master';
 
     public function handle(UpstoxInstrumentSyncService $syncService): int
     {
-        $path = (string) $this->argument('file');
-        if (!$this->isAbsolutePath($path)) {
-            $path = base_path($path);
-        }
-
         try {
-            $stats = $syncService->sync($path, (bool) $this->option('dry-run'));
+            $path = trim((string) ($this->argument('file') ?? ''));
+            if ($path === '') {
+                $this->info('Downloading the current Upstox instrument master...');
+                $stats = $syncService->syncFromUrl((bool) $this->option('dry-run'));
+            } else {
+                if (!$this->isAbsolutePath($path)) {
+                    $path = base_path($path);
+                }
+                $stats = $syncService->sync($path, (bool) $this->option('dry-run'));
+            }
         } catch (Throwable $exception) {
             $this->error($exception->getMessage());
 

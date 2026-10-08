@@ -64,6 +64,10 @@ class CompanyFundamentalsSyncService
                     ]
                 );
 
+                if ($definition['dataset'] === 'profile') {
+                    $this->applyProfileToEquity($equity, $payload);
+                }
+
                 $stats['saved']++;
             } catch (Throwable $exception) {
                 if ($this->isUnavailableInstrument($exception)) {
@@ -94,6 +98,28 @@ class CompanyFundamentalsSyncService
             '/HTTP (400|404)\b.*(?:Invalid Instrument key|instrument.*not found)/i',
             $exception->getMessage()
         ) === 1;
+    }
+
+    /** @param array<string, mixed> $profile */
+    private function applyProfileToEquity(Equity $equity, array $profile): void
+    {
+        $sector = trim((string) ($profile['sector'] ?? ''));
+        $description = trim((string) ($profile['company_profile'] ?? ''));
+        $updates = [];
+
+        if ($sector !== '') {
+            $updates['sector'] = mb_substr($sector, 0, 255);
+            if (trim((string) $equity->industry) === '') {
+                $updates['industry'] = mb_substr($sector, 0, 255);
+            }
+        }
+        if ($description !== '') {
+            $updates['company_profile'] = $description;
+        }
+
+        if ($updates !== []) {
+            $equity->forceFill($updates)->save();
+        }
     }
 
     /** @return array<int, array{dataset: string, endpoint: string, statement_type: string, time_period: string, query: array<string, scalar>}> */

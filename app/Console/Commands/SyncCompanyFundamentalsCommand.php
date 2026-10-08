@@ -14,6 +14,7 @@ class SyncCompanyFundamentalsCommand extends Command
         {--dataset=* : Synchronize only selected datasets}
         {--limit=25 : Maximum companies selected by the scheduled batch}
         {--all : Synchronize every eligible company}
+        {--missing-profile : Synchronize only companies missing sector or company profile data}
         {--stale-days= : Synchronize only companies never synced or not synced within this many days}
         {--delay=250 : Delay in milliseconds between provider requests}';
 
@@ -56,6 +57,15 @@ class SyncCompanyFundamentalsCommand extends Command
         if ($isins->isNotEmpty()) {
             $query->whereIn('isin', $isins->all());
         } else {
+            if ($this->option('missing-profile')) {
+                $query->where(function ($query) {
+                    $query->whereNull('sector')
+                        ->orWhere('sector', '')
+                        ->orWhereNull('company_profile')
+                        ->orWhere('company_profile', '');
+                });
+            }
+
             if ($this->option('stale-days') !== null) {
                 $staleDays = max(0, min((int) $this->option('stale-days'), 3650));
                 $cutoff = now()->subDays($staleDays);

@@ -89,6 +89,16 @@ class MarketDatasetSyncTest extends TestCase
         $equity->forceFill(['upstox_nse_instrument_key' => 'NSE_EQ|INE002A01018'])->save();
 
         Http::fake(function (Request $request) {
+            if (str_ends_with($request->url(), '/profile')) {
+                return Http::response([
+                    'status' => 'success',
+                    'data' => [
+                        'company_profile' => 'Example Company manufactures testing equipment.',
+                        'sector' => 'Industrial Products',
+                    ],
+                ]);
+            }
+
             return Http::response([
                 'status' => 'success',
                 'data' => ['request_url' => $request->url()],
@@ -106,6 +116,12 @@ class MarketDatasetSyncTest extends TestCase
             'dataset' => 'income_statement',
             'statement_type' => 'standalone',
             'time_period' => 'quarterly',
+        ]);
+        $this->assertDatabaseHas('equities', [
+            'isin' => $equity->isin,
+            'sector' => 'Industrial Products',
+            'industry' => 'Industrial Products',
+            'company_profile' => 'Example Company manufactures testing equipment.',
         ]);
         $this->assertDatabaseHas('company_fundamentals', [
             'isin' => $equity->isin,

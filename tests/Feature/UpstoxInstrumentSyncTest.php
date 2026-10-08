@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 
@@ -35,6 +36,17 @@ class UpstoxInstrumentSyncTest extends TestCase
                 'instrument_key' => 'NSE_EQ|INE002A01018',
                 'lot_size' => 1,
                 'trading_symbol' => 'RELIANCE',
+                'short_name' => 'Reliance',
+                'security_type' => 'NORMAL',
+                'exchange_token' => '2885',
+                'tick_size' => 5,
+                'freeze_quantity' => 100000,
+                'qty_multiplier' => 1,
+                'mtf_enabled' => true,
+                'mtf_bracket' => 26.5,
+                'cas_eligible' => true,
+                'intraday_margin' => 20,
+                'intraday_leverage' => 5,
             ],
             [
                 'segment' => 'BSE_EQ',
@@ -80,6 +92,17 @@ class UpstoxInstrumentSyncTest extends TestCase
             'upstox_bse_instrument_key' => 'BSE_EQ|INE002A01018',
             'series' => 'EQ',
             'market_lot' => 1,
+            'short_name' => 'Reliance',
+            'security_type' => 'NORMAL',
+            'nse_exchange_token' => '2885',
+            'nse_tick_size' => 5,
+            'nse_freeze_quantity' => 100000,
+            'qty_multiplier' => 1,
+            'mtf_enabled' => 1,
+            'mtf_bracket' => 26.5,
+            'cas_eligible' => 1,
+            'intraday_margin' => 20,
+            'intraday_leverage' => 5,
             'is_active' => 1,
         ]);
         $this->assertDatabaseHas('equities', [
@@ -170,6 +193,37 @@ class UpstoxInstrumentSyncTest extends TestCase
 
         $response->assertRedirect('/');
         $this->assertDatabaseMissing('equities', ['isin' => 'INE002A01018']);
+    }
+
+    public function test_command_downloads_the_current_instrument_master_when_no_file_is_given(): void
+    {
+        config(['market_data.upstox.instruments_url' => 'https://provider.test/complete.json.gz']);
+        Http::fake([
+            'https://provider.test/complete.json.gz' => Http::response(gzencode(json_encode([[
+                'segment' => 'NSE_EQ',
+                'name' => 'AUTOMATED COMPANY LIMITED',
+                'short_name' => 'Automated Company',
+                'isin' => 'INE123A01010',
+                'instrument_type' => 'EQ',
+                'instrument_key' => 'NSE_EQ|INE123A01010',
+                'exchange_token' => '12345',
+                'lot_size' => 1,
+                'tick_size' => 5,
+                'trading_symbol' => 'AUTOCO',
+            ]], JSON_THROW_ON_ERROR))),
+        ]);
+
+        $this->artisan('equities:sync-upstox-instruments')
+            ->expectsOutputToContain('Downloading the current Upstox instrument master')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('equities', [
+            'isin' => 'INE123A01010',
+            'company_name' => 'AUTOMATED COMPANY LIMITED',
+            'short_name' => 'Automated Company',
+            'nse_symbol' => 'AUTOCO',
+            'nse_exchange_token' => '12345',
+        ]);
     }
 
     public function test_admin_can_upload_and_sync_the_master_in_small_chunks(): void

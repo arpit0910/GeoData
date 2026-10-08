@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -37,6 +38,41 @@ class SyncMfDailyCommandTest extends TestCase
         $this->assertDatabaseHas('mutual_fund_prices', [
             'isin' => 'INF000000001',
             'nav_date' => '2026-10-08',
+        ]);
+    }
+
+    public function test_upstox_daily_rates_recover_an_amfi_failure(): void
+    {
+        $today = now('Asia/Kolkata')->toDateString();
+        DB::table('mutual_funds')->insert([
+            'isin' => 'INF000000001',
+            'scheme_code' => '123456',
+            'scheme_name' => 'Fallback Mutual Fund',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        config(['market_data.upstox.mf_instruments_url' => 'https://provider.test/mf.json.gz']);
+
+        Http::fake([
+            'https://www.amfiindia.com/spages/NAVAll.txt' => Http::response('Unavailable', 503),
+            'https://provider.test/mf.json.gz' => Http::response(gzencode(json_encode([[
+                'instrument_key' => 'INF000000001',
+                'name' => 'Fallback Mutual Fund',
+                'last_price' => 15.4321,
+                'last_price_date' => $today,
+            ]], JSON_THROW_ON_ERROR))),
+        ]);
+
+        $this->artisan('sync:mf-daily', ['--force' => true, '--skip-returns' => true])
+            ->expectsOutputToContain('Trying the Upstox daily mutual-fund rates fallback')
+            ->expectsOutputToContain('Upstox fallback complete')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('mutual_fund_prices', [
+            'isin' => 'INF000000001',
+            'nav_date' => $today,
+            'nav' => 15.4321,
         ]);
     }
 }

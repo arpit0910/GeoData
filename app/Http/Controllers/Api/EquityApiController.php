@@ -36,7 +36,12 @@ class EquityApiController extends Controller
             });
         }
 
-        $equities = $query->select('isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'listing_date', 'face_value')
+        $equities = $query->select(
+            'isin', 'company_name', 'short_name', 'nse_symbol', 'bse_symbol',
+            'series', 'security_type', 'industry', 'sector', 'market_cap',
+            'market_cap_category', 'listing_date', 'face_value', 'market_lot',
+            'mtf_enabled', 'cas_eligible'
+        )
             ->paginate(100);
 
         return response()->json([
@@ -126,7 +131,12 @@ class EquityApiController extends Controller
 
         $equities = Equity::where('market_cap_category', $normalized)
             ->where('is_active', true)
-            ->select('isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category', 'listing_date', 'face_value')
+            ->select(
+                'isin', 'company_name', 'short_name', 'nse_symbol', 'bse_symbol',
+                'series', 'security_type', 'industry', 'sector', 'market_cap',
+                'market_cap_category', 'listing_date', 'face_value', 'market_lot',
+                'mtf_enabled', 'cas_eligible'
+            )
             ->paginate(100);
 
         return response()->json([
@@ -151,7 +161,11 @@ class EquityApiController extends Controller
                   ->orWhere('bse_symbol', 'LIKE', "%{$query}%")
                   ->orWhere('isin', 'LIKE', "%{$query}%");
             })
-            ->select('isin', 'company_name', 'nse_symbol', 'bse_symbol', 'industry', 'market_cap', 'market_cap_category')
+            ->select(
+                'isin', 'company_name', 'short_name', 'nse_symbol', 'bse_symbol',
+                'series', 'security_type', 'industry', 'sector', 'market_cap',
+                'market_cap_category', 'mtf_enabled', 'cas_eligible'
+            )
             ->limit(20)
             ->get();
 

@@ -19,8 +19,19 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('indices:sync')
             ->dailyAt('19:15')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('sync:mf-daily --force')
+        $this->markScheduled($schedule->command('sync:mf-daily --force --skip-returns')
             ->dailyAt('21:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
+
+        // Independent morning recovery from Upstox's daily MF instrument file.
+        $this->markScheduled($schedule->command('mf:sync-upstox-daily')
+            ->dailyAt('06:10')->timezone('Asia/Kolkata')->withoutOverlapping(120));
+
+        // Repair any dates missed in the preceding two weeks. The command is
+        // idempotent, so existing ISIN/date rows are updated without duplicates.
+        $this->markScheduled($schedule->command('mf:backfill', [
+            '--from' => now('Asia/Kolkata')->subDays(14)->toDateString(),
+            '--to' => now('Asia/Kolkata')->subDay()->toDateString(),
+        ])->dailyAt('06:45')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
         $this->markScheduled($schedule->command('mf:sync-and-calculate')
             ->dailyAt('23:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
@@ -34,8 +45,16 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:sync-global-instruments')
             ->dailyAt('06:30')->timezone('Asia/Kolkata')->withoutOverlapping(30));
 
+        // Upstox refreshes its instrument masters around 06:00 IST. This also
+        // fills newly listed stocks and all provider metadata available for them.
+        $this->markScheduled($schedule->command('equities:sync-upstox-instruments')
+            ->dailyAt('06:15')->timezone('Asia/Kolkata')->withoutOverlapping(60));
+
         $this->markScheduled($schedule->command('market:sync-company-fundamentals --limit=25 --delay=250')
             ->dailyAt('02:00')->timezone('Asia/Kolkata')->withoutOverlapping(180));
+
+        $this->markScheduled($schedule->command('market:sync-company-fundamentals --dataset=profile --missing-profile --limit=250 --delay=200')
+            ->dailyAt('02:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
         // 1. Equities / Stocks: Constantly synced every minute during active trading hours (09:15 to 15:30 IST)
         $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=stocks --mode=ltp')
