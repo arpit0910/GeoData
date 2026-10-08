@@ -26,22 +26,22 @@ is cached, rebuild it after updating the environment. If PHP reports cURL error 
 ### News rewriting workflow
 
 Upstox news is stored as private source material. The scheduled
-`market:rewrite-news` command asks Gemini for a low-temperature, structured
+`market:rewrite-news` command asks Groq for a low-temperature, structured
 rewrite and stores it on the same `market_news` record. An administrator reviews
 and approves a successfully verified draft before it is published. Only drafts
 that pass all deterministic and semantic checks enter the ready-for-review
 queue. Source copy, incomplete rewrites, and rejected rewrites remain private.
 
 Before rewriting, the editor fetches the trusted Upstox article page and stores
-its JSON-LD `articleBody` as private source content. Gemini receives this full
+its JSON-LD `articleBody` as private source content. Groq receives this full
 body instead of the short API teaser and must return a concise headline plus an
 explicit array of paragraphs. The application enforces proportional article
 length, paragraph count, headline length, prohibited process language, and exact
 preservation of numerical facts. A separate zero-temperature verification pass
 rejects changed intent, omitted material facts, unsupported additions, changed
-causality or uncertainty, attribution shifts, and tone changes. Temporary Gemini
+causality or uncertainty, attribution shifts, and tone changes. Temporary Groq
 capacity failures are retried and can fall back through
-`GEMINI_NEWS_FALLBACK_MODELS`.
+`GROQ_NEWS_FALLBACK_MODELS`.
 
 The Upstox news synchronizer requests the maximum 100 records per page and
 follows every reported page (up to Upstox's 100-page limit) for each batch of
@@ -58,10 +58,10 @@ recent seven days, so the rotating sync persists that rolling window over time.
 Use `--reset-cursor` to restart a full rotation, `--max-batches=N` to override
 the per-run request budget, or `--isin=...` for a targeted fetch.
 
-Set `GEMINI_API_KEY` in the deployment environment. Optional settings are
-`GEMINI_NEWS_MODEL`, `GEMINI_NEWS_TEMPERATURE`, and `GEMINI_API_TIMEOUT`. After
+Set `GROQ_API_KEY` in the deployment environment. Optional settings are
+`GROQ_NEWS_MODEL`, `GROQ_NEWS_TEMPERATURE`, and `GROQ_API_TIMEOUT`. After
 changing environment values on a cached deployment, run `php artisan config:cache`.
-If PHP has no trusted system CA store, point `GEMINI_CA_BUNDLE` to a trusted PEM
+If PHP has no trusted system CA store, point `GROQ_CA_BUNDLE` to a trusted PEM
 bundle; TLS verification remains enabled.
 
 Manual processing and retry commands:

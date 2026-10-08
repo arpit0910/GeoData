@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MarketNews;
 use App\Models\User;
-use App\Services\GeminiNewsRewriter;
+use App\Services\GroqNewsRewriter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -104,7 +104,7 @@ class AdminMarketNewsTest extends TestCase
             'is_published' => false,
             'published_at' => now(),
         ]);
-        $rewriter = $this->mock(GeminiNewsRewriter::class);
+        $rewriter = $this->mock(GroqNewsRewriter::class);
         $rewriter->shouldReceive('rewrite')->once()->andReturnUsing(function (MarketNews $item) {
             $item->forceFill([
                 'title' => 'Regenerated market headline ready for administrator approval',

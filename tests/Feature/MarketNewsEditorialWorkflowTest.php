@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\MarketNews;
-use App\Services\GeminiNewsRewriter;
+use App\Services\GroqNewsRewriter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -17,7 +17,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
 
     public function test_verified_rewrite_waits_for_admin_approval_with_low_temperature(): void
     {
-        $this->configureGemini();
+        $this->configureGroq();
         $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
 
         Http::fake(function (Request $request) use ($sourceBody) {
@@ -30,9 +30,9 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 );
             }
 
-            $instruction = (string) data_get($request->data(), 'systemInstruction.parts.0.text');
+            $instruction = (string) data_get($request->data(), 'messages.0.content');
             if (str_contains($instruction, 'independent financial-news fact checker')) {
-                return $this->geminiResponse([
+                return $this->groqResponse([
                     'intent_preserved' => true,
                     'facts_preserved' => true,
                     'tone_preserved' => true,
@@ -41,7 +41,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 ]);
             }
 
-            return $this->geminiResponse([
+            return $this->groqResponse([
                 'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
                 'paragraphs' => [
                     'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period.',
@@ -52,14 +52,14 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         });
 
         $news = $this->createNews($sourceBody);
-        app(GeminiNewsRewriter::class)->rewrite($news);
+        app(GroqNewsRewriter::class)->rewrite($news);
 
         $news->refresh();
         $this->assertSame(MarketNews::STATUS_READY, $news->editorial_status);
         $this->assertFalse($news->is_published);
         $this->assertSame('Company reports flat quarterly revenue at Rs 100 crore', $news->title);
-        $this->assertSame('gemini-test-model', $news->rewrite_model);
-        $this->assertSame(3, $news->rewrite_version);
+        $this->assertSame('groq-test-model', $news->rewrite_model);
+        $this->assertSame(4, $news->rewrite_version);
         $this->assertSame($sourceBody, $news->original_content);
         $this->get('/market/news')
             ->assertOk()
@@ -67,17 +67,18 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             ->assertDontSee('Company revenue flat');
 
         Http::assertSent(function (Request $request): bool {
-            return $request->hasHeader('x-goog-api-key', 'test-gemini-key')
-                && data_get($request->data(), 'generationConfig.temperature') === 0.1
-                && data_get($request->data(), 'generationConfig.responseMimeType') === 'application/json'
-                && str_contains((string) data_get($request->data(), 'contents.0.parts.0.text'), '<source_summary>')
-                && str_contains((string) data_get($request->data(), 'contents.0.parts.0.text'), 'Revenue was Rs 100 crore')
-                && str_contains((string) data_get($request->data(), 'contents.0.parts.0.text'), 'Management said demand remained stable');
+            return $request->hasHeader('Authorization', 'Bearer test-groq-key')
+                && data_get($request->data(), 'temperature') === 0.1
+                && data_get($request->data(), 'response_format.type') === 'json_schema'
+                && data_get($request->data(), 'response_format.json_schema.strict') === true
+                && str_contains((string) data_get($request->data(), 'messages.1.content'), '<source_summary>')
+                && str_contains((string) data_get($request->data(), 'messages.1.content'), 'Revenue was Rs 100 crore')
+                && str_contains((string) data_get($request->data(), 'messages.1.content'), 'Management said demand remained stable');
         });
         Http::assertSent(function (Request $request): bool {
-            return data_get($request->data(), 'generationConfig.temperature') === 0
+            return data_get($request->data(), 'temperature') === 0
                 && str_contains(
-                    (string) data_get($request->data(), 'systemInstruction.parts.0.text'),
+                    (string) data_get($request->data(), 'messages.0.content'),
                     'independent financial-news fact checker'
                 );
         });
@@ -85,7 +86,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
 
     public function test_semantically_rejected_rewrite_remains_private(): void
     {
-        $this->configureGemini();
+        $this->configureGroq();
         $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
 
         Http::fake(function (Request $request) use ($sourceBody) {
@@ -98,9 +99,9 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 );
             }
 
-            $instruction = (string) data_get($request->data(), 'systemInstruction.parts.0.text');
+            $instruction = (string) data_get($request->data(), 'messages.0.content');
             if (str_contains($instruction, 'independent financial-news fact checker')) {
-                return $this->geminiResponse([
+                return $this->groqResponse([
                     'intent_preserved' => false,
                     'facts_preserved' => true,
                     'tone_preserved' => false,
@@ -109,7 +110,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 ]);
             }
 
-            return $this->geminiResponse([
+            return $this->groqResponse([
                 'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
                 'paragraphs' => [
                     'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period.',
@@ -122,7 +123,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $news = $this->createNews($sourceBody);
 
         try {
-            app(GeminiNewsRewriter::class)->rewrite($news);
+            app(GroqNewsRewriter::class)->rewrite($news);
             $this->fail('A rewrite that changes intent should be rejected.');
         } catch (RuntimeException $exception) {
             $this->assertStringContainsString('neutral source sound optimistic', $exception->getMessage());
@@ -137,9 +138,60 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->assertTrue(Route::has('admin.market-news.index'));
     }
 
+    public function test_transient_capacity_error_uses_the_fallback_model(): void
+    {
+        $this->configureGroq();
+        config(['services.groq.fallback_models' => 'groq-fallback-model']);
+        $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
+        $groqCalls = 0;
+
+        Http::fake(function (Request $request) use ($sourceBody, &$groqCalls) {
+            if ($request->url() === 'https://upstox.com/news/test-article') {
+                return Http::response(
+                    '<script type="application/ld+json">'.json_encode([
+                        '@type' => 'NewsArticle',
+                        'articleBody' => $sourceBody,
+                    ]).'</script>'
+                );
+            }
+
+            $groqCalls++;
+            if ($groqCalls === 1) {
+                return Http::response(['error' => ['message' => 'Model capacity is temporarily unavailable']], 503);
+            }
+
+            $instruction = (string) data_get($request->data(), 'messages.0.content');
+            if (str_contains($instruction, 'independent financial-news fact checker')) {
+                return $this->groqResponse([
+                    'intent_preserved' => true,
+                    'facts_preserved' => true,
+                    'tone_preserved' => true,
+                    'attributions_preserved' => true,
+                    'issues' => [],
+                ]);
+            }
+
+            return $this->groqResponse([
+                'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
+                'paragraphs' => [
+                    'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period.',
+                    'Management said demand remained stable across its principal business segments during the quarter.',
+                    'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter.',
+                ],
+            ]);
+        });
+
+        $news = $this->createNews($sourceBody);
+        app(GroqNewsRewriter::class)->rewrite($news);
+
+        $this->assertSame(MarketNews::STATUS_READY, $news->refresh()->editorial_status);
+        $this->assertSame('groq-fallback-model', $news->rewrite_model);
+        $this->assertSame(3, $groqCalls);
+    }
+
     public function test_failed_regeneration_keeps_the_last_verified_article_public(): void
     {
-        $this->configureGemini();
+        $this->configureGroq();
         $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
         Http::fake(function (Request $request) use ($sourceBody) {
             if ($request->url() === 'https://upstox.com/news/test-article') {
@@ -163,7 +215,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         ])->save();
 
         try {
-            app(GeminiNewsRewriter::class)->rewrite($news);
+            app(GroqNewsRewriter::class)->rewrite($news);
             $this->fail('The simulated provider failure should throw an exception.');
         } catch (RuntimeException $exception) {
             $this->assertStringContainsString('Temporarily unavailable', $exception->getMessage());
@@ -181,7 +233,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
 
     public function test_unrelated_extracted_article_is_rejected_before_generation(): void
     {
-        $this->configureGemini();
+        $this->configureGroq();
         Http::fake([
             'https://upstox.com/news/test-article' => Http::response(
                 '<script type="application/ld+json">'.json_encode([
@@ -193,7 +245,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $news = $this->createNews('Unused source body for this test.');
 
         try {
-            app(GeminiNewsRewriter::class)->rewrite($news);
+            app(GroqNewsRewriter::class)->rewrite($news);
             $this->fail('An unrelated source article should be rejected.');
         } catch (RuntimeException $exception) {
             $this->assertStringContainsString('does not match', $exception->getMessage());
@@ -205,14 +257,18 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         Http::assertSentCount(1);
     }
 
-    private function configureGemini(): void
+    private function configureGroq(): void
     {
         config([
-            'services.gemini.api_key' => 'test-gemini-key',
-            'services.gemini.model' => 'gemini-test-model',
-            'services.gemini.fallback_models' => '',
-            'services.gemini.endpoint' => 'https://gemini.test/v1beta',
-            'services.gemini.temperature' => 0.1,
+            'services.groq.api_key' => 'test-groq-key',
+            'services.groq.model' => 'groq-test-model',
+            'services.groq.fallback_models' => '',
+            'services.groq.endpoint' => 'https://groq.test/openai/v1/chat/completions',
+            'services.groq.temperature' => 0.1,
+            'services.groq.retry_attempts' => 4,
+            'services.groq.retry_initial_delay_ms' => 0,
+            'services.groq.retry_max_delay_ms' => 0,
+            'services.groq.retry_jitter_ms' => 0,
         ]);
     }
 
@@ -232,13 +288,15 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         ]);
     }
 
-    private function geminiResponse(array $payload)
+    private function groqResponse(array $payload)
     {
         return Http::response([
-            'candidates' => [[
-                'content' => ['parts' => [[
-                    'text' => json_encode($payload),
-                ]]],
+            'choices' => [[
+                'message' => [
+                    'role' => 'assistant',
+                    'content' => json_encode($payload),
+                ],
+                'finish_reason' => 'stop',
             ]],
         ]);
     }

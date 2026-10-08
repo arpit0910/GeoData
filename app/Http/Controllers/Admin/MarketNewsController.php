@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MarketNews;
-use App\Services\GeminiNewsRewriter;
+use App\Services\GroqNewsRewriter;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +60,7 @@ class MarketNewsController extends Controller
         return view('admin.market-news.show', compact('marketNews'));
     }
 
-    public function regenerate(MarketNews $marketNews, GeminiNewsRewriter $rewriter): RedirectResponse
+    public function regenerate(MarketNews $marketNews, GroqNewsRewriter $rewriter): RedirectResponse
     {
         set_time_limit(180);
         $cachedContent = $marketNews->original_content;

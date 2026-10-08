@@ -31,7 +31,7 @@ class NewsArticleExtractor
             ->timeout(30)
             ->withOptions([
                 'verify' => TlsCaBundle::resolve(
-                    config('market_data.ca_bundle') ?: config('services.gemini.ca_bundle')
+                    config('market_data.ca_bundle') ?: config('services.groq.ca_bundle')
                 ),
             ]);
         $response = $request->get($url);

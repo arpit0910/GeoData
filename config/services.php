@@ -41,14 +41,18 @@ return [
         'overview_endpoint' => env('FINANCIAL_API_OVERVIEW_ENDPOINT'),
     ],
 
-    'gemini' => [
-        'api_key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_NEWS_MODEL', 'gemini-3.8-flash'),
-        'fallback_models' => env('GEMINI_NEWS_FALLBACK_MODELS', 'gemini-3.6-flash,gemini-3.5-flash'),
-        'endpoint' => env('GEMINI_API_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta'),
-        'temperature' => (float) env('GEMINI_NEWS_TEMPERATURE', 0.1),
-        'timeout' => (int) env('GEMINI_API_TIMEOUT', 60),
-        'ca_bundle' => env('GEMINI_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_NEWS_MODEL', 'openai/gpt-oss-120b'),
+        'fallback_models' => env('GROQ_NEWS_FALLBACK_MODELS', 'qwen/qwen3.8-27b,openai/gpt-oss-20b'),
+        'endpoint' => env('GROQ_API_ENDPOINT', 'https://api.groq.com/openai/v1/chat/completions'),
+        'temperature' => (float) env('GROQ_NEWS_TEMPERATURE', 0.1),
+        'timeout' => (int) env('GROQ_API_TIMEOUT', 60),
+        'retry_attempts' => (int) env('GROQ_RETRY_ATTEMPTS', 4),
+        'retry_initial_delay_ms' => (int) env('GROQ_RETRY_INITIAL_DELAY_MS', 1000),
+        'retry_max_delay_ms' => (int) env('GROQ_RETRY_MAX_DELAY_MS', 8000),
+        'retry_jitter_ms' => (int) env('GROQ_RETRY_JITTER_MS', 250),
+        'ca_bundle' => env('GROQ_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
     ],
 
     'subscriptions' => [

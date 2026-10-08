@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\MarketNews;
-use App\Services\GeminiNewsRewriter;
+use App\Services\GroqNewsRewriter;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -16,7 +16,7 @@ class RewriteMarketNewsCommand extends Command
 
     protected $description = 'Rewrite, verify, and publish market news automatically';
 
-    public function handle(GeminiNewsRewriter $rewriter): int
+    public function handle(GroqNewsRewriter $rewriter): int
     {
         $statuses = [MarketNews::STATUS_PENDING];
         if ($this->option('retry')) {
