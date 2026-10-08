@@ -23,6 +23,9 @@ class Equity extends Model
         'upstox_nse_metadata',
         'upstox_bse_metadata',
         'upstox_synced_at',
+        'corporate_actions_sync_attempted_at',
+        'corporate_actions_synced_at',
+        'corporate_actions_sync_error',
     ];
 
     protected $fillable = [
@@ -78,6 +81,8 @@ class Equity extends Model
         'upstox_nse_metadata' => 'array',
         'upstox_bse_metadata' => 'array',
         'upstox_synced_at' => 'datetime',
+        'corporate_actions_sync_attempted_at' => 'datetime',
+        'corporate_actions_synced_at' => 'datetime',
     ];
 
     public function prices()

@@ -244,71 +244,92 @@ class UpstoxMarketDataService
         $baseUrl = rtrim(config('market_data.upstox.corporate_actions_url', 'https://api.upstox.com/v2/fundamentals'), '/');
         $url = "{$baseUrl}/{$isin}/corporate-actions";
 
-        try {
-            $response = Http::acceptJson()
-                ->withToken($token)
-                ->withOptions(['verify' => $verify])
-                ->connectTimeout(10)
-                ->timeout(30)
-                ->get($url);
+        $response = null;
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                $response = Http::acceptJson()
+                    ->withToken($token)
+                    ->withOptions(['verify' => $verify])
+                    ->connectTimeout(10)
+                    ->timeout(30)
+                    ->get($url);
+            } catch (ConnectionException $exception) {
+                if ($attempt === 3) {
+                    throw $exception;
+                }
+                usleep($attempt * 250000);
+                continue;
+            }
 
             if ($response->status() === 404) {
                 return [];
             }
-
-            if (!$response->successful()) {
-                throw new RuntimeException($this->errorMessage($response));
+            if ($response->successful() || !in_array($response->status(), [429, 500, 502, 503, 504], true)) {
+                break;
             }
-
-            $body = $response->json();
-            if (($body['status'] ?? null) !== 'success' || !is_array($body['data'] ?? null)) {
-                return [];
+            if ($attempt < 3) {
+                usleep($attempt * 250000);
             }
-
-            $actions = [];
-            foreach ($body['data'] as $item) {
-                if (!is_array($item)) {
-                    continue;
-                }
-
-                $name = trim((string) ($item['name'] ?? 'Corporate Action'));
-                $normalizedType = $this->determineCorporateActionType($name, $item);
-
-                $eventDetails = [];
-                if (isset($item['event_details']) && is_array($item['event_details'])) {
-                    foreach ($item['event_details'] as $detail) {
-                        if (isset($detail['name']) && isset($detail['value'])) {
-                            $eventDetails[trim((string) $detail['name'])] = trim((string) $detail['value']);
-                        }
-                    }
-                }
-
-                $announcementDate = $this->parseDate($eventDetails['Announcement date'] ?? null);
-                $exDate = $this->parseDate($eventDetails['Ex dividend date'] ?? $eventDetails['Ex-date'] ?? $item['expiry_date'] ?? null);
-                $recordDate = $this->parseDate($eventDetails['Record date'] ?? null);
-                $amount = $this->number($item['amount'] ?? $eventDetails['Amount'] ?? null);
-                $ratio = $item['ratio'] ?? $eventDetails['Ratio'] ?? null;
-                $details = $eventDetails['Details'] ?? null;
-
-                $actions[] = [
-                    'isin' => $isin,
-                    'name' => $name,
-                    'type' => $normalizedType,
-                    'expiry_date' => $exDate,
-                    'record_date' => $recordDate,
-                    'announcement_date' => $announcementDate,
-                    'amount' => $amount,
-                    'ratio' => $ratio ? trim((string) $ratio) : null,
-                    'details' => $details ?: ($ratio ? "Ratio: {$ratio}" : ($amount ? "Amount: ₹{$amount}" : $name)),
-                    'raw_data' => $item,
-                ];
-            }
-
-            return $actions;
-        } catch (Throwable $e) {
-            report($e);
-            return [];
         }
+
+        if (!$response || !$response->successful()) {
+            throw new RuntimeException($response
+                ? $this->errorMessage($response)
+                : 'Upstox corporate-actions request did not return a response.');
+        }
+
+        $body = $response->json();
+        if (($body['status'] ?? null) !== 'success' || !is_array($body['data'] ?? null)) {
+            throw new RuntimeException('Upstox returned an invalid corporate-actions response.');
+        }
+
+        $actions = [];
+        foreach ($body['data'] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $name = trim((string) ($item['name'] ?? 'Corporate Action')) ?: 'Corporate Action';
+            $normalizedType = $this->determineCorporateActionType($name, $item);
+
+            $eventDetails = [];
+            foreach (($item['event_details'] ?? []) as $detail) {
+                if (is_array($detail) && isset($detail['name']) && array_key_exists('value', $detail)) {
+                    $key = strtolower(preg_replace('/\s+/', ' ', trim((string) $detail['name'])));
+                    $eventDetails[$key] = trim((string) $detail['value']);
+                }
+            }
+
+            $announcementDate = $this->parseDate($eventDetails['announcement date'] ?? null);
+            $exDate = $this->parseDate(
+                $eventDetails['ex dividend date']
+                    ?? $eventDetails['ex date']
+                    ?? $eventDetails['ex-date']
+                    ?? $eventDetails['effective date']
+                    ?? (isset($item['expiry_date']) ? (string) $item['expiry_date'] : null)
+            );
+            $recordDate = $this->parseDate($eventDetails['record date'] ?? null);
+            $amount = $this->number($item['amount'] ?? $eventDetails['amount'] ?? null);
+            $ratio = $item['ratio'] ?? $eventDetails['ratio'] ?? null;
+            $details = $eventDetails['details'] ?? null;
+
+            $actions[] = [
+                'isin' => $isin,
+                'name' => mb_substr($name, 0, 255),
+                'type' => $normalizedType,
+                'expiry_date' => $exDate,
+                'record_date' => $recordDate,
+                'announcement_date' => $announcementDate,
+                'amount' => $amount,
+                'ratio' => $ratio !== null && trim((string) $ratio) !== ''
+                    ? mb_substr(trim((string) $ratio), 0, 50)
+                    : null,
+                'details' => $details ?: ($ratio ? "Ratio: {$ratio}" : ($amount !== null ? "Amount: INR {$amount}" : $name)),
+                'raw_data' => $item,
+            ];
+        }
+
+        return $actions;
     }
 
     /**
@@ -485,7 +506,7 @@ class UpstoxMarketDataService
 
     private function determineCorporateActionType(string $name, array $item): string
     {
-        $upper = strtoupper($name);
+        $upper = strtoupper($name.' '.(string) ($item['type'] ?? ''));
         if (str_contains($upper, 'SPLIT')) {
             return 'SPLIT';
         }

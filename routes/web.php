@@ -58,6 +58,7 @@ Route::get('/market', [\App\Http\Controllers\MarketController::class, 'index'])-
 Route::get('/market/stocks', [\App\Http\Controllers\MarketController::class, 'stocks'])->name('market.stocks');
 Route::get('/market/mutual-funds', [\App\Http\Controllers\MarketController::class, 'mutualFunds'])->name('market.mutual-funds');
 Route::get('/market/news', [\App\Http\Controllers\MarketController::class, 'news'])->name('market.news');
+Route::get('/market/news/{marketNews}', [\App\Http\Controllers\MarketController::class, 'newsDetail'])->name('market.news.show');
 Route::get('/market/fundamentals', [\App\Http\Controllers\MarketController::class, 'fundamentals'])->name('market.fundamentals');
 Route::get('/market/fundamentals/{companyFundamental}', [\App\Http\Controllers\MarketController::class, 'fundamental'])->name('market.fundamentals.show');
 Route::get('/market/corporate-actions', [\App\Http\Controllers\MarketController::class, 'corporateActions'])->name('market.corporate-actions');

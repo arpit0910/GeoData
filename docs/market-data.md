@@ -99,6 +99,33 @@ recent seven days, so the rotating sync persists that rolling window over time.
 Use `--reset-cursor` to restart a full rotation, `--max-batches=N` to override
 the per-run request budget, or `--isin=...` for a targeted fetch.
 
+### Corporate-action synchronization
+
+`market:sync-upstox-events` fetches the complete corporate-action response for
+each active equity ISIN and stores every returned type, including dividends,
+bonus issues, stock splits, rights issues, and other events. It does not require
+an NSE instrument key because the provider endpoint is ISIN-based.
+
+Normal runs select the companies with the oldest (or no) sync attempt first.
+Each company retains its last attempted time, last successful time, and latest
+error, so an empty successful response is distinguishable from a provider
+failure. Temporary connection, rate-limit, and server errors are retried three
+times and still produce a non-zero command exit status if they remain broken.
+The scheduler processes 200 companies every ten minutes from 07:00 through
+22:59 Asia/Kolkata, providing deterministic daily coverage instead of random
+sampling.
+
+After deploying the migration, run a complete initial backfill once:
+
+```sh
+php artisan migrate --force
+php artisan market:sync-upstox-events --all --delay=200
+```
+
+For a targeted repair, use `--isin=INE002A01018`; for a smaller rotating batch,
+use `--limit=100`. Keep the server's once-per-minute `schedule:run` cron enabled
+for ongoing synchronization.
+
 Set `GROQ_API_KEY` in the deployment environment. Optional settings are
 `GROQ_NEWS_MODEL`, `GROQ_NEWS_FALLBACK_MODELS`,
 `GROQ_NEWS_VERIFICATION_MODELS`, `GROQ_NEWS_STRICT_JSON_MODELS`,

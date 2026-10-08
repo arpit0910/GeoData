@@ -56,6 +56,7 @@ class SyncAllMarketDataCommand extends Command
         } else {
             $this->info("[2/4] Skipped Mutual Funds sync (--skip-mf flag set)\n");
             $tMf = 0;
+            $exitMf = self::SUCCESS;
         }
 
         // 3. SYNC NEWS (UPSTOX)
@@ -73,11 +74,9 @@ class SyncAllMarketDataCommand extends Command
         $this->info("[4/4] Syncing corporate actions (splits, bonus, dividends, events)...");
         $t3 = microtime(true);
         $caLimit = (int) $this->option('ca-limit');
-        Artisan::call('market:sync-upstox-events', ['--limit' => $caLimit], $this->output);
-        Artisan::call('market:sync-upstox-splits', ['--limit' => $caLimit], $this->output);
-        Artisan::call('market:sync-upstox-bonuses', ['--limit' => $caLimit], $this->output);
+        $exitCa = Artisan::call('market:sync-upstox-events', ['--limit' => $caLimit], $this->output);
         $tCa = round(microtime(true) - $t3, 2);
-        $this->line("--> Corporate actions sync completed in {$tCa}s\n");
+        $this->line("--> Corporate actions sync completed in {$tCa}s (exit code: {$exitCa})\n");
 
         // BENCHMARK SUMMARY & DATABASE TOTALS
         $totalTime = round(microtime(true) - $startOverall, 2);
@@ -103,7 +102,21 @@ class SyncAllMarketDataCommand extends Command
             ]
         );
 
+        $failedFeeds = collect([
+            'quotes' => $exitQuotes,
+            'mutual funds' => $exitMf,
+            'news' => $exitNews,
+            'corporate actions' => $exitCa,
+        ])->filter(fn (int $exitCode) => $exitCode !== self::SUCCESS)->keys();
+
+        if ($failedFeeds->isNotEmpty()) {
+            $this->error('Market synchronization completed with failures: '.$failedFeeds->implode(', ').'.');
+
+            return self::FAILURE;
+        }
+
         $this->info("All data feeds synchronized successfully!\n");
+
         return self::SUCCESS;
     }
 }

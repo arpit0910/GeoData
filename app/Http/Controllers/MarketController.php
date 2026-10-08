@@ -61,6 +61,17 @@ class MarketController extends Controller
         return view('website.market-news', compact('news'));
     }
 
+    public function newsDetail(MarketNews $marketNews)
+    {
+        abort_unless(
+            $marketNews->is_published
+                && $marketNews->editorial_status === MarketNews::STATUS_PUBLISHED,
+            404
+        );
+
+        return view('website.market-news-show', compact('marketNews'));
+    }
+
     public function fundamentals(Request $request)
     {
         $search = trim((string) $request->input('search'));
