@@ -280,8 +280,9 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->configureGroq();
         config([
             'services.groq.model' => 'openai/gpt-oss-rotation-a',
-            'services.groq.fallback_models' => 'qwen/rotation-b,openai/gpt-oss-rotation-c',
+            'services.groq.fallback_models' => 'qwen/rotation-b,openai/gpt-oss-rotation-c,llama-rotation-d',
             'services.groq.model_strategy' => 'round_robin',
+            'services.groq.strict_json_models' => 'openai/gpt-oss-rotation-a,qwen/rotation-b,openai/gpt-oss-rotation-c',
         ]);
         $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
         $models = [];
@@ -301,6 +302,10 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 'model' => (string) data_get($request->data(), 'model'),
                 'max_tokens' => (int) data_get($request->data(), 'max_completion_tokens'),
                 'verification' => $isVerification,
+                'response_format' => (string) data_get($request->data(), 'response_format.type'),
+                'json_instruction' => collect(data_get($request->data(), 'messages', []))
+                    ->pluck('content')
+                    ->contains(fn ($content) => str_contains((string) $content, 'Return only one valid JSON object')),
             ];
             if ($isVerification) {
                 return $this->groqResponse([
@@ -330,6 +335,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             'openai/gpt-oss-rotation-a',
             'qwen/rotation-b',
             'openai/gpt-oss-rotation-c',
+            'llama-rotation-d',
         ];
         $this->assertCount(4, $models);
         foreach (range(1, 3) as $index) {
@@ -343,6 +349,9 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->assertTrue(collect($calls)->where('model', 'qwen/rotation-b')->every(
             fn (array $call) => $call['max_tokens'] <= 900
         ));
+        $llamaCall = collect($calls)->firstWhere('model', 'llama-rotation-d');
+        $this->assertSame('json_object', $llamaCall['response_format']);
+        $this->assertTrue($llamaCall['json_instruction']);
     }
 
     public function test_rate_limited_story_is_deferred_until_provider_retry_time(): void
@@ -461,6 +470,8 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             'services.groq.api_key' => 'test-groq-key',
             'services.groq.model' => 'groq-test-model',
             'services.groq.fallback_models' => '',
+            'services.groq.verification_models' => '',
+            'services.groq.strict_json_models' => 'groq-test-model,groq-fallback-model',
             'services.groq.endpoint' => 'https://groq.test/openai/v1/chat/completions',
             'services.groq.temperature' => 0.1,
             'services.groq.retry_attempts' => 4,

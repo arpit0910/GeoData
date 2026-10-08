@@ -38,6 +38,13 @@ class GroqNewsRewriter
                 'qwen/qwen3.8-27b,openai/gpt-oss-20b'
             )))
         ))));
+        $verificationModels = array_values(array_unique(array_filter(array_map(
+            'trim',
+            explode(',', (string) config('services.groq.verification_models', ''))
+        ))));
+        if ($verificationModels === []) {
+            $verificationModels = $models;
+        }
         $endpoint = (string) config('services.groq.endpoint');
         $news->forceFill([
             'editorial_status' => MarketNews::STATUS_PROCESSING,
@@ -147,7 +154,7 @@ class GroqNewsRewriter
                     $this->assertIntentPreserved(
                         $request,
                         $endpoint,
-                        $models,
+                        $verificationModels,
                         $news->original_title,
                         (string) $news->original_summary,
                         $sourceContent,
@@ -569,6 +576,29 @@ class GroqNewsRewriter
                 (int) ($payload['max_completion_tokens'] ?? $qwenLimit),
                 $qwenLimit
             );
+        }
+
+        $strictModels = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) config(
+                'services.groq.strict_json_models',
+                'openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b'
+            ))
+        )));
+        if (! in_array($model, $strictModels, true)
+            && data_get($payload, 'response_format.type') === 'json_schema') {
+            $requiredFields = data_get(
+                $payload,
+                'response_format.json_schema.schema.required',
+                []
+            );
+            $payload['response_format'] = ['type' => 'json_object'];
+            $payload['messages'][] = [
+                'role' => 'user',
+                'content' => 'Return only one valid JSON object with exactly these keys: '.
+                    implode(', ', $requiredFields).
+                    '. Every key is required. Do not use Markdown or add explanatory text.',
+            ];
         }
 
         return $payload;

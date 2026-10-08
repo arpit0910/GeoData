@@ -44,7 +44,9 @@ return [
     'groq' => [
         'api_key' => env('GROQ_API_KEY'),
         'model' => env('GROQ_NEWS_MODEL', 'openai/gpt-oss-120b'),
-        'fallback_models' => env('GROQ_NEWS_FALLBACK_MODELS', 'qwen/qwen3.8-27b,openai/gpt-oss-20b'),
+        'fallback_models' => env('GROQ_NEWS_FALLBACK_MODELS', 'openai/gpt-oss-20b,qwen/qwen3.8-27b,llama-3.3-70b-versatile,llama-3.1-8b-instant,minimaxai/minimax-m2.7'),
+        'verification_models' => env('GROQ_NEWS_VERIFICATION_MODELS', ''),
+        'strict_json_models' => env('GROQ_NEWS_STRICT_JSON_MODELS', 'openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b'),
         'model_strategy' => env('GROQ_NEWS_MODEL_STRATEGY', 'round_robin'),
         'endpoint' => env('GROQ_API_ENDPOINT', 'https://api.groq.com/openai/v1/chat/completions'),
         'temperature' => (float) env('GROQ_NEWS_TEMPERATURE', 0.1),

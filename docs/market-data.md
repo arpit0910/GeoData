@@ -53,6 +53,14 @@ Each call still retains the complete model list as its failover chain, starting
 with that call's selected model. Set the strategy to `primary` to always try
 `GROQ_NEWS_MODEL` first and use the other models only after a failure. Requests
 are adjusted for model-family differences, such as Groq reasoning controls.
+The rewrite pool may include any suitable Groq text model. Models listed in
+`GROQ_NEWS_STRICT_JSON_MODELS` use strict JSON Schema; other configured models
+automatically use JSON Object Mode with an explicit required-field contract and
+must still pass every local and semantic check. `GROQ_NEWS_VERIFICATION_MODELS`
+can keep smaller draft models out of the final fact-check pass. The supplied
+production example uses six models for drafting and five stronger models for
+verification. Models unavailable to the current Groq account are skipped by
+the normal fallback chain.
 When a model returns HTTP 429, its provider retry window is stored as a model
 cooldown and the next available model is tried immediately. If the entire pool
 is rate-limited, the story remains pending with `rewrite_retry_at` instead of
@@ -93,6 +101,7 @@ the per-run request budget, or `--isin=...` for a targeted fetch.
 
 Set `GROQ_API_KEY` in the deployment environment. Optional settings are
 `GROQ_NEWS_MODEL`, `GROQ_NEWS_FALLBACK_MODELS`,
+`GROQ_NEWS_VERIFICATION_MODELS`, `GROQ_NEWS_STRICT_JSON_MODELS`,
 `GROQ_NEWS_MODEL_STRATEGY`, `GROQ_NEWS_TEMPERATURE`,
 `GROQ_NEWS_EDITORIAL_ATTEMPTS`, and
 `GROQ_API_TIMEOUT`. `GROQ_RATE_LIMIT_RETRY_SECONDS` is the fallback cooldown
