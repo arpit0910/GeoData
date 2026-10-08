@@ -38,7 +38,17 @@ class SyncExchangeCalendarCommand extends Command
             if ($exchanges === ['NSE', 'BSE'] || $exchanges === ['BSE', 'NSE']) {
                 try {
                     $result = $service->syncCombined($year);
-                    $this->info("NSE & BSE {$year}: synced {$result['synced']} combined calendar dates.");
+                    foreach ($result['provider_errors'] ?? [] as $provider => $message) {
+                        $this->warn("{$provider} {$year} was unavailable: {$message}");
+                    }
+                    if ($result['skipped'] ?? false) {
+                        $message = ($result['stale'] ?? false)
+                            ? 'existing calendar coverage was preserved'
+                            : 'the exchanges have not published calendar events yet';
+                        $this->warn("NSE & BSE {$year}: {$message}.");
+                    } else {
+                        $this->info("NSE & BSE {$year}: synced {$result['synced']} combined calendar dates.");
+                    }
                 } catch (Throwable $exception) {
                     $failed = true;
                     report($exception);

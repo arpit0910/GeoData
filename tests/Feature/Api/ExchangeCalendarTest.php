@@ -100,6 +100,46 @@ class ExchangeCalendarTest extends TestCase
         $this->assertDatabaseHas('exchange_calendar_events', ['exchange' => 'NSE', 'event_date' => '2026-01-26']);
     }
 
+    public function test_combined_sync_preserves_existing_coverage_when_one_provider_is_unavailable(): void
+    {
+        ExchangeCalendarEvent::create($this->event([
+            'exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH,
+            'event_date' => '2026-01-26',
+            'source' => 'nse_bse',
+        ]));
+        Http::fake([
+            '*nseindia.com/*' => Http::response(['CM' => [
+                ['tradingDate' => '04-Mar-2026', 'description' => 'Holi'],
+            ]]),
+            '*bseindia.com/*' => Http::response([], 503),
+        ]);
+
+        $this->artisan('exchange-calendar:sync', ['--year' => [2026]])
+            ->expectsOutputToContain('existing calendar coverage was preserved')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('exchange_calendar_events', [
+            'exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH,
+            'event_date' => '2026-01-26',
+        ]);
+        $this->assertDatabaseMissing('exchange_calendar_events', [
+            'exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH,
+            'event_date' => '2026-03-04',
+        ]);
+    }
+
+    public function test_combined_sync_skips_unpublished_future_calendar_without_failing(): void
+    {
+        Http::fake([
+            '*nseindia.com/*' => Http::response(['CM' => []]),
+            '*bseindia.com/*' => Http::response([], 404),
+        ]);
+
+        $this->artisan('exchange-calendar:sync', ['--year' => [2027]])
+            ->expectsOutputToContain('have not published calendar events yet')
+            ->assertExitCode(0);
+    }
+
     public function test_sync_preserves_manually_overridden_event(): void
     {
         ExchangeCalendarEvent::create($this->event([

@@ -36,11 +36,43 @@ class ExchangeCalendarSyncService
 
     public function syncCombined(int $year): array
     {
-        $nseEvents = $this->fetchNse($year);
-        $bseEvents = $this->fetchBse($year);
+        $providerErrors = [];
+        try {
+            $nseEvents = $this->fetchNse($year);
+        } catch (\Throwable $exception) {
+            $nseEvents = [];
+            $providerErrors['NSE'] = $exception->getMessage();
+        }
+        try {
+            $bseEvents = $this->fetchBse($year);
+        } catch (\Throwable $exception) {
+            $bseEvents = [];
+            $providerErrors['BSE'] = $exception->getMessage();
+        }
+
+        if ($providerErrors !== [] && $this->hasCombinedCoverage($year)) {
+            return [
+                'exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH,
+                'year' => $year,
+                'synced' => 0,
+                'skipped' => true,
+                'stale' => true,
+                'provider_errors' => $providerErrors,
+            ];
+        }
+
+        if (count($providerErrors) === 2) {
+            throw new RuntimeException('Both exchange calendar providers failed: '.implode(' | ', $providerErrors));
+        }
 
         if ($nseEvents === [] && $bseEvents === []) {
-            return ['exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH, 'year' => $year, 'synced' => 0, 'skipped' => true];
+            return [
+                'exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH,
+                'year' => $year,
+                'synced' => 0,
+                'skipped' => true,
+                'provider_errors' => $providerErrors,
+            ];
         }
 
         $eventsByDate = [];
@@ -99,7 +131,16 @@ class ExchangeCalendarSyncService
             $year,
             'nse_bse',
             ['NSE', 'BSE', ExchangeCalendarEvent::EXCHANGE_BOTH]
-        );
+        ) + ['provider_errors' => $providerErrors];
+    }
+
+    private function hasCombinedCoverage(int $year): bool
+    {
+        return ExchangeCalendarEvent::query()
+            ->where('exchange', ExchangeCalendarEvent::EXCHANGE_BOTH)
+            ->where('segment', config('exchange_calendar.segment', 'equity'))
+            ->whereBetween('event_date', ["{$year}-01-01", "{$year}-12-31"])
+            ->exists();
     }
 
     private function persist(array $events, string $exchange, int $year, string $source, array $cleanupExchanges): array

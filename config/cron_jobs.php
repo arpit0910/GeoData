@@ -167,6 +167,15 @@ return [
             'overlap' => false,
         ],
         [
+            'title' => 'market:sync-upstox-events',
+            'command' => 'market:sync-upstox-events',
+            'args' => ['--limit' => 500, '--delay' => 200],
+            'description' => 'Rotates through active equities hourly and synchronizes every corporate-action type while retaining failures for retry.',
+            'schedule' => 'Hourly',
+            'timezone' => 'Asia/Kolkata',
+            'overlap' => false,
+        ],
+        [
             'title' => 'market:rewrite-news',
             'command' => 'market:rewrite-news',
             'args' => ['--limit' => 20],
@@ -182,7 +191,7 @@ return [
             'description' => 'Synchronizes the combined NSE/BSE holiday, weekend, and Muhurat calendar.',
             'schedule' => 'Daily at 06:00',
             'timezone' => 'Asia/Kolkata',
-            'overlap' => true,
+            'overlap' => false,
         ],
         [
             'title' => 'market:repair-performance-values',

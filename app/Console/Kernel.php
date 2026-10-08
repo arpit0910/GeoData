@@ -87,13 +87,14 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->withoutOverlapping(120));
 
-        // The provider exposes corporate actions per ISIN. Rotating deterministic
-        // batches cover the full equity universe and retain failures for retries.
-        $this->markScheduled($schedule->command('market:sync-upstox-events --limit=200 --delay=200')
-            ->cron('*/10 7-22 * * *')
+        // Upstox exposes every corporate-action type through a per-ISIN endpoint.
+        // A bounded hourly rotation avoids provider throttling while eventually
+        // covering every active equity and prioritising never-checked companies.
+        $this->markScheduled($schedule->command('market:sync-upstox-events --limit=500 --delay=200')
+            ->hourly()
             ->timezone('Asia/Kolkata')
             ->runInBackground()
-            ->withoutOverlapping(10));
+            ->withoutOverlapping(120));
 
         $this->markScheduled($schedule->command('market:rewrite-news --limit=20')
             ->cron('5,15,25,35,45,55 * * * *')

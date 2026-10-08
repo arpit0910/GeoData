@@ -89,6 +89,7 @@ class SyncUpstoxNewsCommand extends Command
         $unchanged = 0;
         $duplicates = 0;
         $failedBatches = 0;
+        $successfulBatches = 0;
         $seenArticles = [];
 
         $batches = $equities->chunk($batchSize)->values();
@@ -98,6 +99,7 @@ class SyncUpstoxNewsCommand extends Command
             )->filter()->unique()->values()->all();
             try {
                 $articles = $upstox->news($batchKeys);
+                $successfulBatches++;
                 $totalFetched += count($articles);
 
                 foreach ($articles as $article) {
@@ -187,6 +189,12 @@ class SyncUpstoxNewsCommand extends Command
 
         $this->info("News sync complete: {$totalFetched} fetched, {$uniqueFetched} unique, {$duplicates} duplicate; {$created} created, {$updated} updated, {$unchanged} unchanged; {$failedBatches} batches failed.");
 
-        return $failedBatches > 0 ? self::FAILURE : self::SUCCESS;
+        // A transient failure in one batch must not mark an otherwise useful
+        // scheduled run as failed. The cursor advances past failed batches, so
+        // later rotations continue making progress. Fail only when every batch
+        // failed (including authorization failures).
+        return $failedBatches > 0 && $successfulBatches === 0
+            ? self::FAILURE
+            : self::SUCCESS;
     }
 }

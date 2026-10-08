@@ -196,6 +196,36 @@ class UpstoxNewsSyncTest extends TestCase
         Http::assertSentCount(1);
     }
 
+    public function test_news_sync_succeeds_when_a_transient_batch_failure_is_partial(): void
+    {
+        config([
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.news_url' => 'https://provider.test/v2/news',
+        ]);
+        foreach (range(1, 31) as $index) {
+            $isin = sprintf('INE%06d%03d', $index, $index % 1000);
+            DB::table('equities')->insert([
+                'isin' => $isin,
+                'company_name' => 'Company '.$index,
+                'nse_symbol' => 'STOCK'.$index,
+                'upstox_nse_instrument_key' => 'NSE_EQ|'.$isin,
+                'series' => 'EQ',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        Http::fake(function (Request $request) {
+            return str_contains($request->url(), 'INE000001001')
+                ? Http::response(['status' => 'error'], 503)
+                : Http::response(['status' => 'success', 'data' => []]);
+        });
+
+        $this->artisan('market:sync-upstox-news', ['--max-batches' => 2])
+            ->expectsOutputToContain('1 batches failed')
+            ->assertExitCode(0);
+    }
+
     public function test_news_sync_deduplicates_the_same_article_returned_for_multiple_instruments(): void
     {
         config([
