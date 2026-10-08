@@ -43,6 +43,13 @@ causality or uncertainty, attribution shifts, and tone changes. Temporary Groq
 capacity failures are retried and can fall back through
 `GROQ_NEWS_FALLBACK_MODELS`.
 
+By default, `GROQ_NEWS_MODEL_STRATEGY=round_robin` rotates both rewriting and
+verification calls across the primary model and every configured fallback.
+Each call still retains the complete model list as its failover chain, starting
+with that call's selected model. Set the strategy to `primary` to always try
+`GROQ_NEWS_MODEL` first and use the other models only after a failure. Requests
+are adjusted for model-family differences, such as Groq reasoning controls.
+
 When Groq returns a draft that fails an editorial check, the application sends
 the rejected draft and the exact validation failure back to Groq for correction.
 It makes up to `GROQ_NEWS_EDITORIAL_ATTEMPTS` attempts (three by default) and
@@ -71,7 +78,8 @@ the per-run request budget, or `--isin=...` for a targeted fetch.
 
 Set `GROQ_API_KEY` in the deployment environment. Optional settings are
 `GROQ_NEWS_MODEL`, `GROQ_NEWS_FALLBACK_MODELS`,
-`GROQ_NEWS_TEMPERATURE`, `GROQ_NEWS_EDITORIAL_ATTEMPTS`, and
+`GROQ_NEWS_MODEL_STRATEGY`, `GROQ_NEWS_TEMPERATURE`,
+`GROQ_NEWS_EDITORIAL_ATTEMPTS`, and
 `GROQ_API_TIMEOUT`. After
 changing environment values on a cached deployment, run `php artisan config:cache`.
 If PHP has no trusted system CA store, point `GROQ_CA_BUNDLE` to a trusted PEM

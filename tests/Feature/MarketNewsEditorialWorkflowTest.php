@@ -222,7 +222,10 @@ class MarketNewsEditorialWorkflowTest extends TestCase
     public function test_transient_capacity_error_uses_the_fallback_model(): void
     {
         $this->configureGroq();
-        config(['services.groq.fallback_models' => 'groq-fallback-model']);
+        config([
+            'services.groq.fallback_models' => 'groq-fallback-model',
+            'services.groq.model_strategy' => 'primary',
+        ]);
         $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
         $groqCalls = 0;
 
@@ -268,6 +271,63 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->assertSame(MarketNews::STATUS_READY, $news->refresh()->editorial_status);
         $this->assertSame('groq-fallback-model', $news->rewrite_model);
         $this->assertSame(3, $groqCalls);
+    }
+
+    public function test_calls_rotate_across_all_configured_models(): void
+    {
+        $this->configureGroq();
+        config([
+            'services.groq.model' => 'openai/gpt-oss-rotation-a',
+            'services.groq.fallback_models' => 'qwen/rotation-b,openai/gpt-oss-rotation-c',
+            'services.groq.model_strategy' => 'round_robin',
+        ]);
+        $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
+        $models = [];
+
+        Http::fake(function (Request $request) use ($sourceBody, &$models) {
+            if ($request->url() === 'https://upstox.com/news/test-article') {
+                return Http::response('<script type="application/ld+json">'.json_encode([
+                    '@type' => 'NewsArticle',
+                    'articleBody' => $sourceBody,
+                ]).'</script>');
+            }
+
+            $models[] = (string) data_get($request->data(), 'model');
+            if (str_contains((string) data_get($request->data(), 'messages.0.content'), 'independent financial-news fact checker')) {
+                return $this->groqResponse([
+                    'intent_preserved' => true,
+                    'facts_preserved' => true,
+                    'tone_preserved' => true,
+                    'attributions_preserved' => true,
+                    'issues' => [],
+                ]);
+            }
+
+            return $this->groqResponse([
+                'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
+                'paragraphs' => [
+                    'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period.',
+                    'Management said demand remained stable across its principal business segments during the quarter.',
+                    'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter.',
+                ],
+            ]);
+        });
+
+        $news = $this->createNews($sourceBody);
+        app(GroqNewsRewriter::class)->rewrite($news);
+        app(GroqNewsRewriter::class)->rewrite($news->refresh());
+
+        $pool = [
+            'openai/gpt-oss-rotation-a',
+            'qwen/rotation-b',
+            'openai/gpt-oss-rotation-c',
+        ];
+        $this->assertCount(4, $models);
+        foreach (range(1, 3) as $index) {
+            $previousPosition = array_search($models[$index - 1], $pool, true);
+            $this->assertSame($pool[($previousPosition + 1) % count($pool)], $models[$index]);
+        }
+        $this->assertSame($models[2], $news->refresh()->rewrite_model);
     }
 
     public function test_failed_regeneration_keeps_the_last_verified_article_public(): void

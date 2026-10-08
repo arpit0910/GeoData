@@ -6,6 +6,7 @@ use App\Models\MarketNews;
 use App\Support\TlsCaBundle;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 use Throwable;
@@ -123,7 +124,7 @@ class GroqNewsRewriter
                     $this->assertIntentPreserved(
                         $request,
                         $endpoint,
-                        array_values(array_unique(array_merge([$usedModel], $models))),
+                        $models,
                         $news->original_title,
                         (string) $news->original_summary,
                         $sourceContent,
@@ -310,7 +311,7 @@ class GroqNewsRewriter
         $usedModel = '';
         $lastConnectionException = null;
         $transientStatuses = [408, 429, 500, 502, 503, 504];
-        $modelQueue = array_values($models);
+        $modelQueue = $this->orderedModels(array_values($models));
         $maximumAttempts = max(
             count($modelQueue),
             max(1, (int) config('services.groq.retry_attempts', 4))
@@ -322,7 +323,10 @@ class GroqNewsRewriter
             $usedModel = (string) $candidateModel;
 
             try {
-                $response = $request->post($endpoint, array_merge($payload, ['model' => $usedModel]));
+                $response = $request->post(
+                    $endpoint,
+                    $this->payloadForModel($payload, $usedModel)
+                );
                 $lastConnectionException = null;
             } catch (ConnectionException $exception) {
                 $lastConnectionException = $exception;
@@ -369,6 +373,46 @@ class GroqNewsRewriter
         }
 
         return [$response, $usedModel];
+    }
+
+    /** @param array<int, string> $models
+     *  @return array<int, string>
+     */
+    private function orderedModels(array $models): array
+    {
+        if (count($models) < 2 || config('services.groq.model_strategy', 'round_robin') !== 'round_robin') {
+            return $models;
+        }
+
+        $counterKey = 'groq-news-model-rotation:'.sha1(implode('|', $models));
+        try {
+            Cache::add($counterKey, 0, now()->addYears(5));
+            $turn = max(1, (int) Cache::increment($counterKey));
+            $offset = ($turn - 1) % count($models);
+        } catch (Throwable) {
+            // A cache outage must not prevent news generation. Randomizing the
+            // starting model still distributes calls until cache recovers.
+            $offset = random_int(0, count($models) - 1);
+        }
+
+        return array_merge(array_slice($models, $offset), array_slice($models, 0, $offset));
+    }
+
+    /** @param array<string, mixed> $payload
+     *  @return array<string, mixed>
+     */
+    private function payloadForModel(array $payload, string $model): array
+    {
+        $payload['model'] = $model;
+
+        // Groq's reasoning controls vary by model family. GPT-OSS supports
+        // low/medium/high, while Qwen and standard Llama models use their own
+        // defaults and may reject a GPT-OSS reasoning value with HTTP 400.
+        if (! str_starts_with($model, 'openai/gpt-oss-')) {
+            unset($payload['reasoning_effort']);
+        }
+
+        return $payload;
     }
 
     private function waitBeforeRetry(int $failureNumber, ?Response $response = null): void

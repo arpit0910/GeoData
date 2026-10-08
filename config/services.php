@@ -45,6 +45,7 @@ return [
         'api_key' => env('GROQ_API_KEY'),
         'model' => env('GROQ_NEWS_MODEL', 'openai/gpt-oss-120b'),
         'fallback_models' => env('GROQ_NEWS_FALLBACK_MODELS', 'qwen/qwen3.8-27b,openai/gpt-oss-20b'),
+        'model_strategy' => env('GROQ_NEWS_MODEL_STRATEGY', 'round_robin'),
         'endpoint' => env('GROQ_API_ENDPOINT', 'https://api.groq.com/openai/v1/chat/completions'),
         'temperature' => (float) env('GROQ_NEWS_TEMPERATURE', 0.1),
         'timeout' => (int) env('GROQ_API_TIMEOUT', 60),
