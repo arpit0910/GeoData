@@ -33,6 +33,7 @@
                     $isRunning = $lastRun && $lastRun->finished_at === null;
                     $isRecent = $lastRan && $lastRan->gt(now()->subHours(26));
                     $isMaintenance = str_contains(strtolower($cron['schedule']), 'manual one-time maintenance');
+                    $isRunnable = $cron['runnable'] ?? true;
                     $stateLabel = !$lastRun ? 'Never' : ($isRunning ? 'Running' : (!$lastRun->status ? 'Failed' : ($isRecent ? 'Healthy' : 'Completed')));
                     $stateClasses = !$lastRun
                         ? 'bg-gray-100 text-gray-400 dark:bg-white/5'
@@ -96,9 +97,15 @@
                         </a>
                     </td>
                     <td class="px-6 py-5 text-right">
-                        <button onclick="runCron('{{ $cron['title'] }}')" class="run-btn inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-black text-white shadow-lg shadow-amber-600/20 transition-all hover:scale-[1.02] hover:bg-amber-700 active:scale-95">
-                            <i class="fas fa-play text-[10px]"></i> Run Now
-                        </button>
+                        @if($isRunnable)
+                            <button onclick="runCron('{{ $cron['title'] }}')" class="run-btn inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-black text-white shadow-lg shadow-amber-600/20 transition-all hover:scale-[1.02] hover:bg-amber-700 active:scale-95">
+                                <i class="fas fa-play text-[10px]"></i> Run Now
+                            </button>
+                        @else
+                            <span class="inline-flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-xs font-black text-gray-500 dark:bg-white/5 dark:text-gray-400">
+                                <i class="fas fa-terminal text-[10px]"></i> CLI only
+                            </span>
+                        @endif
                     </td>
                 </tr>
                 @endforeach

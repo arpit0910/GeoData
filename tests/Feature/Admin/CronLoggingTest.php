@@ -90,6 +90,21 @@ class CronLoggingTest extends TestCase
         ]);
     }
 
+    public function test_cli_only_maintenance_command_cannot_be_started_by_browser_request(): void
+    {
+        $this->setJobs(['test:long-maintenance']);
+        config(['cron_jobs.jobs.0.runnable' => false]);
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->postJson(route('admin.crons.run'), [
+            'title' => 'test:long-maintenance',
+        ])->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonFragment(['message' => 'Command `test:long-maintenance` is CLI-only because it can run longer than a browser request.']);
+
+        $this->assertDatabaseCount('cron_logs', 0);
+    }
+
     public function test_cron_dashboard_includes_exchange_calendar_and_uses_latest_log(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);

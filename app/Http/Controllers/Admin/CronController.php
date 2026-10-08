@@ -51,6 +51,13 @@ class CronController extends Controller
             return response()->json(['success' => false, 'message' => 'Unknown cron job.'], 422);
         }
 
+        if (($cron['runnable'] ?? true) !== true) {
+            return response()->json([
+                'success' => false,
+                'message' => "Command `{$cron['command']}` is CLI-only because it can run longer than a browser request.",
+            ], 422);
+        }
+
         try {
             $exitCode = Artisan::call($cron['command'], $cron['args']);
             $output = Artisan::output();
