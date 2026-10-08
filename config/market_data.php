@@ -3,6 +3,7 @@
 return [
     // Optional CA bundle for installations without a system PHP trust store.
     'ca_bundle' => env('MARKET_DATA_CA_BUNDLE'),
+    'amfi_ca_bundle' => env('AMFI_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
 
     'upstox' => [
         'access_token' => env('UPSTOX_ACCESS_TOKEN') ?: env('UPSTOX_TOKEN'),
