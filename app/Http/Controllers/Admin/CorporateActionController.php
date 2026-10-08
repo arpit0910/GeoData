@@ -8,6 +8,7 @@ use App\Models\Equity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class CorporateActionController extends Controller
@@ -39,27 +40,40 @@ class CorporateActionController extends Controller
             ->withQueryString();
 
         $eligible = Equity::query()->where('is_active', true)->whereNotNull('isin')->where('isin', '<>', '');
+        $syncTrackingEnabled = $this->syncTrackingEnabled();
         $summary = [
             'events' => CorporateAction::count(),
             'companies_with_events' => CorporateAction::distinct()->count('isin'),
             'eligible_companies' => (clone $eligible)->count(),
-            'synced_companies' => (clone $eligible)->whereNotNull('corporate_actions_synced_at')->count(),
-            'failed_companies' => (clone $eligible)->whereNotNull('corporate_actions_sync_error')->count(),
-            'last_success' => (clone $eligible)->max('corporate_actions_synced_at'),
-            'last_attempt' => (clone $eligible)->max('corporate_actions_sync_attempted_at'),
+            'synced_companies' => $syncTrackingEnabled
+                ? (clone $eligible)->whereNotNull('corporate_actions_synced_at')->count()
+                : 0,
+            'failed_companies' => $syncTrackingEnabled
+                ? (clone $eligible)->whereNotNull('corporate_actions_sync_error')->count()
+                : 0,
+            'last_success' => $syncTrackingEnabled
+                ? (clone $eligible)->max('corporate_actions_synced_at')
+                : null,
+            'last_attempt' => $syncTrackingEnabled
+                ? (clone $eligible)->max('corporate_actions_sync_attempted_at')
+                : null,
         ];
         $summary['pending_companies'] = max(0, $summary['eligible_companies'] - $summary['synced_companies']);
 
-        $failedCompanies = (clone $eligible)
-            ->whereNotNull('corporate_actions_sync_error')
-            ->orderByDesc('corporate_actions_sync_attempted_at')
-            ->limit(10)
-            ->get([
-                'id', 'isin', 'company_name', 'nse_symbol', 'bse_symbol',
-                'corporate_actions_sync_attempted_at', 'corporate_actions_sync_error',
-            ]);
+        $failedCompanies = $syncTrackingEnabled
+            ? (clone $eligible)
+                ->whereNotNull('corporate_actions_sync_error')
+                ->orderByDesc('corporate_actions_sync_attempted_at')
+                ->limit(10)
+                ->get([
+                    'id', 'isin', 'company_name', 'nse_symbol', 'bse_symbol',
+                    'corporate_actions_sync_attempted_at', 'corporate_actions_sync_error',
+                ])
+            : collect();
 
-        return view('admin.corporate-actions.index', compact('actions', 'summary', 'failedCompanies', 'filters'));
+        return view('admin.corporate-actions.index', compact(
+            'actions', 'summary', 'failedCompanies', 'filters', 'syncTrackingEnabled'
+        ));
     }
 
     public function show(CorporateAction $corporateAction): View
@@ -97,5 +111,12 @@ class CorporateActionController extends Controller
             $exitCode === 0 ? 'success' : 'error',
             $output !== '' ? $output : 'The corporate-action sync returned no output.'
         );
+    }
+
+    private function syncTrackingEnabled(): bool
+    {
+        return Schema::hasColumn('equities', 'corporate_actions_sync_attempted_at')
+            && Schema::hasColumn('equities', 'corporate_actions_synced_at')
+            && Schema::hasColumn('equities', 'corporate_actions_sync_error');
     }
 }

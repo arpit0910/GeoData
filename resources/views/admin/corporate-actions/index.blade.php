@@ -27,6 +27,13 @@
         </div>
     @endif
 
+    @unless($syncTrackingEnabled)
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+            <strong>Synchronization tracking is awaiting the latest database migration.</strong>
+            Stored corporate actions remain available, but coverage and failure statistics will appear after migrations are applied.
+        </div>
+    @endunless
+
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         @foreach([
             'Stored events' => number_format($summary['events']),

@@ -8,11 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('equities', function (Blueprint $table) {
-            $table->timestamp('corporate_actions_sync_attempted_at')->nullable()->index();
-            $table->timestamp('corporate_actions_synced_at')->nullable()->index();
-            $table->text('corporate_actions_sync_error')->nullable();
-        });
+        if (!Schema::hasColumn('equities', 'corporate_actions_sync_attempted_at')) {
+            Schema::table('equities', function (Blueprint $table) {
+                $table->timestamp('corporate_actions_sync_attempted_at')->nullable()->index();
+            });
+        }
+
+        if (!Schema::hasColumn('equities', 'corporate_actions_synced_at')) {
+            Schema::table('equities', function (Blueprint $table) {
+                $table->timestamp('corporate_actions_synced_at')->nullable()->index();
+            });
+        }
+
+        if (!Schema::hasColumn('equities', 'corporate_actions_sync_error')) {
+            Schema::table('equities', function (Blueprint $table) {
+                $table->text('corporate_actions_sync_error')->nullable();
+            });
+        }
     }
 
     public function down(): void

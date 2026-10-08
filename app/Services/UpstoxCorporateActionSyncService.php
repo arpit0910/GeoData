@@ -6,6 +6,7 @@ use App\Models\CorporateAction;
 use App\Models\Equity;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class UpstoxCorporateActionSyncService
@@ -23,6 +24,7 @@ class UpstoxCorporateActionSyncService
      */
     public function syncForEquities(Collection $equities, ?array $allowedTypes = null, int $delayMs = 0): array
     {
+        $syncTrackingEnabled = $this->syncTrackingEnabled();
         $stats = [
             'companies' => 0,
             'fetched' => 0,
@@ -73,7 +75,7 @@ class UpstoxCorporateActionSyncService
                     $stats['saved']++;
                 }
 
-                if ($allowedTypes === null) {
+                if ($allowedTypes === null && $syncTrackingEnabled) {
                     $equity->forceFill([
                         'corporate_actions_sync_attempted_at' => now()->utc(),
                         'corporate_actions_synced_at' => now()->utc(),
@@ -83,7 +85,7 @@ class UpstoxCorporateActionSyncService
             } catch (Throwable $e) {
                 $stats['errors']++;
                 $stats['messages'][] = $equity->isin.': '.$e->getMessage();
-                if ($allowedTypes === null) {
+                if ($allowedTypes === null && $syncTrackingEnabled) {
                     $equity->forceFill([
                         'corporate_actions_sync_attempted_at' => now()->utc(),
                         'corporate_actions_sync_error' => mb_substr($e->getMessage(), 0, 2000),
@@ -103,5 +105,12 @@ class UpstoxCorporateActionSyncService
         }
 
         return $stats;
+    }
+
+    private function syncTrackingEnabled(): bool
+    {
+        return Schema::hasColumn('equities', 'corporate_actions_sync_attempted_at')
+            && Schema::hasColumn('equities', 'corporate_actions_synced_at')
+            && Schema::hasColumn('equities', 'corporate_actions_sync_error');
     }
 }

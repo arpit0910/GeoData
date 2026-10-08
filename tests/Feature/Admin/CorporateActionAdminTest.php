@@ -6,7 +6,9 @@ use App\Models\CorporateAction;
 use App\Models\Equity;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class CorporateActionAdminTest extends TestCase
@@ -118,5 +120,23 @@ class CorporateActionAdminTest extends TestCase
 
         $this->actingAs($user)->get(route('admin.corporate-actions.index'))->assertRedirect('/');
         $this->actingAs($user)->post(route('admin.corporate-actions.sync'), ['limit' => 25])->assertRedirect('/');
+    }
+
+    public function test_admin_page_remains_available_before_sync_tracking_migration_is_applied(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        Schema::table('equities', function (Blueprint $table) {
+            $table->dropColumn([
+                'corporate_actions_sync_attempted_at',
+                'corporate_actions_synced_at',
+                'corporate_actions_sync_error',
+            ]);
+        });
+
+        $this->actingAs($admin)
+            ->get(route('admin.corporate-actions.index'))
+            ->assertOk()
+            ->assertSee('Synchronization tracking is awaiting the latest database migration.');
     }
 }

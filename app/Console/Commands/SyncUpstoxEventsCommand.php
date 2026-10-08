@@ -6,6 +6,7 @@ use App\Models\Equity;
 use App\Services\UpstoxCorporateActionSyncService;
 use App\Services\UpstoxTokenManager;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 
 class SyncUpstoxEventsCommand extends Command
 {
@@ -42,10 +43,13 @@ class SyncUpstoxEventsCommand extends Command
         if ($isinFilter->isNotEmpty()) {
             $query->whereIn('isin', $isinFilter->all());
         } else {
-            $query
-                ->orderByRaw('corporate_actions_sync_attempted_at IS NULL DESC')
-                ->orderBy('corporate_actions_sync_attempted_at')
-                ->orderBy('id');
+            if (Schema::hasColumn('equities', 'corporate_actions_sync_attempted_at')) {
+                $query
+                    ->orderByRaw('corporate_actions_sync_attempted_at IS NULL DESC')
+                    ->orderBy('corporate_actions_sync_attempted_at');
+            }
+
+            $query->orderBy('id');
 
             if (!$this->option('all')) {
                 $query->limit($limit);
