@@ -40,18 +40,24 @@
         <button class="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white dark:bg-white dark:text-gray-900">Filter</button>
     </form>
 
-    <form id="bulk-approve-form" method="POST" action="{{ route('admin.market-news.bulk-approve') }}" onsubmit="return confirm('Approve and publish all selected ready drafts?');">
+    <form id="bulk-news-form" method="POST">
         @csrf
         <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-500/20 dark:bg-purple-500/10">
-            <p class="text-sm font-semibold text-purple-800 dark:text-purple-200">Select multiple “Ready for approval” stories below.</p>
-            <button class="rounded-xl bg-purple-700 px-4 py-2 text-sm font-black text-white hover:bg-purple-800"><i class="fas fa-check-double mr-2"></i>Approve Selected</button>
+            <div>
+                <p class="text-sm font-semibold text-purple-800 dark:text-purple-200">Select up to 25 stories on this page, then generate them with Groq or approve verified drafts.</p>
+                <p id="selected-news-count" class="mt-1 text-xs font-bold text-purple-600 dark:text-purple-300">0 stories selected</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button id="bulk-generate-button" disabled formaction="{{ route('admin.market-news.bulk-regenerate') }}" onclick="return confirm('Generate or regenerate all selected stories with Groq? This can take several minutes.');" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-wand-magic-sparkles mr-2"></i>Generate Selected</button>
+                <button id="bulk-approve-button" disabled formaction="{{ route('admin.market-news.bulk-approve') }}" onclick="return confirm('Approve and publish all selected ready drafts? Ineligible stories will be skipped.');" class="rounded-xl bg-purple-700 px-4 py-2 text-sm font-black text-white hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-check-double mr-2"></i>Approve Selected</button>
+            </div>
         </div>
     </form>
 
     <div class="overflow-x-auto rounded-2xl border border-gray-200 bg-white dark:border-white/5 dark:bg-richdark-surface">
         <table class="w-full min-w-[1200px] text-left text-sm">
             <thead class="border-b border-gray-100 text-xs uppercase tracking-wider text-gray-400 dark:border-white/5">
-                <tr><th class="p-4"><input type="checkbox" aria-label="Select all ready drafts" onchange="document.querySelectorAll('.news-ready-checkbox').forEach((box) => box.checked = this.checked)"></th><th class="p-4">Upstox title</th><th class="p-4">Regenerated title</th><th class="p-4">Instrument</th><th class="p-4">Status</th><th class="p-4">Story date</th><th class="p-4 text-right">Actions</th></tr>
+                <tr><th class="p-4"><input id="select-all-news" type="checkbox" aria-label="Select all news on this page"></th><th class="p-4">Upstox title</th><th class="p-4">Regenerated title</th><th class="p-4">Instrument</th><th class="p-4">Status</th><th class="p-4">Story date</th><th class="p-4 text-right">Actions</th></tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-white/5">
                 @forelse($news as $story)
@@ -65,7 +71,7 @@
                         };
                     @endphp
                     <tr class="align-top">
-                        <td class="p-4">@if($story->editorial_status === 'ready')<input class="news-ready-checkbox" type="checkbox" name="news_ids[]" value="{{ $story->id }}" form="bulk-approve-form" aria-label="Select news {{ $story->id }}">@else<span class="text-gray-300">—</span>@endif</td>
+                        <td class="p-4"><input class="news-checkbox h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" type="checkbox" name="news_ids[]" value="{{ $story->id }}" form="bulk-news-form" aria-label="Select news {{ $story->id }}" @disabled($story->editorial_status === 'processing')></td>
                         <td class="p-4"><div class="max-w-sm font-bold text-gray-900 dark:text-white">{{ $story->original_title ?: '—' }}</div>@if($story->article_url)<a href="{{ $story->article_url }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-xs font-semibold text-amber-600 hover:text-amber-700">Open source article</a>@endif @if($story->original_summary)<details class="mt-2 max-w-sm text-xs text-gray-500"><summary class="cursor-pointer font-semibold">Upstox summary</summary><p class="mt-2 whitespace-pre-line leading-5">{{ $story->original_summary }}</p></details>@endif</td>
                         <td class="p-4"><div class="max-w-sm font-bold text-gray-900 dark:text-white">{{ $story->rewritten_at ? $story->title : 'Not regenerated yet' }}</div>@if($story->rewritten_at && $story->summary)<details class="mt-2 max-w-sm text-xs text-gray-500"><summary class="cursor-pointer font-semibold">Regenerated article</summary><p class="mt-2 whitespace-pre-line leading-5">{{ $story->summary }}</p></details>@endif @if($story->rewrite_model)<div class="mt-2 text-[11px] text-gray-400">{{ $story->rewrite_model }} · v{{ $story->rewrite_version }}</div>@endif @if($story->rewrite_error)<div class="mt-2 max-w-sm rounded-lg bg-red-50 p-2 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-300">{{ $story->rewrite_error }}</div>@endif</td>
                         <td class="p-4"><div class="font-bold text-gray-700 dark:text-gray-200">{{ $story->symbol ?: '—' }}</div><div class="text-xs text-gray-400">{{ $story->isin ?: '—' }}</div></td>
@@ -87,3 +93,31 @@
     {{ $news->links() }}
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const selectAll = document.getElementById('select-all-news');
+    const boxes = Array.from(document.querySelectorAll('.news-checkbox:not(:disabled)'));
+    const counter = document.getElementById('selected-news-count');
+    const generateButton = document.getElementById('bulk-generate-button');
+    const approveButton = document.getElementById('bulk-approve-button');
+
+    const refreshSelection = () => {
+        const selected = boxes.filter((box) => box.checked).length;
+        counter.textContent = `${selected} ${selected === 1 ? 'story' : 'stories'} selected`;
+        generateButton.disabled = selected === 0;
+        approveButton.disabled = selected === 0;
+        selectAll.checked = boxes.length > 0 && selected === boxes.length;
+        selectAll.indeterminate = selected > 0 && selected < boxes.length;
+    };
+
+    selectAll.addEventListener('change', () => {
+        boxes.forEach((box) => box.checked = selectAll.checked);
+        refreshSelection();
+    });
+    boxes.forEach((box) => box.addEventListener('change', refreshSelection));
+    refreshSelection();
+});
+</script>
+@endpush

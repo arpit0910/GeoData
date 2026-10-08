@@ -147,6 +147,51 @@ class AdminMarketNewsTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_select_and_generate_multiple_news_stories(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $stories = collect([1, 2])->map(fn ($number) => MarketNews::create([
+            'title' => "Source headline {$number}",
+            'summary' => "Source summary {$number}.",
+            'original_title' => "Source headline {$number}",
+            'original_summary' => "Source summary {$number}.",
+            'editorial_status' => MarketNews::STATUS_PENDING,
+            'is_published' => false,
+            'published_at' => now(),
+        ]));
+
+        $rewriter = $this->mock(GroqNewsRewriter::class);
+        $rewriter->shouldReceive('rewrite')->twice()->andReturnUsing(function (MarketNews $story) {
+            $story->forceFill([
+                'title' => "Verified generated headline for news story {$story->id}",
+                'summary' => 'A detailed generated article that has completed the configured verification workflow.',
+                'editorial_status' => MarketNews::STATUS_READY,
+                'is_published' => false,
+                'rewritten_at' => now(),
+            ])->save();
+
+            return ['title' => $story->title, 'summary' => $story->summary];
+        });
+
+        $this->actingAs($admin)
+            ->get(route('admin.market-news.index'))
+            ->assertOk()
+            ->assertSee('Generate Selected')
+            ->assertSee('select-all-news');
+
+        $this->post(route('admin.market-news.bulk-regenerate'), [
+            'news_ids' => $stories->pluck('id')->all(),
+        ])->assertRedirect()->assertSessionHas('success');
+
+        foreach ($stories as $story) {
+            $this->assertDatabaseHas('market_news', [
+                'id' => $story->id,
+                'editorial_status' => MarketNews::STATUS_READY,
+                'is_published' => false,
+            ]);
+        }
+    }
+
     public function test_non_admin_cannot_view_market_news_monitor(): void
     {
         $this->actingAs(User::factory()->create(['is_admin' => false]))

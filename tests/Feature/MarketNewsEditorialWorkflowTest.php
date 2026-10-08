@@ -59,7 +59,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->assertFalse($news->is_published);
         $this->assertSame('Company reports flat quarterly revenue at Rs 100 crore', $news->title);
         $this->assertSame('groq-test-model', $news->rewrite_model);
-        $this->assertSame(4, $news->rewrite_version);
+        $this->assertSame(5, $news->rewrite_version);
         $this->assertSame($sourceBody, $news->original_content);
         $this->get('/market/news')
             ->assertOk()
@@ -136,6 +136,65 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             ->assertOk()
             ->assertDontSee('Company reports flat quarterly revenue at Rs 100 crore');
         $this->assertTrue(Route::has('admin.market-news.index'));
+    }
+
+    public function test_failed_checks_are_sent_back_to_groq_for_a_corrected_draft(): void
+    {
+        $this->configureGroq();
+        $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
+        $rewriteAttempts = 0;
+
+        Http::fake(function (Request $request) use ($sourceBody, &$rewriteAttempts) {
+            if ($request->url() === 'https://upstox.com/news/test-article') {
+                return Http::response('<script type="application/ld+json">'.json_encode([
+                    '@type' => 'NewsArticle',
+                    'articleBody' => $sourceBody,
+                ]).'</script>');
+            }
+
+            if (str_contains((string) data_get($request->data(), 'messages.0.content'), 'independent financial-news fact checker')) {
+                return $this->groqResponse([
+                    'intent_preserved' => true,
+                    'facts_preserved' => true,
+                    'tone_preserved' => true,
+                    'attributions_preserved' => true,
+                    'issues' => [],
+                ]);
+            }
+
+            $rewriteAttempts++;
+            if ($rewriteAttempts === 1) {
+                return $this->groqResponse([
+                    'title' => 'Company reports flat quarterly revenue at Rs 200 crore',
+                    'paragraphs' => [
+                        'The company reported quarterly revenue of Rs 200 crore, unchanged from the previous period.',
+                        'Management said demand remained stable across its principal business segments during the quarter.',
+                        'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter.',
+                    ],
+                ]);
+            }
+
+            return $this->groqResponse([
+                'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
+                'paragraphs' => [
+                    'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period.',
+                    'Management said demand remained stable across its principal business segments during the quarter.',
+                    'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter.',
+                ],
+            ]);
+        });
+
+        $news = $this->createNews($sourceBody);
+        app(GroqNewsRewriter::class)->rewrite($news);
+
+        $this->assertSame(2, $rewriteAttempts);
+        $this->assertSame(MarketNews::STATUS_READY, $news->refresh()->editorial_status);
+        Http::assertSent(fn (Request $request): bool => collect(data_get($request->data(), 'messages', []))
+            ->pluck('content')
+            ->contains(fn ($content) => str_contains(
+                (string) $content,
+                'Numerical fact check failed (missing source numbers: 100; unsupported draft numbers: 200)'
+            )));
     }
 
     public function test_transient_capacity_error_uses_the_fallback_model(): void

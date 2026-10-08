@@ -63,29 +63,61 @@ class MarketNewsController extends Controller
     public function regenerate(MarketNews $marketNews, GroqNewsRewriter $rewriter): RedirectResponse
     {
         set_time_limit(180);
-        $cachedContent = $marketNews->original_content;
-        $cachedAt = $marketNews->source_fetched_at;
-        $marketNews->forceFill([
-            'original_content' => null,
-            'source_fetched_at' => null,
-        ])->save();
 
         try {
-            $rewriter->rewrite($marketNews);
+            $this->regenerateDraft($marketNews, $rewriter);
 
             return back()->with('success', "News #{$marketNews->id} was regenerated and is ready for approval.");
         } catch (Throwable $exception) {
-            $marketNews->refresh();
-            if (! $marketNews->original_content && $cachedContent) {
-                $marketNews->forceFill([
-                    'original_content' => $cachedContent,
-                    'source_fetched_at' => $cachedAt,
-                ])->save();
-            }
             report($exception);
 
             return back()->with('error', "News #{$marketNews->id} could not be regenerated: {$exception->getMessage()}");
         }
+    }
+
+    public function bulkRegenerate(Request $request, GroqNewsRewriter $rewriter): RedirectResponse
+    {
+        $validated = $request->validate([
+            'news_ids' => ['required', 'array', 'min:1', 'max:25'],
+            'news_ids.*' => ['integer', 'distinct', 'exists:market_news,id'],
+        ]);
+        $ids = array_values(array_unique(array_map('intval', $validated['news_ids'])));
+        $stories = MarketNews::query()
+            ->whereIn('id', $ids)
+            ->where('editorial_status', '<>', MarketNews::STATUS_PROCESSING)
+            ->orderBy('id')
+            ->get();
+
+        set_time_limit(max(180, count($ids) * 120));
+        $generated = 0;
+        $failures = [];
+
+        foreach ($stories as $story) {
+            try {
+                $this->regenerateDraft($story, $rewriter);
+                $generated++;
+            } catch (Throwable $exception) {
+                report($exception);
+                $failures[] = "#{$story->id}: ".$exception->getMessage();
+            }
+        }
+
+        $skipped = count($ids) - $stories->count();
+        if ($generated === 0) {
+            $details = $failures !== [] ? ' '.implode(' | ', array_slice($failures, 0, 3)) : '';
+
+            return back()->with('error', 'No selected stories could be generated.'.$details);
+        }
+
+        $message = "{$generated} selected news ".($generated === 1 ? 'story was' : 'stories were').' generated and sent for approval.';
+        if ($failures !== []) {
+            $message .= ' '.count($failures).' failed; open those rows to review the exact validation feedback.';
+        }
+        if ($skipped > 0) {
+            $message .= " {$skipped} processing ".($skipped === 1 ? 'story was' : 'stories were').' skipped.';
+        }
+
+        return back()->with('success', $message);
     }
 
     public function approve(Request $request, MarketNews $marketNews): RedirectResponse
@@ -162,5 +194,29 @@ class MarketNewsController extends Controller
             'reviewed_at' => now(),
             'reviewed_by' => $userId,
         ])->save();
+    }
+
+    private function regenerateDraft(MarketNews $marketNews, GroqNewsRewriter $rewriter): void
+    {
+        $cachedContent = $marketNews->original_content;
+        $cachedAt = $marketNews->source_fetched_at;
+        $marketNews->forceFill([
+            'original_content' => null,
+            'source_fetched_at' => null,
+        ])->save();
+
+        try {
+            $rewriter->rewrite($marketNews);
+        } catch (Throwable $exception) {
+            $marketNews->refresh();
+            if (! $marketNews->original_content && $cachedContent) {
+                $marketNews->forceFill([
+                    'original_content' => $cachedContent,
+                    'source_fetched_at' => $cachedAt,
+                ])->save();
+            }
+
+            throw $exception;
+        }
     }
 }

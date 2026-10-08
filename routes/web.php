@@ -280,6 +280,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ->name('admin.market-news.index');
     Route::post('admin/market-news/bulk-approve', [MarketNewsController::class, 'bulkApprove'])
         ->name('admin.market-news.bulk-approve');
+    Route::post('admin/market-news/bulk-regenerate', [MarketNewsController::class, 'bulkRegenerate'])
+        ->name('admin.market-news.bulk-regenerate');
     Route::get('admin/market-news/{marketNews}', [MarketNewsController::class, 'show'])
         ->name('admin.market-news.show');
     Route::post('admin/market-news/{marketNews}/regenerate', [MarketNewsController::class, 'regenerate'])

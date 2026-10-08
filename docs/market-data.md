@@ -43,6 +43,15 @@ causality or uncertainty, attribution shifts, and tone changes. Temporary Groq
 capacity failures are retried and can fall back through
 `GROQ_NEWS_FALLBACK_MODELS`.
 
+When Groq returns a draft that fails an editorial check, the application sends
+the rejected draft and the exact validation failure back to Groq for correction.
+It makes up to `GROQ_NEWS_EDITORIAL_ATTEMPTS` attempts (three by default) and
+only marks the article ready after every check passes. In the admin news list,
+select individual rows or the page-level checkbox and use **Generate Selected**
+to regenerate up to 25 stories in one request. Each failed story keeps its
+specific error so it can be reviewed or retried without losing the trusted
+source content.
+
 The Upstox news synchronizer requests the maximum 100 records per page and
 follows every reported page (up to Upstox's 100-page limit) for each batch of
 30 instrument keys. Normal runs are bounded by `UPSTOX_NEWS_MAX_BATCHES`
@@ -59,7 +68,9 @@ Use `--reset-cursor` to restart a full rotation, `--max-batches=N` to override
 the per-run request budget, or `--isin=...` for a targeted fetch.
 
 Set `GROQ_API_KEY` in the deployment environment. Optional settings are
-`GROQ_NEWS_MODEL`, `GROQ_NEWS_TEMPERATURE`, and `GROQ_API_TIMEOUT`. After
+`GROQ_NEWS_MODEL`, `GROQ_NEWS_FALLBACK_MODELS`,
+`GROQ_NEWS_TEMPERATURE`, `GROQ_NEWS_EDITORIAL_ATTEMPTS`, and
+`GROQ_API_TIMEOUT`. After
 changing environment values on a cached deployment, run `php artisan config:cache`.
 If PHP has no trusted system CA store, point `GROQ_CA_BUNDLE` to a trusted PEM
 bundle; TLS verification remains enabled.
