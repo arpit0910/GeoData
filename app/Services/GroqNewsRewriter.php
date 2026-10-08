@@ -12,7 +12,7 @@ use Throwable;
 
 class GroqNewsRewriter
 {
-    private const REWRITE_VERSION = 5;
+    private const REWRITE_VERSION = 6;
 
     public function __construct(private readonly NewsArticleExtractor $extractor)
     {
@@ -202,12 +202,14 @@ class GroqNewsRewriter
         $paragraphs = array_values(array_filter(preg_split('/\R{2,}/u', trim($summary)) ?: []));
         $sourceWords = str_word_count($source);
         $summaryWords = str_word_count($summary);
-        $minimumWords = $this->minimumBodyWords($sourceWords);
+        $targetMinimumWords = $this->minimumBodyWords($sourceWords);
+        $minimumWords = $this->minimumAcceptedBodyWords($targetMinimumWords);
         $minimumParagraphs = $sourceWords >= 120 ? 4 : ($sourceWords >= 70 ? 3 : 2);
         if ($summaryWords < $minimumWords || count($paragraphs) < $minimumParagraphs) {
             throw new RuntimeException(
                 "Article is too thin: {$summaryWords} words and ".count($paragraphs).
-                " paragraphs were returned; at least {$minimumWords} words and {$minimumParagraphs} substantive paragraphs are required."
+                " paragraphs were returned; at least {$minimumWords} words and {$minimumParagraphs} substantive paragraphs are required".
+                " (the generation target was {$targetMinimumWords} words)."
             );
         }
         if (preg_match('/\b(as an ai|language model|source article|upstox)\b/i', $summary)) {
@@ -218,6 +220,14 @@ class GroqNewsRewriter
     private function minimumBodyWords(int $sourceWords): int
     {
         return max(40, min(500, (int) floor($sourceWords * 0.75)));
+    }
+
+    private function minimumAcceptedBodyWords(int $targetMinimumWords): int
+    {
+        // Generative models do not count words exactly. Keep the prompt's
+        // detailed-article target, but do not discard an otherwise complete,
+        // verified draft because it lands only slightly below that target.
+        return max(40, (int) floor($targetMinimumWords * 0.9));
     }
 
     private function assertIntentPreserved(

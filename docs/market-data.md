@@ -50,7 +50,9 @@ only marks the article ready after every check passes. In the admin news list,
 select individual rows or the page-level checkbox and use **Generate Selected**
 to regenerate up to 25 stories in one request. Each failed story keeps its
 specific error so it can be reviewed or retried without losing the trusted
-source content.
+source content. The requested article length is treated as a generation target;
+the hard check allows a 10% margin so a complete, verified article is not
+rejected solely because Groq finishes a few words below that target.
 
 The Upstox news synchronizer requests the maximum 100 records per page and
 follows every reported page (up to Upstox's 100-page limit) for each batch of

@@ -59,7 +59,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->assertFalse($news->is_published);
         $this->assertSame('Company reports flat quarterly revenue at Rs 100 crore', $news->title);
         $this->assertSame('groq-test-model', $news->rewrite_model);
-        $this->assertSame(5, $news->rewrite_version);
+        $this->assertSame(6, $news->rewrite_version);
         $this->assertSame($sourceBody, $news->original_content);
         $this->get('/market/news')
             ->assertOk()
@@ -136,6 +136,28 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             ->assertOk()
             ->assertDontSee('Company reports flat quarterly revenue at Rs 100 crore');
         $this->assertTrue(Route::has('admin.market-news.index'));
+    }
+
+    public function test_complete_article_just_below_generation_target_is_accepted(): void
+    {
+        $rewriter = app(GroqNewsRewriter::class);
+        $qualityCheck = new \ReflectionMethod($rewriter, 'assertEditorialQuality');
+        $source = trim(str_repeat('source ', 532));
+        $paragraphWordCounts = [79, 79, 78, 78, 78];
+        $summary = collect($paragraphWordCounts)
+            ->map(fn (int $words) => trim(str_repeat('draft ', $words)))
+            ->implode("\n\n");
+
+        $this->assertSame(392, str_word_count($summary));
+
+        $qualityCheck->invoke(
+            $rewriter,
+            'Company reports detailed quarterly update across its operations',
+            $summary,
+            $source
+        );
+
+        $this->addToAssertionCount(1);
     }
 
     public function test_failed_checks_are_sent_back_to_groq_for_a_corrected_draft(): void
