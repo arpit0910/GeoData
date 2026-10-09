@@ -22,7 +22,11 @@ class PublicPagesTest extends TestCase
     {
         $response = $this->get('/pricing');
         $response->assertOk()
-            ->assertSee('Choose the access your business needs');
+            ->assertSee('Choose the access your business needs')
+            ->assertSee('Monthly')
+            ->assertSee('Yearly')
+            ->assertSee('monthly-plans', false)
+            ->assertSee('yearly-plans', false);
     }
 
     /** @test */

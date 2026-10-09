@@ -141,11 +141,56 @@ class DashboardSecurityTest extends TestCase
         $this->get(route('pricing'))
             ->assertOk()
             ->assertSee('Replacement Plan')
-            ->assertSee('Choose Replacement Plan');
+            ->assertSee('Activate plan');
 
         $this->postJson(route('pricing.order', $plan))
             ->assertStatus(503)
             ->assertJson(['success' => false]);
+    }
+
+    /** @test */
+    public function customer_can_activate_a_plan_while_temporary_checkout_is_enabled()
+    {
+        config([
+            'services.subscriptions.temporary_checkout_enabled' => true,
+            'services.subscriptions.purchases_enabled' => false,
+        ]);
+
+        $user = $this->createUser(['status' => 1]);
+        $plan = $this->createPlan([
+            'name' => 'MF and Stocks',
+            'billing_cycle' => 'yearly',
+            'amount' => 4999,
+            'api_hits_limit' => 25000,
+        ]);
+
+        $response = $this->actingAs($user)->postJson(route('pricing.purchase', $plan));
+
+        $response->assertOk()->assertJson([
+            'success' => true,
+            'subscription' => [
+                'plan' => 'MF and Stocks',
+                'billing_cycle' => 'yearly',
+            ],
+        ]);
+
+        $this->assertDatabaseHas('subscriptions', [
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'available_credits' => 25000,
+            'amount_paid' => 0,
+        ]);
+        $this->assertDatabaseHas('transaction_histories', [
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'amount' => 0,
+            'status' => 'success',
+            'type' => 'temporary_checkout',
+        ]);
+
+        $this->assertSame($plan->id, $user->fresh()->plan_id);
+        $this->assertSame(25000, $user->fresh()->available_credits);
     }
 
     // ─── CSRF PROTECTION ON WEB ROUTES ───────────────────────────────
