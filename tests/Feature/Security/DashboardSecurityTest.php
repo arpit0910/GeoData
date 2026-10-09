@@ -217,6 +217,23 @@ class DashboardSecurityTest extends TestCase
         ]);
     }
 
+    /** @test */
+    public function authenticated_customer_can_render_homepage_purchase_controls()
+    {
+        config(['services.subscriptions.temporary_checkout_enabled' => true]);
+
+        $user = $this->createUser();
+        $monthlyPlan = $this->createPlan(['name' => 'Banks', 'billing_cycle' => 'monthly']);
+        $this->createPlan(['name' => 'Banks', 'billing_cycle' => 'yearly']);
+
+        $this->actingAs($user)
+            ->get(route('home'))
+            ->assertOk()
+            ->assertSee('js-home-buy-plan', false)
+            ->assertSee('homePurchaseUrlTemplate', false)
+            ->assertSee((string) $monthlyPlan->id, false);
+    }
+
     // ─── CSRF PROTECTION ON WEB ROUTES ───────────────────────────────
 
     /** @test */

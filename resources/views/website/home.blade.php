@@ -582,7 +582,9 @@
 @if($temporaryCheckoutEnabled)
 @push('scripts')
 <script>
-    const homePurchaseUrlTemplate = @json(route('pricing.purchase', ['plan' => '__PLAN__']));
+    // Use a stable URL template so an old production route cache cannot make
+    // the authenticated homepage fail while a deployment is being refreshed.
+    const homePurchaseUrlTemplate = @json(url('/pricing/plans/__PLAN__/purchase'));
     const homeDashboardUrl = @json(route('dashboard'));
     const homeCsrfToken = @json(csrf_token());
 

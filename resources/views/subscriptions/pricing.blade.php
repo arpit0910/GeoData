@@ -89,7 +89,9 @@
 <script>
     const csrfToken = @json(csrf_token());
     const orderUrlTemplate = @json(route('pricing.order', ['plan' => '__PLAN__']));
-    const temporaryPurchaseUrlTemplate = @json(route('pricing.purchase', ['plan' => '__PLAN__']));
+    // Avoid render-time failure if views are deployed before the route cache
+    // has been rebuilt. The POST endpoint is still protected by auth + CSRF.
+    const temporaryPurchaseUrlTemplate = @json(url('/pricing/plans/__PLAN__/purchase'));
     const verifyUrl = @json(route('pricing.verify'));
     const dashboardUrl = @json(route('dashboard'));
     const temporaryCheckoutEnabled = @json($temporaryCheckoutEnabled);
