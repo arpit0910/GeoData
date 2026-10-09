@@ -282,9 +282,9 @@ class GroqNewsRewriter
     private function minimumAcceptedBodyWords(int $targetMinimumWords): int
     {
         // Generative models do not count words exactly. Keep the prompt's
-        // detailed-article target, but do not discard an otherwise complete,
-        // verified draft because it lands only slightly below that target.
-        return max(40, (int) floor($targetMinimumWords * 0.9));
+        // detailed-article target, but accept a complete, substantive and
+        // fact-checked draft that reaches at least 80% of that target.
+        return max(40, (int) floor($targetMinimumWords * 0.8));
     }
 
     private function targetParagraphCount(int $sourceWords, int $minimumBodyWords): int

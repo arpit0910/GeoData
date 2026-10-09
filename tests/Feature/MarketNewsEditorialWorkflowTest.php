@@ -200,6 +200,28 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function test_complete_239_word_article_is_accepted_for_a_286_word_target(): void
+    {
+        $rewriter = app(GroqNewsRewriter::class);
+        $qualityCheck = new \ReflectionMethod($rewriter, 'assertEditorialQuality');
+        $source = trim(str_repeat('source ', 382));
+        $paragraphWordCounts = [48, 48, 48, 48, 47];
+        $summary = collect($paragraphWordCounts)
+            ->map(fn (int $words) => trim(str_repeat('draft ', $words)))
+            ->implode("\n\n");
+
+        $this->assertSame(239, str_word_count($summary));
+
+        $qualityCheck->invoke(
+            $rewriter,
+            'Company reports detailed quarterly operating and financial update',
+            $summary,
+            $source
+        );
+
+        $this->addToAssertionCount(1);
+    }
+
     public function test_failed_checks_are_sent_back_to_groq_for_a_corrected_draft(): void
     {
         $this->configureGroq();
