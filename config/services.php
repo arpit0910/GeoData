@@ -64,8 +64,9 @@ return [
     ],
 
     'subscriptions' => [
-        // Keep paid checkout off until the live Razorpay keys are configured.
-        'purchases_enabled' => (bool) env('SUBSCRIPTION_PURCHASES_ENABLED', false),
+        // Gateway checkout remains optional while direct activation is in use.
+        'purchases_enabled' => filter_var(env('SUBSCRIPTION_PURCHASES_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'temporary_checkout_enabled' => filter_var(env('SUBSCRIPTION_TEMPORARY_CHECKOUT_ENABLED', true), FILTER_VALIDATE_BOOL),
     ],
 
 ];

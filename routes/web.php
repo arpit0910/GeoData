@@ -328,6 +328,7 @@ Route::middleware(['auth'])->group(function () {
         // Customers without an active subscription must be able to complete
         // checkout, so these routes intentionally sit outside `subscribed`.
         Route::post('/pricing/coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.coupon.validate');
+        Route::post('/pricing/plans/{plan}/purchase', [SubscriptionController::class, 'purchaseWithoutGateway'])->name('pricing.purchase');
         Route::post('/pricing/plans/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
         Route::post('/pricing/payment/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
         Route::post('/pricing/topup/order', [SubscriptionController::class, 'createTopupOrder'])->name('pricing.topup.order');

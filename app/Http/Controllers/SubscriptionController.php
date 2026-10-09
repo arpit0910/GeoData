@@ -82,13 +82,93 @@ class SubscriptionController extends Controller
             ->orderByRaw("CASE billing_cycle WHEN 'monthly' THEN 0 WHEN 'yearly' THEN 1 ELSE 2 END")
             ->orderBy('amount')
             ->get();
+        $monthlyPlans = $plans->where('billing_cycle', 'monthly')->values();
+        $yearlyPlans = $plans->where('billing_cycle', 'yearly')->values();
         $activeSubscription = auth()->check() ? auth()->user()->subscriptions()
             ->where('status', 'active')
             ->where('expires_at', '>', now())
             ->latest()
             ->first() : null;
             
-        return view('subscriptions.pricing', compact('plans', 'activeSubscription'));
+        $temporaryCheckoutEnabled = config('services.subscriptions.temporary_checkout_enabled');
+        $paymentCheckoutEnabled = config('services.subscriptions.purchases_enabled');
+
+        return view('subscriptions.pricing', compact(
+            'plans',
+            'monthlyPlans',
+            'yearlyPlans',
+            'activeSubscription',
+            'temporaryCheckoutEnabled',
+            'paymentCheckoutEnabled'
+        ));
+    }
+
+    public function purchaseWithoutGateway(Request $request, Plan $plan)
+    {
+        abort_unless((bool) $plan->status, 404);
+
+        if (!config('services.subscriptions.temporary_checkout_enabled')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Temporary checkout is no longer available. Please use the configured payment option.',
+            ], 503);
+        }
+
+        $user = $request->user();
+        $currentSubscription = Subscription::query()
+            ->where('user_id', $user->id)
+            ->where('plan_id', $plan->id)
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->first();
+
+        if ($currentSubscription) {
+            return response()->json([
+                'success' => true,
+                'message' => 'This plan is already active on your account.',
+                'redirect_url' => route('dashboard'),
+            ]);
+        }
+
+        try {
+            $reference = 'temporary-'.$user->id.'-'.$plan->id.'-'.Str::lower(Str::random(12));
+            $subscription = $this->activateSubscription(
+                $user,
+                $plan,
+                $reference,
+                null,
+                null,
+                0,
+                0,
+                0,
+                null,
+                'temporary_checkout'
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Your subscription has been activated successfully.',
+                'redirect_url' => route('dashboard'),
+                'subscription' => [
+                    'plan' => $plan->name,
+                    'billing_cycle' => $plan->billing_cycle,
+                    'expires_at' => optional($subscription->expires_at)->toIso8601String(),
+                ],
+            ]);
+        } catch (\Throwable $exception) {
+            \Log::error('Temporary subscription activation failed.', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'exception' => $exception,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'The subscription could not be activated. Please try again.',
+            ], 500);
+        }
     }
 
     public function createOrder(Request $request, Plan $plan)
@@ -427,9 +507,9 @@ class SubscriptionController extends Controller
         });
     }
 
-    private function activateSubscription($user, $plan, $orderId, $paymentId, $signature, $amountPaid, $discountAmount, $remainingCycles, $couponId = null)
+    private function activateSubscription($user, $plan, $orderId, $paymentId, $signature, $amountPaid, $discountAmount, $remainingCycles, $couponId = null, $transactionType = 'purchase')
     {
-        return DB::transaction(function() use ($user, $plan, $orderId, $paymentId, $signature, $amountPaid, $discountAmount, $remainingCycles, $couponId) {
+        return DB::transaction(function() use ($user, $plan, $orderId, $paymentId, $signature, $amountPaid, $discountAmount, $remainingCycles, $couponId, $transactionType) {
             // Calculate expiration date - Same date of next month/year
             $expiresAt = now();
             if ($plan->billing_cycle === 'monthly') {
@@ -476,6 +556,8 @@ class SubscriptionController extends Controller
                 'plan_name' => $plan->name,
                 'billing_cycle' => $plan->billing_cycle,
                 'status' => 'success',
+                'type' => $transactionType,
+                'credits' => $creditsToAdd ?? 0,
             ]);
 
             return $subscription;
