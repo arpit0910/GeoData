@@ -15,8 +15,10 @@ the app's Notifier Webhook Endpoint in Upstox Developer Apps:
 
 `https://your-domain.example/api/v1/integrations/market-data/upstox-token/{UPSTOX_NOTIFIER_SECRET}`
 
-The application limits every received access token to 24 hours, even if Upstox
-reports a longer expiry, and requests a replacement after that effective expiry.
+The application accepts Upstox access tokens for up to ten years (configurable
+with `UPSTOX_TOKEN_LIFETIME_YEARS`) and does not request a replacement every day.
+A replacement is requested only after the effective expiry or when Upstox
+rejects the stored token with HTTP 401.
 Upstox requires the account holder to approve the request; after approval, the
 notifier stores the token encrypted in the database. `UPSTOX_ACCESS_TOKEN`
 remains a fallback for initial setup. Never commit credentials. If configuration

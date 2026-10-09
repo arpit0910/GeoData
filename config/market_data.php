@@ -11,6 +11,7 @@ return [
         'client_secret' => env('UPSTOX_CLIENT_SECRET') ?: env('UPSTOX_API_SECRET'),
         'notifier_secret' => env('UPSTOX_NOTIFIER_SECRET')
             ?: hash('sha256', (string) env('APP_KEY').'|upstox-token-notifier'),
+        'token_lifetime_years' => (int) env('UPSTOX_TOKEN_LIFETIME_YEARS', 10),
         'token_request_url' => env('UPSTOX_TOKEN_REQUEST_URL', 'https://api.upstox.com/v3/login/auth/token/request'),
         'fundamentals_url' => env('UPSTOX_FUNDAMENTALS_URL', 'https://api.upstox.com/v2/fundamentals'),
         'instruments_url' => env('UPSTOX_INSTRUMENTS_URL')

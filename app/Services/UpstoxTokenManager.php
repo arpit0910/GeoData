@@ -11,15 +11,15 @@ use RuntimeException;
 
 class UpstoxTokenManager
 {
-    private const TOKEN_LIFETIME_HOURS = 24;
-
     public function current(): ?UpstoxAccessToken
     {
+        $lifetimeYears = $this->lifetimeYears();
+
         return UpstoxAccessToken::query()
             ->where('status', 'active')
             ->whereNotNull('access_token')
             ->where('expires_at', '>', now()->addMinute())
-            ->where('issued_at', '>', now()->subHours(self::TOKEN_LIFETIME_HOURS)->addMinute())
+            ->where('issued_at', '>', now()->subYears($lifetimeYears)->addMinute())
             ->latest('issued_at')
             ->first();
     }
@@ -129,7 +129,7 @@ class UpstoxTokenManager
         $issuedAt = $this->fromMilliseconds($payload['issued_at']);
         $providerExpiresAt = $this->fromMilliseconds($payload['expires_at']);
         $expiresAt = $providerExpiresAt->min(
-            $issuedAt->copy()->addHours(self::TOKEN_LIFETIME_HOURS)
+            $issuedAt->copy()->addYears($this->lifetimeYears())
         );
 
         return DB::transaction(function () use ($payload, $clientId, $issuedAt, $providerExpiresAt, $expiresAt) {
@@ -166,5 +166,10 @@ class UpstoxTokenManager
 
         return Carbon::createFromTimestampMsUTC((int) $value)
             ->setTimezone((string) config('app.timezone', 'UTC'));
+    }
+
+    private function lifetimeYears(): int
+    {
+        return max(1, (int) config('market_data.upstox.token_lifetime_years', 10));
     }
 }
