@@ -76,7 +76,12 @@ class SubscriptionController extends Controller
 
     public function pricing()
     {
-        $plans = Plan::where('status', 1)->get();
+        $plans = Plan::query()
+            ->where('status', 1)
+            ->with('benefitItems')
+            ->orderByRaw("CASE billing_cycle WHEN 'monthly' THEN 0 WHEN 'yearly' THEN 1 ELSE 2 END")
+            ->orderBy('amount')
+            ->get();
         $activeSubscription = auth()->check() ? auth()->user()->subscriptions()
             ->where('status', 'active')
             ->where('expires_at', '>', now())
@@ -88,6 +93,12 @@ class SubscriptionController extends Controller
 
     public function createOrder(Request $request, Plan $plan)
     {
+        abort_unless((bool) $plan->status, 404);
+
+        $request->validate([
+            'coupon_id' => 'nullable|exists:coupons,id',
+        ]);
+
         $amount = ($plan->amount - $plan->discount_amount);
         
         // Handle Coupon discount if provided
@@ -107,7 +118,7 @@ class SubscriptionController extends Controller
             }
         }
 
-        $amountPaise = $amount * 100;
+        $amountPaise = (int) round($amount * 100);
 
         if ($amountPaise > 0 && !config('services.subscriptions.purchases_enabled')) {
             return response()->json([
@@ -153,10 +164,18 @@ class SubscriptionController extends Controller
 
     public function verifyPayment(Request $request)
     {
+        $validated = $request->validate([
+            'plan_id' => 'required|exists:plans,id',
+            'coupon_id' => 'nullable|exists:coupons,id',
+            'razorpay_order_id' => 'required|string',
+            'razorpay_payment_id' => 'nullable|string',
+            'razorpay_signature' => 'nullable|string',
+        ]);
+
         $keyId = env('RAZORPAY_KEY', 'rzp_test_dummy');
         $keySecret = env('RAZORPAY_SECRET', 'dummy_secret');
         
-        $plan = Plan::findOrFail($request->plan_id);
+        $plan = Plan::query()->where('status', 1)->findOrFail($validated['plan_id']);
         $amountPaid = $plan->amount - $plan->discount_amount;
         $couponId = $request->coupon_id;
         $discountAmount = 0;
@@ -227,7 +246,9 @@ class SubscriptionController extends Controller
                     'name' => $plan->name,
                     'expires_at' => $subscription->expires_at ? $subscription->expires_at->format('d M, Y') : 'Never',
                     'benefits' => $plan->benefits,
-                    'credits' => number_format($subscription->total_credits)
+                    'credits' => $subscription->total_credits === null
+                        ? 'Unlimited'
+                        : number_format($subscription->total_credits)
                 ]
             ]);
         } catch (\Exception $e) {

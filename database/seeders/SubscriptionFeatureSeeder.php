@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 class SubscriptionFeatureSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $features = [
             [

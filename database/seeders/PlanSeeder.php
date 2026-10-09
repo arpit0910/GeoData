@@ -7,13 +7,15 @@ use App\Models\Plan;
 use App\Models\SubscriptionFeature;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 
 class PlanSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(SubscriptionFeatureSeeder::class);
+        $this->call([
+            SubscriptionFeatureSeeder::class,
+            BenefitSeeder::class,
+        ]);
 
         $products = [
             ['name' => 'Address only', 'monthly_amount' => 299, 'yearly_amount' => 2990, 'credits' => 50000,
@@ -30,7 +32,7 @@ class PlanSeeder extends Seeder
                 'features' => [SubscriptionFeature::MODULE_BANKING_CURRENCY_API, SubscriptionFeature::MODULE_IFSC_API]],
             ['name' => 'All in one', 'monthly_amount' => 999, 'yearly_amount' => 9990, 'credits' => null,
                 'terms' => 'Unlimited access to every available API module.',
-                'benefits' => ['All API categories', 'Unlimited access', 'Priority support'],
+                'benefits' => ['All API categories', 'Unlimited access', 'Priority Support'],
                 'features' => [SubscriptionFeature::MODULE_ALL_API]],
         ];
 
@@ -60,17 +62,6 @@ class PlanSeeder extends Seeder
                     SubscriptionFeature::query()->whereIn('key', $featureKeys)->pluck('id')
                 );
 
-                foreach ($product['benefits'] as $index => $benefitName) {
-                    Benefit::updateOrCreate(
-                        ['name' => $benefitName],
-                        [
-                            'slug' => Str::slug($benefitName),
-                            'description' => $benefitName,
-                            'is_active' => true,
-                            'sort_order' => $index + 1,
-                        ]
-                    );
-                }
                 $plan->benefitItems()->sync(
                     Benefit::query()->whereIn('name', $product['benefits'])->pluck('id')
                 );

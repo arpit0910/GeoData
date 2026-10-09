@@ -46,8 +46,8 @@ Route::get('/landing-v3', [HomeController::class, 'landingV3'])->name('landing.v
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.post');
-Route::redirect('/pricing', '/#plans')->name('pricing');
-Route::redirect('/subscribe', '/#plans')->name('subscription.pricing');
+Route::get('/pricing', [SubscriptionController::class, 'pricing'])->name('pricing');
+Route::redirect('/subscribe', '/pricing')->name('subscription.pricing');
 
 Route::get('/docs', [HomeController::class, 'docs'])->name('docs');
 Route::get('/status', [HomeController::class, 'status'])->name('status');
@@ -325,6 +325,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/currency/{currency}', [CurrencyConversionController::class, 'lookup'])->name('api.currency.lookup');
 
     Route::middleware(['profile.complete.check'])->group(function () {
+        // Customers without an active subscription must be able to complete
+        // checkout, so these routes intentionally sit outside `subscribed`.
+        Route::post('/pricing/coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.coupon.validate');
+        Route::post('/pricing/plans/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
+        Route::post('/pricing/payment/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
         Route::post('/pricing/topup/order', [SubscriptionController::class, 'createTopupOrder'])->name('pricing.topup.order');
         Route::post('/pricing/topup/verify', [SubscriptionController::class, 'verifyTopupPayment'])->name('pricing.topup.verify');
 

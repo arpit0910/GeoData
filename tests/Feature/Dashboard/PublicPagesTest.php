@@ -32,10 +32,11 @@ class PublicPagesTest extends TestCase
     }
 
     /** @test */
-    public function legacy_pricing_page_redirects_to_home_plans()
+    public function pricing_page_loads()
     {
         $response = $this->get('/pricing');
-        $response->assertRedirect('/#plans');
+        $response->assertOk()
+            ->assertSee('Choose the access your business needs');
     }
 
     /** @test */

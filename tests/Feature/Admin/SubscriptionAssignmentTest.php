@@ -7,7 +7,7 @@ use App\Models\Subscription;
 use App\Models\SubscriptionFeature;
 use App\Models\TransactionHistory;
 use App\Models\User;
-use Database\Seeders\PlanSeeder;
+use Database\Seeders\SubscriptionCatalogSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -21,7 +21,7 @@ class SubscriptionAssignmentTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed(PlanSeeder::class);
+        $this->seed(SubscriptionCatalogSeeder::class);
     }
 
     public function test_plan_seeder_creates_the_four_products_in_monthly_and_yearly_cycles(): void
@@ -48,6 +48,23 @@ class SubscriptionAssignmentTest extends TestCase
 
         $this->assertNull($allInOne->api_hits_limit);
         $this->assertTrue($allInOne->hasFeature(SubscriptionFeature::MODULE_ALL_API));
+        $this->assertDatabaseCount('subscription_features', 6);
+        $this->assertDatabaseCount('benefits', 20);
+        $this->assertDatabaseCount('plan_subscription_feature', 12);
+        $this->assertDatabaseCount('benefit_plan', 24);
+        $this->assertDatabaseCount('transaction_histories', 0);
+    }
+
+    public function test_subscription_catalog_seeder_is_idempotent(): void
+    {
+        $this->seed(SubscriptionCatalogSeeder::class);
+
+        $this->assertDatabaseCount('plans', 8);
+        $this->assertDatabaseCount('subscription_features', 6);
+        $this->assertDatabaseCount('benefits', 20);
+        $this->assertDatabaseCount('plan_subscription_feature', 12);
+        $this->assertDatabaseCount('benefit_plan', 24);
+        $this->assertDatabaseCount('transaction_histories', 0);
     }
 
     public function test_admin_plan_assignment_updates_the_existing_subscription_and_credits(): void

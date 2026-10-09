@@ -120,13 +120,32 @@ class DashboardSecurityTest extends TestCase
     // ─── SUBSCRIPTION ENFORCEMENT ────────────────────────────────────
 
     /** @test */
-    public function unsubscribed_user_is_redirected_to_business_enquiry()
+    public function unsubscribed_user_is_redirected_to_the_pricing_page()
     {
         $user = $this->createUser(['status' => null]);
 
         $response = $this->actingAs($user)->get('/dashboard');
 
-        $response->assertRedirect(route('contact', ['subject' => 'Business Plan Enquiry']));
+        $response->assertRedirect(route('pricing'));
+        $response->assertSessionHas('warning');
+    }
+
+    /** @test */
+    public function expired_user_can_open_pricing_and_reach_checkout_routes()
+    {
+        $user = $this->createUser(['status' => 1]);
+        $plan = $this->createPlan(['status' => 1, 'name' => 'Replacement Plan']);
+        $this->createExpiredSubscription($user, $plan);
+
+        $this->actingAs($user)->get('/dashboard')->assertRedirect(route('pricing'));
+        $this->get(route('pricing'))
+            ->assertOk()
+            ->assertSee('Replacement Plan')
+            ->assertSee('Choose Replacement Plan');
+
+        $this->postJson(route('pricing.order', $plan))
+            ->assertStatus(503)
+            ->assertJson(['success' => false]);
     }
 
     // ─── CSRF PROTECTION ON WEB ROUTES ───────────────────────────────

@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class BenefitSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $benefits = [
             'Basic Data Access',

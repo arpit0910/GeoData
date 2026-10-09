@@ -42,9 +42,10 @@ class EnsureSubscribed
             if ($currentRoute && !in_array($currentRoute, $allowedRoutes)) {
                 // User must have status 1 (active) and an active subscription to access other routes
                 if ($user->status != 1 || !$user->hasActiveSubscription()) {
-                    return redirect()->route('contact', [
-                        'subject' => 'Business Plan Enquiry',
-                    ])->with('error', 'Your account does not have active access. Please contact our team and we will help you.');
+                    return redirect()->guest(route('pricing'))->with(
+                        'warning',
+                        'Your subscription has expired or is inactive. Choose a plan below to restore access.'
+                    );
                 }
             }
         }
