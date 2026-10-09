@@ -765,8 +765,6 @@ class ApiTestRunnerService
 
         $subscription = Subscription::query()
             ->where('user_id', $user->id)
-            ->where('plan_id', $plan->id)
-            ->latest()
             ->first();
 
         if (! $subscription) {

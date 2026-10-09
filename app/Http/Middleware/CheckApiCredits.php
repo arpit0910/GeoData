@@ -51,9 +51,12 @@ class CheckApiCredits
             // If at least one full month has passed since last refresh (tenure-based), reset the credits
             if (now()->greaterThanOrEqualTo($lastRefresh->copy()->addMonth())) {
                 $subscription->update([
+                    'total_credits' => $plan->api_hits_limit,
+                    'used_credits' => 0,
                     'available_credits' => $plan->api_hits_limit,
                     'last_credit_refresh' => now()
                 ]);
+                $user->forceFill(['available_credits' => $plan->api_hits_limit])->save();
                 $subscription->refresh(); // Load fresh credits from DB into memory
             }
         }
@@ -75,6 +78,9 @@ class CheckApiCredits
         if ($success && !$isUnlimited) {
             $subscription->decrement('available_credits');
             $subscription->increment('used_credits');
+            $user->forceFill([
+                'available_credits' => $subscription->fresh()->available_credits,
+            ])->save();
         }
 
         // Trace and record explicitly keeping permanent historical snapshots

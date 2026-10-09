@@ -7,188 +7,78 @@ use App\Models\Plan;
 use App\Models\SubscriptionFeature;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class PlanSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        $plans = [
-            [
-                'name' => 'Free Developer',
-                'amount' => 0,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => 1000,
-                'status' => 1,
-                'terms' => 'Free access to IFSC and Indian pincode APIs.',
-                'benefits' => ['IFSC lookup', 'India pincode lookup', '1,000 API calls per month'],
-                'features' => [
-                    SubscriptionFeature::MODULE_IFSC_API,
-                    SubscriptionFeature::MODULE_INDIA_PINCODE_API,
-                ],
-            ],
-            [
-                'name' => 'Bronze',
-                'amount' => 0,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => 200,
-                'status' => 1,
-                'terms' => 'Free plan for IFSC and Indian pincode lookups.',
-                'benefits' => ['IFSC lookup', 'India pincode lookup', 'Standard Support'],
-                'features' => [
-                    SubscriptionFeature::MODULE_IFSC_API,
-                    SubscriptionFeature::MODULE_INDIA_PINCODE_API,
-                ],
-            ],
-            [
-                'name' => 'Silver',
-                'amount' => 499,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => 200000,
-                'status' => 1,
-                'terms' => 'Silver Monthly Plan with intermediate API access.',
-                'benefits' => ['Extended Data Access', 'Priority Support'],
-                'features' => [
-                    SubscriptionFeature::MODULE_ADDRESS_API,
-                    SubscriptionFeature::MODULE_BANKING_CURRENCY_API,
-                ],
-            ],
-            [
-                'name' => 'Silver',
-                'amount' => 4999,
-                'discount_amount' => 0,
-                'billing_cycle' => 'yearly',
-                'api_hits_limit' => 200000, 
-                'status' => 1,
-                'terms' => 'Silver Yearly Plan with high volume API access.',
-                'benefits' => ['Extended Data Access', 'Priority Support','High Volume API access (Credits refreshes every month)'],
-                'features' => [
-                    SubscriptionFeature::MODULE_ADDRESS_API,
-                    SubscriptionFeature::MODULE_BANKING_CURRENCY_API,
-                ],
-            ],
-            [
-                'name' => 'Gold',
-                'amount' => 899,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => null,
-                'status' => 1,
-                'terms' => 'Gold Monthly Plan with unlimited API access.',
-                'benefits' => ['Unlimited Data Access', '24/7 Premium Support', 'Dedicated Manager'],
-                'features' => [
-                    SubscriptionFeature::MODULE_ALL_API,
-                ],
-            ],
-            [
-                'name' => 'Gold',
-                'amount' => 8999,
-                'discount_amount' => 0,
-                'billing_cycle' => 'yearly',
-                'api_hits_limit' => null, 
-                'status' => 1,
-                'terms' => 'Gold Yearly Plan with unlimited API access.',
-                'benefits' => ['Unlimited Data Access', '24/7 Premium Support', 'Dedicated Manager'],
-                'features' => [
-                    SubscriptionFeature::MODULE_ALL_API,
-                ],
-            ],
-            [
-                'name' => 'Address API Plan',
-                'amount' => 299,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => 50000,
-                'status' => 1,
-                'terms' => 'Address and geolocation APIs for lookup and validation use cases.',
+        $this->call(SubscriptionFeatureSeeder::class);
+
+        $products = [
+            ['name' => 'Address only', 'monthly_amount' => 299, 'yearly_amount' => 2990, 'credits' => 50000,
+                'terms' => 'Address, pincode, city, state, and location APIs.',
                 'benefits' => ['Address APIs', 'Pincode APIs', 'Location lookup'],
-                'features' => [
-                    SubscriptionFeature::MODULE_ADDRESS_API,
-                ],
-            ],
-            [
-                'name' => 'Banking & Currency Plan',
-                'amount' => 399,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => 75000,
-                'status' => 1,
-                'terms' => 'Banking and currency APIs for financial verification and conversion workflows.',
-                'benefits' => ['IFSC lookup', 'Bank branch APIs', 'Currency APIs'],
-                'features' => [
-                    SubscriptionFeature::MODULE_BANKING_CURRENCY_API,
-                ],
-            ],
-            [
-                'name' => 'Stocks & Mutual Funds Plan',
-                'amount' => 499,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => 100000,
-                'status' => 1,
-                'terms' => 'Market data APIs for stocks, funds, NAVs, and market analytics.',
+                'features' => [SubscriptionFeature::MODULE_ADDRESS_API, SubscriptionFeature::MODULE_INDIA_PINCODE_API]],
+            ['name' => 'MF and Stocks', 'monthly_amount' => 499, 'yearly_amount' => 4990, 'credits' => 100000,
+                'terms' => 'Stocks, mutual funds, NAV, and market-data APIs.',
                 'benefits' => ['Stocks APIs', 'Mutual fund APIs', 'Market analytics'],
-                'features' => [
-                    SubscriptionFeature::MODULE_STOCKS_MUTUAL_FUNDS_API,
-                ],
-            ],
-            [
-                'name' => 'Address + Banking Combo Plan',
-                'amount' => 649,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => 150000,
-                'status' => 1,
-                'terms' => 'Combined address and banking APIs for KYC and operational workflows.',
-                'benefits' => ['Address APIs', 'Banking APIs', 'Currency APIs'],
-                'features' => [
-                    SubscriptionFeature::MODULE_ADDRESS_API,
-                    SubscriptionFeature::MODULE_BANKING_CURRENCY_API,
-                ],
-            ],
-            [
-                'name' => 'Complete API Access Plan',
-                'amount' => 999,
-                'discount_amount' => 0,
-                'billing_cycle' => 'monthly',
-                'api_hits_limit' => null,
-                'status' => 1,
-                'terms' => 'Complete API access across every supported module.',
+                'features' => [SubscriptionFeature::MODULE_STOCKS_MUTUAL_FUNDS_API]],
+            ['name' => 'Banks', 'monthly_amount' => 399, 'yearly_amount' => 3990, 'credits' => 75000,
+                'terms' => 'IFSC, bank branch, banking, and currency APIs.',
+                'benefits' => ['IFSC lookup', 'Bank branch APIs', 'Currency APIs'],
+                'features' => [SubscriptionFeature::MODULE_BANKING_CURRENCY_API, SubscriptionFeature::MODULE_IFSC_API]],
+            ['name' => 'All in one', 'monthly_amount' => 999, 'yearly_amount' => 9990, 'credits' => null,
+                'terms' => 'Unlimited access to every available API module.',
                 'benefits' => ['All API categories', 'Unlimited access', 'Priority support'],
-                'features' => [
-                    SubscriptionFeature::MODULE_ALL_API,
-                ],
-            ],
+                'features' => [SubscriptionFeature::MODULE_ALL_API]],
         ];
 
-        foreach ($plans as $planData) {
-            $featureKeys = Arr::pull($planData, 'features', []);
+        $activePlanIds = [];
+        foreach ($products as $product) {
+            foreach (['monthly', 'yearly'] as $cycle) {
+                $planData = [
+                    'name' => $product['name'],
+                    'amount' => $product[$cycle.'_amount'],
+                    'discount_amount' => 0,
+                    'billing_cycle' => $cycle,
+                    // Yearly subscriptions receive this allowance each month.
+                    'api_hits_limit' => $product['credits'],
+                    'status' => 1,
+                    'terms' => $product['terms'],
+                    'benefits' => $product['benefits'],
+                    'features' => $product['features'],
+                ];
+                $featureKeys = Arr::pull($planData, 'features');
+                $plan = Plan::updateOrCreate(
+                    ['name' => $product['name'], 'billing_cycle' => $cycle],
+                    $planData
+                );
+                $activePlanIds[] = $plan->id;
 
-            $plan = Plan::updateOrCreate(
-                [
-                    'name' => $planData['name'],
-                    'billing_cycle' => $planData['billing_cycle'],
-                ],
-                $planData
-            );
+                $plan->features()->sync(
+                    SubscriptionFeature::query()->whereIn('key', $featureKeys)->pluck('id')
+                );
 
-            if ($featureKeys !== []) {
-                $featureIds = SubscriptionFeature::query()
-                    ->whereIn('key', $featureKeys)
-                    ->pluck('id');
-
-                $plan->features()->sync($featureIds);
-            }
-
-            if (!empty($planData['benefits'])) {
-                $benefitIds = Benefit::query()
-                    ->whereIn('name', $planData['benefits'])
-                    ->pluck('id');
-
-                $plan->benefitItems()->sync($benefitIds);
+                foreach ($product['benefits'] as $index => $benefitName) {
+                    Benefit::updateOrCreate(
+                        ['name' => $benefitName],
+                        [
+                            'slug' => Str::slug($benefitName),
+                            'description' => $benefitName,
+                            'is_active' => true,
+                            'sort_order' => $index + 1,
+                        ]
+                    );
+                }
+                $plan->benefitItems()->sync(
+                    Benefit::query()->whereIn('name', $product['benefits'])->pluck('id')
+                );
             }
         }
+
+        // Preserve legacy plans for payment history while removing them from
+        // purchase and manual-assignment screens.
+        Plan::query()->whereNotIn('id', $activePlanIds)->update(['status' => 0]);
     }
 }

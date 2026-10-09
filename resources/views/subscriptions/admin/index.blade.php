@@ -39,22 +39,22 @@
 <!-- Assign Subscription Modal -->
 <div id="assignPlanModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75" aria-hidden="true"></div>
+        <button type="button" class="fixed inset-0 h-full w-full bg-gray-900/70" aria-label="Close assignment dialog" onclick="closePlanModal()"></button>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="relative z-10 inline-block align-bottom bg-white dark:bg-richdark-surface rounded-lg text-left overflow-hidden shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <form id="assignPlanForm">
                 @csrf
                 <input type="hidden" id="plan_subscription_id">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Assign Subscription</h3>
-                    <p class="mt-2 text-sm text-gray-500">Choose a plan for <span id="planUserName" class="font-bold text-gray-900"></span>. Their current active subscription will be replaced.</p>
-                    <select id="planInput" class="mt-4 block w-full border-gray-300 rounded-md shadow-sm" required>
+                <div class="bg-white dark:bg-richdark-surface px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Assign Subscription</h3>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-300">Choose a plan for <span id="planUserName" class="font-bold text-gray-900 dark:text-white"></span>. The subscription period and credit balance will be reset from this plan.</p>
+                    <select id="planInput" class="mt-4 block w-full border-gray-300 rounded-md shadow-sm dark:border-white/10 dark:bg-richdark-surface dark:text-white" required>
                         @foreach($plans as $plan)
-                            <option value="{{ $plan->id }}">{{ $plan->name }} · {{ ucfirst($plan->billing_cycle) }} · ₹{{ number_format($plan->amount, 2) }}</option>
+                            <option value="{{ $plan->id }}">{{ $plan->name }} · {{ ucfirst($plan->billing_cycle) }} · ₹{{ number_format($plan->amount, 2) }} · {{ $plan->api_hits_limit === null ? 'Unlimited' : number_format($plan->api_hits_limit).' credits' }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <div class="bg-gray-50 dark:bg-black/20 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                     <button type="submit" class="w-full inline-flex justify-center rounded-md px-4 py-2 bg-amber-600 text-white sm:ml-3 sm:w-auto sm:text-sm">Assign</button>
                     <button type="button" onclick="closePlanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
                 </div>
@@ -65,28 +65,28 @@
 <!-- Assign Credits Modal -->
 <div id="assignCreditsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <button type="button" class="fixed inset-0 h-full w-full bg-gray-900/70" aria-label="Close credits dialog" onclick="closeModal()"></button>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="relative z-10 inline-block align-bottom bg-white dark:bg-richdark-surface rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <form id="assignCreditsForm">
                 @csrf
                 <input type="hidden" id="subscription_id" name="subscription_id">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="bg-white dark:bg-richdark-surface px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                             <i class="fas fa-coins text-blue-600"></i>
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Assign Credits</h3>
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">Assign Credits</h3>
                             <div class="mt-4">
                                 <p class="text-sm text-gray-500 mb-4">Assign extra API credits to <span id="userName" class="font-bold text-gray-900"></span>'s account.</p>
                                 <label for="credits" class="block text-sm font-medium text-gray-700">Credits to Assign</label>
-                                <input type="number" name="credits" id="creditsInput" min="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g. 500" required>
+                                <input type="number" name="credits" id="creditsInput" min="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:border-white/10 dark:bg-richdark-surface dark:text-white" placeholder="e.g. 500" required>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <div class="bg-gray-50 dark:bg-black/20 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                     <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
                         Assign
                     </button>
@@ -147,7 +147,7 @@
                     data: 'available_credits',
                     name: 'available_credits',
                     render: function(data) {
-                        return '<span class="font-semibold">' + data + '</span>';
+                        return '<span class="font-semibold">' + (data === null ? 'Unlimited' : Number(data).toLocaleString()) + '</span>';
                     }
                 },
                 { 

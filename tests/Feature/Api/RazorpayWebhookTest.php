@@ -116,15 +116,11 @@ class RazorpayWebhookTest extends TestCase
         $this->assertEquals($this->freePlan->id, $this->user->plan_id);
         $this->assertEquals(5000, $this->user->available_credits);
 
-        // Verify old subscription is expired
+        // The same record is converted to the free plan.
         $this->subscription->refresh();
-        $this->assertEquals('expired', $this->subscription->status);
+        $this->assertEquals('active', $this->subscription->status);
+        $this->assertEquals($this->freePlan->id, $this->subscription->plan_id);
 
-        // Verify NEW free subscription created
-        $this->assertDatabaseHas('subscriptions', [
-            'user_id' => $this->user->id,
-            'plan_id' => $this->freePlan->id,
-            'status' => 'active'
-        ]);
+        $this->assertSame(1, Subscription::where('user_id', $this->user->id)->count());
     }
 }

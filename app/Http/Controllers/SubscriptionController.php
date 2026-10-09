@@ -7,14 +7,20 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Coupon;
 use App\Models\TransactionHistory;
+use App\Services\SubscriptionAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
 
 class SubscriptionController extends Controller
 {
+    public function __construct(private readonly SubscriptionAssignmentService $assignments)
+    {
+    }
+
     public function validateCoupon(Request $request)
     {
         $request->validate([
@@ -365,32 +371,38 @@ class SubscriptionController extends Controller
 
     private function downgradeToFree($user)
     {
-        $freePlan = Plan::where('amount', 0)->first();
-        if (!$freePlan) {
-            return;
-        }
+        $freePlan = Plan::query()
+            ->where('amount', 0)
+            ->orderByRaw("CASE WHEN name = 'Free Developer' THEN 0 ELSE 1 END")
+            ->first();
 
-        DB::transaction(function() use ($user, $freePlan) {
-            // Expire any active subscriptions
-            Subscription::where('user_id', $user->id)->where('status', 'active')->update(['status' => 'expired']);
+        DB::transaction(function () use ($user, $freePlan): void {
+            if ($freePlan) {
+                $this->assignments->assign($user, $freePlan, [
+                    'razorpay_order_id' => 'free-' . $user->id . '-' . Str::lower(Str::random(12)),
+                    'expires_at' => now()->addYears(10),
+                ]);
 
-            // Create a pseudo-subscription for the free tier
-            Subscription::create([
-                'user_id' => $user->id,
-                'plan_id' => $freePlan->id,
-                'razorpay_order_id' => 'free_' . uniqid() . '_' . time(),
-                'status' => 'active',
-                'expires_at' => now()->addYears(10),
-                'total_credits' => $freePlan->api_hits_limit,
-                'used_credits' => 0,
-                'available_credits' => $freePlan->api_hits_limit,
-                'amount_paid' => 0,
-            ]);
+                return;
+            }
 
-            $user->update([
-                'plan_id' => $freePlan->id,
-                'available_credits' => $freePlan->api_hits_limit,
-            ]);
+            $subscription = Subscription::query()
+                ->where('user_id', $user->id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($subscription) {
+                $subscription->forceFill([
+                    'status' => 'expired',
+                    'expires_at' => now(),
+                    'available_credits' => 0,
+                ])->save();
+            }
+
+            $user->forceFill([
+                'plan_id' => null,
+                'available_credits' => 0,
+            ])->save();
         });
     }
 
@@ -408,14 +420,9 @@ class SubscriptionController extends Controller
                 $expiresAt = $expiresAt->addYears(100);
             }
 
-            $creditsToAdd = $plan->api_hits_limit ?? 999999999;
+            $creditsToAdd = $plan->api_hits_limit;
 
-            // Deactivate old subscriptions for this user
-            Subscription::where('user_id', $user->id)->where('status', 'active')->update(['status' => 'expired']);
-
-            $subscription = Subscription::create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
+            $subscription = $this->assignments->assign($user, $plan, [
                 'coupon_id' => $couponId,
                 'razorpay_order_id' => $orderId,
                 'razorpay_payment_id' => $paymentId,
@@ -423,11 +430,7 @@ class SubscriptionController extends Controller
                 'amount_paid' => $amountPaid,
                 'discount_amount' => $discountAmount,
                 'remaining_discount_cycles' => $remainingCycles,
-                'status' => 'active',
                 'expires_at' => $expiresAt,
-                'total_credits' => $creditsToAdd,
-                'used_credits' => 0,
-                'available_credits' => $creditsToAdd,
             ]);
 
             $coupon = $couponId ? Coupon::find($couponId) : null;
@@ -453,12 +456,6 @@ class SubscriptionController extends Controller
                 'billing_cycle' => $plan->billing_cycle,
                 'status' => 'success',
             ]);
-
-            // Update User records
-            $user->plan_id = $plan->id;
-            $user->available_credits = $creditsToAdd; // Reset/Set to plan limit
-            $user->status = 1; // User status is boolean (1=active)
-            $user->save();
 
             return $subscription;
         });

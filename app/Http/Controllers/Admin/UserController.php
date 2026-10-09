@@ -4,15 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
-use App\Models\Subscription;
 use App\Models\TransactionHistory;
 use App\Services\ApiTestRunnerService;
+use App\Services\SubscriptionAssignmentService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -140,7 +141,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $user, SubscriptionAssignmentService $assignments)
     {
         $this->normalizeContactFields($request);
 
@@ -154,7 +155,10 @@ class UserController extends Controller
             'country_code' => ['nullable', 'required_with:phone', 'string', 'regex:/^\+[1-9][0-9]{0,3}$/'],
             'phone' => ['nullable', 'required_with:country_code', 'string', 'regex:/^[0-9]{7,15}$/'],
             'status' => 'required|in:1,0',
-            'plan_id' => 'nullable|exists:plans,id',
+            'plan_id' => [
+                'nullable',
+                Rule::exists('plans', 'id')->where(fn ($query) => $query->where('status', 1)),
+            ],
         ]);
 
         $selectedPlan = null;
@@ -175,7 +179,7 @@ class UserController extends Controller
         $user->save();
 
         if ($user->account_type === 'client') {
-            $this->syncManualPlanAssignment($user, $selectedPlan);
+            $this->syncManualPlanAssignment($user, $selectedPlan, $assignments);
         }
 
         if ($request->wantsJson()) {
@@ -197,14 +201,19 @@ class UserController extends Controller
         ]);
     }
 
-    private function syncManualPlanAssignment(User $user, ?Plan $plan): void
+    private function syncManualPlanAssignment(
+        User $user,
+        ?Plan $plan,
+        SubscriptionAssignmentService $assignments
+    ): void
     {
-        DB::transaction(function () use ($user, $plan) {
-            Subscription::where('user_id', $user->id)
-                ->where('status', 'active')
-                ->update(['status' => 'expired']);
-
+        DB::transaction(function () use ($user, $plan, $assignments) {
             if (!$plan) {
+                $user->subscriptions()->update([
+                    'status' => 'expired',
+                    'expires_at' => now(),
+                    'available_credits' => 0,
+                ]);
                 $user->forceFill([
                     'plan_id' => null,
                     'available_credits' => 0,
@@ -213,31 +222,11 @@ class UserController extends Controller
                 return;
             }
 
-            $expiresAt = now();
-            if ($plan->billing_cycle === 'monthly') {
-                $expiresAt = $expiresAt->copy()->addMonth();
-            } elseif ($plan->billing_cycle === 'yearly') {
-                $expiresAt = $expiresAt->copy()->addYear();
-            } else {
-                $expiresAt = $expiresAt->copy()->addYears(100);
-            }
-
-            $creditsToAdd = $plan->api_hits_limit ?? 999999999;
+            $creditsToAdd = $plan->api_hits_limit;
             $manualReference = 'admin-manual-' . $user->id . '-' . Str::lower(Str::random(10));
 
-            $subscription = Subscription::create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
+            $subscription = $assignments->assign($user, $plan, [
                 'razorpay_order_id' => $manualReference,
-                'amount_paid' => 0,
-                'discount_amount' => 0,
-                'remaining_discount_cycles' => 0,
-                'status' => 'active',
-                'expires_at' => $expiresAt,
-                'total_credits' => $creditsToAdd,
-                'used_credits' => 0,
-                'available_credits' => $creditsToAdd,
-                'last_credit_refresh' => now(),
             ]);
 
             TransactionHistory::create([
@@ -251,14 +240,9 @@ class UserController extends Controller
                 'billing_cycle' => $plan->billing_cycle,
                 'status' => 'success',
                 'type' => 'admin_assignment',
-                'credits' => $creditsToAdd,
+                'credits' => $creditsToAdd ?? 0,
             ]);
 
-            $user->forceFill([
-                'plan_id' => $plan->id,
-                'available_credits' => $creditsToAdd,
-                'status' => 1,
-            ])->save();
         });
     }
 

@@ -80,24 +80,11 @@ class DemoCompanySeeder extends Seeder
             ])->save();
         }
 
-        Subscription::query()
-            ->where('user_id', $user->id)
-            ->where('status', 'active')
-            ->update(['status' => 'expired']);
-
         $demoOrderId = 'demo-order-ethnic-treasures-' . $user->id;
         $demoPaymentId = 'demo-payment-ethnic-treasures-' . $user->id;
         $demoSignature = 'demo-signature-ethnic-treasures-' . $user->id;
 
-        $subscription = Subscription::query()
-            ->where('user_id', $user->id)
-            ->where(function ($query) use ($demoOrderId) {
-                $query->where('status', 'active')
-                    ->orWhere('razorpay_order_id', $demoOrderId);
-            })
-            ->latest('id')
-            ->first()
-            ?? new Subscription(['user_id' => $user->id]);
+        $subscription = Subscription::query()->firstOrNew(['user_id' => $user->id]);
 
         $subscription->fill([
             'plan_id' => $plan->id,

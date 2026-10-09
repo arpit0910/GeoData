@@ -12,6 +12,7 @@ use App\Models\State;
 use App\Models\City;
 use App\Models\Plan;
 use App\Models\Bank;
+use App\Models\Subscription;
 
 class AdminDashboardTest extends TestCase
 {
@@ -279,7 +280,9 @@ class AdminDashboardTest extends TestCase
         );
 
         $response->assertOk()->assertJson(['status' => true]);
-        $this->assertSame('expired', $oldSubscription->fresh()->status);
+        $this->assertSame('active', $oldSubscription->fresh()->status);
+        $this->assertSame($newPlan->id, $oldSubscription->fresh()->plan_id);
+        $this->assertSame(1, Subscription::where('user_id', $user->id)->count());
         $this->assertDatabaseHas('subscriptions', [
             'user_id' => $user->id,
             'plan_id' => $newPlan->id,

@@ -11,16 +11,22 @@ use Illuminate\Support\Str;
 
 class FreeRegistrationSubscriptionService
 {
+    public function __construct(private readonly SubscriptionAssignmentService $assignments)
+    {
+    }
+
     public function provision(User $user): Subscription
     {
         return DB::transaction(function () use ($user) {
-            $plan = Plan::firstOrCreate(
+            // This is an internal onboarding tier, not one of the public/admin
+            // subscription products seeded by PlanSeeder.
+            $plan = Plan::updateOrCreate(
                 ['name' => 'Free Developer', 'billing_cycle' => 'monthly'],
                 [
                     'amount' => 0,
                     'discount_amount' => 0,
                     'api_hits_limit' => 1000,
-                    'status' => 1,
+                    'status' => 0,
                     'terms' => 'Free access to IFSC and Indian pincode APIs.',
                     'benefits' => ['IFSC lookup', 'India pincode lookup', '1,000 API calls per month'],
                 ]
@@ -49,26 +55,9 @@ class FreeRegistrationSubscriptionService
                 return $existing;
             }
 
-            $credits = $plan->api_hits_limit ?? 0;
-            $subscription = Subscription::create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
+            $subscription = $this->assignments->assign($user, $plan, [
                 'razorpay_order_id' => 'free-registration-' . $user->id . '-' . Str::lower(Str::random(12)),
-                'amount_paid' => 0,
-                'discount_amount' => 0,
-                'remaining_discount_cycles' => 0,
-                'status' => 'active',
-                'expires_at' => now()->addMonth(),
-                'total_credits' => $credits,
-                'used_credits' => 0,
-                'available_credits' => $credits,
-                'last_credit_refresh' => now(),
             ]);
-
-            $user->forceFill([
-                'plan_id' => $plan->id,
-                'available_credits' => $credits,
-            ])->save();
 
             return $subscription;
         });

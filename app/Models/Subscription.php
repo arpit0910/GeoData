@@ -32,6 +32,9 @@ class Subscription extends Model
     protected $casts = [
         'expires_at' => 'datetime',
         'last_credit_refresh' => 'datetime',
+        'total_credits' => 'integer',
+        'used_credits' => 'integer',
+        'available_credits' => 'integer',
     ];
 
     public function user()

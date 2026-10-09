@@ -54,6 +54,7 @@ class YearlyCreditRefreshTest extends TestCase
         // 1. First request in Jan: Still 10 credits
         $this->getJson('/api/v1/regions', ['Authorization' => 'Bearer ' . $token])->assertStatus(200);
         $this->assertEquals(9, $subscription->refresh()->available_credits);
+        $this->assertEquals(9, $user->refresh()->available_credits);
 
         // 2. Fast forward to February 15th (Exactly 1 month later)
         Carbon::setTestNow('2026-02-15 10:00:01');
@@ -63,6 +64,8 @@ class YearlyCreditRefreshTest extends TestCase
         
         // Should be 5000 - 1 = 4999
         $this->assertEquals(4999, $subscription->refresh()->available_credits);
+        $this->assertEquals(4999, $user->refresh()->available_credits);
+        $this->assertEquals(1, $subscription->used_credits);
         $this->assertNotNull($subscription->last_credit_refresh);
         $this->assertTrue($subscription->last_credit_refresh->isToday());
     }
