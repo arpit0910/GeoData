@@ -6,6 +6,7 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class SubscriptionAssignmentService
@@ -28,7 +29,7 @@ class SubscriptionAssignmentService
             };
 
             $subscription = Subscription::query()->firstOrNew(['user_id' => $lockedUser->id]);
-            $subscription->fill(array_replace([
+            $subscriptionValues = array_replace([
                 'plan_id' => $plan->id,
                 'razorpay_order_id' => 'subscription-'.$lockedUser->id.'-'.Str::lower(Str::random(12)),
                 'razorpay_payment_id' => null,
@@ -44,7 +45,13 @@ class SubscriptionAssignmentService
                 'used_credits' => $credits === null ? null : 0,
                 'available_credits' => $credits,
                 'last_credit_refresh' => now(),
-            ], $attributes));
+            ], $attributes);
+
+            // Production databases upgraded from older subscription schemas may
+            // not yet contain every optional gateway/credit column. Core plan
+            // assignment must still succeed while migrations are being applied.
+            $subscriptionColumns = array_flip(Schema::getColumnListing('subscriptions'));
+            $subscription->fill(array_intersect_key($subscriptionValues, $subscriptionColumns));
             $subscription->save();
 
             $lockedUser->forceFill([

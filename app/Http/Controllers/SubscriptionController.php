@@ -11,6 +11,7 @@ use App\Services\SubscriptionAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
@@ -158,7 +159,9 @@ class SubscriptionController extends Controller
                 ],
             ]);
         } catch (\Throwable $exception) {
+            $errorReference = 'SUB-'.strtoupper(Str::random(8));
             \Log::error('Temporary subscription activation failed.', [
+                'reference' => $errorReference,
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'exception' => $exception,
@@ -166,7 +169,8 @@ class SubscriptionController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'The subscription could not be activated. Please try again.',
+                'message' => 'The subscription could not be activated. Please contact support with reference '.$errorReference.'.',
+                'error_reference' => $errorReference,
             ], 500);
         }
     }
@@ -557,8 +561,9 @@ class SubscriptionController extends Controller
                 $coupon->users()->attach($user->id, ['subscription_id' => $subscription->id]);
             }
 
-            // Record Transaction History
-            TransactionHistory::create([
+            // Record every supported audit field without allowing an optional
+            // column missing from a legacy production schema to undo activation.
+            $transactionValues = [
                 'user_id' => $user->id,
                 'subscription_id' => $subscription->id,
                 'plan_id' => $plan->id,
@@ -573,7 +578,29 @@ class SubscriptionController extends Controller
                 'status' => 'success',
                 'type' => $transactionType,
                 'credits' => $creditsToAdd ?? 0,
-            ]);
+            ];
+
+            if (Schema::hasTable('transaction_histories')) {
+                try {
+                    $transactionColumns = array_flip(Schema::getColumnListing('transaction_histories'));
+                    TransactionHistory::create(array_intersect_key($transactionValues, $transactionColumns));
+                } catch (\Throwable $auditException) {
+                    // An audit-table mismatch must not revoke access after the
+                    // subscription itself was assigned successfully.
+                    \Log::warning('Subscription activated but transaction history could not be recorded.', [
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id,
+                        'order_id' => $orderId,
+                        'error' => $auditException->getMessage(),
+                    ]);
+                }
+            } else {
+                \Log::warning('Subscription activated without transaction history because the table is missing.', [
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                    'order_id' => $orderId,
+                ]);
+            }
 
             return $subscription;
         });

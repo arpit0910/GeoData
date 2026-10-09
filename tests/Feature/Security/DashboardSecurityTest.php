@@ -5,6 +5,8 @@ namespace Tests\Feature\Security;
 use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardSecurityTest extends TestCase
 {
@@ -218,6 +220,38 @@ class DashboardSecurityTest extends TestCase
             'plan_id' => $plan->id,
             'status' => 'active',
             'available_credits' => 125000,
+        ]);
+    }
+
+    /** @test */
+    public function legacy_transaction_schema_does_not_block_subscription_activation()
+    {
+        config(['services.subscriptions.temporary_checkout_enabled' => true]);
+
+        Schema::table('transaction_histories', function (Blueprint $table) {
+            $table->dropColumn(['type', 'credits']);
+        });
+
+        $user = $this->createUser();
+        $plan = $this->createPlan(['name' => 'Legacy Compatible', 'api_hits_limit' => 30000]);
+
+        $this->actingAs($user)
+            ->postJson(route('pricing.verify'), [
+                'plan_id' => $plan->id,
+                'temporary_checkout' => true,
+            ])
+            ->assertOk()
+            ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('subscriptions', [
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+        ]);
+        $this->assertDatabaseHas('transaction_histories', [
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'success',
         ]);
     }
 
