@@ -19,8 +19,18 @@ class HomeController extends Controller
             ->get();
         $homepagePlans = $activePlans->where('billing_cycle', 'monthly')->values();
         $yearlyPlansByName = $activePlans->where('billing_cycle', 'yearly')->keyBy('name');
+        $homepageActiveSubscription = auth()->check()
+            ? auth()->user()->subscriptions()->active()->unexpired()->first()
+            : null;
+        $temporaryCheckoutEnabled = (bool) config('services.subscriptions.temporary_checkout_enabled', true);
 
-        return view('website.home', compact('faqs', 'homepagePlans', 'yearlyPlansByName'));
+        return view('website.home', compact(
+            'faqs',
+            'homepagePlans',
+            'yearlyPlansByName',
+            'homepageActiveSubscription',
+            'temporaryCheckoutEnabled'
+        ));
     }
 
     public function landingV1()

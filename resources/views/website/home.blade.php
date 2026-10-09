@@ -397,12 +397,19 @@
     </div>
 </section>
 
-<section id="plans" class="relative py-14 sm:py-20 border-t border-white/5 scroll-mt-20">
+<section id="plans" class="relative py-14 sm:py-20 border-t border-white/5 scroll-mt-20" x-data="{ billing: 'monthly' }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center max-w-3xl mx-auto mb-10">
             <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Plans & Pricing</h2>
             <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Choose the APIs your business needs.</p>
             <p class="text-gray-400 font-medium">Every product is available monthly or yearly, with clear API allowances and immediate activation.</p>
+        </div>
+
+        <div class="mb-10 flex justify-center">
+            <div class="inline-flex rounded-2xl border border-white/10 bg-white/[0.04] p-1.5" role="tablist" aria-label="Billing cycle">
+                <button type="button" @click="billing = 'monthly'" :class="billing === 'monthly' ? 'bg-amber-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'" class="rounded-xl px-6 py-2.5 text-sm font-black transition" :aria-selected="billing === 'monthly'">Monthly</button>
+                <button type="button" @click="billing = 'yearly'" :class="billing === 'yearly' ? 'bg-amber-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'" class="rounded-xl px-6 py-2.5 text-sm font-black transition" :aria-selected="billing === 'yearly'">Yearly</button>
+            </div>
         </div>
 
         <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -413,21 +420,34 @@
                     <p class="text-gray-500 text-sm min-h-[3rem]">{{ $plan->terms }}</p>
                     <div class="flex items-baseline gap-1 mt-6">
                         <span class="text-lg font-bold text-gray-500">₹</span>
-                        <span class="text-4xl font-black text-white">{{ number_format($plan->amount, 0) }}</span>
-                        <span class="text-gray-500 text-sm">/month</span>
+                        <span x-show="billing === 'monthly'" class="text-4xl font-black text-white">{{ number_format($plan->amount - $plan->discount_amount, 0) }}</span>
+                        @if($yearlyPlan)
+                            <span x-cloak x-show="billing === 'yearly'" class="text-4xl font-black text-white">{{ number_format($yearlyPlan->amount - $yearlyPlan->discount_amount, 0) }}</span>
+                        @endif
+                        <span x-show="billing === 'monthly'" class="text-gray-500 text-sm">/month</span>
+                        <span x-cloak x-show="billing === 'yearly'" class="text-gray-500 text-sm">/year</span>
                     </div>
-                    @if($yearlyPlan)
-                        <p class="mt-1 text-xs font-bold text-emerald-400">or ₹{{ number_format($yearlyPlan->amount, 0) }} billed yearly</p>
-                    @endif
+                    <p class="mt-1 text-xs font-bold text-emerald-400" x-text="billing === 'yearly' ? 'Billed once per year' : 'Billed every month'"></p>
                     <p class="mt-5 text-sm font-bold text-white">{{ $plan->api_hits_limit === null ? 'Unlimited API credits' : number_format($plan->api_hits_limit).' credits/month' }}</p>
                     <ul class="space-y-3 text-sm text-gray-400 font-medium my-6 flex-1">
                         @foreach($plan->resolvedBenefits() as $benefit)
                             <li class="flex items-start gap-3"><i class="fas fa-check text-emerald-500 text-xs mt-1"></i><span>{{ $benefit }}</span></li>
                         @endforeach
                     </ul>
-                    <a href="{{ route('pricing') }}" class="block text-center py-3.5 rounded-xl font-bold transition-all {{ $plan->name === 'All in one' ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-white/5 border border-white/10 text-white hover:bg-white/10' }}">
-                        View monthly & yearly
-                    </a>
+                    @auth
+                        @if($temporaryCheckoutEnabled && $yearlyPlan)
+                            <button type="button"
+                                :data-plan-id="billing === 'monthly' ? '{{ $plan->id }}' : '{{ $yearlyPlan->id }}'"
+                                data-plan-name="{{ $plan->name }}"
+                                class="js-home-buy-plan block w-full rounded-xl py-3.5 text-center font-bold transition-all disabled:cursor-not-allowed disabled:opacity-60 {{ $plan->name === 'All in one' ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-white/5 border border-white/10 text-white hover:bg-white/10' }}">
+                                <span x-text="'Activate ' + billing + ' plan'"></span>
+                            </button>
+                        @else
+                            <a :href="'{{ route('pricing') }}?billing=' + billing" class="block text-center py-3.5 rounded-xl font-bold transition-all {{ $plan->name === 'All in one' ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-white/5 border border-white/10 text-white hover:bg-white/10' }}">Choose plan</a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="block text-center py-3.5 rounded-xl font-bold transition-all {{ $plan->name === 'All in one' ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-white/5 border border-white/10 text-white hover:bg-white/10' }}">Log in to purchase</a>
+                    @endauth
                 </article>
             @empty
                 <div class="md:col-span-2 xl:col-span-4 rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center text-gray-400">Plans are being updated. Please check back shortly.</div>
@@ -435,8 +455,10 @@
         </div>
 
         <div class="mt-10 text-center">
-            <a href="{{ route('pricing') }}" class="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-7 py-3.5 font-bold text-white hover:bg-amber-500 transition-colors">Compare all plans <i class="fas fa-arrow-right text-xs"></i></a>
+            <a :href="'{{ route('pricing') }}?billing=' + billing" class="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-7 py-3.5 font-bold text-white hover:bg-amber-500 transition-colors">Compare all plans <i class="fas fa-arrow-right text-xs"></i></a>
         </div>
+
+        <div id="homePlanMessage" class="hidden mt-8 max-w-3xl mx-auto rounded-2xl border px-5 py-4 text-sm font-semibold" role="alert"></div>
     </div>
 </section>
 
@@ -555,3 +577,55 @@
     </div>
 </section>
 @endsection
+
+@auth
+@if($temporaryCheckoutEnabled)
+@push('scripts')
+<script>
+    const homePurchaseUrlTemplate = @json(route('pricing.purchase', ['plan' => '__PLAN__']));
+    const homeDashboardUrl = @json(route('dashboard'));
+    const homeCsrfToken = @json(csrf_token());
+
+    function showHomePlanMessage(message, success = false) {
+        const element = document.getElementById('homePlanMessage');
+        element.textContent = message;
+        element.className = `mt-8 max-w-3xl mx-auto rounded-2xl border px-5 py-4 text-sm font-semibold ${success ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-red-500/30 bg-red-500/10 text-red-200'}`;
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    document.querySelectorAll('.js-home-buy-plan').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const planId = button.dataset.planId;
+            const planName = button.dataset.planName;
+            if (!planId || !window.confirm(`Activate the selected ${planName} subscription? No payment will be collected during the temporary checkout period.`)) return;
+
+            const originalHtml = button.innerHTML;
+            button.disabled = true;
+            button.textContent = 'Activating…';
+
+            try {
+                const response = await fetch(homePurchaseUrlTemplate.replace('__PLAN__', planId), {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': homeCsrfToken,
+                    },
+                    body: JSON.stringify({}),
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.message || 'The subscription could not be activated.');
+
+                showHomePlanMessage(data.message || 'Subscription activated successfully.', true);
+                window.setTimeout(() => window.location.assign(data.redirect_url || homeDashboardUrl), 900);
+            } catch (error) {
+                showHomePlanMessage(error.message);
+                button.disabled = false;
+                button.innerHTML = originalHtml;
+            }
+        });
+    });
+</script>
+@endpush
+@endif
+@endauth

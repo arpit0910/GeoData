@@ -40,7 +40,9 @@ class PublicPagesTest extends TestCase
             ->assertSee('MF and Stocks')
             ->assertSee('Banks')
             ->assertSee('All in one')
-            ->assertSee('View monthly')
+            ->assertSee('Monthly')
+            ->assertSee('Yearly')
+            ->assertSee('Log in to purchase')
             ->assertSee(route('pricing'), false);
     }
 

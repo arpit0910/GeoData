@@ -324,13 +324,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/pincode/{pincode}', [PincodeController::class, 'lookup'])->name('api.pincode.lookup');
     Route::get('/api/currency/{currency}', [CurrencyConversionController::class, 'lookup'])->name('api.currency.lookup');
 
+    // Subscription checkout must remain available even when the customer has
+    // not completed a profile or does not currently have an active plan.
+    Route::post('/pricing/coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.coupon.validate');
+    Route::post('/pricing/plans/{plan}/purchase', [SubscriptionController::class, 'purchaseWithoutGateway'])->name('pricing.purchase');
+    Route::post('/pricing/plans/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
+    Route::post('/pricing/payment/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
+
     Route::middleware(['profile.complete.check'])->group(function () {
-        // Customers without an active subscription must be able to complete
-        // checkout, so these routes intentionally sit outside `subscribed`.
-        Route::post('/pricing/coupon', [SubscriptionController::class, 'validateCoupon'])->name('pricing.coupon.validate');
-        Route::post('/pricing/plans/{plan}/purchase', [SubscriptionController::class, 'purchaseWithoutGateway'])->name('pricing.purchase');
-        Route::post('/pricing/plans/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('pricing.order');
-        Route::post('/pricing/payment/verify', [SubscriptionController::class, 'verifyPayment'])->name('pricing.verify');
         Route::post('/pricing/topup/order', [SubscriptionController::class, 'createTopupOrder'])->name('pricing.topup.order');
         Route::post('/pricing/topup/verify', [SubscriptionController::class, 'verifyTopupPayment'])->name('pricing.topup.verify');
 

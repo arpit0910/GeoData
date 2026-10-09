@@ -193,6 +193,30 @@ class DashboardSecurityTest extends TestCase
         $this->assertSame(25000, $user->fresh()->available_credits);
     }
 
+    /** @test */
+    public function incomplete_profile_does_not_block_subscription_activation()
+    {
+        config(['services.subscriptions.temporary_checkout_enabled' => true]);
+
+        $user = $this->createIncompleteUser();
+        $plan = $this->createPlan([
+            'name' => 'Address only',
+            'amount' => 299,
+            'api_hits_limit' => 50000,
+        ]);
+
+        $this->actingAs($user)
+            ->postJson(route('pricing.purchase', $plan))
+            ->assertOk()
+            ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('subscriptions', [
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+        ]);
+    }
+
     // ─── CSRF PROTECTION ON WEB ROUTES ───────────────────────────────
 
     /** @test */
