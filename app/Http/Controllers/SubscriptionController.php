@@ -244,6 +244,21 @@ class SubscriptionController extends Controller
 
     public function verifyPayment(Request $request)
     {
+        // Temporary no-gateway checkout reuses this established POST endpoint.
+        // This keeps checkout working during deployments where an older route
+        // cache does not yet contain the dedicated purchase route.
+        if ($request->boolean('temporary_checkout')) {
+            $validated = $request->validate([
+                'plan_id' => 'required|exists:plans,id',
+            ]);
+
+            $plan = Plan::query()
+                ->where('status', 1)
+                ->findOrFail($validated['plan_id']);
+
+            return $this->purchaseWithoutGateway($request, $plan);
+        }
+
         $validated = $request->validate([
             'plan_id' => 'required|exists:plans,id',
             'coupon_id' => 'nullable|exists:coupons,id',

@@ -582,9 +582,9 @@
 @if($temporaryCheckoutEnabled)
 @push('scripts')
 <script>
-    // Use a stable URL template so an old production route cache cannot make
-    // the authenticated homepage fail while a deployment is being refreshed.
-    const homePurchaseUrlTemplate = @json(url('/pricing/plans/__PLAN__/purchase'));
+    // Reuse the established payment verification POST route so checkout also
+    // works while production is transitioning from an older route cache.
+    const homePurchaseUrl = @json(url('/pricing/payment/verify'));
     const homeDashboardUrl = @json(route('dashboard'));
     const homeCsrfToken = @json(csrf_token());
 
@@ -606,14 +606,14 @@
             button.textContent = 'Activating…';
 
             try {
-                const response = await fetch(homePurchaseUrlTemplate.replace('__PLAN__', planId), {
+                const response = await fetch(homePurchaseUrl, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': homeCsrfToken,
                     },
-                    body: JSON.stringify({}),
+                    body: JSON.stringify({ plan_id: planId, temporary_checkout: true }),
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw new Error(data.message || 'The subscription could not be activated.');

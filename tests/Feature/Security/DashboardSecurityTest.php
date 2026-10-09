@@ -194,6 +194,34 @@ class DashboardSecurityTest extends TestCase
     }
 
     /** @test */
+    public function customer_can_activate_a_plan_through_the_established_verification_route()
+    {
+        config(['services.subscriptions.temporary_checkout_enabled' => true]);
+
+        $user = $this->createUser();
+        $plan = $this->createPlan([
+            'name' => 'All in one',
+            'billing_cycle' => 'monthly',
+            'api_hits_limit' => 125000,
+        ]);
+
+        $this->actingAs($user)
+            ->postJson(route('pricing.verify'), [
+                'plan_id' => $plan->id,
+                'temporary_checkout' => true,
+            ])
+            ->assertOk()
+            ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('subscriptions', [
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'available_credits' => 125000,
+        ]);
+    }
+
+    /** @test */
     public function incomplete_profile_does_not_block_subscription_activation()
     {
         config(['services.subscriptions.temporary_checkout_enabled' => true]);
@@ -230,7 +258,7 @@ class DashboardSecurityTest extends TestCase
             ->get(route('home'))
             ->assertOk()
             ->assertSee('js-home-buy-plan', false)
-            ->assertSee('homePurchaseUrlTemplate', false)
+            ->assertSee('homePurchaseUrl', false)
             ->assertSee((string) $monthlyPlan->id, false);
     }
 

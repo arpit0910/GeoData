@@ -89,10 +89,7 @@
 <script>
     const csrfToken = @json(csrf_token());
     const orderUrlTemplate = @json(route('pricing.order', ['plan' => '__PLAN__']));
-    // Avoid render-time failure if views are deployed before the route cache
-    // has been rebuilt. The POST endpoint is still protected by auth + CSRF.
-    const temporaryPurchaseUrlTemplate = @json(url('/pricing/plans/__PLAN__/purchase'));
-    const verifyUrl = @json(route('pricing.verify'));
+    const verifyUrl = @json(url('/pricing/payment/verify'));
     const dashboardUrl = @json(route('dashboard'));
     const temporaryCheckoutEnabled = @json($temporaryCheckoutEnabled);
 
@@ -130,7 +127,10 @@
                         return;
                     }
 
-                    const result = await postJson(temporaryPurchaseUrlTemplate.replace('__PLAN__', planId));
+                    const result = await postJson(verifyUrl, {
+                        plan_id: planId,
+                        temporary_checkout: true,
+                    });
                     showCheckoutMessage(result.message || 'Subscription activated successfully.', true);
                     window.setTimeout(() => window.location.assign(result.redirect_url || dashboardUrl), 900);
                     return;
