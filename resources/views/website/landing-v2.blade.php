@@ -415,7 +415,7 @@
                     Create Free Account
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                 </a>
-                <a href="{{ route('home') }}#plans" class="inline-flex justify-center items-center px-10 py-4 text-base font-bold rounded-2xl text-gray-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300">
+                <a href="{{ route('pricing') }}" class="inline-flex justify-center items-center px-10 py-4 text-base font-bold rounded-2xl text-gray-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300">
                     Compare Plans
                 </a>
             </div>

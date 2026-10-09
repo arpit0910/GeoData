@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Database\Seeders\SubscriptionCatalogSeeder;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -25,17 +26,18 @@ class PublicPagesTest extends TestCase
     }
 
     /** @test */
-    public function home_displays_only_free_and_business_offerings()
+    public function home_displays_the_subscription_catalog()
     {
+        $this->seed(SubscriptionCatalogSeeder::class);
         $response = $this->get('/');
 
         $response->assertOk()
-            ->assertSee('Free')
-            ->assertSee('Business')
-            ->assertSee('Create Free Account')
-            ->assertSee('Request Business Plan')
-            ->assertDontSee('Buy Now')
-            ->assertDontSee('View Plans &amp; Pricing', false);
+            ->assertSee('Address only')
+            ->assertSee('MF and Stocks')
+            ->assertSee('Banks')
+            ->assertSee('All in one')
+            ->assertSee('View monthly')
+            ->assertSee(route('pricing'), false);
     }
 
     /** @test */

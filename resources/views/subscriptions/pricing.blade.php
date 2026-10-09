@@ -2,7 +2,7 @@
 
 @section('title', 'Plans & Pricing | SetuGeo')
 @section('meta_description', 'Choose a SetuGeo monthly or yearly API subscription plan.')
-@section('robots', 'noindex, follow')
+@section('robots', 'index, follow, max-image-preview:large')
 
 @section('content')
 <main class="min-h-screen bg-[#080d16] pt-28 pb-20">

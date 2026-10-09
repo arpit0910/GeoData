@@ -400,46 +400,42 @@
 <section id="plans" class="relative py-14 sm:py-20 border-t border-white/5 scroll-mt-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center max-w-3xl mx-auto mb-10">
-            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Plans</h2>
-            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Start free, then grow with our team.</p>
-            <p class="text-gray-400 font-medium">Use SetuGeo at no cost, or talk to us about a Business plan built around your needs.</p>
+            <h2 class="text-amber-500 font-bold tracking-widest uppercase text-sm mb-3">Plans & Pricing</h2>
+            <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Choose the APIs your business needs.</p>
+            <p class="text-gray-400 font-medium">Every product is available monthly or yearly, with clear API allowances and immediate activation.</p>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div class="bg-white/[0.03] border-white/5 hover:border-white/10 rounded-3xl p-8 border transition-all duration-300 flex flex-col">
-                <h3 class="text-xl font-bold text-white mb-2">Free</h3>
-                <p class="text-gray-500 text-sm mb-6">For developers exploring and building with SetuGeo.</p>
-                <div class="flex items-baseline gap-1 mb-1">
-                    <span class="text-4xl font-black text-white">Free</span>
-                </div>
-                <p class="text-gray-600 text-sm font-medium mb-8">no payment details required</p>
-                <ul class="space-y-3 text-sm text-gray-400 font-medium mb-8 flex-1">
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> 1,000 API calls per month</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> IFSC lookup API</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> India pincode API</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-500 text-xs"></i> Developer dashboard and API key</li>
-                </ul>
-                <a href="{{ auth()->check() ? route('dashboard') : route('register') }}" class="block text-center py-3.5 rounded-xl font-bold transition-all bg-white/5 border border-white/10 text-white hover:bg-white/10">
-                    {{ auth()->check() ? 'Open Dashboard' : 'Create Free Account' }}
-                </a>
-            </div>
+        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            @forelse($homepagePlans as $plan)
+                @php($yearlyPlan = $yearlyPlansByName->get($plan->name))
+                <article class="{{ $plan->name === 'All in one' ? 'pricing-card-glow bg-white/[0.06] border-amber-500/30' : 'bg-white/[0.03] border-white/5 hover:border-white/10' }} rounded-3xl p-7 border transition-all duration-300 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-2">{{ $plan->name }}</h3>
+                    <p class="text-gray-500 text-sm min-h-[3rem]">{{ $plan->terms }}</p>
+                    <div class="flex items-baseline gap-1 mt-6">
+                        <span class="text-lg font-bold text-gray-500">₹</span>
+                        <span class="text-4xl font-black text-white">{{ number_format($plan->amount, 0) }}</span>
+                        <span class="text-gray-500 text-sm">/month</span>
+                    </div>
+                    @if($yearlyPlan)
+                        <p class="mt-1 text-xs font-bold text-emerald-400">or ₹{{ number_format($yearlyPlan->amount, 0) }} billed yearly</p>
+                    @endif
+                    <p class="mt-5 text-sm font-bold text-white">{{ $plan->api_hits_limit === null ? 'Unlimited API credits' : number_format($plan->api_hits_limit).' credits/month' }}</p>
+                    <ul class="space-y-3 text-sm text-gray-400 font-medium my-6 flex-1">
+                        @foreach($plan->resolvedBenefits() as $benefit)
+                            <li class="flex items-start gap-3"><i class="fas fa-check text-emerald-500 text-xs mt-1"></i><span>{{ $benefit }}</span></li>
+                        @endforeach
+                    </ul>
+                    <a href="{{ route('pricing') }}" class="block text-center py-3.5 rounded-xl font-bold transition-all {{ $plan->name === 'All in one' ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-white/5 border border-white/10 text-white hover:bg-white/10' }}">
+                        View monthly & yearly
+                    </a>
+                </article>
+            @empty
+                <div class="md:col-span-2 xl:col-span-4 rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center text-gray-400">Plans are being updated. Please check back shortly.</div>
+            @endforelse
+        </div>
 
-            <div class="pricing-card-glow bg-white/[0.05] border-amber-500/20 hover:border-amber-500/40 rounded-3xl p-8 border transition-all duration-300 flex flex-col relative shadow-lg shadow-amber-500/5">
-                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest">For Teams</div>
-                <h3 class="text-xl font-bold text-white mb-2">Business</h3>
-                <p class="text-gray-500 text-sm mb-6">For enterprise workloads, higher volume, and tailored support.</p>
-                <p class="text-4xl font-black text-white mb-1">Let's talk</p>
-                <p class="text-gray-600 text-sm font-medium mb-8">our team will contact you</p>
-                <ul class="space-y-3 text-sm text-gray-400 font-medium mb-8 flex-1">
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> Usage sized for your business</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> Enterprise data and API requirements</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> Onboarding and priority support</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-check text-amber-500 text-xs"></i> Custom commercial terms and SLA</li>
-                </ul>
-                <a href="{{ route('contact', ['subject' => 'Business Plan Enquiry', 'message' => 'Please contact me about the SetuGeo Business plan. Our expected API usage and requirements are: ']) }}" class="block text-center py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-md transition-all">
-                    Request Business Plan
-                </a>
-            </div>
+        <div class="mt-10 text-center">
+            <a href="{{ route('pricing') }}" class="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-7 py-3.5 font-bold text-white hover:bg-amber-500 transition-colors">Compare all plans <i class="fas fa-arrow-right text-xs"></i></a>
         </div>
     </div>
 </section>

@@ -267,7 +267,7 @@
                 </a>
             </div>
             <div class="ml-3 inline-flex rounded-xl shadow">
-                <a href="{{ route('home') }}#plans" class="inline-flex items-center justify-center px-6 py-3 border border-white/10 text-base font-bold rounded-xl text-white bg-white/10 hover:bg-white/20 transition-colors shadow-md backdrop-blur-md">
+                <a href="{{ route('pricing') }}" class="inline-flex items-center justify-center px-6 py-3 border border-white/10 text-base font-bold rounded-xl text-white bg-white/10 hover:bg-white/20 transition-colors shadow-md backdrop-blur-md">
                     View Plans
                 </a>
             </div>

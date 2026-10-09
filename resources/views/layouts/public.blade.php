@@ -112,8 +112,8 @@
                         <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
                             About Us
                         </a>
-                        <a href="{{ route('home') }}#plans" class="border-transparent text-gray-400 hover:text-white hover:border-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
-                            Plans
+                        <a href="{{ route('pricing') }}" class="{{ request()->routeIs('pricing') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
+                            Pricing
                         </a>
                         <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'border-amber-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors">
                             Contact
@@ -167,7 +167,7 @@
             <div class="pt-2 pb-3 space-y-1">
                 <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Home</a>
                 <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">About</a>
-                <a href="{{ route('home') }}#plans" class="border-transparent text-gray-400 hover:bg-white/5 hover:text-white block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Plans</a>
+                <a href="{{ route('pricing') }}" class="{{ request()->routeIs('pricing') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Pricing</a>
                 <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Contact</a>
                 <a href="{{ route('docs') }}" class="{{ request()->routeIs('docs') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">Docs</a>
                 <a href="{{ route('market.index') }}" class="{{ request()->routeIs('market.*') ? 'bg-amber-500/10 border-amber-500 text-amber-500' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white' }} block pl-3 pr-4 py-3 border-l-4 text-base font-semibold transition-all">
@@ -216,7 +216,7 @@
                 <div>
                     <h3 class="text-xs font-bold text-gray-300 tracking-widest uppercase mb-5">Product</h3>
                     <ul class="space-y-4">
-                        <li><a href="{{ route('home') }}#plans" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Plans</a></li>
+                        <li><a href="{{ route('pricing') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Plans & Pricing</a></li>
                         <li><a href="{{ route('docs') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Documentation</a></li>
                         <li><a href="{{ route('faq') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">FAQ</a></li>
                         <li><a href="{{ route('status') }}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">API Status</a></li>

@@ -121,10 +121,10 @@ class UserDashboardTest extends TestCase
     }
 
     /** @test */
-    public function legacy_subscription_page_redirects_to_home_plans()
+    public function subscription_page_redirects_to_pricing()
     {
         $response = $this->actingAs($this->user)->get('/subscribe');
-        $response->assertRedirect('/#plans');
+        $response->assertRedirect('/pricing');
     }
 
     /** @test */

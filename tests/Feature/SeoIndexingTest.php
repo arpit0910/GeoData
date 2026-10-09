@@ -10,7 +10,7 @@ class SeoIndexingTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function sitemap_lists_canonical_public_pages_and_excludes_removed_pricing_page()
+    public function sitemap_lists_canonical_public_pages_including_pricing()
     {
         $response = $this->get('/sitemap.xml');
 
@@ -20,7 +20,7 @@ class SeoIndexingTest extends TestCase
             ->assertSee(route('docs'))
             ->assertSee(route('market.index'))
             ->assertSee(route('market.stocks'))
-            ->assertDontSee('/pricing');
+            ->assertSee(route('pricing'));
     }
 
     /** @test */

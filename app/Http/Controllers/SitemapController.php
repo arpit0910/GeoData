@@ -10,6 +10,7 @@ class SitemapController extends Controller
     {
         $pages = [
             ['route' => 'home', 'changefreq' => 'weekly', 'priority' => '1.0'],
+            ['route' => 'pricing', 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['route' => 'about', 'changefreq' => 'monthly', 'priority' => '0.8'],
             ['route' => 'docs', 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['route' => 'faq', 'changefreq' => 'monthly', 'priority' => '0.7'],
@@ -28,6 +29,7 @@ class SitemapController extends Controller
             base_path('routes/web.php'),
             resource_path('views/layouts/public.blade.php'),
             resource_path('views/website/home.blade.php'),
+            resource_path('views/subscriptions/pricing.blade.php'),
         ])->filter(fn (string $path) => is_file($path))
             ->map(fn (string $path) => filemtime($path))
             ->max();

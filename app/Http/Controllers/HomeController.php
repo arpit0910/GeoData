@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Faq;
-
+use App\Models\Plan;
 use App\Models\WebsiteQuery;
 
 class HomeController extends Controller
@@ -12,7 +12,15 @@ class HomeController extends Controller
     public function index()
     {
         $faqs = Faq::where('visibility', 'website')->where('status', 1)->orderBy('order')->get();
-        return view('website.home', compact('faqs'));
+        $activePlans = Plan::query()
+            ->where('status', 1)
+            ->with('benefitItems')
+            ->orderBy('amount')
+            ->get();
+        $homepagePlans = $activePlans->where('billing_cycle', 'monthly')->values();
+        $yearlyPlansByName = $activePlans->where('billing_cycle', 'yearly')->keyBy('name');
+
+        return view('website.home', compact('faqs', 'homepagePlans', 'yearlyPlansByName'));
     }
 
     public function landingV1()
