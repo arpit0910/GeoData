@@ -96,11 +96,11 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('market:rewrite-news --limit=20')
-            ->cron('5,15,25,35,45,55 * * * *')
+        $this->markScheduled($schedule->command('market:rewrite-news --limit=2')
+            ->cron('5,35 * * * *')
             ->timezone('Asia/Kolkata')
             ->runInBackground()
-            ->withoutOverlapping(10));
+            ->withoutOverlapping(30));
 
         $this->markScheduled($schedule->command('exchange-calendar:sync')
             ->dailyAt('06:00')->timezone('Asia/Kolkata')->withoutOverlapping(60));

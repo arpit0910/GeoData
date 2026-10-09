@@ -178,9 +178,9 @@ return [
         [
             'title' => 'market:rewrite-news',
             'command' => 'market:rewrite-news',
-            'args' => ['--limit' => 20],
-            'description' => 'Rewrites and verifies synchronized news, then queues valid drafts for admin approval.',
-            'schedule' => 'Every 10 minutes at :05, :15, :25, :35, :45 and :55',
+            'args' => ['--limit' => 2],
+            'description' => 'Rewrites and verifies a quota-safe news batch, then queues valid drafts for admin approval.',
+            'schedule' => 'Every 30 minutes at :05 and :35',
             'timezone' => 'Asia/Kolkata',
             'overlap' => false,
         ],

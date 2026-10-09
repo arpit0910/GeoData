@@ -86,6 +86,44 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         });
     }
 
+    public function test_safeguard_model_is_reserved_for_verification(): void
+    {
+        $this->configureGroq();
+        config(['services.groq.verification_models' => 'openai/gpt-oss-safeguard-20b']);
+        $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
+        $models = [];
+
+        Http::fake(function (Request $request) use ($sourceBody, &$models) {
+            if ($request->url() === 'https://upstox.com/news/test-article') {
+                return Http::response('<script type="application/ld+json">'.json_encode([
+                    '@type' => 'NewsArticle',
+                    'articleBody' => $sourceBody,
+                ]).'</script>');
+            }
+
+            $models[] = (string) data_get($request->data(), 'model');
+            if (str_contains((string) data_get($request->data(), 'messages.0.content'), 'independent financial-news fact checker')) {
+                return $this->groqResponse([
+                    'intent_preserved' => true,
+                    'facts_preserved' => true,
+                    'tone_preserved' => true,
+                    'attributions_preserved' => true,
+                    'issues' => [],
+                ]);
+            }
+
+            return $this->groqResponse([
+                'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
+                'paragraph_1' => 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its principal business segments during the quarter.',
+                'paragraph_2' => 'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter, maintaining the pattern described for the previous period.',
+            ]);
+        });
+
+        app(GroqNewsRewriter::class)->rewrite($this->createNews($sourceBody));
+
+        $this->assertSame(['groq-test-model', 'openai/gpt-oss-safeguard-20b'], $models);
+    }
+
     public function test_semantically_rejected_rewrite_remains_private(): void
     {
         $this->configureGroq();
@@ -219,6 +257,46 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 (string) $content,
                 'Numerical fact check failed (missing source numbers: 100; unsupported draft numbers: 200)'
             )));
+    }
+
+    public function test_quota_safe_mode_does_not_spend_multiple_drafts_on_one_story(): void
+    {
+        $this->configureGroq();
+        config(['services.groq.editorial_attempts' => 1]);
+        $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
+        $generationCalls = 0;
+
+        Http::fake(function (Request $request) use ($sourceBody, &$generationCalls) {
+            if ($request->url() === 'https://upstox.com/news/test-article') {
+                return Http::response('<script type="application/ld+json">'.json_encode([
+                    '@type' => 'NewsArticle',
+                    'articleBody' => $sourceBody,
+                ]).'</script>');
+            }
+
+            $generationCalls++;
+
+            return $this->groqResponse([
+                'title' => 'Company reports flat quarterly revenue at Rs 200 crore',
+                'paragraphs' => [
+                    'The company reported quarterly revenue of Rs 200 crore, unchanged from the previous period.',
+                    'Management said demand remained stable across its principal business segments during the quarter.',
+                    'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter.',
+                ],
+            ]);
+        });
+
+        $news = $this->createNews($sourceBody);
+
+        try {
+            app(GroqNewsRewriter::class)->rewrite($news);
+            $this->fail('The incorrect numerical draft should fail validation.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('Numerical fact check failed', $exception->getMessage());
+        }
+
+        $this->assertSame(1, $generationCalls);
+        $this->assertSame(MarketNews::STATUS_FAILED, $news->refresh()->editorial_status);
     }
 
     public function test_transient_capacity_error_uses_the_fallback_model(): void
@@ -474,6 +552,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
             'services.groq.strict_json_models' => 'groq-test-model,groq-fallback-model',
             'services.groq.endpoint' => 'https://groq.test/openai/v1/chat/completions',
             'services.groq.temperature' => 0.1,
+            'services.groq.editorial_attempts' => 2,
             'services.groq.retry_attempts' => 4,
             'services.groq.retry_initial_delay_ms' => 0,
             'services.groq.retry_max_delay_ms' => 0,
