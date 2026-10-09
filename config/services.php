@@ -63,6 +63,28 @@ return [
         'ca_bundle' => env('GROQ_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
     ],
 
+    'nvidia' => [
+        'api_key' => env('NVIDIA_API_KEY'),
+        'model' => env('NVIDIA_NEWS_MODEL', 'openai/gpt-oss-120b'),
+        'fallback_models' => env('NVIDIA_NEWS_FALLBACK_MODELS', 'openai/gpt-oss-20b,qwen/qwen3-next-80b-a3b-instruct,deepseek-ai/deepseek-v4-flash'),
+        'verification_models' => env('NVIDIA_NEWS_VERIFICATION_MODELS', 'openai/gpt-oss-20b'),
+        'strict_json_models' => env('NVIDIA_NEWS_STRICT_JSON_MODELS', ''),
+        'model_strategy' => env('NVIDIA_NEWS_MODEL_STRATEGY', 'round_robin'),
+        'endpoint' => env('NVIDIA_API_ENDPOINT', 'https://integrate.api.nvidia.com/v1/chat/completions'),
+        'temperature' => (float) env('NVIDIA_NEWS_TEMPERATURE', 0.1),
+        'timeout' => (int) env('NVIDIA_API_TIMEOUT', 90),
+        'retry_attempts' => (int) env('NVIDIA_RETRY_ATTEMPTS', 4),
+        'retry_initial_delay_ms' => (int) env('NVIDIA_RETRY_INITIAL_DELAY_MS', 1000),
+        'retry_max_delay_ms' => (int) env('NVIDIA_RETRY_MAX_DELAY_MS', 8000),
+        'retry_jitter_ms' => (int) env('NVIDIA_RETRY_JITTER_MS', 250),
+        'rate_limit_retry_seconds' => (int) env('NVIDIA_RATE_LIMIT_RETRY_SECONDS', 300),
+        'rewrite_max_tokens' => (int) env('NVIDIA_NEWS_REWRITE_MAX_TOKENS', 1400),
+        'verification_max_tokens' => (int) env('NVIDIA_NEWS_VERIFICATION_MAX_TOKENS', 256),
+        'qwen_max_tokens' => (int) env('NVIDIA_NEWS_QWEN_MAX_TOKENS', 1200),
+        'editorial_attempts' => (int) env('NVIDIA_NEWS_EDITORIAL_ATTEMPTS', 1),
+        'ca_bundle' => env('NVIDIA_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
+    ],
+
     'subscriptions' => [
         // Gateway checkout remains optional while direct activation is in use.
         'purchases_enabled' => filter_var(env('SUBSCRIPTION_PURCHASES_ENABLED', false), FILTER_VALIDATE_BOOL),

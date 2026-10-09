@@ -27,7 +27,7 @@ class GroqNewsRewriter
             && $news->editorial_status === MarketNews::STATUS_PUBLISHED;
         $apiKey = trim((string) config('services.groq.api_key'));
         if ($apiKey === '') {
-            throw new RuntimeException('GROQ_API_KEY is not configured.');
+            throw new RuntimeException($this->providerLabel().' API key is not configured.');
         }
 
         $model = trim((string) config('services.groq.model', 'openai/gpt-oss-120b'));
@@ -144,10 +144,10 @@ class GroqNewsRewriter
                     $summary = $paragraphs->implode("\n\n");
                     $previousDraft = $draft;
                     if ($title === '' || $summary === '') {
-                        throw new RuntimeException('Groq returned an invalid news draft with an empty headline or article.');
+                        throw new RuntimeException($this->providerLabel().' returned an invalid news draft with an empty headline or article.');
                     }
                     if (mb_strlen($title) > 500 || mb_strlen($summary) > 20000) {
-                        throw new RuntimeException('Groq returned a news draft outside the allowed storage length.');
+                        throw new RuntimeException($this->providerLabel().' returned a news draft outside the allowed storage length.');
                     }
                     $this->assertEditorialQuality($title, $summary, $sourceContent);
                     $this->assertNumericalFactsPreserved(
@@ -361,7 +361,7 @@ class GroqNewsRewriter
                     ->values();
             }
             $reason = $issues->implode('; ');
-            throw new RuntimeException('Groq draft rejected: '.mb_substr($reason, 0, 1000));
+            throw new RuntimeException($this->providerLabel().' draft rejected: '.mb_substr($reason, 0, 1000));
         }
     }
 
@@ -369,15 +369,17 @@ class GroqNewsRewriter
     {
         $message = $exception->getMessage();
 
-        return str_starts_with($message, 'Groq returned invalid structured output')
-            || str_starts_with($message, 'Groq returned an invalid news draft')
-            || str_starts_with($message, 'Groq returned a news draft outside')
+        $provider = $this->providerLabel();
+
+        return str_starts_with($message, $provider.' returned invalid structured output')
+            || str_starts_with($message, $provider.' returned an invalid news draft')
+            || str_starts_with($message, $provider.' returned a news draft outside')
             || str_starts_with($message, 'Headline must')
             || str_starts_with($message, 'Article is too thin')
             || str_starts_with($message, 'Article contains non-substantive')
             || str_starts_with($message, 'Article contains prohibited')
             || str_starts_with($message, 'Numerical fact check failed')
-            || str_starts_with($message, 'Groq draft rejected');
+            || str_starts_with($message, $provider.' draft rejected');
     }
 
     /** @return array{0: Response, 1: string} */
@@ -446,7 +448,7 @@ class GroqNewsRewriter
 
         if ($soonestRateLimitRetry !== null) {
             throw new GroqRateLimitException(
-                "All currently available Groq models reached a rate limit. News generation was deferred and will retry automatically in {$soonestRateLimitRetry} seconds.",
+                "All currently available {$this->providerLabel()} models reached a rate limit. News generation was deferred and will retry automatically in {$soonestRateLimitRetry} seconds.",
                 $soonestRateLimitRetry
             );
         }
@@ -454,17 +456,17 @@ class GroqNewsRewriter
             if ($lastConnectionException) {
                 throw $lastConnectionException;
             }
-            throw new RuntimeException("Groq {$operation} did not return a response.");
+            throw new RuntimeException($this->providerLabel()." {$operation} did not return a response.");
         }
         if (! $response->successful()) {
             $message = data_get($response->json(), 'error.message') ?: $response->body();
             if (in_array($response->status(), $transientStatuses, true)) {
                 throw new RuntimeException(
-                    "Groq {$operation} is temporarily unavailable after {$maximumAttempts} attempts: ".
+                    $this->providerLabel()." {$operation} is temporarily unavailable after {$maximumAttempts} attempts: ".
                     $message.' Please try again in a few minutes.'
                 );
             }
-            throw new RuntimeException("Groq {$operation} failed with HTTP ".$response->status().': '.$message);
+            throw new RuntimeException($this->providerLabel()." {$operation} failed with HTTP ".$response->status().': '.$message);
         }
 
         return [$response, $usedModel];
@@ -496,7 +498,7 @@ class GroqNewsRewriter
         if ($available === []) {
             $retryAfter = max(1, ($soonestRetryAt ?? (time() + 300)) - time());
             throw new GroqRateLimitException(
-                "Every configured Groq model is cooling down after a rate limit. News generation was deferred and will retry automatically in {$retryAfter} seconds.",
+                "Every configured {$this->providerLabel()} model is cooling down after a rate limit. News generation was deferred and will retry automatically in {$retryAfter} seconds.",
                 $retryAfter
             );
         }
@@ -515,7 +517,7 @@ class GroqNewsRewriter
 
     private function modelCooldownKey(string $model): string
     {
-        return 'groq-news-model-cooldown:'.sha1($model);
+        return strtolower($this->providerLabel()).'-news-model-cooldown:'.sha1($model);
     }
 
     private function rateLimitRetrySeconds(Response $response): int
@@ -549,7 +551,7 @@ class GroqNewsRewriter
             return $models;
         }
 
-        $counterKey = 'groq-news-model-rotation:'.sha1(implode('|', $models));
+        $counterKey = strtolower($this->providerLabel()).'-news-model-rotation:'.sha1(implode('|', $models));
         try {
             Cache::add($counterKey, 0, now()->addYears(5));
             $turn = max(1, (int) Cache::increment($counterKey));
@@ -569,6 +571,30 @@ class GroqNewsRewriter
     private function payloadForModel(array $payload, string $model): array
     {
         $payload['model'] = $model;
+
+        if ($this->providerLabel() === 'NVIDIA') {
+            $requiredFields = data_get(
+                $payload,
+                'response_format.json_schema.schema.required',
+                []
+            );
+            $payload['max_tokens'] = (int) ($payload['max_completion_tokens'] ?? 1400);
+            unset($payload['max_completion_tokens'], $payload['top_p'], $payload['response_format']);
+
+            if (! str_starts_with($model, 'openai/gpt-oss-')) {
+                unset($payload['reasoning_effort']);
+            }
+
+            $lastMessage = count($payload['messages']) - 1;
+            if ($lastMessage >= 0 && data_get($payload, "messages.{$lastMessage}.role") === 'user') {
+                $keyInstruction = $requiredFields !== []
+                    ? ' with exactly these required keys: '.implode(', ', $requiredFields)
+                    : '';
+                $payload['messages'][$lastMessage]['content'] .= "\n\nReturn only one valid JSON object{$keyInstruction}. Do not use Markdown code fences or add explanatory text.";
+            }
+
+            return $payload;
+        }
 
         // Groq's reasoning controls vary by model family. GPT-OSS supports
         // low/medium/high, while Qwen and standard Llama models use their own
@@ -632,13 +658,22 @@ class GroqNewsRewriter
     private function structuredJson(Response $response): array
     {
         $content = data_get($response->json(), 'choices.0.message.content');
+        if (is_string($content)) {
+            $content = trim($content);
+            $content = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', $content) ?? $content;
+        }
         $decoded = is_string($content) ? json_decode(trim($content), true) : null;
         if (is_array($decoded)) {
             return $decoded;
         }
 
         $finishReason = data_get($response->json(), 'choices.0.finish_reason', 'unknown');
-        throw new RuntimeException("Groq returned invalid structured output (finish reason: {$finishReason}).");
+        throw new RuntimeException($this->providerLabel()." returned invalid structured output (finish reason: {$finishReason}).");
+    }
+
+    private function providerLabel(): string
+    {
+        return (string) config('services.groq.provider', 'Groq');
     }
 
     /** @param array<string, mixed> $schema */

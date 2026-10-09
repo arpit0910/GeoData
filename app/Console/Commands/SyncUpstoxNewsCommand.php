@@ -143,7 +143,7 @@ class SyncUpstoxNewsCommand extends Command
                     ]);
                     if ($sourceChanged) {
                         $news->fill([
-                            // Keep the source readable internally until Groq creates a draft.
+                            // Keep the source readable internally until NVIDIA creates a draft.
                             'title' => $originalTitle,
                             'summary' => $originalSummary,
                             'editorial_status' => MarketNews::STATUS_PENDING,

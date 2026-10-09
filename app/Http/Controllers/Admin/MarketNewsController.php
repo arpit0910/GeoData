@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Exceptions\GroqRateLimitException;
 use App\Http\Controllers\Controller;
 use App\Models\MarketNews;
-use App\Services\GroqNewsRewriter;
+use App\Services\NvidiaNewsRewriter;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -61,7 +61,7 @@ class MarketNewsController extends Controller
         return view('admin.market-news.show', compact('marketNews'));
     }
 
-    public function regenerate(MarketNews $marketNews, GroqNewsRewriter $rewriter): RedirectResponse
+    public function regenerate(MarketNews $marketNews, NvidiaNewsRewriter $rewriter): RedirectResponse
     {
         set_time_limit(180);
 
@@ -70,7 +70,7 @@ class MarketNewsController extends Controller
 
             return back()->with('success', "News #{$marketNews->id} was regenerated and is ready for approval.");
         } catch (GroqRateLimitException $exception) {
-            return back()->with('error', "News #{$marketNews->id} was deferred until Groq quota is available again. It will retry automatically.");
+            return back()->with('error', "News #{$marketNews->id} was deferred until NVIDIA quota is available again. It will retry automatically.");
         } catch (Throwable $exception) {
             report($exception);
 
@@ -78,7 +78,7 @@ class MarketNewsController extends Controller
         }
     }
 
-    public function bulkRegenerate(Request $request, GroqNewsRewriter $rewriter): RedirectResponse
+    public function bulkRegenerate(Request $request, NvidiaNewsRewriter $rewriter): RedirectResponse
     {
         $validated = $request->validate([
             'news_ids' => ['required', 'array', 'min:1', 'max:25'],
@@ -112,7 +112,7 @@ class MarketNewsController extends Controller
         $skipped = count($ids) - $stories->count();
         if ($generated === 0) {
             if ($quotaDeferred) {
-                return back()->with('error', 'Generation was deferred because the Groq model pool reached its rate limit. The pending story will retry automatically after the provider cooldown.');
+                return back()->with('error', 'Generation was deferred because the NVIDIA model pool reached its rate limit. The pending story will retry automatically after the provider cooldown.');
             }
             $details = $failures !== [] ? ' '.implode(' | ', array_slice($failures, 0, 3)) : '';
 
@@ -127,7 +127,7 @@ class MarketNewsController extends Controller
             $message .= " {$skipped} processing ".($skipped === 1 ? 'story was' : 'stories were').' skipped.';
         }
         if ($quotaDeferred) {
-            $message .= ' Remaining stories were left pending because the Groq pool reached its rate limit; processing will resume automatically after cooldown.';
+            $message .= ' Remaining stories were left pending because the NVIDIA pool reached its rate limit; processing will resume automatically after cooldown.';
         }
 
         return back()->with('success', $message);
@@ -209,7 +209,7 @@ class MarketNewsController extends Controller
         ])->save();
     }
 
-    private function regenerateDraft(MarketNews $marketNews, GroqNewsRewriter $rewriter): void
+    private function regenerateDraft(MarketNews $marketNews, NvidiaNewsRewriter $rewriter): void
     {
         $cachedContent = $marketNews->original_content;
         $cachedAt = $marketNews->source_fetched_at;

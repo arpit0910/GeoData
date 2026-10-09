@@ -44,11 +44,11 @@
         @csrf
         <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-500/20 dark:bg-purple-500/10">
             <div>
-                <p class="text-sm font-semibold text-purple-800 dark:text-purple-200">Select up to 25 stories on this page, then generate them with Groq or approve verified drafts.</p>
+                <p class="text-sm font-semibold text-purple-800 dark:text-purple-200">Select up to 25 stories on this page, then generate them with NVIDIA AI or approve verified drafts.</p>
                 <p id="selected-news-count" class="mt-1 text-xs font-bold text-purple-600 dark:text-purple-300">0 stories selected</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button id="bulk-generate-button" disabled formaction="{{ route('admin.market-news.bulk-regenerate') }}" onclick="return confirm('Generate or regenerate all selected stories with Groq? This can take several minutes.');" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-wand-magic-sparkles mr-2"></i>Generate Selected</button>
+                <button id="bulk-generate-button" disabled formaction="{{ route('admin.market-news.bulk-regenerate') }}" onclick="return confirm('Generate or regenerate all selected stories with NVIDIA AI? This can take several minutes.');" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-wand-magic-sparkles mr-2"></i>Generate Selected</button>
                 <button id="bulk-approve-button" disabled formaction="{{ route('admin.market-news.bulk-approve') }}" onclick="return confirm('Approve and publish all selected ready drafts? Ineligible stories will be skipped.');" class="rounded-xl bg-purple-700 px-4 py-2 text-sm font-black text-white hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-check-double mr-2"></i>Approve Selected</button>
             </div>
         </div>
@@ -79,7 +79,7 @@
                         <td class="p-4 text-gray-600 dark:text-gray-300">{{ $story->published_at?->timezone('Asia/Kolkata')->format('d M Y, h:i A') ?: '—' }}</td>
                         <td class="p-4"><div class="flex min-w-[150px] flex-col items-stretch gap-2">
                             <a href="{{ route('admin.market-news.show', $story) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-center text-xs font-bold text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5"><i class="fas fa-eye mr-1"></i>View Details</a>
-                            <form method="POST" action="{{ route('admin.market-news.regenerate', $story) }}" onsubmit="return confirm('Regenerate this story with Groq?');">@csrf<button class="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"><i class="fas fa-rotate mr-1"></i>{{ $story->rewritten_at ? 'Regenerate' : 'Generate' }}</button></form>
+                            <form method="POST" action="{{ route('admin.market-news.regenerate', $story) }}" onsubmit="return confirm('Regenerate this story with NVIDIA AI?');">@csrf<button class="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"><i class="fas fa-rotate mr-1"></i>{{ $story->rewritten_at ? 'Regenerate' : 'Generate' }}</button></form>
                             @if($story->editorial_status === 'ready')<form method="POST" action="{{ route('admin.market-news.approve', $story) }}">@csrf<button class="w-full rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700"><i class="fas fa-check mr-1"></i>Approve & Publish</button></form>@endif
                             @if($story->is_published)<form method="POST" action="{{ route('admin.market-news.unpublish', $story) }}" onsubmit="return confirm('Remove this story from the public website?');">@csrf<button class="w-full rounded-lg bg-gray-700 px-3 py-2 text-xs font-bold text-white hover:bg-gray-800"><i class="fas fa-eye-slash mr-1"></i>Unpublish</button></form>@endif
                         </div></td>

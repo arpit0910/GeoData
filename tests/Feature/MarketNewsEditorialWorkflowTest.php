@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Exceptions\GroqRateLimitException;
 use App\Models\MarketNews;
 use App\Services\GroqNewsRewriter;
+use App\Services\NvidiaNewsRewriter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
@@ -16,6 +17,68 @@ use Tests\TestCase;
 class MarketNewsEditorialWorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_nvidia_nim_rewrites_and_verifies_news_with_compatible_parameters(): void
+    {
+        $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
+        config([
+            'services.nvidia.api_key' => 'test-nvidia-key',
+            'services.nvidia.endpoint' => 'https://integrate.api.nvidia.test/v1/chat/completions',
+            'services.nvidia.model' => 'openai/gpt-oss-120b',
+            'services.nvidia.fallback_models' => '',
+            'services.nvidia.verification_models' => '',
+            'services.nvidia.strict_json_models' => '',
+            'services.nvidia.model_strategy' => 'primary',
+            'services.nvidia.temperature' => 0.1,
+            'services.nvidia.editorial_attempts' => 1,
+            'services.nvidia.retry_attempts' => 1,
+            'services.nvidia.retry_initial_delay_ms' => 0,
+            'services.nvidia.retry_max_delay_ms' => 0,
+            'services.nvidia.retry_jitter_ms' => 0,
+            'services.nvidia.rewrite_max_tokens' => 1400,
+            'services.nvidia.verification_max_tokens' => 256,
+        ]);
+
+        Http::fake(function (Request $request) use ($sourceBody) {
+            if ($request->url() === 'https://upstox.com/news/test-article') {
+                return Http::response('<script type="application/ld+json">'.json_encode([
+                    '@type' => 'NewsArticle',
+                    'articleBody' => $sourceBody,
+                ]).'</script>');
+            }
+
+            if (str_contains((string) data_get($request->data(), 'messages.0.content'), 'independent financial-news fact checker')) {
+                return $this->groqResponse([
+                    'intent_preserved' => true,
+                    'facts_preserved' => true,
+                    'tone_preserved' => true,
+                    'attributions_preserved' => true,
+                    'issues' => [],
+                ]);
+            }
+
+            return $this->groqResponse([
+                'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
+                'paragraph_1' => 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its principal business segments during the quarter.',
+                'paragraph_2' => 'The company update added that operating conditions were broadly consistent with those recorded in the preceding quarter, maintaining the pattern described for the previous period.',
+            ]);
+        });
+
+        $news = $this->createNews($sourceBody);
+        app(NvidiaNewsRewriter::class)->rewrite($news);
+
+        $this->assertSame('openai/gpt-oss-120b', $news->fresh()->rewrite_model);
+        Http::assertSent(function (Request $request): bool {
+            if (!str_contains($request->url(), 'integrate.api.nvidia.test')) {
+                return false;
+            }
+
+            return $request->hasHeader('Authorization', 'Bearer test-nvidia-key')
+                && data_get($request->data(), 'max_tokens') !== null
+                && data_get($request->data(), 'max_completion_tokens') === null
+                && data_get($request->data(), 'response_format') === null;
+        });
+    }
 
     public function test_verified_rewrite_waits_for_admin_approval_with_low_temperature(): void
     {

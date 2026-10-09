@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
 class SyncUpstoxEventsCommand extends Command
 {
     protected $signature = 'market:sync-upstox-events
-        {--limit=100 : Number of equities in a rotating scheduled batch}
+        {--limit=500 : Number of equities in a rotating scheduled batch (maximum 5000)}
         {--all : Synchronize every eligible equity}
         {--delay=200 : Delay in milliseconds between Upstox requests}
         {--isin=* : Specific ISINs to sync}';

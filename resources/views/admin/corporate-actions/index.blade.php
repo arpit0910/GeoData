@@ -13,7 +13,7 @@
             @csrf
             <input name="isin" value="{{ old('isin') }}" placeholder="Optional ISIN" class="rounded-xl border-gray-200 bg-transparent text-sm uppercase dark:border-white/10 dark:text-white">
             <select name="limit" class="rounded-xl border-gray-200 bg-transparent text-sm dark:border-white/10 dark:text-white">
-                @foreach([25, 50, 100] as $limit)<option value="{{ $limit }}" @selected(old('limit', 25) == $limit)>Next {{ $limit }}</option>@endforeach
+                @foreach([25, 50, 100, 250, 500, 1000, 2500, 5000] as $limit)<option value="{{ $limit }}" @selected(old('limit', 500) == $limit)>Next {{ number_format($limit) }}</option>@endforeach
             </select>
             <button onclick="return confirm('Start corporate-action synchronization now?');" class="whitespace-nowrap rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-black text-white hover:bg-amber-700">
                 <i class="fas fa-rotate mr-2"></i>Sync Now

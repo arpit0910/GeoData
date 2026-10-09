@@ -87,7 +87,7 @@ class CorporateActionController extends Controller
     {
         $input = $request->validate([
             'isin' => ['nullable', 'string', 'max:20', 'regex:/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i'],
-            'limit' => 'nullable|integer|in:25,50,100',
+            'limit' => 'nullable|integer|in:25,50,100,250,500,1000,2500,5000',
         ]);
         $isin = strtoupper(trim((string) ($input['isin'] ?? '')));
         $arguments = ['--delay' => 200];

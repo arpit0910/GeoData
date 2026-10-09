@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Exceptions\GroqRateLimitException;
 use App\Models\MarketNews;
-use App\Services\GroqNewsRewriter;
+use App\Services\NvidiaNewsRewriter;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -17,7 +17,7 @@ class RewriteMarketNewsCommand extends Command
 
     protected $description = 'Rewrite, verify, and publish market news automatically';
 
-    public function handle(GroqNewsRewriter $rewriter): int
+    public function handle(NvidiaNewsRewriter $rewriter): int
     {
         $statuses = [MarketNews::STATUS_PENDING];
         if ($this->option('retry')) {
@@ -49,7 +49,7 @@ class RewriteMarketNewsCommand extends Command
                 $this->line("Generated news #{$news->id}; awaiting admin approval.");
             } catch (GroqRateLimitException $exception) {
                 $deferred++;
-                $this->warn("News #{$news->id} deferred until the Groq quota is available again.");
+                $this->warn("News #{$news->id} deferred until NVIDIA quota is available again.");
                 break;
             } catch (Throwable $exception) {
                 $failed++;

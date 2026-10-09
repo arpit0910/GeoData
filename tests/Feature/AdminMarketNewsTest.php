@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MarketNews;
 use App\Models\User;
-use App\Services\GroqNewsRewriter;
+use App\Services\NvidiaNewsRewriter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -104,7 +104,7 @@ class AdminMarketNewsTest extends TestCase
             'is_published' => false,
             'published_at' => now(),
         ]);
-        $rewriter = $this->mock(GroqNewsRewriter::class);
+        $rewriter = $this->mock(NvidiaNewsRewriter::class);
         $rewriter->shouldReceive('rewrite')->once()->andReturnUsing(function (MarketNews $item) {
             $item->forceFill([
                 'title' => 'Regenerated market headline ready for administrator approval',
@@ -160,7 +160,7 @@ class AdminMarketNewsTest extends TestCase
             'published_at' => now(),
         ]));
 
-        $rewriter = $this->mock(GroqNewsRewriter::class);
+        $rewriter = $this->mock(NvidiaNewsRewriter::class);
         $rewriter->shouldReceive('rewrite')->twice()->andReturnUsing(function (MarketNews $story) {
             $story->forceFill([
                 'title' => "Verified generated headline for news story {$story->id}",

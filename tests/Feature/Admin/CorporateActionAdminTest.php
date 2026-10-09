@@ -114,6 +114,24 @@ class CorporateActionAdminTest extends TestCase
             ->assertSee('Stock Split');
     }
 
+    public function test_admin_can_request_a_corporate_action_batch_larger_than_one_hundred(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        config(['market_data.upstox.access_token' => 'test-access-token']);
+
+        $this->actingAs($admin)
+            ->post(route('admin.corporate-actions.sync'), ['limit' => 500])
+            ->assertRedirect(route('admin.corporate-actions.index'))
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success');
+
+        $this->actingAs($admin)
+            ->get(route('admin.corporate-actions.index'))
+            ->assertOk()
+            ->assertSee('Next 500')
+            ->assertSee('Next 5,000');
+    }
+
     public function test_non_admin_cannot_view_or_run_corporate_action_sync(): void
     {
         $user = User::factory()->create(['is_admin' => false]);
