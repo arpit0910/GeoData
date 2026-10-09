@@ -90,8 +90,8 @@ class SubscriptionController extends Controller
             ->latest()
             ->first() : null;
             
-        $temporaryCheckoutEnabled = config('services.subscriptions.temporary_checkout_enabled');
-        $paymentCheckoutEnabled = config('services.subscriptions.purchases_enabled');
+        $temporaryCheckoutEnabled = (bool) config('services.subscriptions.temporary_checkout_enabled', true);
+        $paymentCheckoutEnabled = (bool) config('services.subscriptions.purchases_enabled', false);
 
         return view('subscriptions.pricing', compact(
             'plans',
@@ -107,7 +107,7 @@ class SubscriptionController extends Controller
     {
         abort_unless((bool) $plan->status, 404);
 
-        if (!config('services.subscriptions.temporary_checkout_enabled')) {
+        if (!(bool) config('services.subscriptions.temporary_checkout_enabled', true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Temporary checkout is no longer available. Please use the configured payment option.',
