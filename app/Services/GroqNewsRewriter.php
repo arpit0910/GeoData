@@ -14,7 +14,7 @@ use Throwable;
 
 class GroqNewsRewriter
 {
-    private const REWRITE_VERSION = 7;
+    private const REWRITE_VERSION = 8;
 
     public function __construct(private readonly NewsArticleExtractor $extractor)
     {
@@ -214,16 +214,16 @@ class GroqNewsRewriter
                 ->filter()->unique()->sort()->values()->all();
         };
 
-        if ($numbers($source) !== $numbers($draft)) {
-            $missing = array_values(array_diff($numbers($source), $numbers($draft)));
-            $unsupported = array_values(array_diff($numbers($draft), $numbers($source)));
+        $sourceNumbers = $numbers($source);
+        $draftNumbers = $numbers($draft);
+        $unsupported = array_values(array_diff($draftNumbers, $sourceNumbers));
+        if ($unsupported !== []) {
+            $missing = array_values(array_diff($sourceNumbers, $draftNumbers));
             $details = [];
             if ($missing !== []) {
                 $details[] = 'missing source numbers: '.implode(', ', $missing);
             }
-            if ($unsupported !== []) {
-                $details[] = 'unsupported draft numbers: '.implode(', ', $unsupported);
-            }
+            $details[] = 'unsupported draft numbers: '.implode(', ', $unsupported);
             throw new RuntimeException('Numerical fact check failed ('.implode('; ', $details).').');
         }
     }
@@ -253,7 +253,10 @@ class GroqNewsRewriter
         }
         $targetParagraphs = $this->targetParagraphCount($sourceWords, $targetMinimumWords);
         $targetWordsPerParagraph = (int) ceil($targetMinimumWords / $targetParagraphs);
-        $minimumWordsPerParagraph = max(10, (int) floor($targetWordsPerParagraph * 0.65));
+        // Models are approximate word counters. Keep the whole-article target
+        // strict while allowing a modest per-paragraph variance so a complete
+        // 50-word paragraph is not rejected against a 52-word estimate.
+        $minimumWordsPerParagraph = max(10, (int) floor($targetWordsPerParagraph * 0.60));
         $thinParagraphs = collect($paragraphs)
             ->map(fn ($paragraph, $index) => [
                 'number' => $index + 1,
@@ -407,7 +410,7 @@ class GroqNewsRewriter
             try {
                 $response = $request->post(
                     $endpoint,
-                    $this->payloadForModel($payload, $usedModel)
+                    $this->payloadForModel($payload, $usedModel, $operation)
                 );
                 $lastConnectionException = null;
             } catch (ConnectionException $exception) {
@@ -568,7 +571,7 @@ class GroqNewsRewriter
     /** @param array<string, mixed> $payload
      *  @return array<string, mixed>
      */
-    private function payloadForModel(array $payload, string $model): array
+    private function payloadForModel(array $payload, string $model, string $operation): array
     {
         $payload['model'] = $model;
 
@@ -578,7 +581,17 @@ class GroqNewsRewriter
                 'response_format.json_schema.schema.required',
                 []
             );
-            $payload['max_tokens'] = (int) ($payload['max_completion_tokens'] ?? 1400);
+            // NVIDIA's GPT-OSS endpoints count internal reasoning against
+            // max_tokens. The provider budget must therefore be used in full;
+            // the smaller output-only estimate above regularly ends with an
+            // empty response and finish_reason=length.
+            $configuredTokenBudget = $operation === 'verification'
+                ? (int) config('services.groq.verification_max_tokens', 2048)
+                : (int) config('services.groq.rewrite_max_tokens', 4096);
+            $payload['max_tokens'] = max(
+                (int) ($payload['max_completion_tokens'] ?? 0),
+                $configuredTokenBudget
+            );
             unset($payload['max_completion_tokens'], $payload['top_p'], $payload['response_format']);
 
             if (! str_starts_with($model, 'openai/gpt-oss-')) {

@@ -78,6 +78,22 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 && data_get($request->data(), 'max_completion_tokens') === null
                 && data_get($request->data(), 'response_format') === null;
         });
+        Http::assertSent(fn (Request $request): bool =>
+            str_contains($request->url(), 'integrate.api.nvidia.test')
+            && ! str_contains(
+                (string) data_get($request->data(), 'messages.0.content'),
+                'independent financial-news fact checker'
+            )
+            && data_get($request->data(), 'max_tokens') === 1400
+        );
+        Http::assertSent(fn (Request $request): bool =>
+            str_contains($request->url(), 'integrate.api.nvidia.test')
+            && str_contains(
+                (string) data_get($request->data(), 'messages.0.content'),
+                'independent financial-news fact checker'
+            )
+            && data_get($request->data(), 'max_tokens') === 256
+        );
     }
 
     public function test_verified_rewrite_waits_for_admin_approval_with_low_temperature(): void
@@ -121,7 +137,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         $this->assertFalse($news->is_published);
         $this->assertSame('Company reports flat quarterly revenue at Rs 100 crore', $news->title);
         $this->assertSame('groq-test-model', $news->rewrite_model);
-        $this->assertSame(7, $news->rewrite_version);
+        $this->assertSame(8, $news->rewrite_version);
         $this->assertSame($sourceBody, $news->original_content);
         $this->get('/market/news')
             ->assertOk()
@@ -382,6 +398,46 @@ class MarketNewsEditorialWorkflowTest extends TestCase
 
         $this->assertSame(1, $generationCalls);
         $this->assertSame(MarketNews::STATUS_FAILED, $news->refresh()->editorial_status);
+    }
+
+    public function test_missing_incidental_source_numbers_are_left_to_semantic_verification(): void
+    {
+        $this->configureGroq();
+        config(['services.groq.editorial_attempts' => 1]);
+        $sourceBody = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments, while a market table listed 75 transactions. Operating conditions were broadly consistent with the preceding quarter.';
+
+        Http::fake(function (Request $request) use ($sourceBody) {
+            if ($request->url() === 'https://upstox.com/news/test-article') {
+                return Http::response('<script type="application/ld+json">'.json_encode([
+                    '@type' => 'NewsArticle',
+                    'articleBody' => $sourceBody,
+                ]).'</script>');
+            }
+
+            if (str_contains((string) data_get($request->data(), 'messages.0.content'), 'independent financial-news fact checker')) {
+                return $this->groqResponse([
+                    'intent_preserved' => true,
+                    'facts_preserved' => true,
+                    'tone_preserved' => true,
+                    'attributions_preserved' => true,
+                    'issues' => [],
+                ]);
+            }
+
+            return $this->groqResponse([
+                'title' => 'Company reports flat quarterly revenue at Rs 100 crore',
+                'paragraphs' => [
+                    'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period.',
+                    'Management said demand remained stable across its principal business segments during the quarter.',
+                    'The company update added that operating conditions were broadly consistent with the preceding quarter.',
+                ],
+            ]);
+        });
+
+        $news = $this->createNews($sourceBody);
+        app(GroqNewsRewriter::class)->rewrite($news);
+
+        $this->assertSame(MarketNews::STATUS_READY, $news->refresh()->editorial_status);
     }
 
     public function test_transient_capacity_error_uses_the_fallback_model(): void

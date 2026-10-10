@@ -65,8 +65,8 @@ return [
 
     'nvidia' => [
         'api_key' => env('NVIDIA_API_KEY'),
-        'model' => env('NVIDIA_NEWS_MODEL', 'openai/gpt-oss-120b'),
-        'fallback_models' => env('NVIDIA_NEWS_FALLBACK_MODELS', 'openai/gpt-oss-20b,qwen/qwen3-next-80b-a3b-instruct,deepseek-ai/deepseek-v4-flash'),
+        'model' => env('NVIDIA_NEWS_MODEL', 'openai/gpt-oss-20b'),
+        'fallback_models' => env('NVIDIA_NEWS_FALLBACK_MODELS', ''),
         'verification_models' => env('NVIDIA_NEWS_VERIFICATION_MODELS', 'openai/gpt-oss-20b'),
         'strict_json_models' => env('NVIDIA_NEWS_STRICT_JSON_MODELS', ''),
         'model_strategy' => env('NVIDIA_NEWS_MODEL_STRATEGY', 'round_robin'),
@@ -78,10 +78,10 @@ return [
         'retry_max_delay_ms' => (int) env('NVIDIA_RETRY_MAX_DELAY_MS', 8000),
         'retry_jitter_ms' => (int) env('NVIDIA_RETRY_JITTER_MS', 250),
         'rate_limit_retry_seconds' => (int) env('NVIDIA_RATE_LIMIT_RETRY_SECONDS', 300),
-        'rewrite_max_tokens' => (int) env('NVIDIA_NEWS_REWRITE_MAX_TOKENS', 1400),
-        'verification_max_tokens' => (int) env('NVIDIA_NEWS_VERIFICATION_MAX_TOKENS', 256),
+        'rewrite_max_tokens' => (int) env('NVIDIA_NEWS_REWRITE_MAX_TOKENS', 4096),
+        'verification_max_tokens' => (int) env('NVIDIA_NEWS_VERIFICATION_MAX_TOKENS', 2048),
         'qwen_max_tokens' => (int) env('NVIDIA_NEWS_QWEN_MAX_TOKENS', 1200),
-        'editorial_attempts' => (int) env('NVIDIA_NEWS_EDITORIAL_ATTEMPTS', 1),
+        'editorial_attempts' => (int) env('NVIDIA_NEWS_EDITORIAL_ATTEMPTS', 2),
         'ca_bundle' => env('NVIDIA_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
     ],
 
