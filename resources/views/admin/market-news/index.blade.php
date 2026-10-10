@@ -48,7 +48,7 @@
                 <p id="selected-news-count" class="mt-1 text-xs font-bold text-purple-600 dark:text-purple-300">0 stories selected</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button id="bulk-generate-button" disabled formaction="{{ route('admin.market-news.bulk-regenerate') }}" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-wand-magic-sparkles mr-2"></i>Generate Selected</button>
+                <button id="bulk-generate-button" type="button" disabled class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-wand-magic-sparkles mr-2"></i>Generate Selected</button>
                 <button id="bulk-approve-button" disabled formaction="{{ route('admin.market-news.bulk-approve') }}" onclick="return confirm('Approve and publish all selected ready drafts? Ineligible stories will be skipped.');" class="rounded-xl bg-purple-700 px-4 py-2 text-sm font-black text-white hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-check-double mr-2"></i>Approve Selected</button>
             </div>
         </div>
@@ -117,12 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshSelection();
     });
     boxes.forEach((box) => box.addEventListener('change', refreshSelection));
-    document.getElementById('bulk-news-form').addEventListener('submit', async (event) => {
-        if (event.submitter !== generateButton) {
-            return;
-        }
-
-        event.preventDefault();
+    generateButton.addEventListener('click', async () => {
         const selected = boxes.filter((box) => box.checked);
         if (selected.length === 0 || !confirm('Generate or regenerate all selected stories with NVIDIA AI? This can take several minutes.')) {
             return;
