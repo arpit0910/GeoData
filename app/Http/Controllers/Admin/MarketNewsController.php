@@ -6,6 +6,7 @@ use App\Exceptions\GroqRateLimitException;
 use App\Http\Controllers\Controller;
 use App\Models\MarketNews;
 use App\Services\NvidiaNewsRewriter;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -61,18 +62,34 @@ class MarketNewsController extends Controller
         return view('admin.market-news.show', compact('marketNews'));
     }
 
-    public function regenerate(MarketNews $marketNews, NvidiaNewsRewriter $rewriter): RedirectResponse
+    public function regenerate(MarketNews $marketNews, NvidiaNewsRewriter $rewriter): RedirectResponse|JsonResponse
     {
         set_time_limit(180);
 
         try {
             $this->regenerateDraft($marketNews, $rewriter);
 
+            if (request()->expectsJson()) {
+                return response()->json(['message' => "News #{$marketNews->id} was regenerated and is ready for approval."]);
+            }
+
             return back()->with('success', "News #{$marketNews->id} was regenerated and is ready for approval.");
         } catch (GroqRateLimitException $exception) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'message' => "News #{$marketNews->id} was deferred until NVIDIA quota is available again.",
+                ], 429);
+            }
+
             return back()->with('error', "News #{$marketNews->id} was deferred until NVIDIA quota is available again. It will retry automatically.");
         } catch (Throwable $exception) {
             report($exception);
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'message' => "News #{$marketNews->id} could not be regenerated: {$exception->getMessage()}",
+                ], 422);
+            }
 
             return back()->with('error', "News #{$marketNews->id} could not be regenerated: {$exception->getMessage()}");
         }

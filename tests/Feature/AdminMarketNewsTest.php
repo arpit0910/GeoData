@@ -192,6 +192,36 @@ class AdminMarketNewsTest extends TestCase
         }
     }
 
+    public function test_admin_can_generate_one_news_story_as_json_for_sequential_bulk_processing(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $news = MarketNews::create([
+            'title' => 'Source headline',
+            'original_title' => 'Source headline',
+            'original_summary' => 'Source summary.',
+            'editorial_status' => MarketNews::STATUS_PENDING,
+            'is_published' => false,
+            'published_at' => now(),
+        ]);
+
+        $rewriter = $this->mock(NvidiaNewsRewriter::class);
+        $rewriter->shouldReceive('rewrite')->once()->andReturnUsing(function (MarketNews $story) {
+            $story->forceFill([
+                'title' => 'Verified generated headline for sequential processing',
+                'summary' => 'A generated article that passed the verification workflow.',
+                'editorial_status' => MarketNews::STATUS_READY,
+                'rewritten_at' => now(),
+            ])->save();
+
+            return ['title' => $story->title, 'summary' => $story->summary];
+        });
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.market-news.regenerate', $news))
+            ->assertOk()
+            ->assertJsonPath('message', "News #{$news->id} was regenerated and is ready for approval.");
+    }
+
     public function test_non_admin_cannot_view_market_news_monitor(): void
     {
         $this->actingAs(User::factory()->create(['is_admin' => false]))

@@ -48,7 +48,7 @@
                 <p id="selected-news-count" class="mt-1 text-xs font-bold text-purple-600 dark:text-purple-300">0 stories selected</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button id="bulk-generate-button" disabled formaction="{{ route('admin.market-news.bulk-regenerate') }}" onclick="return confirm('Generate or regenerate all selected stories with NVIDIA AI? This can take several minutes.');" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-wand-magic-sparkles mr-2"></i>Generate Selected</button>
+                <button id="bulk-generate-button" disabled formaction="{{ route('admin.market-news.bulk-regenerate') }}" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-wand-magic-sparkles mr-2"></i>Generate Selected</button>
                 <button id="bulk-approve-button" disabled formaction="{{ route('admin.market-news.bulk-approve') }}" onclick="return confirm('Approve and publish all selected ready drafts? Ineligible stories will be skipped.');" class="rounded-xl bg-purple-700 px-4 py-2 text-sm font-black text-white hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-50"><i class="fas fa-check-double mr-2"></i>Approve Selected</button>
             </div>
         </div>
@@ -71,7 +71,7 @@
                         };
                     @endphp
                     <tr class="align-top">
-                        <td class="p-4"><input class="news-checkbox h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" type="checkbox" name="news_ids[]" value="{{ $story->id }}" form="bulk-news-form" aria-label="Select news {{ $story->id }}" @disabled($story->editorial_status === 'processing')></td>
+                        <td class="p-4"><input class="news-checkbox h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" type="checkbox" name="news_ids[]" value="{{ $story->id }}" data-regenerate-url="{{ route('admin.market-news.regenerate', $story) }}" form="bulk-news-form" aria-label="Select news {{ $story->id }}" @disabled($story->editorial_status === 'processing')></td>
                         <td class="p-4"><div class="max-w-sm font-bold text-gray-900 dark:text-white">{{ $story->original_title ?: '—' }}</div>@if($story->article_url)<a href="{{ $story->article_url }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-xs font-semibold text-amber-600 hover:text-amber-700">Open source article</a>@endif @if($story->original_summary)<details class="mt-2 max-w-sm text-xs text-gray-500"><summary class="cursor-pointer font-semibold">Upstox summary</summary><p class="mt-2 whitespace-pre-line leading-5">{{ $story->original_summary }}</p></details>@endif</td>
                         <td class="p-4"><div class="max-w-sm font-bold text-gray-900 dark:text-white">{{ $story->rewritten_at ? $story->title : 'Not regenerated yet' }}</div>@if($story->rewritten_at && $story->summary)<details class="mt-2 max-w-sm text-xs text-gray-500"><summary class="cursor-pointer font-semibold">Regenerated article</summary><p class="mt-2 whitespace-pre-line leading-5">{{ $story->summary }}</p></details>@endif @if($story->rewrite_model)<div class="mt-2 text-[11px] text-gray-400">{{ $story->rewrite_model }} · v{{ $story->rewrite_version }}</div>@endif @if($story->rewrite_error)<div class="mt-2 max-w-sm rounded-lg bg-red-50 p-2 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-300">{{ $story->rewrite_error }}</div>@endif</td>
                         <td class="p-4"><div class="font-bold text-gray-700 dark:text-gray-200">{{ $story->symbol ?: '—' }}</div><div class="text-xs text-gray-400">{{ $story->isin ?: '—' }}</div></td>
@@ -117,6 +117,57 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshSelection();
     });
     boxes.forEach((box) => box.addEventListener('change', refreshSelection));
+    document.getElementById('bulk-news-form').addEventListener('submit', async (event) => {
+        if (event.submitter !== generateButton) {
+            return;
+        }
+
+        event.preventDefault();
+        const selected = boxes.filter((box) => box.checked);
+        if (selected.length === 0 || !confirm('Generate or regenerate all selected stories with NVIDIA AI? This can take several minutes.')) {
+            return;
+        }
+
+        generateButton.disabled = true;
+        approveButton.disabled = true;
+        selectAll.disabled = true;
+        boxes.forEach((box) => box.disabled = true);
+        const token = document.querySelector('#bulk-news-form input[name="_token"]').value;
+        let generated = 0;
+        const failures = [];
+
+        for (const [index, box] of selected.entries()) {
+            counter.textContent = `Generating story ${index + 1} of ${selected.length}...`;
+
+            try {
+                const response = await fetch(box.dataset.regenerateUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': token,
+                    },
+                    body: new URLSearchParams({_token: token}),
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    failures.push(result.message || `Story #${box.value} failed.`);
+                    if (response.status === 429) {
+                        break;
+                    }
+                    continue;
+                }
+                generated++;
+            } catch (error) {
+                failures.push(`Story #${box.value}: ${error.message}`);
+            }
+        }
+
+        const summary = `${generated} ${generated === 1 ? 'story was' : 'stories were'} generated.`
+            + (failures.length ? ` ${failures.length} failed or were deferred.\n\n${failures.slice(0, 3).join('\n')}` : '');
+        alert(summary);
+        window.location.reload();
+    });
     refreshSelection();
 });
 </script>
