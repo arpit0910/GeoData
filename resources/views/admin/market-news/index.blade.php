@@ -92,6 +92,27 @@
     </div>
     {{ $news->links() }}
 </div>
+
+<div id="news-generation-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-950/70 p-4" role="dialog" aria-modal="true" aria-labelledby="news-generation-title">
+    <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-richdark-surface">
+        <div class="flex items-start gap-4">
+            <span class="grid h-11 w-11 shrink-0 animate-pulse place-items-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"><i class="fas fa-wand-magic-sparkles"></i></span>
+            <div>
+                <h2 id="news-generation-title" class="text-xl font-black text-gray-900 dark:text-white">Generating news content</h2>
+                <p id="news-generation-status" class="mt-1 text-sm text-gray-500 dark:text-gray-400">Preparing selected stories...</p>
+            </div>
+        </div>
+        <div class="mt-6 h-3 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
+            <div id="news-generation-bar" class="h-full rounded-full bg-blue-600 transition-all duration-300" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        </div>
+        <div class="mt-2 flex justify-between text-xs font-bold text-gray-500 dark:text-gray-400">
+            <span id="news-generation-count">0 of 0 processed</span>
+            <span id="news-generation-percent">0%</span>
+        </div>
+        <div id="news-generation-result" class="mt-5 hidden rounded-xl p-3 text-sm font-semibold"></div>
+        <button id="news-generation-close" type="button" class="mt-5 hidden w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-black text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900">Refresh results</button>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -102,6 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const counter = document.getElementById('selected-news-count');
     const generateButton = document.getElementById('bulk-generate-button');
     const approveButton = document.getElementById('bulk-approve-button');
+    const modal = document.getElementById('news-generation-modal');
+    const modalStatus = document.getElementById('news-generation-status');
+    const progressBar = document.getElementById('news-generation-bar');
+    const progressCount = document.getElementById('news-generation-count');
+    const progressPercent = document.getElementById('news-generation-percent');
+    const result = document.getElementById('news-generation-result');
+    const closeButton = document.getElementById('news-generation-close');
 
     const refreshSelection = () => {
         const selected = boxes.filter((box) => box.checked).length;
@@ -127,12 +155,24 @@ document.addEventListener('DOMContentLoaded', () => {
         approveButton.disabled = true;
         selectAll.disabled = true;
         boxes.forEach((box) => box.disabled = true);
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+        modalStatus.textContent = `Generating story 1 of ${selected.length}...`;
+        progressCount.textContent = `0 of ${selected.length} processed`;
+        progressPercent.textContent = '0%';
+        progressBar.style.width = '0%';
+        progressBar.setAttribute('aria-valuenow', '0');
+        result.classList.add('hidden');
+        closeButton.classList.add('hidden');
         const token = document.querySelector('#bulk-news-form input[name="_token"]').value;
         let generated = 0;
+        let attempted = 0;
         const failures = [];
 
         for (const [index, box] of selected.entries()) {
-            counter.textContent = `Generating story ${index + 1} of ${selected.length}...`;
+            modalStatus.textContent = `Generating story ${index + 1} of ${selected.length}...`;
+            let stopAfterCurrent = false;
 
             try {
                 const response = await fetch(box.dataset.regenerateUrl, {
@@ -144,25 +184,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: new URLSearchParams({_token: token}),
                 });
-                const result = await response.json();
+                const payload = await response.json();
                 if (!response.ok) {
-                    failures.push(result.message || `Story #${box.value} failed.`);
-                    if (response.status === 429) {
-                        break;
-                    }
-                    continue;
+                    failures.push(payload.message || `Story #${box.value} failed.`);
+                    stopAfterCurrent = response.status === 429;
+                } else {
+                    generated++;
                 }
-                generated++;
             } catch (error) {
                 failures.push(`Story #${box.value}: ${error.message}`);
             }
+
+            attempted++;
+            const percent = Math.round((attempted / selected.length) * 100);
+            progressCount.textContent = `${attempted} of ${selected.length} processed`;
+            progressPercent.textContent = `${percent}%`;
+            progressBar.style.width = `${percent}%`;
+            progressBar.setAttribute('aria-valuenow', String(percent));
+            if (stopAfterCurrent) {
+                break;
+            }
         }
 
-        const summary = `${generated} ${generated === 1 ? 'story was' : 'stories were'} generated.`
-            + (failures.length ? ` ${failures.length} failed or were deferred.\n\n${failures.slice(0, 3).join('\n')}` : '');
-        alert(summary);
-        window.location.reload();
+        modalStatus.textContent = attempted === selected.length ? 'Generation finished.' : 'Generation stopped early.';
+        result.textContent = `${generated} ${generated === 1 ? 'story was' : 'stories were'} generated.`
+            + (failures.length ? ` ${failures.length} failed or were deferred. ${failures.slice(0, 3).join(' ')}` : '');
+        result.className = `mt-5 rounded-xl p-3 text-sm font-semibold ${failures.length
+            ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'
+            : 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300'}`;
+        closeButton.classList.remove('hidden');
+        closeButton.focus();
     });
+    closeButton.addEventListener('click', () => window.location.reload());
     refreshSelection();
 });
 </script>

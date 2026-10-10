@@ -39,6 +39,8 @@ class AdminMarketNewsTest extends TestCase
             ->assertSee('Upstox title')
             ->assertSee('Regenerated title')
             ->assertSee('View Details')
+            ->assertSee('Generating news content')
+            ->assertSee('news-generation-bar')
             ->assertSee('Draft changed a numerical fact.')
             ->assertDontSee('Published market story');
     }
