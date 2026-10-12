@@ -57,7 +57,6 @@ Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 Route::view('/market/live', 'market.live')->name('market.live');
 Route::get('/market', [\App\Http\Controllers\MarketController::class, 'index'])->name('market.index');
 Route::get('/market/stocks', [\App\Http\Controllers\MarketController::class, 'stocks'])->name('market.stocks');
-Route::get('/market/compare', [\App\Http\Controllers\MarketController::class, 'compare'])->name('market.compare');
 Route::get('/market/mutual-funds', [\App\Http\Controllers\MarketController::class, 'mutualFunds'])->name('market.mutual-funds');
 Route::get('/market/news', [\App\Http\Controllers\MarketController::class, 'news'])->name('market.news');
 Route::get('/market/news/{marketNews}', [\App\Http\Controllers\MarketController::class, 'newsDetail'])->name('market.news.show');

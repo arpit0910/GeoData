@@ -226,7 +226,8 @@ compares a stock with an index. Supported periods are `1m`, `3m`, `6m`, `1y`,
 `3y`, and `5y`. Results are normalized to 0% on the first shared trading date
 and include stock return, index return, and relative outperformance for every
 date available in both histories. Live stock and index snapshots are returned
-separately when available. The public comparison page is `/market/compare`.
+separately when available. Current live-first index prices are displayed on the
+main `/market` page.
 The existing `GET /api/v1/indices/snapshot` endpoint now overlays these live
 prices and marks each row with `source: live`; it falls back to EOD data when a
 live quote is unavailable.

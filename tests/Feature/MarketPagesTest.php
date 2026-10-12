@@ -6,9 +6,13 @@ use App\Models\Equity;
 use App\Models\EquityPrice;
 use App\Models\MarketNews;
 use App\Models\StockNudge;
+use App\Models\Index as MarketIndex;
+use App\Models\IndexPrice;
+use App\Models\IndexQuote;
 use App\Services\EquityQuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class MarketPagesTest extends TestCase
@@ -29,6 +33,59 @@ class MarketPagesTest extends TestCase
         ] as $uri) {
             $this->get($uri)->assertOk();
         }
+    }
+
+    /** @test */
+    public function market_overview_displays_live_first_index_prices_without_a_compare_page(): void
+    {
+        $nifty = MarketIndex::create([
+            'index_code' => 'NIFTY_50',
+            'index_name' => 'Nifty 50',
+            'exchange' => 'NSE',
+        ]);
+        IndexPrice::create([
+            'index_code' => $nifty->index_code,
+            'traded_date' => now('Asia/Kolkata')->subDay()->toDateString(),
+            'close' => 25000,
+            'prev_close' => 24900,
+            'change_percent' => 0.4,
+        ]);
+        IndexQuote::create([
+            'index_code' => $nifty->index_code,
+            'price' => 25125.5,
+            'previous_close' => 25000,
+            'change' => 125.5,
+            'change_percent' => 0.502,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+        ]);
+
+        $sensex = MarketIndex::create([
+            'index_code' => 'BSE_SENSEX',
+            'index_name' => 'S&P BSE SENSEX',
+            'exchange' => 'BSE',
+        ]);
+        IndexPrice::create([
+            'index_code' => $sensex->index_code,
+            'traded_date' => now('Asia/Kolkata')->subDay()->toDateString(),
+            'close' => 81000,
+            'prev_close' => 80000,
+            'change_percent' => 1.25,
+        ]);
+
+        Cache::forget('website.market.indices.v2');
+        $this->get('/market')
+            ->assertOk()
+            ->assertSee('Market indices')
+            ->assertSee('Nifty 50')
+            ->assertSee('25,125.50')
+            ->assertSee('Live')
+            ->assertSee('S&amp;P BSE SENSEX', false)
+            ->assertSee('81,000.00')
+            ->assertSee('EOD')
+            ->assertDontSee('Stock vs index');
+
+        $this->get('/market/compare')->assertNotFound();
     }
 
     /** @test */

@@ -6,9 +6,6 @@ use App\Models\CorporateAction;
 use App\Models\CompanyFundamental;
 use App\Models\MarketNews;
 use App\Models\StockNudge;
-use App\Models\Equity;
-use App\Models\Index as MarketIndex;
-use App\Services\StockIndexComparisonService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,43 +14,6 @@ use Illuminate\Support\Facades\Cache;
 
 class MarketController extends Controller
 {
-    public function compare(Request $request, StockIndexComparisonService $comparisons)
-    {
-        $indices = MarketIndex::query()
-            ->whereHas('prices')
-            ->orderBy('exchange')
-            ->orderBy('index_name')
-            ->get(['index_code', 'index_name', 'exchange']);
-        $result = null;
-        $error = null;
-
-        if ($request->filled('stock') && $request->filled('index_code')) {
-            $stock = trim((string) $request->input('stock'));
-            $equity = Equity::query()->where('is_active', true)->where(function ($query) use ($stock) {
-                $query->where('isin', strtoupper($stock))
-                    ->orWhere('nse_symbol', strtoupper($stock))
-                    ->orWhere('bse_symbol', strtoupper($stock));
-            })->first();
-            $index = $indices->firstWhere('index_code', strtoupper((string) $request->input('index_code')));
-            $period = in_array($request->input('period'), StockIndexComparisonService::periods(), true)
-                ? $request->input('period')
-                : '1y';
-
-            if (!$equity) {
-                $error = 'Enter an exact NSE/BSE symbol or ISIN.';
-            } elseif (!$index) {
-                $error = 'Select an available benchmark index.';
-            } else {
-                $result = $comparisons->compare($equity, $index, $period);
-                if ($result['summary']['aligned_points'] === 0) {
-                    $error = 'No overlapping historical prices were found for this stock and index.';
-                }
-            }
-        }
-
-        return view('website.market-compare', compact('indices', 'result', 'error'));
-    }
-
     /**
      * Display the live market page.
      */
@@ -74,7 +34,34 @@ class MarketController extends Controller
         });
         ['stats' => $stats, 'latestNews' => $latestNews, 'upcomingActions' => $upcomingActions] = $overview;
 
-        return view('website.market', compact('marketStatus', 'stats', 'latestNews', 'upcomingActions'));
+        $indices = Cache::remember('website.market.indices.v2', now()->addSeconds(30), function () {
+            $latestPrices = DB::table('indices_prices')
+                ->select('index_code', DB::raw('MAX(id) as latest_price_id'))
+                ->groupBy('index_code');
+
+            return DB::table('indices')
+                ->leftJoin('index_quotes', function ($join) {
+                    $join->on('indices.index_code', '=', 'index_quotes.index_code')
+                        ->where('index_quotes.fetched_at', '>=', now('Asia/Kolkata')->startOfDay()->utc());
+                })
+                ->leftJoinSub($latestPrices, 'latest_ip', fn ($join) => $join->on('indices.index_code', '=', 'latest_ip.index_code'))
+                ->leftJoin('indices_prices', 'latest_ip.latest_price_id', '=', 'indices_prices.id')
+                ->where(fn ($query) => $query->whereNotNull('index_quotes.price')->orWhereNotNull('indices_prices.close'))
+                ->select([
+                    'indices.index_code', 'indices.index_name', 'indices.exchange',
+                    DB::raw('COALESCE(index_quotes.price, indices_prices.close) as price'),
+                    DB::raw('COALESCE(index_quotes.previous_close, indices_prices.prev_close) as previous_close'),
+                    DB::raw('COALESCE(index_quotes.change_percent, indices_prices.change_percent) as change_percent'),
+                    DB::raw('CASE WHEN index_quotes.price IS NOT NULL THEN index_quotes.fetched_at ELSE indices_prices.traded_date END as price_time'),
+                    DB::raw("CASE WHEN index_quotes.price IS NOT NULL THEN 'live' ELSE 'eod' END as price_source"),
+                ])
+                ->orderByRaw("CASE indices.index_code WHEN 'NIFTY_50' THEN 0 WHEN 'NIFTY_500' THEN 1 WHEN 'BSE_SENSEX' THEN 2 WHEN 'NIFTY_BANK' THEN 3 ELSE 4 END")
+                ->orderBy('indices.index_name')
+                ->limit(12)
+                ->get();
+        });
+
+        return view('website.market', compact('marketStatus', 'stats', 'indices', 'latestNews', 'upcomingActions'));
     }
 
     public function stocks(Request $request)

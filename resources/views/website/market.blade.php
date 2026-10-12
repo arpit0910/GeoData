@@ -1,8 +1,8 @@
 @extends('layouts.public')
 @section('title', 'Indian Market Data, News & Fundamentals - SetuGeo')
-@section('meta_description', 'Explore Indian stocks, mutual funds, company fundamentals, corporate actions and financial news on fast, focused pages.')
+@section('meta_description', 'Explore live Indian index prices, stocks, mutual funds, company fundamentals, corporate actions and financial news.')
 @section('market_heading', 'Market overview')
-@section('market_subheading', 'A current snapshot of Indian equities, mutual funds, company fundamentals, financial news and upcoming corporate actions.')
+@section('market_subheading', 'Live-first NSE and BSE indices with Indian equities, mutual funds, financial news and upcoming corporate actions.')
 
 @section('content')
 <div class="market-shell">
@@ -49,6 +49,50 @@
                     <div class="hidden sm:block mt-1 text-xs market-muted">{{ $note }}</div>
                 </a>
             @endforeach
+        </section>
+
+        <section aria-labelledby="market-indices-heading" class="mb-8 sm:mb-10">
+            <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5 sm:mb-6">
+                <div>
+                    <p class="market-kicker">Index snapshot</p>
+                    <h2 id="market-indices-heading" class="mt-1.5 text-2xl sm:text-3xl font-black tracking-tight text-white">Market indices</h2>
+                    <p class="mt-2 text-sm leading-6 market-muted">Live Upstox prices when available, with the latest EOD close as fallback.</p>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                @forelse($indices as $index)
+                    @php
+                        $price = (float) $index->price;
+                        $previousClose = (float) $index->previous_close;
+                        $change = $index->change_percent !== null
+                            ? (float) $index->change_percent
+                            : ($previousClose > 0 ? (($price - $previousClose) / $previousClose) * 100 : null);
+                        $isLive = $index->price_source === 'live';
+                        $priceTime = $index->price_time
+                            ? ($isLive
+                                ? \Carbon\Carbon::parse($index->price_time, 'UTC')->timezone('Asia/Kolkata')->format('h:i A').' IST'
+                                : \Carbon\Carbon::parse($index->price_time)->format('d M Y'))
+                            : null;
+                    @endphp
+                    <article class="market-panel min-w-0 p-4 sm:p-5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <h3 class="truncate font-extrabold text-white" title="{{ $index->index_name }}">{{ $index->index_name }}</h3>
+                                <p class="mt-1 text-xs market-muted">{{ $index->exchange }} · {{ str_replace('_', ' ', $index->index_code) }}</p>
+                            </div>
+                            <span class="market-chip shrink-0"><span class="mr-1.5 h-1.5 w-1.5 rounded-full {{ $isLive ? 'bg-emerald-400' : 'bg-slate-500' }}"></span>{{ $isLive ? 'Live' : 'EOD' }}</span>
+                        </div>
+                        <div class="mt-5 flex items-end justify-between gap-3">
+                            <div class="text-2xl font-black tracking-tight text-white">{{ number_format($price, 2) }}</div>
+                            <div class="font-mono text-sm font-bold {{ $change === null ? 'text-slate-500' : ($change >= 0 ? 'text-emerald-400' : 'text-rose-400') }}">{!! $change === null ? '&mdash;' : (($change >= 0 ? '+' : '').number_format($change, 2).'%') !!}</div>
+                        </div>
+                        @if($priceTime)<p class="mt-2 text-[11px] market-muted">Updated {{ $priceTime }}</p>@endif
+                    </article>
+                @empty
+                    <div class="market-panel p-10 text-center market-muted sm:col-span-2 lg:col-span-3 xl:col-span-4">Index prices will appear after the next live or EOD synchronization.</div>
+                @endforelse
+            </div>
         </section>
 
         <div class="space-y-9 sm:space-y-11">
