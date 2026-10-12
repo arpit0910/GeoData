@@ -15,7 +15,7 @@
             <div class="mx-auto max-w-3xl">
                 <div class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 sm:mb-5">
                     <span class="market-chip">{{ $marketNews->symbol ?: 'Market' }}</span>
-                    <time class="text-xs market-muted" datetime="{{ optional($marketNews->published_at)->toIso8601String() }}">{{ optional($marketNews->published_at)->format('d M Y') ?: 'Recently' }} &middot; {{ optional($marketNews->published_at)->format('h:i A') }}</time>
+                    <time class="text-xs market-muted" datetime="{{ optional($marketNews->published_at?->copy()->timezone('Asia/Kolkata'))->toIso8601String() }}">{{ $marketNews->published_at?->copy()->timezone('Asia/Kolkata')->format('d M Y') ?? 'Recently' }} &middot; {{ $marketNews->published_at?->copy()->timezone('Asia/Kolkata')->format('h:i A') }}{{ $marketNews->published_at ? ' IST' : '' }}</time>
                 </div>
                 <h1 class="break-words text-2xl font-black leading-tight text-white sm:text-3xl lg:text-4xl">{{ $marketNews->title }}</h1>
                 @php

@@ -34,7 +34,8 @@ class StockNudgeApiTest extends TestCase
             ->assertJsonPath('isin', 'INE000000001')
             ->assertJsonPath('pagination.total', 1)
             ->assertJsonPath('data.0.category', 'growth')
-            ->assertJsonPath('data.0.isin', 'INE000000001');
+            ->assertJsonPath('data.0.isin', 'INE000000001')
+            ->assertJsonPath('data.0.observed_at', '2026-10-12T15:30:00+05:30');
     }
 
     public function test_fresh_nudges_only_include_todays_trading_date(): void

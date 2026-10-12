@@ -76,7 +76,7 @@
                             <div class="p-5 flex flex-col flex-1">
                                 <div class="flex min-h-[28px] flex-wrap items-center gap-x-3 gap-y-2 mb-3">
                                     <span class="inline-flex items-center rounded-md bg-amber-400/10 px-2.5 py-1 text-[11px] font-extrabold tracking-wide text-amber-300 ring-1 ring-inset ring-amber-400/20">{{ $story->symbol ?: 'MARKET' }}</span>
-                                    <time class="text-xs market-muted" datetime="{{ optional($story->published_at)->toIso8601String() }}"><i class="far fa-clock mr-1.5 text-slate-500"></i>{{ optional($story->published_at)->format('d M Y, h:i A') ?: 'Recently' }}</time>
+                                    <time class="text-xs market-muted" datetime="{{ optional($story->published_at?->copy()->timezone('Asia/Kolkata'))->toIso8601String() }}"><i class="far fa-clock mr-1.5 text-slate-500"></i>{{ $story->published_at?->copy()->timezone('Asia/Kolkata')->format('d M Y, h:i A') ?? 'Recently' }}{{ $story->published_at ? ' IST' : '' }}</time>
                                 </div>
                                 <h3 class="market-clamp-3 text-lg font-extrabold leading-snug text-white break-words"><a href="{{ route('market.news.show', $story) }}" class="hover:text-amber-300 transition-colors">{{ $story->title }}</a></h3>
                                 @if($story->summary)

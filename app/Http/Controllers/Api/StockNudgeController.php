@@ -70,8 +70,8 @@ class StockNudgeController extends Controller
             'observed_price' => $nudge->observed_price,
             'metrics' => $nudge->metrics,
             'trading_date' => $nudge->trading_date?->toDateString(),
-            'observed_at' => $nudge->observed_at?->toIso8601String(),
-            'expires_at' => $nudge->expires_at?->toIso8601String(),
+            'observed_at' => $nudge->observed_at?->copy()->timezone('Asia/Kolkata')->toIso8601String(),
+            'expires_at' => $nudge->expires_at?->copy()->timezone('Asia/Kolkata')->toIso8601String(),
         ]));
 
         return response()->json(array_merge([

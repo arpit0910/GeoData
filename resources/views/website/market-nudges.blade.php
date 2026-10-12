@@ -49,14 +49,15 @@
                         default => 'fa-bell',
                     };
                     $symbol = $nudge->equity?->nse_symbol ?: $nudge->equity?->bse_symbol;
+                    $observedAt = $nudge->observed_at?->copy()->timezone('Asia/Kolkata');
                 @endphp
                 <article class="market-panel flex min-w-0 flex-col p-5 transition-colors hover:border-amber-400/30">
                     <div class="flex items-start justify-between gap-3">
                         <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider {{ $categoryStyle }}">
                             <i class="fas {{ $icon }}"></i>{{ $nudgeCategory }}
                         </span>
-                        <time class="text-right text-xs market-muted" datetime="{{ optional($nudge->observed_at)->toIso8601String() }}">
-                            {{ optional($nudge->observed_at)->setTimezone('Asia/Kolkata')->format('d M Y, h:i A') ?: optional($nudge->trading_date)->format('d M Y') }}
+                        <time class="text-right text-xs market-muted" datetime="{{ optional($observedAt)->toIso8601String() }}">
+                            {{ optional($observedAt)->format('d M Y, h:i A') ?: optional($nudge->trading_date)->format('d M Y') }}{{ $observedAt ? ' IST' : '' }}
                         </time>
                     </div>
 
