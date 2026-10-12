@@ -30,7 +30,6 @@ class PublicResponsivePagesTest extends TestCase
             ->assertSee('.market-pagination nav>div:first-child{display:flex', false)
             ->assertSee('@media(min-width:640px)', false)
             ->assertSee('.market-mobile-cards td::before', false)
-            ->assertSee('data-label="Latest price"', false)
             ->assertSee('overflow-x:hidden', false);
     }
 }

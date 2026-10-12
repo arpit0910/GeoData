@@ -169,7 +169,8 @@ class MarketPagesTest extends TestCase
             ->assertSee('name="filter"', false)
             ->assertSee('name="sector"', false)
             ->assertSee('name="stock_category"', false)
-            ->assertSee('market-mobile-cards', false);
+            ->assertSee('market-mobile-cards', false)
+            ->assertSee('data-label="Latest price"', false);
     }
 
     /** @test */
