@@ -1957,6 +1957,12 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             <p class="mb-4">Access pre-calculated performance analytics, including
                                                 percentage changes for 1D, 7D, 1-Month, 1-Year, and 3-Year windows.</p>
                                         </div>
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /equity/{isin}/compare-index</h3>
+                                        </div>
+                                        <div class="p-6 border-b border-gray-800/50">
+                                            <p class="text-gray-400">Compare normalized EOD returns with Nifty, Sensex, or another available benchmark using <code class="text-amber-400">index_code</code> and an optional <code class="text-amber-400">period</code> of 1m, 3m, 6m, 1y, 3y, or 5y.</p>
+                                        </div>
                                         <div
                                             class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
                                             <h3 class="text-base sm:text-lg font-bold text-white"><span

@@ -17,6 +17,11 @@ class UpstoxInstrumentSyncService
         'BSE_EQ' => 'bse',
     ];
 
+    private const INDEX_SEGMENTS = [
+        'NSE_INDEX' => 'NSE',
+        'BSE_INDEX' => 'BSE',
+    ];
+
     /** @return array<string, int> */
     public function syncFromUrl(bool $dryRun = false): array
     {
@@ -65,16 +70,39 @@ class UpstoxInstrumentSyncService
             'eligible_rows' => 0,
             'invalid_rows' => 0,
             'unique_isins' => 0,
+            'unique_indices' => 0,
             'existing' => 0,
             'unmatched_existing' => 0,
             'added' => 0,
             'updated' => 0,
         ];
         $instruments = [];
+        $indices = [];
 
         foreach ($this->readJsonArray($path) as $row) {
             $stats['scanned']++;
             $segment = strtoupper(trim((string) ($row['segment'] ?? '')));
+
+            if (isset(self::INDEX_SEGMENTS[$segment])
+                && strtoupper(trim((string) ($row['instrument_type'] ?? ''))) === 'INDEX') {
+                $instrumentKey = trim((string) ($row['instrument_key'] ?? ''));
+                $name = trim((string) ($row['name'] ?? $row['trading_symbol'] ?? ''));
+                if ($name === '' || !str_starts_with($instrumentKey, $segment.'|')) {
+                    $stats['invalid_rows']++;
+                    continue;
+                }
+
+                $code = $this->indexCode($name, self::INDEX_SEGMENTS[$segment]);
+                $indices[$code] = [
+                    'index_code' => $code,
+                    'index_name' => mb_substr($name, 0, 255),
+                    'exchange' => self::INDEX_SEGMENTS[$segment],
+                    'upstox_instrument_key' => $instrumentKey,
+                    'upstox_metadata' => json_encode($row, JSON_THROW_ON_ERROR),
+                ];
+                $stats['eligible_rows']++;
+                continue;
+            }
 
             if (!isset(self::SEGMENTS[$segment]) || empty($row['isin'])) {
                 continue;
@@ -123,6 +151,7 @@ class UpstoxInstrumentSyncService
         }
 
         $stats['unique_isins'] = count($instruments);
+        $stats['unique_indices'] = count($indices);
         $totalExisting = DB::table('equities')->count();
         $existingRows = DB::table('equities')
             ->whereIn('isin', array_keys($instruments))
@@ -221,6 +250,22 @@ class UpstoxInstrumentSyncService
                 );
             }
         });
+
+        if ($indices !== []) {
+            $indexRows = array_map(function (array $row) use ($now): array {
+                return $row + [
+                    'upstox_synced_at' => $now,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }, array_values($indices));
+
+            DB::table('indices')->upsert(
+                $indexRows,
+                ['index_code'],
+                ['index_name', 'exchange', 'upstox_instrument_key', 'upstox_metadata', 'upstox_synced_at', 'updated_at']
+            );
+        }
 
         return $stats;
     }
@@ -349,5 +394,15 @@ class UpstoxInstrumentSyncService
     private function numericOrNull(mixed $value): ?float
     {
         return is_numeric($value) ? (float) $value : null;
+    }
+
+    private function indexCode(string $name, string $exchange): string
+    {
+        if ($exchange === 'BSE') {
+            $name = preg_replace('/^(S&P\s+)?BSE\s+/i', '', $name);
+        }
+        $code = trim(preg_replace('/_+/', '_', str_replace([' ', '&', '(', ')'], '_', strtoupper($name))), '_');
+
+        return $exchange === 'BSE' ? 'BSE_'.$code : $code;
     }
 }

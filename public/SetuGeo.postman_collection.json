@@ -1,8 +1,8 @@
 {
     "info": {
-        "_postman_id": "00b59a60-2709-4461-8e68-9c6a3fecaf92",
+        "_postman_id": "d2ea728c-0e13-4e80-841d-d5da0338de66",
         "name": "SetuGeo API - Demo & Sales Collection",
-        "description": "Generated on 2026-10-12 13:23:00 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
+        "description": "Generated on 2026-10-12 15:30:04 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "auth": {
@@ -1601,7 +1601,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-10-12+13%3A23%3A00&from=UTC&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-10-12+15%3A30%3A04&from=UTC&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1612,7 +1612,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-10-12 13:23:00"
+                                            "value": "2026-10-12 15:30:04"
                                         },
                                         {
                                             "key": "from",
@@ -1675,7 +1675,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-10-12+13%3A23%3A00&from=UTC&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-10-12+15%3A30%3A04&from=UTC&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1686,7 +1686,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-10-12 13:23:00"
+                                            "value": "2026-10-12 15:30:04"
                                         },
                                         {
                                             "key": "from",
@@ -2178,76 +2178,6 @@
                     "name": "Equities",
                     "item": [
                         {
-                            "name": "Filter Equities by Market Cap",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Accept",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/equities/filter/market-cap/large-cap",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "equities",
-                                        "filter",
-                                        "market-cap",
-                                        "large-cap"
-                                    ],
-                                    "query": []
-                                },
-                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
-                            },
-                            "response": [
-                                {
-                                    "name": "Success",
-                                    "status": "OK",
-                                    "code": 200,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/equities/filter/market-cap/{cap}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
-                                },
-                                {
-                                    "name": "Unauthenticated",
-                                    "status": "Unauthorized",
-                                    "code": 401,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
-                                },
-                                {
-                                    "name": "No Active Subscription",
-                                    "status": "Payment Required",
-                                    "code": 402,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
-                                },
-                                {
-                                    "name": "Credits Exhausted",
-                                    "status": "Payment Required",
-                                    "code": 402,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
-                                },
-                                {
-                                    "name": "Access Denied",
-                                    "status": "Forbidden",
-                                    "code": 403,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
-                                },
-                                {
-                                    "name": "Resource Not Found",
-                                    "status": "Not Found",
-                                    "code": 404,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
-                                }
-                            ]
-                        },
-                        {
                             "name": "Equity Analysis: Top Turnover",
                             "request": {
                                 "method": "GET",
@@ -2526,7 +2456,7 @@
                             ]
                         },
                         {
-                            "name": "Get Equity Activity Metrics",
+                            "name": "Get Equity Compare Index",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -2536,19 +2466,23 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000/activity-metrics?exchange=nse",
+                                    "raw": "{{baseUrl}}/equity/INE000000000/compare-index?index_code=NIFTY_50&period=1y",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
                                         "INE000000000",
-                                        "activity-metrics"
+                                        "compare-index"
                                     ],
                                     "query": [
                                         {
-                                            "key": "exchange",
-                                            "value": "nse"
+                                            "key": "index_code",
+                                            "value": "NIFTY_50"
+                                        },
+                                        {
+                                            "key": "period",
+                                            "value": "1y"
                                         }
                                     ]
                                 },
@@ -2560,7 +2494,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/equity/{isin}/activity-metrics\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/equity/{isin}/compare-index\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 },
                                 {
                                     "name": "Unauthenticated",
@@ -2731,7 +2665,7 @@
                             ]
                         },
                         {
-                            "name": "Equity Analysis: New Listings",
+                            "name": "Get Equity Details",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -2741,14 +2675,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equities/analysis/new-listings",
+                                    "raw": "{{baseUrl}}/equity/INE000000000",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
-                                        "equities",
-                                        "analysis",
-                                        "new-listings"
+                                        "equity",
+                                        "INE000000000"
                                     ],
                                     "query": []
                                 },
@@ -2760,7 +2693,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/equities/analysis/new-listings\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"data\": {\n        \"isin\": \"INE002A01018\",\n        \"company_name\": \"RELIANCE INDUSTRIES LTD\",\n        \"short_name\": \"Reliance\",\n        \"nse_symbol\": \"RELIANCE\",\n        \"bse_symbol\": \"500325\",\n        \"series\": \"EQ\",\n        \"security_type\": \"NORMAL\",\n        \"industry\": \"Oil & Gas\",\n        \"market_lot\": 1,\n        \"qty_multiplier\": 1,\n        \"mtf_enabled\": true,\n        \"mtf_bracket\": 26.5,\n        \"cas_eligible\": true,\n        \"intraday_margin\": 20,\n        \"intraday_leverage\": 5,\n        \"nse_tick_size\": 5,\n        \"bse_tick_size\": 5,\n        \"nse_freeze_quantity\": 100000,\n        \"bse_freeze_quantity\": null\n    }\n}"
                                 },
                                 {
                                     "name": "Unauthenticated",
@@ -2789,6 +2722,13 @@
                                     "code": 403,
                                     "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
                                 }
                             ]
                         },
@@ -3156,6 +3096,138 @@
                             ]
                         },
                         {
+                            "name": "Filter Equities by Market Cap",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/equities/filter/market-cap/large-cap",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "equities",
+                                        "filter",
+                                        "market-cap",
+                                        "large-cap"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/equities/filter/market-cap/{cap}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Equity Analysis: New Listings",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/equities/analysis/new-listings",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "equities",
+                                        "analysis",
+                                        "new-listings"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/equities/analysis/new-listings\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
                             "name": "Search Equities",
                             "request": {
                                 "method": "GET",
@@ -3293,7 +3365,7 @@
                             ]
                         },
                         {
-                            "name": "Get Equity Details",
+                            "name": "Get Equity Activity Metrics",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -3303,15 +3375,21 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/equity/INE000000000",
+                                    "raw": "{{baseUrl}}/equity/INE000000000/activity-metrics?exchange=nse",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "equity",
-                                        "INE000000000"
+                                        "INE000000000",
+                                        "activity-metrics"
                                     ],
-                                    "query": []
+                                    "query": [
+                                        {
+                                            "key": "exchange",
+                                            "value": "nse"
+                                        }
+                                    ]
                                 },
                                 "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
                             },
@@ -3321,7 +3399,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"data\": {\n        \"isin\": \"INE002A01018\",\n        \"company_name\": \"RELIANCE INDUSTRIES LTD\",\n        \"short_name\": \"Reliance\",\n        \"nse_symbol\": \"RELIANCE\",\n        \"bse_symbol\": \"500325\",\n        \"series\": \"EQ\",\n        \"security_type\": \"NORMAL\",\n        \"industry\": \"Oil & Gas\",\n        \"market_lot\": 1,\n        \"qty_multiplier\": 1,\n        \"mtf_enabled\": true,\n        \"mtf_bracket\": 26.5,\n        \"cas_eligible\": true,\n        \"intraday_margin\": 20,\n        \"intraday_leverage\": 5,\n        \"nse_tick_size\": 5,\n        \"bse_tick_size\": 5,\n        \"nse_freeze_quantity\": 100000,\n        \"bse_freeze_quantity\": null\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/equity/{isin}/activity-metrics\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 },
                                 {
                                     "name": "Unauthenticated",
@@ -3849,13 +3927,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/indices/NIFTY%2050/valuation",
+                                    "raw": "{{baseUrl}}/indices/NIFTY_50/valuation",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "indices",
-                                        "NIFTY%2050",
+                                        "NIFTY_50",
                                         "valuation"
                                     ],
                                     "query": []
@@ -3918,13 +3996,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/indices/NIFTY%2050/valuation-history?months=3",
+                                    "raw": "{{baseUrl}}/indices/NIFTY_50/valuation-history?months=3",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "indices",
-                                        "NIFTY%2050",
+                                        "NIFTY_50",
                                         "valuation-history"
                                     ],
                                     "query": [
@@ -3992,13 +4070,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/indices/NIFTY%2050/history?start_date=2026-09-12&end_date=2026-10-12",
+                                    "raw": "{{baseUrl}}/indices/NIFTY_50/history?start_date=2026-09-12&end_date=2026-10-12",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "indices",
-                                        "NIFTY%2050",
+                                        "NIFTY_50",
                                         "history"
                                     ],
                                     "query": [
@@ -4070,13 +4148,13 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/indices/NIFTY%2050/metrics",
+                                    "raw": "{{baseUrl}}/indices/NIFTY_50/metrics",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "indices",
-                                        "NIFTY%2050",
+                                        "NIFTY_50",
                                         "metrics"
                                     ],
                                     "query": []
@@ -4271,7 +4349,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/indices/holdings?index_code=NIFTY+50",
+                                    "raw": "{{baseUrl}}/indices/holdings?index_code=NIFTY_50",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -4282,7 +4360,7 @@
                                     "query": [
                                         {
                                             "key": "index_code",
-                                            "value": "NIFTY 50"
+                                            "value": "NIFTY_50"
                                         }
                                     ]
                                 },

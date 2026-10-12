@@ -160,12 +160,15 @@ class UpstoxMarketDataService
         $requested = array_fill_keys($instrumentKeys, true);
         $quotes = [];
 
-        foreach ($body['data'] as $providerQuote) {
+        foreach ($body['data'] as $responseKey => $providerQuote) {
             if (!is_array($providerQuote)) {
                 continue;
             }
 
             $instrumentKey = trim((string) ($providerQuote['instrument_token'] ?? ''));
+            if ($instrumentKey === '' && is_string($responseKey)) {
+                $instrumentKey = str_replace(':', '|', $responseKey);
+            }
             if ($instrumentKey === '' || !isset($requested[$instrumentKey])) {
                 continue;
             }

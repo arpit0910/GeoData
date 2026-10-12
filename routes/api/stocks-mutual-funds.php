@@ -35,6 +35,7 @@ Route::get('/equity/{isin}/metrics', [EquityApiController::class, 'metrics']);
 Route::get('/equity/{isin}/ohlc', [EquityApiController::class, 'ohlc']);
 Route::get('/equity/{isin}/dual-exchange', [EquityApiController::class, 'dualExchange']);
 Route::get('/equity/{isin}/activity-metrics', [EquityApiController::class, 'activityMetrics']);
+Route::get('/equity/{isin}/compare-index', [EquityApiController::class, 'compareIndex']);
 
 Route::get('/nudges/fresh', [StockNudgeController::class, 'fresh']);
 Route::get('/nudges/isin/{isin}', [StockNudgeController::class, 'byIsin']);

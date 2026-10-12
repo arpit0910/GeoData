@@ -13,6 +13,8 @@ class DailyMarketSyncScheduleTest extends TestCase
         $schedule = Artisan::output();
 
         $this->assertStringContainsString('equities:sync --force', $schedule);
+        $this->assertStringContainsString('indices:sync --force', $schedule);
+        $this->assertStringContainsString('market:sync-upstox-index-quotes --mode=full --snapshot-eod', $schedule);
         $this->assertSame(2, substr_count($schedule, 'mf:sync-and-calculate'));
         $this->assertStringNotContainsString('sync:mf-daily --force --skip-returns', $schedule);
         $this->assertStringContainsString('market:sync-upstox-news --batch-size=30 --all', $schedule);

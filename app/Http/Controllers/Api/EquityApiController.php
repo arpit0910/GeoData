@@ -11,9 +11,32 @@ use App\Http\Resources\EquityPriceResource;
 use App\Http\Requests\GetMetricsRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Models\Index as MarketIndex;
+use App\Services\StockIndexComparisonService;
 
 class EquityApiController extends Controller
 {
+    public function compareIndex(Request $request, string $isin, StockIndexComparisonService $comparisons): JsonResponse
+    {
+        $validated = $request->validate([
+            'index_code' => ['required', 'string', 'max:255'],
+            'period' => ['nullable', 'in:1m,3m,6m,1y,3y,5y'],
+        ]);
+        $equity = Equity::where('isin', strtoupper($isin))->where('is_active', true)->first();
+        $index = MarketIndex::where('index_code', strtoupper($validated['index_code']))->first();
+
+        if (!$equity || !$index) {
+            return response()->json(['success' => false, 'message' => !$equity ? 'Equity not found.' : 'Index not found.'], 404);
+        }
+
+        $result = $comparisons->compare($equity, $index, $validated['period'] ?? '1y');
+        if ($result['summary']['aligned_points'] === 0) {
+            return response()->json(['success' => false, 'message' => 'No overlapping stock and index history was found.', 'data' => $result], 422);
+        }
+
+        return response()->json(['success' => true, 'data' => $result]);
+    }
+
     /**
      * List all available equities (supports industry & symbol filtering).
      */

@@ -18,7 +18,7 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('equities:sync --force')
             ->dailyAt('19:00')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('indices:sync')
+        $this->markScheduled($schedule->command('indices:sync --force')
             ->dailyAt('19:15')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
         $this->markScheduled($schedule->command('mf:sync-and-calculate')
@@ -66,6 +66,20 @@ class Kernel extends ConsoleKernel
             ->between('09:15', '15:30')
             ->runInBackground()
             ->withoutOverlapping(2));
+
+        $this->markScheduled($schedule->command('market:sync-upstox-index-quotes')
+            ->everyMinute()
+            ->timezone('Asia/Kolkata')
+            ->weekdays()
+            ->between('09:15', '15:30')
+            ->runInBackground()
+            ->withoutOverlapping(2));
+
+        $this->markScheduled($schedule->command('market:sync-upstox-index-quotes --mode=full --snapshot-eod')
+            ->dailyAt('18:05')
+            ->timezone('Asia/Kolkata')
+            ->runInBackground()
+            ->withoutOverlapping(120));
 
         // Capture the final full quote as the day's EOD history. The snapshot
         // is idempotent on ISIN + date, so retries update instead of duplicate.

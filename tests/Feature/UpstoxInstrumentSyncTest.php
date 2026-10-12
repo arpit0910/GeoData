@@ -71,6 +71,20 @@ class UpstoxInstrumentSyncTest extends TestCase
                 'name' => 'IGNORED FUTURE',
                 'instrument_key' => 'NSE_FO|12345',
             ],
+            [
+                'segment' => 'NSE_INDEX',
+                'name' => 'Nifty 50',
+                'instrument_type' => 'INDEX',
+                'instrument_key' => 'NSE_INDEX|Nifty 50',
+                'trading_symbol' => 'Nifty 50',
+            ],
+            [
+                'segment' => 'BSE_INDEX',
+                'name' => 'S&P BSE SENSEX',
+                'instrument_type' => 'INDEX',
+                'instrument_key' => 'BSE_INDEX|SENSEX',
+                'trading_symbol' => 'SENSEX',
+            ],
         ]);
 
         try {
@@ -79,8 +93,9 @@ class UpstoxInstrumentSyncTest extends TestCase
             @unlink($path);
         }
 
-        $this->assertSame(4, $stats['scanned']);
+        $this->assertSame(6, $stats['scanned']);
         $this->assertSame(2, $stats['unique_isins']);
+        $this->assertSame(2, $stats['unique_indices']);
         $this->assertSame(1, $stats['added']);
         $this->assertSame(1, $stats['updated']);
         $this->assertDatabaseHas('equities', [
@@ -109,6 +124,14 @@ class UpstoxInstrumentSyncTest extends TestCase
             'isin' => 'INE123A01010',
             'bse_symbol' => 'NEWCO',
             'upstox_bse_instrument_key' => 'BSE_EQ|INE123A01010',
+        ]);
+        $this->assertDatabaseHas('indices', [
+            'index_code' => 'NIFTY_50',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty 50',
+        ]);
+        $this->assertDatabaseHas('indices', [
+            'index_code' => 'BSE_SENSEX',
+            'upstox_instrument_key' => 'BSE_INDEX|SENSEX',
         ]);
     }
 

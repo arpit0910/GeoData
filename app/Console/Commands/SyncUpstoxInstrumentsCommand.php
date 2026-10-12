@@ -12,7 +12,7 @@ class SyncUpstoxInstrumentsCommand extends Command
         {file? : Optional absolute or project-relative path; downloads the current file when omitted}
         {--dry-run : Analyse the file without changing the database}';
 
-    protected $description = 'Add and update equities from the Upstox instrument master';
+    protected $description = 'Add and update equities and indices from the Upstox instrument master';
 
     public function handle(UpstoxInstrumentSyncService $syncService): int
     {
@@ -34,12 +34,13 @@ class SyncUpstoxInstrumentsCommand extends Command
         }
 
         $this->table(
-            ['Scanned', 'Eligible', 'Invalid', 'Unique ISINs', 'Matched', 'Unmatched DB', 'Add', 'Update'],
+            ['Scanned', 'Eligible', 'Invalid', 'Unique ISINs', 'Indices', 'Matched', 'Unmatched DB', 'Add', 'Update'],
             [[
                 $stats['scanned'],
                 $stats['eligible_rows'],
                 $stats['invalid_rows'],
                 $stats['unique_isins'],
+                $stats['unique_indices'],
                 $stats['existing'],
                 $stats['unmatched_existing'],
                 $stats['added'],

@@ -15,20 +15,23 @@ class IndexService
      */
     public function getSnapshot(?string $exchange = null): Collection
     {
-        return Cache::remember('index_snapshot_' . ($exchange ?? 'all'), 3600, function () use ($exchange) {
+        return Cache::remember('index_snapshot_v2_' . ($exchange ?? 'all'), now()->addSeconds(30), function () use ($exchange) {
             $latestDate = IndexPrice::max('traded_date');
-            
-            if (!$latestDate) return collect();
 
             $query = Index::query();
             if ($exchange) {
                 $query->where('exchange', strtoupper($exchange));
             }
 
-            return $query->with(['prices' => function($q) use ($latestDate) {
-                $q->where('traded_date', $latestDate);
+            return $query->with(['quote', 'prices' => function($q) use ($latestDate) {
+                if ($latestDate) {
+                    $q->where('traded_date', $latestDate);
+                } else {
+                    $q->whereRaw('1 = 0');
+                }
             }])->get()->map(function($idx) {
                 $latest = $idx->prices->first();
+                $live = $idx->quote;
                 return [
                     'code'           => $idx->index_code,
                     'name'           => $idx->index_name,
@@ -37,13 +40,14 @@ class IndexService
                     'open'           => $latest?->open,
                     'high'           => $latest?->high,
                     'low'            => $latest?->low,
-                    'close'          => $latest?->close,
-                    'prev_close'     => $latest?->prev_close,
-                    'change'         => $latest?->close - $latest?->prev_close,
-                    'change_percent' => $latest?->change_percent,
-                    'volume'         => $latest?->volume,
+                    'close'          => $live?->price ?? $latest?->close,
+                    'prev_close'     => $live?->previous_close ?? $latest?->prev_close,
+                    'change'         => $live?->change ?? ($latest && $latest->close !== null && $latest->prev_close !== null ? $latest->close - $latest->prev_close : null),
+                    'change_percent' => $live?->change_percent ?? $latest?->change_percent,
+                    'volume'         => $live?->volume ?? $latest?->volume,
                     'turnover'       => $latest?->turnover,
-                    'updated_at'     => $latest?->traded_date->format('Y-m-d'),
+                    'updated_at'     => $live?->fetched_at?->toIso8601String() ?? $latest?->traded_date?->format('Y-m-d'),
+                    'source'         => $live ? 'live' : 'eod',
                     'returns' => [
                         '1d' => $latest?->chg_1d,
                         '3d' => $latest?->chg_3d,

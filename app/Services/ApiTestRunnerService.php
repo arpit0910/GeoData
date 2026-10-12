@@ -557,6 +557,9 @@ class ApiTestRunnerService
             case 'api/v1/equity/{isin}/activity-metrics':
                 $query = ['exchange' => 'nse'];
                 break;
+            case 'api/v1/equity/{isin}/compare-index':
+                $query = ['index_code' => $sampleData['index_code'], 'period' => '1y'];
+                break;
             case 'api/v1/indices/snapshot':
             case 'api/v1/indices/analysis/valuation-comparison':
             case 'api/v1/indices/analysis/ohlc-summary':
@@ -716,7 +719,7 @@ class ApiTestRunnerService
             'equity_isin' => $equity?->isin ?? 'INE000000000',
             'equity_symbol' => $equity?->nse_symbol ?? $equity?->bse_symbol ?? $equity?->isin ?? 'RELIANCE',
             'equity2_isin' => $equityTwo?->isin ?? 'INE000000001',
-            'index_code' => $index?->index_code ?? 'NIFTY 50',
+            'index_code' => $index?->index_code ?? 'NIFTY_50',
             'index_search' => $index?->index_name ?? $index?->index_code ?? 'NIFTY',
             'mf_isin' => $mf?->isin ?? 'INF000000001',
             'mf2_isin' => $mfTwo?->isin ?? 'INF000000002',

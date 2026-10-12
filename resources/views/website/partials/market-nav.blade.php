@@ -24,6 +24,7 @@
     $marketLinks = [
         ['market.index', 'Overview'],
         ['market.stocks', 'Stocks'],
+        ['market.compare', 'Compare'],
         ['market.mutual-funds', 'Mutual funds'],
         ['market.news', 'News'],
         ['market.nudges', 'Nudges'],

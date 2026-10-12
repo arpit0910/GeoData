@@ -20,8 +20,20 @@ class Index extends Model
         'category',
     ];
 
+    protected $hidden = ['upstox_instrument_key', 'upstox_metadata', 'upstox_synced_at'];
+
+    protected $casts = [
+        'upstox_metadata' => 'array',
+        'upstox_synced_at' => 'datetime',
+    ];
+
     public function prices()
     {
         return $this->hasMany(IndexPrice::class, 'index_code', 'index_code');
+    }
+
+    public function quote()
+    {
+        return $this->hasOne(IndexQuote::class, 'index_code', 'index_code');
     }
 }

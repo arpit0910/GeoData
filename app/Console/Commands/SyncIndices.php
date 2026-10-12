@@ -16,6 +16,7 @@ class SyncIndices extends Command
     protected $signature = 'indices:sync
                             {date?  : Trading date YYYY-MM-DD (defaults to today)}
                             {exchange? : NSE or BSE (default: both)}
+                            {--force : Fetch and enrich the date even when quote snapshots already exist}
                             {--analytics-only : Skip fetch, just recalculate analytics for existing data}
                             {--refresh-overview : Force refresh of overview and holdings for existing rows on the target date}';
 
@@ -61,7 +62,7 @@ class SyncIndices extends Command
             if ($exchange) {
                 $query->whereHas('index', fn($q) => $q->where('exchange', $exchange));
             }
-            if ($query->exists()) {
+            if ($query->exists() && !$this->option('force')) {
                 $existingIndices = IndexPrice::query()
                     ->with('index:index_code,index_name,exchange')
                     ->where('traded_date', $dateStr)

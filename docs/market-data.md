@@ -212,6 +212,25 @@ Upstox V3 full market quotes are the scheduled equity source. Quote time and
 fetch time are distinct. Provider instrument tokens are removed before quote
 payloads are stored or broadcast and are not returned by public APIs.
 
+### Live indices and stock comparison
+
+The daily Upstox instrument-master sync also maps `NSE_INDEX` and `BSE_INDEX`
+instruments. During market hours, `market:sync-upstox-index-quotes` refreshes
+one live row per index every minute in `index_quotes`. At 18:05 IST a final full
+quote is upserted into the same index/date row in `indices_prices`. The 19:15
+official exchange import runs with `--force` and enriches that row with complete
+OHLC, turnover, valuation, overview, holdings, and calculated returns.
+
+`GET /api/v1/equity/{isin}/compare-index?index_code=NIFTY_50&period=1y`
+compares a stock with an index. Supported periods are `1m`, `3m`, `6m`, `1y`,
+`3y`, and `5y`. Results are normalized to 0% on the first shared trading date
+and include stock return, index return, and relative outperformance for every
+date available in both histories. Live stock and index snapshots are returned
+separately when available. The public comparison page is `/market/compare`.
+The existing `GET /api/v1/indices/snapshot` endpoint now overlays these live
+prices and marks each row with `source: live`; it falls back to EOD data when a
+live quote is unavailable.
+
 ### Stock nudges
 
 The stock and mutual-fund subscription exposes three paginated nudge endpoints:
