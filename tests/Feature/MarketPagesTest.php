@@ -37,19 +37,34 @@ class MarketPagesTest extends TestCase
             'isin' => 'INE000A01001',
             'company_name' => 'Nudge Example Limited',
             'nse_symbol' => 'NUDGE',
+            'sector' => 'Technology',
+            'market_cap_category' => 'Large Cap',
+            'series' => 'EQ',
+            'is_active' => true,
+        ]);
+
+        $otherEquity = Equity::create([
+            'isin' => 'INE000A01002',
+            'company_name' => 'Other Nudge Limited',
+            'nse_symbol' => 'OTHER',
+            'sector' => 'Healthcare',
+            'market_cap_category' => 'Mid Cap',
             'series' => 'EQ',
             'is_active' => true,
         ]);
 
         foreach ([
-            ['rule' => 'daily_gain', 'title' => 'Growth signal', 'fingerprint' => str_repeat('a', 64)],
-            ['rule' => 'daily_drop', 'title' => 'Fall signal', 'fingerprint' => str_repeat('b', 64)],
+            ['equity' => $equity, 'rule' => 'daily_gain', 'title' => 'Growth signal', 'fingerprint' => str_repeat('a', 64)],
+            ['equity' => $otherEquity, 'rule' => 'daily_drop', 'title' => 'Fall signal', 'fingerprint' => str_repeat('b', 64)],
         ] as $signal) {
-            StockNudge::create($signal + [
-                'equity_id' => $equity->id,
-                'isin' => $equity->isin,
+            StockNudge::create([
+                'equity_id' => $signal['equity']->id,
+                'isin' => $signal['equity']->isin,
                 'exchange' => 'NSE',
                 'type' => 'price',
+                'rule' => $signal['rule'],
+                'title' => $signal['title'],
+                'fingerprint' => $signal['fingerprint'],
                 'severity' => 'info',
                 'message' => 'A market movement was detected.',
                 'observed_price' => 125.50,
@@ -62,9 +77,16 @@ class MarketPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Growth signal')
             ->assertSee('Fall signal')
-            ->assertSee('Nudge Example Limited');
+            ->assertSee('Nudge Example Limited')
+            ->assertSee('Technology')
+            ->assertSee('Large Cap');
 
         $this->get(route('market.nudges', ['category' => 'growth']))
+            ->assertOk()
+            ->assertSee('Growth signal')
+            ->assertDontSee('Fall signal');
+
+        $this->get(route('market.nudges', ['sector' => 'Technology', 'stock_category' => 'Large Cap']))
             ->assertOk()
             ->assertSee('Growth signal')
             ->assertDontSee('Fall signal');

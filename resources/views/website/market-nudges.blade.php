@@ -9,10 +9,28 @@
     @include('website.partials.market-nav')
 
     <main class="market-wrap py-5 sm:py-8">
-        <form method="GET" class="market-panel mb-6 grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <form method="GET" class="market-panel mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_220px_180px_auto]">
             <div class="min-w-0">
                 <label for="nudge-search" class="sr-only">Search nudges</label>
                 <input id="nudge-search" class="market-input" type="search" name="search" value="{{ request('search') }}" placeholder="Search by company, symbol, ISIN or signal">
+            </div>
+            <div>
+                <label for="nudge-sector" class="sr-only">Sector</label>
+                <select id="nudge-sector" class="market-input" name="sector">
+                    <option value="">All sectors</option>
+                    @foreach($sectors as $item)
+                        <option value="{{ $item }}" @selected($sector === $item)>{{ $item }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="nudge-stock-category" class="sr-only">Stock category</label>
+                <select id="nudge-stock-category" class="market-input" name="stock_category">
+                    <option value="">All stock categories</option>
+                    @foreach($stockCategories as $item)
+                        <option value="{{ $item }}" @selected($stockCategory === $item)>{{ $item }}</option>
+                    @endforeach
+                </select>
             </div>
             @if($category !== 'all')
                 <input type="hidden" name="category" value="{{ $category }}">
@@ -23,7 +41,7 @@
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex max-w-full gap-2 overflow-x-auto pb-1" aria-label="Nudge categories">
                 @foreach(array_merge(['all'], $categories) as $item)
-                    <a href="{{ route('market.nudges', array_filter(['category' => $item === 'all' ? null : $item, 'search' => request('search')])) }}"
+                    <a href="{{ route('market.nudges', array_filter(['category' => $item === 'all' ? null : $item, 'search' => request('search'), 'sector' => $sector, 'stock_category' => $stockCategory])) }}"
                        class="shrink-0 rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-wide transition-colors {{ $category === $item ? 'border-amber-400 bg-amber-400/10 text-amber-300' : 'border-white/10 bg-white/[.03] text-slate-400 hover:border-white/20 hover:text-white' }}">
                         {{ $item }}
                     </a>
@@ -64,6 +82,8 @@
                     <div class="mt-5 min-w-0">
                         <div class="flex flex-wrap items-center gap-2 text-xs">
                             @if($symbol)<span class="market-chip">{{ $symbol }}</span>@endif
+                            @if($nudge->equity?->sector)<span class="market-chip">{{ $nudge->equity->sector }}</span>@endif
+                            @if($nudge->equity?->market_cap_category)<span class="market-chip">{{ $nudge->equity->market_cap_category }}</span>@endif
                             <span class="font-mono text-slate-500">{{ $nudge->isin }}</span>
                             <span class="text-slate-600">{{ $nudge->exchange }}</span>
                         </div>

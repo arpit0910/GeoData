@@ -133,10 +133,24 @@ class MarketController extends Controller
             $category = 'all';
         }
 
+        $stockFilters = DB::table('equities')
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('stock_nudges')
+                    ->whereColumn('stock_nudges.equity_id', 'equities.id');
+            })
+            ->get(['sector', 'market_cap_category']);
+        $sectors = $stockFilters->pluck('sector')->filter()->unique()->sort()->values();
+        $stockCategories = $stockFilters->pluck('market_cap_category')->filter()->unique()->sort()->values();
+        $sector = trim((string) $request->input('sector'));
+        $stockCategory = trim((string) $request->input('stock_category'));
+
         $search = trim((string) $request->input('search'));
         $nudges = StockNudge::query()
-            ->with('equity:id,company_name,nse_symbol,bse_symbol')
+            ->with('equity:id,company_name,nse_symbol,bse_symbol,sector,market_cap_category')
             ->when($category !== 'all', fn ($query) => $query->whereIn('rule', StockNudge::rulesForCategory($category)))
+            ->when($sector !== '', fn ($query) => $query->whereHas('equity', fn ($equity) => $equity->where('sector', $sector)))
+            ->when($stockCategory !== '', fn ($query) => $query->whereHas('equity', fn ($equity) => $equity->where('market_cap_category', $stockCategory)))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($nested) use ($search) {
                     $nested->where('isin', 'like', "%{$search}%")
@@ -158,6 +172,10 @@ class MarketController extends Controller
             'nudges' => $nudges,
             'category' => $category,
             'categories' => array_keys(StockNudge::CATEGORY_RULES),
+            'sector' => $sector,
+            'sectors' => $sectors,
+            'stockCategory' => $stockCategory,
+            'stockCategories' => $stockCategories,
         ]);
     }
 
