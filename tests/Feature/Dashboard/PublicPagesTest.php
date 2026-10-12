@@ -45,7 +45,11 @@ class PublicPagesTest extends TestCase
         $response = $this->get('/docs');
         $response->assertStatus(200)
             ->assertSee('NSE/BSE Holiday Calendar')
-            ->assertSee('/api/v1/market-calendar/holidays?exchange=all&amp;type=holiday', false);
+            ->assertSee('/api/v1/market-calendar/holidays?exchange=all&amp;type=holiday', false)
+            ->assertSee('Stock Nudges')
+            ->assertSee('/nudges/fresh')
+            ->assertSee('/nudges/isin/{isin}')
+            ->assertSee('/nudges/category/{category}');
     }
 
     /** @test */
@@ -60,6 +64,18 @@ class PublicPagesTest extends TestCase
         );
         $this->assertStringContainsString('official NSE and BSE equity-market holidays', $encoded);
         $this->assertStringContainsString('Republic Day', $encoded);
+    }
+
+    /** @test */
+    public function postman_collection_includes_stock_nudge_requests()
+    {
+        $collection = json_decode(file_get_contents(public_path('postman_collection.json')), true, 512, JSON_THROW_ON_ERROR);
+        $encoded = json_encode($collection, JSON_UNESCAPED_SLASHES);
+
+        $this->assertStringContainsString('{{baseUrl}}/nudges/fresh?per_page=25', $encoded);
+        $this->assertStringContainsString('{{baseUrl}}/nudges/isin/INE000000000?per_page=25', $encoded);
+        $this->assertStringContainsString('{{baseUrl}}/nudges/category/growth?per_page=25', $encoded);
+        $this->assertStringContainsString('Strong daily gain', $encoded);
     }
 
     /** @test */
