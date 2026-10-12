@@ -35,13 +35,12 @@
             $marketCoverage = [
                 ['Stocks', $stats['total_stocks'], 'market.stocks', 'fa-chart-line', 'Equities'],
                 ['Live quotes', $stats['live_quotes'], 'market.stocks', 'fa-bolt', 'Latest prices'],
-                ['Indices', $stats['total_indices'] ?? $indices->count(), 'market.indices', 'fa-arrow-trend-up', 'Synced indices'],
                 ['Mutual funds', $stats['total_mfs'], 'market.mutual-funds', 'fa-layer-group', 'AMFI schemes'],
                 ['News', $stats['total_news'], 'market.news', 'fa-newspaper', 'Market stories'],
                 ['Actions', $stats['total_corporate_actions'], 'market.corporate-actions', 'fa-calendar-check', 'Company events'],
             ];
         @endphp
-        <section aria-label="Market coverage" class="grid grid-cols-2 lg:grid-cols-6 gap-2.5 sm:gap-3 mb-8 sm:mb-10">
+        <section aria-label="Market coverage" class="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3 mb-8 sm:mb-10">
             @foreach($marketCoverage as $index => [$label, $value, $routeName, $icon, $note])
                 <a href="{{ $routeName === 'market.indices' && !Route::has($routeName) ? url('/market/indices') : route($routeName) }}" class="market-panel p-4 group hover:-translate-y-0.5 hover:border-amber-400/40 transition-all">
                     <div class="flex items-center justify-between gap-2">
@@ -60,7 +59,7 @@
                 <div>
                     <p class="market-kicker">Index snapshot</p>
                     <h2 id="market-indices-heading" class="mt-1.5 text-2xl sm:text-3xl font-black tracking-tight text-white">Market indices</h2>
-                    <p class="mt-2 text-sm leading-6 market-muted">Live market prices when available, with the latest EOD close as fallback.</p>
+                    <p class="mt-2 text-sm leading-6 market-muted">Today's live NIFTY 50 and SENSEX prices.</p>
                 </div>
                 <a href="{{ Route::has('market.indices') ? route('market.indices') : url('/market/indices') }}" class="shrink-0 text-sm font-bold text-amber-400 hover:text-amber-300">View all indices <i class="fas fa-arrow-right ml-1"></i></a>
             </header>

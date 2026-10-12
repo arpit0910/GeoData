@@ -73,8 +73,32 @@ class MarketPagesTest extends TestCase
             'prev_close' => 80000,
             'change_percent' => 1.25,
         ]);
+        IndexQuote::create([
+            'index_code' => $sensex->index_code,
+            'price' => 81000,
+            'previous_close' => 80000,
+            'change' => 1000,
+            'change_percent' => 1.25,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+        ]);
 
-        Cache::forget('website.market.indices.v2');
+        $nifty500 = MarketIndex::create([
+            'index_code' => 'NIFTY_500',
+            'index_name' => 'Nifty 500',
+            'exchange' => 'NSE',
+        ]);
+        IndexQuote::create([
+            'index_code' => $nifty500->index_code,
+            'price' => 23000,
+            'previous_close' => 22900,
+            'change' => 100,
+            'change_percent' => 0.437,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+        ]);
+
+        Cache::forget('website.market.overview-indices.v1');
         $this->get('/market')
             ->assertOk()
             ->assertSee('Market indices')
@@ -85,7 +109,8 @@ class MarketPagesTest extends TestCase
             ->assertSee(route('market.indices.show', 'NIFTY_50'), false)
             ->assertSee('S&amp;P BSE SENSEX', false)
             ->assertSee('81,000.00')
-            ->assertSee('EOD')
+            ->assertDontSee('Nifty 500')
+            ->assertDontSee('EOD')
             ->assertDontSee('Stock vs index');
 
         $this->get(route('market.indices'))
@@ -102,8 +127,7 @@ class MarketPagesTest extends TestCase
             ->assertSee('Growth signal')
             ->assertSee('Recent performance');
 
-        IndexQuote::create([
-            'index_code' => $sensex->index_code,
+        $sensex->quote()->update([
             'price' => 79500,
             'previous_close' => 80000,
             'change' => -500,

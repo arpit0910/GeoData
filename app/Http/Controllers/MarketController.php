@@ -35,30 +35,20 @@ class MarketController extends Controller
         });
         ['stats' => $stats, 'latestNews' => $latestNews, 'upcomingActions' => $upcomingActions] = $overview;
 
-        $indices = Cache::remember('website.market.indices.v2', now()->addSeconds(30), function () {
-            $latestPrices = DB::table('indices_prices')
-                ->select('index_code', DB::raw('MAX(id) as latest_price_id'))
-                ->groupBy('index_code');
-
+        $indices = Cache::remember('website.market.overview-indices.v1', now()->addSeconds(30), function () {
             return DB::table('indices')
-                ->leftJoin('index_quotes', function ($join) {
+                ->join('index_quotes', function ($join) {
                     $join->on('indices.index_code', '=', 'index_quotes.index_code')
                         ->where('index_quotes.fetched_at', '>=', now('Asia/Kolkata')->startOfDay()->utc());
                 })
-                ->leftJoinSub($latestPrices, 'latest_ip', fn ($join) => $join->on('indices.index_code', '=', 'latest_ip.index_code'))
-                ->leftJoin('indices_prices', 'latest_ip.latest_price_id', '=', 'indices_prices.id')
-                ->where(fn ($query) => $query->whereNotNull('index_quotes.price')->orWhereNotNull('indices_prices.close'))
+                ->whereIn('indices.index_code', ['NIFTY_50', 'BSE_SENSEX'])
                 ->select([
                     'indices.index_code', 'indices.index_name', 'indices.exchange',
-                    DB::raw('COALESCE(index_quotes.price, indices_prices.close) as price'),
-                    DB::raw('COALESCE(index_quotes.previous_close, indices_prices.prev_close) as previous_close'),
-                    DB::raw('COALESCE(index_quotes.change_percent, indices_prices.change_percent) as change_percent'),
-                    DB::raw('CASE WHEN index_quotes.price IS NOT NULL THEN index_quotes.fetched_at ELSE indices_prices.traded_date END as price_time'),
-                    DB::raw("CASE WHEN index_quotes.price IS NOT NULL THEN 'live' ELSE 'eod' END as price_source"),
+                    'index_quotes.price', 'index_quotes.previous_close', 'index_quotes.change_percent',
+                    DB::raw('index_quotes.quoted_at as price_time'),
+                    DB::raw("'live' as price_source"),
                 ])
-                ->orderByRaw("CASE indices.index_code WHEN 'NIFTY_50' THEN 0 WHEN 'NIFTY_500' THEN 1 WHEN 'BSE_SENSEX' THEN 2 WHEN 'NIFTY_BANK' THEN 3 ELSE 4 END")
-                ->orderBy('indices.index_name')
-                ->limit(12)
+                ->orderByRaw("CASE indices.index_code WHEN 'NIFTY_50' THEN 0 ELSE 1 END")
                 ->get();
         });
 

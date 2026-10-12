@@ -58,7 +58,9 @@ Route::view('/market/live', 'market.live')->name('market.live');
 Route::get('/market', [\App\Http\Controllers\MarketController::class, 'index'])->name('market.index');
 Route::get('/market/stocks', [\App\Http\Controllers\MarketController::class, 'stocks'])->name('market.stocks');
 Route::get('/market/indices', [\App\Http\Controllers\MarketController::class, 'indices'])->name('market.indices');
-Route::get('/market/indices/{index}', [\App\Http\Controllers\MarketController::class, 'indexDetail'])->name('market.indices.show');
+Route::get('/market/indices/{index}', [\App\Http\Controllers\MarketController::class, 'indexDetail'])
+    ->where('index', '[A-Za-z0-9_-]+')
+    ->name('market.indices.show');
 Route::get('/market/mutual-funds', [\App\Http\Controllers\MarketController::class, 'mutualFunds'])->name('market.mutual-funds');
 Route::get('/market/news', [\App\Http\Controllers\MarketController::class, 'news'])->name('market.news');
 Route::get('/market/news/{marketNews}', [\App\Http\Controllers\MarketController::class, 'newsDetail'])->name('market.news.show');
