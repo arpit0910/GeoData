@@ -246,6 +246,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Index Management
     Route::prefix('indices')->name('admin.indices.')->group(function () {
+        Route::get('/quotes', [App\Http\Controllers\Admin\IndexController::class, 'quotes'])->name('quotes');
+        Route::post('/quotes/sync', [App\Http\Controllers\Admin\IndexController::class, 'syncQuotes'])->name('quotes.sync');
         Route::get('/', [App\Http\Controllers\Admin\IndexController::class, 'index'])->name('index');
         Route::get('/prices', [App\Http\Controllers\Admin\IndexController::class, 'prices'])->name('prices');
         Route::post('/sync', [App\Http\Controllers\Admin\IndexController::class, 'sync'])->name('sync');

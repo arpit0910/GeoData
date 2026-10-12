@@ -12,6 +12,10 @@
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
                 <i class="fas fa-sync-alt mr-2"></i> Sync Index Prices
             </button>
+            <a href="{{ route('admin.indices.quotes') }}"
+                class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
+                <span class="w-2 h-2 rounded-full bg-white mr-2 animate-pulse"></span> Live Quotes
+            </a>
             <a href="{{ route('admin.indices.index') }}"
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-gray-50 transition-all">
                 <i class="fas fa-arrow-trend-up mr-2 text-emerald-500"></i> Index Master

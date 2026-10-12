@@ -8,6 +8,8 @@ use App\Models\IndexPrice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class IndexController extends Controller
 {
@@ -317,4 +319,111 @@ class IndexController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Display live synced index quotes from Upstox.
+     */
+    public function quotes(Request $request)
+    {
+        $filters = $request->validate([
+            'search'    => 'nullable|string|max:100',
+            'exchange'  => 'nullable|in:NSE,BSE',
+            'category'  => 'nullable|string|max:100',
+            'freshness' => 'nullable|in:recent,stale',
+        ]);
+
+        $cutoff = now()->utc()->subSeconds(900)->format('Y-m-d H:i:s');
+        $query = DB::table('index_quotes as q')
+            ->leftJoin('indices as i', 'i.index_code', '=', 'q.index_code');
+
+        if ($search = trim($filters['search'] ?? '')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('q.index_code', 'like', "%{$search}%")
+                  ->orWhere('i.index_name', 'like', "%{$search}%")
+                  ->orWhere('i.category', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($filters['exchange'])) {
+            $query->where('i.exchange', strtoupper($filters['exchange']));
+        }
+
+        if (!empty($filters['category'])) {
+            $query->where('i.category', $filters['category']);
+        }
+
+        if (!empty($filters['freshness'])) {
+            if ($filters['freshness'] === 'recent') {
+                $query->where('q.quoted_at', '>=', $cutoff);
+            } else {
+                $query->where(function ($q) use ($cutoff) {
+                    $q->whereNull('q.quoted_at')->orWhere('q.quoted_at', '<', $cutoff);
+                });
+            }
+        }
+
+        $stats = [
+            'total'        => DB::table('index_quotes')->count(),
+            'recent'       => DB::table('index_quotes')->where('quoted_at', '>=', $cutoff)->count(),
+            'gainers'      => DB::table('index_quotes')->where('change', '>', 0)->count(),
+            'losers'       => DB::table('index_quotes')->where('change', '<', 0)->count(),
+            'last_fetched' => DB::table('index_quotes')->max('fetched_at'),
+        ];
+
+        $quotes = $query->select(
+            'q.*',
+            'i.index_name',
+            'i.exchange',
+            'i.category'
+        )
+        ->orderByDesc('q.fetched_at')
+        ->orderBy('q.index_code')
+        ->paginate(25)
+        ->withQueryString();
+
+        foreach ($quotes as $quote) {
+            $payload = $quote->payload;
+            $quote->details = $payload ? (json_decode($payload, true) ?: []) : [];
+            $quote->quoted_time = $quote->quoted_at
+                ? Carbon::parse($quote->quoted_at, 'UTC')->timezone('Asia/Kolkata')
+                : null;
+            $quote->fetched_time = $quote->fetched_at
+                ? Carbon::parse($quote->fetched_at, 'UTC')->timezone('Asia/Kolkata')
+                : null;
+            $quote->is_stale = !$quote->quoted_at || $quote->quoted_at < $cutoff;
+        }
+
+        $categories = DB::table('indices')->whereNotNull('category')->distinct()->pluck('category');
+
+        return view('admin.indices.quotes', compact('quotes', 'filters', 'stats', 'categories'));
+    }
+
+    /**
+     * Manually trigger live index quotes synchronization from Upstox.
+     */
+    public function syncQuotes()
+    {
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+
+        try {
+            $exitCode = Artisan::call('market:sync-upstox-index-quotes', ['--batch-size' => 500]);
+            $output = trim(Artisan::output());
+        } catch (\Throwable $exception) {
+            return redirect()->route('admin.indices.quotes')->with(
+                'error',
+                'Index quote sync could not start: ' . $exception->getMessage()
+            );
+        }
+
+        $summary = last(array_filter(explode("\n", $output))) ?: '';
+
+        return redirect()->route('admin.indices.quotes')->with(
+            $exitCode === 0 ? 'success' : 'error',
+            $exitCode === 0
+                ? 'Latest index quotes synced successfully. ' . $summary
+                : 'Index quote sync failed. ' . ($output ?: 'No eligible index quotes returned.')
+        );
+    }
+
 }

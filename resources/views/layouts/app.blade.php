@@ -189,9 +189,9 @@
                         <p class="px-3 text-[10px] font-bold text-amber-200/80 dark:text-gray-500 uppercase tracking-[0.2em]">Market Data</p>
                     </div>
 
-                    {{-- Equities Dropdown --}}
+                    {{-- Equities Dropdown (Strictly Equities only) --}}
                     @php
-                        $isEquitiesActive = request()->routeIs('equities.*') || request()->routeIs('admin.market-datasets.*') || request()->routeIs('admin.corporate-actions.*') || request()->routeIs('admin.exchange-calendar.*');
+                        $isEquitiesActive = request()->routeIs('equities.*');
                     @endphp
                     <div x-data="{ open: {{ $isEquitiesActive ? 'true' : 'false' }} }">
                         <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isEquitiesActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
@@ -214,22 +214,6 @@
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('equities.quotes*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
                                 <span class="truncate">Latest Quotes</span>
                             </a>
-                            <a href="{{ route('admin.market-datasets.company-fundamentals') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.market-datasets.company-fundamentals*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
-                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-datasets.company-fundamentals*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
-                                <span class="truncate">Fundamentals</span>
-                            </a>
-                            <a href="{{ route('admin.corporate-actions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
-                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
-                                <span class="truncate">Corporate Actions</span>
-                            </a>
-                            <a href="{{ route('admin.exchange-calendar.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.exchange-calendar.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
-                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.exchange-calendar.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
-                                <span class="truncate">Exchange Calendar</span>
-                            </a>
-                            <a href="{{ route('admin.market-datasets.global-instruments') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.market-datasets.global-instruments*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
-                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-datasets.global-instruments*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
-                                <span class="truncate">Global Instruments</span>
-                            </a>
                         </div>
                     </div>
 
@@ -249,6 +233,10 @@
                             <a href="{{ route('admin.indices.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.indices.index') || request()->routeIs('admin.indices.show') || request()->routeIs('admin.indices.edit') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.indices.index') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
                                 <span class="truncate">All Indices</span>
+                            </a>
+                            <a href="{{ route('admin.indices.quotes') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.indices.quotes*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.indices.quotes*') ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-400/60' }}"></span>
+                                <span class="truncate">Live Index Quotes</span>
                             </a>
                             <a href="{{ route('admin.indices.prices') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.indices.prices*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.indices.prices*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
@@ -277,6 +265,38 @@
                             <a href="{{ route('mutual-funds.prices') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('mutual-funds.prices*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('mutual-funds.prices*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
                                 <span class="truncate">MF NAV Prices</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Market Datasets (Separated from Equities) --}}
+                    @php
+                        $isDatasetsActive = request()->routeIs('admin.corporate-actions.*') || request()->routeIs('admin.exchange-calendar.*') || request()->routeIs('admin.market-datasets.*');
+                    @endphp
+                    <div x-data="{ open: {{ $isDatasetsActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isDatasetsActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-database"></i></span>
+                                <span class="truncate">Market Datasets</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('admin.corporate-actions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Corporate Actions</span>
+                            </a>
+                            <a href="{{ route('admin.exchange-calendar.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.exchange-calendar.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.exchange-calendar.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Exchange Calendar</span>
+                            </a>
+                            <a href="{{ route('admin.market-datasets.company-fundamentals') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.market-datasets.company-fundamentals*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-datasets.company-fundamentals*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Fundamentals</span>
+                            </a>
+                            <a href="{{ route('admin.market-datasets.global-instruments') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.market-datasets.global-instruments*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-datasets.global-instruments*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Global Instruments</span>
                             </a>
                         </div>
                     </div>
