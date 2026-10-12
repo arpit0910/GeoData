@@ -7,6 +7,7 @@ use App\Services\IndexQuoteService;
 use App\Services\UpstoxMarketDataService;
 use App\Services\UpstoxTokenManager;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class SyncUpstoxIndexQuotesCommand extends Command
@@ -61,17 +62,17 @@ class SyncUpstoxIndexQuotesCommand extends Command
         $saved = 0;
         $missing = 0;
         $failedBatches = 0;
+        $invalidKeys = 0;
 
         foreach ($indices->chunk($batchSize) as $batchNumber => $batch) {
-            try {
-                $instrumentKeys = $batch->pluck('upstox_instrument_key')->all();
-                $quotes = $mode === 'full' ? $upstox->quotes($instrumentKeys) : $upstox->ltp($instrumentKeys);
-            } catch (Throwable $exception) {
-                $failedBatches++;
-                $missing += $batch->count();
-                $this->error('Index batch '.($batchNumber + 1).' failed: '.$exception->getMessage());
-                continue;
-            }
+            $quotes = $this->fetchQuotes(
+                $batch->values(),
+                $mode,
+                $upstox,
+                $batchNumber + 1,
+                $failedBatches,
+                $invalidKeys,
+            );
 
             foreach ($batch as $index) {
                 $quote = $quotes[$index->upstox_instrument_key] ?? null;
@@ -88,7 +89,7 @@ class SyncUpstoxIndexQuotesCommand extends Command
             }
         }
 
-        $this->info("Requested: {$indices->count()}; saved: {$saved}; missing/failed: {$missing}.");
+        $this->info("Requested: {$indices->count()}; saved: {$saved}; missing/failed: {$missing}; invalid keys skipped: {$invalidKeys}.");
 
         if ($this->option('snapshot-eod') && $failedBatches === 0) {
             $snapshots = $quoteStore->snapshotEndOfDay();
@@ -96,5 +97,61 @@ class SyncUpstoxIndexQuotesCommand extends Command
         }
 
         return $failedBatches === 0 && $saved > 0 ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Upstox rejects an entire request when any one instrument key is stale.
+     * Split only those validation failures so valid indices still get updated.
+     *
+     * @param Collection<int, Index> $indices
+     * @return array<string, array<string, mixed>>
+     */
+    private function fetchQuotes(
+        Collection $indices,
+        string $mode,
+        UpstoxMarketDataService $upstox,
+        int $batchNumber,
+        int &$failedBatches,
+        int &$invalidKeys,
+    ): array {
+        try {
+            $instrumentKeys = $indices->pluck('upstox_instrument_key')->all();
+
+            return $mode === 'full'
+                ? $upstox->quotes($instrumentKeys)
+                : $upstox->ltp($instrumentKeys);
+        } catch (Throwable $exception) {
+            if ($this->isInvalidInstrumentError($exception)) {
+                if ($indices->count() > 1) {
+                    $splitAt = (int) ceil($indices->count() / 2);
+
+                    return array_replace(
+                        $this->fetchQuotes($indices->take($splitAt)->values(), $mode, $upstox, $batchNumber, $failedBatches, $invalidKeys),
+                        $this->fetchQuotes($indices->slice($splitAt)->values(), $mode, $upstox, $batchNumber, $failedBatches, $invalidKeys),
+                    );
+                }
+
+                $index = $indices->first();
+                $invalidKeys++;
+                $this->warn("Skipped invalid Upstox key for {$index->index_code}: {$index->upstox_instrument_key}");
+
+                return [];
+            }
+
+            $failedBatches++;
+            $this->error("Index batch {$batchNumber} failed: {$exception->getMessage()}");
+
+            return [];
+        }
+    }
+
+    private function isInvalidInstrumentError(Throwable $exception): bool
+    {
+        $message = strtolower($exception->getMessage());
+
+        return str_contains($message, 'http 400')
+            && (str_contains($message, 'instrument_key')
+                || str_contains($message, 'symbol')
+                || str_contains($message, 'invalid'));
     }
 }
