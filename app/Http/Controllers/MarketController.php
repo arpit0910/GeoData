@@ -40,16 +40,25 @@ class MarketController extends Controller
     public function stocks(Request $request)
     {
         $stocks = $this->getStocksQuery($request)->paginate(25)->withQueryString();
-        return view('website.market-stocks', ['stocks' => $stocks, 'marketStatus' => $this->getMarketStatus()]);
+        $sectors = DB::table('equities')->where('is_active', true)->whereNotNull('sector')->where('sector', '<>', '')
+            ->distinct()->orderBy('sector')->pluck('sector');
+        $stockCategories = DB::table('equities')->where('is_active', true)->whereNotNull('market_cap_category')->where('market_cap_category', '<>', '')
+            ->distinct()->orderBy('market_cap_category')->pluck('market_cap_category');
+
+        return view('website.market-stocks', compact('stocks', 'sectors', 'stockCategories') + [
+            'marketStatus' => $this->getMarketStatus(),
+        ]);
     }
 
     public function mutualFunds(Request $request)
     {
         $funds = $this->getMfQuery($request)->paginate(24)->withQueryString();
-        $categories = DB::table('mutual_funds')->whereNotNull('category')->where('category', '<>', '')
+        $categories = DB::table('mutual_funds')->where('is_active', true)->whereNotNull('category')->where('category', '<>', '')
             ->distinct()->orderBy('category')->pluck('category');
+        $amcs = DB::table('mutual_funds')->where('is_active', true)->whereNotNull('amc_name')->where('amc_name', '<>', '')
+            ->distinct()->orderBy('amc_name')->pluck('amc_name');
 
-        return view('website.market-mutual-funds', compact('funds', 'categories'));
+        return view('website.market-mutual-funds', compact('funds', 'categories', 'amcs'));
     }
 
     public function news(Request $request)
@@ -320,6 +329,7 @@ class MarketController extends Controller
                 'equities.security_type',
                 'equities.industry',
                 'equities.sector',
+                'equities.market_cap_category',
                 'equity_quotes.price as live_price',
                 'equity_quotes.quoted_at as live_time',
                 'equity_quotes.previous_close as live_previous_close',
@@ -339,6 +349,7 @@ class MarketController extends Controller
 
         // 1. Instrument Type Filter: Default is 'stocks' (True Equities: EQ, BE, SM, BZ)
         $instrumentType = strtolower(trim((string) $request->input('instrument_type', 'stocks')));
+        $instrumentType = in_array($instrumentType, ['stocks', 'bonds', 'all'], true) ? $instrumentType : 'stocks';
         if ($instrumentType === 'stocks') {
             $query->whereIn('equities.series', ['EQ', 'BE', 'SM', 'BZ']);
         } elseif ($instrumentType === 'bonds') {
@@ -367,6 +378,14 @@ class MarketController extends Controller
             $query->whereNotNull('equities.nse_symbol')->where('equities.nse_symbol', '<>', '');
         } elseif ($filter === 'bse') {
             $query->whereNotNull('equities.bse_symbol')->where('equities.bse_symbol', '<>', '');
+        }
+
+        if ($request->filled('sector')) {
+            $query->where('equities.sector', trim((string) $request->input('sector')));
+        }
+
+        if ($request->filled('stock_category')) {
+            $query->where('equities.market_cap_category', trim((string) $request->input('stock_category')));
         }
 
         // 4. Sorting

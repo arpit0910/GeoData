@@ -8,6 +8,7 @@ use App\Models\MarketNews;
 use App\Models\StockNudge;
 use App\Services\EquityQuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class MarketPagesTest extends TestCase
@@ -132,6 +133,70 @@ class MarketPagesTest extends TestCase
             ->assertSee('1,000')
             ->assertSee('60.00')
             ->assertSee(now('Asia/Kolkata')->subDay()->format('d M'));
+    }
+
+    /** @test */
+    public function stock_filters_can_be_combined_and_are_exposed_on_the_page(): void
+    {
+        Equity::create([
+            'isin' => 'INE000A01011',
+            'company_name' => 'Alpha Technology Limited',
+            'nse_symbol' => 'ALPHATECH',
+            'sector' => 'Technology',
+            'market_cap_category' => 'Large Cap',
+            'series' => 'EQ',
+            'is_active' => true,
+        ]);
+        Equity::create([
+            'isin' => 'INE000A01012',
+            'company_name' => 'Beta Finance Limited',
+            'bse_symbol' => 'BETAFIN',
+            'sector' => 'Financial Services',
+            'market_cap_category' => 'Mid Cap',
+            'series' => 'EQ',
+            'is_active' => true,
+        ]);
+
+        $this->get(route('market.stocks', [
+            'filter' => 'nse',
+            'sector' => 'Technology',
+            'stock_category' => 'Large Cap',
+            'sort' => 'name_asc',
+        ]))
+            ->assertOk()
+            ->assertSee('Alpha Technology Limited')
+            ->assertDontSee('Beta Finance Limited')
+            ->assertSee('name="filter"', false)
+            ->assertSee('name="sector"', false)
+            ->assertSee('name="stock_category"', false)
+            ->assertSee('market-mobile-cards', false);
+    }
+
+    /** @test */
+    public function mutual_fund_filters_and_sorting_work_together(): void
+    {
+        foreach ([
+            ['isin' => 'INF000000011', 'scheme_code' => '11', 'scheme_name' => 'Alpha Growth Fund', 'amc_name' => 'Alpha AMC', 'category' => 'Equity'],
+            ['isin' => 'INF000000012', 'scheme_code' => '12', 'scheme_name' => 'Zeta Growth Fund', 'amc_name' => 'Alpha AMC', 'category' => 'Equity'],
+            ['isin' => 'INF000000013', 'scheme_code' => '13', 'scheme_name' => 'Beta Debt Fund', 'amc_name' => 'Beta AMC', 'category' => 'Debt'],
+        ] as $fund) {
+            DB::table('mutual_funds')->insert($fund + [
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->get(route('market.mutual-funds', [
+            'category' => 'Equity',
+            'amc' => 'Alpha AMC',
+            'sort' => 'name_desc',
+        ]))
+            ->assertOk()
+            ->assertSeeInOrder(['Zeta Growth Fund', 'Alpha Growth Fund'])
+            ->assertDontSee('Beta Debt Fund')
+            ->assertSee('name="amc"', false)
+            ->assertSee('name="sort"', false);
     }
 
     /** @test */
