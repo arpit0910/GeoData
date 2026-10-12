@@ -44,13 +44,13 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Upstox NSE Key (Admin Only)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">NSE Feed Key (Admin Only)</label>
                     <input type="text" value="{{ $equity->upstox_nse_instrument_key }}" readonly
                         class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-gray-500 cursor-not-allowed">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Upstox BSE Key (Admin Only)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">BSE Feed Key (Admin Only)</label>
                     <input type="text" value="{{ $equity->upstox_bse_instrument_key }}" readonly
                         class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-gray-500 cursor-not-allowed">
                 </div>

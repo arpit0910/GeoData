@@ -18,7 +18,7 @@
             </button>
             <button type="button" onclick="document.getElementById('upstoxImportModal').classList.remove('hidden')"
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-violet-200 dark:border-violet-500/20 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 transition-all">
-                <i class="fas fa-cloud-upload-alt mr-2"></i> Sync Upstox JSON
+                <i class="fas fa-cloud-upload-alt mr-2"></i> Sync Instrument JSON
             </button>
             <a href="{{ route('equities.prices') }}"
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    {{-- Upstox JSON Import Modal --}}
+    {{-- Instrument JSON Import Modal --}}
     <div id="upstoxImportModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen px-4">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -37,14 +37,14 @@
                     <div class="w-16 h-16 bg-violet-50 dark:bg-violet-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-link text-2xl text-violet-600 dark:text-violet-400"></i>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Sync Upstox Instruments</h2>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Upload Upstox <code>complete.json</code>. Records are matched by ISIN and NSE/BSE attributes are updated.</p>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Sync Instruments Master</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Upload exchange <code>complete.json</code>. Records are matched by ISIN and NSE/BSE attributes are updated.</p>
                 </div>
 
                 <form id="upstoxImportForm" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-6">
-                        <label class="block text-xs font-bold text-gray-400 mb-2">Upstox JSON File</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-2">Instrument Master JSON File</label>
                         <input type="file" name="file" id="upstox_file" required accept=".json,application/json"
                             class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all">
                         <p class="mt-2 text-xs text-gray-400">Maximum size: 100 MB. Only NSE_EQ and BSE_EQ instruments with valid ISINs are imported.</p>
@@ -135,7 +135,7 @@
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             BSE Symbol</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
-                            Upstox Keys <span class="text-[9px] text-rose-500">Admin only</span></th>
+                            Feed Keys <span class="text-[9px] text-rose-500">Admin only</span></th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Industry</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">

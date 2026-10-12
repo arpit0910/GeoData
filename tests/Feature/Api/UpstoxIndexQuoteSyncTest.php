@@ -63,4 +63,42 @@ class UpstoxIndexQuoteSyncTest extends TestCase
         $this->assertSame(1, DB::table('indices_prices')->count());
         $this->assertSame(1, DB::table('index_quotes')->count());
     }
+
+    public function test_command_auto_bootstraps_missing_index_instrument_keys(): void
+    {
+        config([
+            'cache.default' => 'array',
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.ltp_url' => 'https://api.upstox.test/v3/market-quote/ltp',
+        ]);
+
+        // Start with empty indices table
+        $this->assertSame(0, DB::table('indices')->count());
+
+        Http::fake(['*' => Http::response([
+            'status' => 'success',
+            'data' => [
+                'NSE_INDEX:Nifty 50' => [
+                    'last_price' => 25100.0,
+                    'cp' => 25000.0,
+                    'volume' => 100,
+                ],
+            ],
+        ])]);
+
+        // Command auto-bootstraps keys instead of failing with missing keys error
+        $this->artisan('market:sync-upstox-index-quotes')
+            ->expectsOutputToContain('Initializing index instrument keys...')
+            ->assertExitCode(0);
+
+        $this->assertGreaterThan(0, DB::table('indices')->whereNotNull('upstox_instrument_key')->count());
+        $this->assertDatabaseHas('indices', [
+            'index_code' => 'NIFTY_50',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty 50',
+        ]);
+        $this->assertDatabaseHas('index_quotes', [
+            'index_code' => 'NIFTY_50',
+            'price' => 25100.0,
+        ]);
+    }
 }

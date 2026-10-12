@@ -9,14 +9,17 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
+use Tests\Traits\CreatesTestData;
 
 class StockIndexComparisonTest extends TestCase
 {
+    use CreatesTestData;
     use RefreshDatabase;
 
     public function test_it_compares_returns_on_shared_trading_dates_only(): void
     {
         Carbon::setTestNow('2026-10-12 12:00:00 Asia/Kolkata');
+        $auth = $this->createAuthenticatedApiUser();
         $equity = Equity::create([
             'isin' => 'INE002A01018',
             'company_name' => 'Reliance Industries',
@@ -48,9 +51,9 @@ class StockIndexComparisonTest extends TestCase
         $this->assertSame(10.0, $result['summary']['outperformance']);
         $this->assertSame(['2026-09-01', '2026-09-03'], array_column($result['data'], 'date'));
 
-        $this->get('/market/compare?stock=RELIANCE&index_code=NIFTY_50&period=3m')
+        $this->withToken($auth['token'])
+            ->getJson('/api/v1/equity/' . $equity->isin . '/compare-index?index_code=NIFTY_50&period=3m')
             ->assertOk()
-            ->assertSee('Outperformance')
-            ->assertSee('+10.00 pp');
+            ->assertJsonPath('data.summary.outperformance', 10);
     }
 }

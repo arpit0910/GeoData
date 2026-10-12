@@ -135,7 +135,8 @@
             <select id="freshness" name="freshness" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500 transition-all">
                 <option value="">All Quote Ages</option>
                 <option value="recent" @selected(($filters['freshness'] ?? '') === 'recent')>Live (&le; 15 mins)</option>
-                <option value="stale" @selected(($filters['freshness'] ?? '') === 'stale')>Older (&gt; 15 mins)</option>
+                <option value="stale" @selected(($filters['freshness'] ?? '') === 'stale')>Stale (&gt; 15 mins)</option>
+                <option value="pending" @selected(($filters['freshness'] ?? '') === 'pending')>Pending Sync</option>
             </select>
         </div>
 
@@ -203,11 +204,15 @@
 
                     {{-- Live Price --}}
                     <td class="px-5 py-3.5 text-right">
-                        <div class="text-sm font-black text-gray-900 dark:text-white font-mono">
-                            {{ number_format($quote->price, 2) }}
-                        </div>
-                        @if ($quote->volume)
-                            <div class="text-[10px] text-gray-400 mt-0.5 font-mono">Vol: {{ number_format($quote->volume) }}</div>
+                        @if ($quote->price !== null)
+                            <div class="text-sm font-black text-gray-900 dark:text-white font-mono">
+                                {{ number_format($quote->price, 2) }}
+                            </div>
+                            @if ($quote->volume)
+                                <div class="text-[10px] text-gray-400 mt-0.5 font-mono">Vol: {{ number_format($quote->volume) }}</div>
+                            @endif
+                        @else
+                            <span class="text-gray-400 font-mono text-sm">--</span>
                         @endif
                     </td>
 
@@ -251,7 +256,11 @@
 
                     {{-- Status Badge --}}
                     <td class="px-5 py-3.5 text-center">
-                        @if ($quote->is_stale)
+                        @if ($quote->price === null)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-500/10 text-gray-400 border border-gray-500/20">
+                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Pending Sync
+                            </span>
+                        @elseif ($quote->is_stale)
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                                 <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Stale (&gt;15m)
                             </span>
@@ -265,9 +274,15 @@
                     {{-- Actions --}}
                     <td class="px-5 py-3.5 text-center">
                         <div class="flex items-center justify-center gap-1.5">
-                            <button type="button" @click="activePayload = {{ json_encode($quote->details) }}; activeIndexName = '{{ $quote->index_name ?: $quote->index_code }} ({{ $quote->index_code }})'; modalOpen = true;" class="p-1.5 text-gray-400 hover:text-amber-500 hover:bg-amber-500/10 rounded-lg transition-colors" title="View Payload JSON">
-                                <i class="fas fa-code text-xs"></i>
-                            </button>
+                            @if (!empty($quote->details))
+                                <button type="button" @click="activePayload = {{ json_encode($quote->details) }}; activeIndexName = '{{ $quote->index_name ?: $quote->index_code }} ({{ $quote->index_code }})'; modalOpen = true;" class="p-1.5 text-gray-400 hover:text-amber-500 hover:bg-amber-500/10 rounded-lg transition-colors" title="View Payload JSON">
+                                    <i class="fas fa-code text-xs"></i>
+                                </button>
+                            @else
+                                <span class="p-1.5 text-gray-300 dark:text-gray-600 cursor-not-allowed" title="No payload available yet">
+                                    <i class="fas fa-code text-xs"></i>
+                                </span>
+                            @endif
                             <a href="{{ route('admin.indices.show', $quote->index_code) }}" class="p-1.5 text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors" title="View Index History">
                                 <i class="fas fa-arrow-up-right-from-square text-xs"></i>
                             </a>

@@ -37,14 +37,24 @@ class SyncUpstoxIndexQuotesCommand extends Command
             ->get(['index_code', 'upstox_instrument_key']);
 
         if ($indices->isEmpty()) {
-            $this->error('No indices have an Upstox instrument key. Run equities:sync-upstox-instruments first.');
+            $this->info('Initializing index instrument keys...');
+            app(\App\Services\UpstoxInstrumentSyncService::class)->ensureIndexInstrumentKeys();
+
+            $indices = Index::query()
+                ->whereNotNull('upstox_instrument_key')
+                ->where('upstox_instrument_key', '<>', '')
+                ->get(['index_code', 'upstox_instrument_key']);
+        }
+
+        if ($indices->isEmpty()) {
+            $this->error('No indices have a market instrument key configured.');
             return self::FAILURE;
         }
 
         try {
             $tokens->accessToken();
         } catch (Throwable $exception) {
-            $this->error('Upstox index synchronization stopped: '.$exception->getMessage());
+            $this->error('Index synchronization stopped: '.$exception->getMessage());
             return self::FAILURE;
         }
 
@@ -59,7 +69,7 @@ class SyncUpstoxIndexQuotesCommand extends Command
             } catch (Throwable $exception) {
                 $failedBatches++;
                 $missing += $batch->count();
-                $this->error('Upstox index batch '.($batchNumber + 1).' failed: '.$exception->getMessage());
+                $this->error('Index batch '.($batchNumber + 1).' failed: '.$exception->getMessage());
                 continue;
             }
 

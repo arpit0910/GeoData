@@ -34,10 +34,10 @@
 
     <div class="grid gap-6 xl:grid-cols-2">
         <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-richdark-surface">
-            <div class="flex items-center justify-between gap-3"><h2 class="text-lg font-black text-gray-900 dark:text-white">Upstox source</h2>@if($marketNews->article_url)<a href="{{ $marketNews->article_url }}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-amber-600 hover:text-amber-700">Open original <i class="fas fa-arrow-up-right-from-square ml-1"></i></a>@endif</div>
+            <div class="flex items-center justify-between gap-3"><h2 class="text-lg font-black text-gray-900 dark:text-white">Original source</h2>@if($marketNews->article_url)<a href="{{ $marketNews->article_url }}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-amber-600 hover:text-amber-700">Open original <i class="fas fa-arrow-up-right-from-square ml-1"></i></a>@endif</div>
             <div class="mt-5 text-xs font-black uppercase tracking-wider text-gray-400">Title</div>
             <h3 class="mt-2 text-xl font-black leading-8 text-gray-900 dark:text-white">{{ $marketNews->original_title ?: 'No source title' }}</h3>
-            <div class="mt-6 text-xs font-black uppercase tracking-wider text-gray-400">Summary supplied by Upstox</div>
+            <div class="mt-6 text-xs font-black uppercase tracking-wider text-gray-400">Summary supplied by source feed</div>
             <div class="mt-2 whitespace-pre-line text-sm leading-7 text-gray-700 dark:text-gray-300">{{ $marketNews->original_summary ?: 'No source summary was supplied.' }}</div>
             <div class="mt-6 text-xs font-black uppercase tracking-wider text-gray-400">Extracted source article</div>
             <div class="mt-2 max-h-[32rem] overflow-y-auto whitespace-pre-line rounded-xl bg-gray-50 p-4 text-sm leading-7 text-gray-700 dark:bg-black/20 dark:text-gray-300">{{ $marketNews->original_content ?: 'The full source article has not been fetched yet. Generate the story to fetch and validate it.' }}</div>

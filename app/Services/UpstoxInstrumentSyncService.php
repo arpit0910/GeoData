@@ -22,6 +22,426 @@ class UpstoxInstrumentSyncService
         'BSE_INDEX' => 'BSE',
     ];
 
+    public const DEFAULT_INDICES = [
+        [
+            'index_code' => 'NIFTY_50',
+            'index_name' => 'Nifty 50',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty 50',
+            'aliases' => ['NIFTY 50', 'NIFTY50', 'CNX NIFTY'],
+        ],
+        [
+            'index_code' => 'NIFTY_BANK',
+            'index_name' => 'Nifty Bank',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Bank',
+            'aliases' => ['NIFTY BANK', 'NIFTYBANK', 'BANK NIFTY', 'BANKNIFTY'],
+        ],
+        [
+            'index_code' => 'NIFTY_NEXT_50',
+            'index_name' => 'Nifty Next 50',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Next 50',
+            'aliases' => ['NIFTY NEXT 50', 'NIFTYNEXT50', 'JUNIOR NIFTY'],
+        ],
+        [
+            'index_code' => 'NIFTY_100',
+            'index_name' => 'Nifty 100',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty 100',
+            'aliases' => ['NIFTY 100', 'NIFTY100'],
+        ],
+        [
+            'index_code' => 'NIFTY_200',
+            'index_name' => 'Nifty 200',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty 200',
+            'aliases' => ['NIFTY 200', 'NIFTY200'],
+        ],
+        [
+            'index_code' => 'NIFTY_500',
+            'index_name' => 'Nifty 500',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty 500',
+            'aliases' => ['NIFTY 500', 'NIFTY500'],
+        ],
+        [
+            'index_code' => 'NIFTY_MIDCAP_50',
+            'index_name' => 'Nifty Midcap 50',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Midcap 50',
+            'aliases' => ['NIFTY MIDCAP 50', 'NIFTYMIDCAP50'],
+        ],
+        [
+            'index_code' => 'NIFTY_MIDCAP_100',
+            'index_name' => 'Nifty Midcap 100',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Midcap 100',
+            'aliases' => ['NIFTY MIDCAP 100', 'NIFTYMIDCAP100'],
+        ],
+        [
+            'index_code' => 'NIFTY_MIDCAP_150',
+            'index_name' => 'Nifty Midcap 150',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Midcap 150',
+            'aliases' => ['NIFTY MIDCAP 150', 'NIFTYMIDCAP150'],
+        ],
+        [
+            'index_code' => 'NIFTY_SMALLCAP_50',
+            'index_name' => 'Nifty Smallcap 50',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Smallcap 50',
+            'aliases' => ['NIFTY SMALLCAP 50', 'NIFTYSMALLCAP50'],
+        ],
+        [
+            'index_code' => 'NIFTY_SMALLCAP_100',
+            'index_name' => 'Nifty Smallcap 100',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Smallcap 100',
+            'aliases' => ['NIFTY SMALLCAP 100', 'NIFTYSMALLCAP100'],
+        ],
+        [
+            'index_code' => 'NIFTY_SMALLCAP_250',
+            'index_name' => 'Nifty Smallcap 250',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Smallcap 250',
+            'aliases' => ['NIFTY SMALLCAP 250', 'NIFTYSMALLCAP250'],
+        ],
+        [
+            'index_code' => 'NIFTY_MIDSMALLCAP_400',
+            'index_name' => 'Nifty Midsmallcap 400',
+            'exchange' => 'NSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Midsmallcap 400',
+            'aliases' => ['NIFTY MIDSMALLCAP 400', 'NIFTYMIDSMALLCAP400'],
+        ],
+        [
+            'index_code' => 'NIFTY_IT',
+            'index_name' => 'Nifty IT',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty IT',
+            'aliases' => ['NIFTY IT', 'NIFTYIT'],
+        ],
+        [
+            'index_code' => 'NIFTY_AUTO',
+            'index_name' => 'Nifty Auto',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Auto',
+            'aliases' => ['NIFTY AUTO', 'NIFTYAUTO'],
+        ],
+        [
+            'index_code' => 'NIFTY_FIN_SERVICE',
+            'index_name' => 'Nifty Financial Services',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Financial Services',
+            'aliases' => ['NIFTY FINANCIAL SERVICES', 'NIFTY FIN SERVICE', 'FINNIFTY', 'NIFTY_FINANCIAL_SERVICES'],
+        ],
+        [
+            'index_code' => 'NIFTY_FMCG',
+            'index_name' => 'Nifty FMCG',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty FMCG',
+            'aliases' => ['NIFTY FMCG', 'NIFTYFMCG'],
+        ],
+        [
+            'index_code' => 'NIFTY_MEDIA',
+            'index_name' => 'Nifty Media',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Media',
+            'aliases' => ['NIFTY MEDIA', 'NIFTYMEDIA'],
+        ],
+        [
+            'index_code' => 'NIFTY_METAL',
+            'index_name' => 'Nifty Metal',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Metal',
+            'aliases' => ['NIFTY METAL', 'NIFTYMETAL'],
+        ],
+        [
+            'index_code' => 'NIFTY_PHARMA',
+            'index_name' => 'Nifty Pharma',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Pharma',
+            'aliases' => ['NIFTY PHARMA', 'NIFTYPHARMA'],
+        ],
+        [
+            'index_code' => 'NIFTY_PSU_BANK',
+            'index_name' => 'Nifty PSU Bank',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty PSU Bank',
+            'aliases' => ['NIFTY PSU BANK', 'NIFTYPSUBANK'],
+        ],
+        [
+            'index_code' => 'NIFTY_PVT_BANK',
+            'index_name' => 'Nifty Private Bank',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Private Bank',
+            'aliases' => ['NIFTY PRIVATE BANK', 'NIFTY PVT BANK', 'NIFTY_PRIVATE_BANK'],
+        ],
+        [
+            'index_code' => 'NIFTY_REALTY',
+            'index_name' => 'Nifty Realty',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Realty',
+            'aliases' => ['NIFTY REALTY', 'NIFTYREALTY'],
+        ],
+        [
+            'index_code' => 'NIFTY_HEALTHCARE',
+            'index_name' => 'Nifty Healthcare',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Healthcare',
+            'aliases' => ['NIFTY HEALTHCARE', 'NIFTYHEALTHCARE'],
+        ],
+        [
+            'index_code' => 'NIFTY_CONSR_DURBL',
+            'index_name' => 'Nifty Consumer Durables',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Consumer Durables',
+            'aliases' => ['NIFTY CONSUMER DURABLES', 'NIFTY CONSR DURBL', 'NIFTY_CONSUMER_DURABLES'],
+        ],
+        [
+            'index_code' => 'NIFTY_OIL_AND_GAS',
+            'index_name' => 'Nifty Oil and Gas',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Oil and Gas',
+            'aliases' => ['NIFTY OIL & GAS', 'NIFTY OIL AND GAS', 'NIFTY_OIL_AND_GAS', 'NIFTY_OIL_GAS'],
+        ],
+        [
+            'index_code' => 'NIFTY_ENERGY',
+            'index_name' => 'Nifty Energy',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Energy',
+            'aliases' => ['NIFTY ENERGY', 'NIFTYENERGY'],
+        ],
+        [
+            'index_code' => 'NIFTY_INFRA',
+            'index_name' => 'Nifty Infra',
+            'exchange' => 'NSE',
+            'category' => 'Thematic',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Infra',
+            'aliases' => ['NIFTY INFRA', 'NIFTYINFRA'],
+        ],
+        [
+            'index_code' => 'NIFTY_COMMODITIES',
+            'index_name' => 'Nifty Commodities',
+            'exchange' => 'NSE',
+            'category' => 'Thematic',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Commodities',
+            'aliases' => ['NIFTY COMMODITIES', 'NIFTYCOMMODITIES'],
+        ],
+        [
+            'index_code' => 'NIFTY_INDIA_MFG',
+            'index_name' => 'Nifty India Manufacturing',
+            'exchange' => 'NSE',
+            'category' => 'Thematic',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty India Manufacturing',
+            'aliases' => ['NIFTY INDIA MANUFACTURING', 'NIFTY INDIA MFG'],
+        ],
+        [
+            'index_code' => 'NIFTY_CPSE',
+            'index_name' => 'Nifty CPSE',
+            'exchange' => 'NSE',
+            'category' => 'Thematic',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty CPSE',
+            'aliases' => ['NIFTY CPSE', 'NIFTYCPSE'],
+        ],
+        [
+            'index_code' => 'NIFTY_PSE',
+            'index_name' => 'Nifty PSE',
+            'exchange' => 'NSE',
+            'category' => 'Thematic',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty PSE',
+            'aliases' => ['NIFTY PSE', 'NIFTYPSE'],
+        ],
+        [
+            'index_code' => 'INDIA_VIX',
+            'index_name' => 'India VIX',
+            'exchange' => 'NSE',
+            'category' => 'Volatility',
+            'upstox_instrument_key' => 'NSE_INDEX|India VIX',
+            'aliases' => ['INDIA VIX', 'INDIAVIX', 'VIX'],
+        ],
+        // BSE
+        [
+            'index_code' => 'BSE_SENSEX',
+            'index_name' => 'S&P BSE SENSEX',
+            'exchange' => 'BSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'BSE_INDEX|SENSEX',
+            'aliases' => ['SENSEX', 'BSE SENSEX', 'S&P BSE SENSEX', 'BSESN'],
+        ],
+        [
+            'index_code' => 'BSE_100',
+            'index_name' => 'S&P BSE 100',
+            'exchange' => 'BSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE 100',
+            'aliases' => ['BSE 100', 'S&P BSE 100', 'BSE100'],
+        ],
+        [
+            'index_code' => 'BSE_200',
+            'index_name' => 'S&P BSE 200',
+            'exchange' => 'BSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE 200',
+            'aliases' => ['BSE 200', 'S&P BSE 200', 'BSE200'],
+        ],
+        [
+            'index_code' => 'BSE_500',
+            'index_name' => 'S&P BSE 500',
+            'exchange' => 'BSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE 500',
+            'aliases' => ['BSE 500', 'S&P BSE 500', 'BSE500'],
+        ],
+        [
+            'index_code' => 'BSE_MIDCAP',
+            'index_name' => 'S&P BSE MidCap',
+            'exchange' => 'BSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE MidCap',
+            'aliases' => ['BSE MIDCAP', 'S&P BSE MIDCAP', 'BSEMIDCAP'],
+        ],
+        [
+            'index_code' => 'BSE_SMALLCAP',
+            'index_name' => 'S&P BSE SmallCap',
+            'exchange' => 'BSE',
+            'category' => 'Broad-based',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE SmallCap',
+            'aliases' => ['BSE SMALLCAP', 'S&P BSE SMALLCAP', 'BSESMALLCAP'],
+        ],
+        [
+            'index_code' => 'BSE_BANKEX',
+            'index_name' => 'S&P BSE BANKEX',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Bankex',
+            'aliases' => ['BSE BANKEX', 'S&P BSE BANKEX', 'BANKEX'],
+        ],
+        [
+            'index_code' => 'BSE_AUTO',
+            'index_name' => 'S&P BSE Auto',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Auto',
+            'aliases' => ['BSE AUTO', 'S&P BSE AUTO', 'BSEAUTO'],
+        ],
+        [
+            'index_code' => 'BSE_FMCG',
+            'index_name' => 'S&P BSE FMCG',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE FMCG',
+            'aliases' => ['BSE FMCG', 'S&P BSE FMCG', 'BSEFMCG'],
+        ],
+        [
+            'index_code' => 'BSE_IT',
+            'index_name' => 'S&P BSE IT',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE IT',
+            'aliases' => ['BSE IT', 'S&P BSE IT', 'BSEIT'],
+        ],
+        [
+            'index_code' => 'BSE_HEALTHCARE',
+            'index_name' => 'S&P BSE Healthcare',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Healthcare',
+            'aliases' => ['BSE HEALTHCARE', 'S&P BSE HEALTHCARE'],
+        ],
+        [
+            'index_code' => 'BSE_METAL',
+            'index_name' => 'S&P BSE Metal',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Metal',
+            'aliases' => ['BSE METAL', 'S&P BSE METAL'],
+        ],
+        [
+            'index_code' => 'BSE_OIL_GAS',
+            'index_name' => 'S&P BSE Oil & Gas',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Oil & Gas',
+            'aliases' => ['BSE OIL & GAS', 'BSE OIL AND GAS', 'BSE_OIL_AND_GAS'],
+        ],
+        [
+            'index_code' => 'BSE_POWER',
+            'index_name' => 'S&P BSE Power',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Power',
+            'aliases' => ['BSE POWER', 'S&P BSE POWER'],
+        ],
+        [
+            'index_code' => 'BSE_REALTY',
+            'index_name' => 'S&P BSE Realty',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Realty',
+            'aliases' => ['BSE REALTY', 'S&P BSE REALTY'],
+        ],
+        [
+            'index_code' => 'BSE_CAPITAL_GOODS',
+            'index_name' => 'S&P BSE Capital Goods',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Capital Goods',
+            'aliases' => ['BSE CAPITAL GOODS', 'S&P BSE CAPITAL GOODS'],
+        ],
+        [
+            'index_code' => 'BSE_CONSUMER_DURABLES',
+            'index_name' => 'S&P BSE Consumer Durables',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE Consumer Durables',
+            'aliases' => ['BSE CONSUMER DURABLES', 'S&P BSE CONSUMER DURABLES'],
+        ],
+        [
+            'index_code' => 'BSE_TECK',
+            'index_name' => 'S&P BSE TECK',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE TECK',
+            'aliases' => ['BSE TECK', 'S&P BSE TECK'],
+        ],
+        [
+            'index_code' => 'BSE_PSU',
+            'index_name' => 'S&P BSE PSU',
+            'exchange' => 'BSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'BSE_INDEX|BSE PSU',
+            'aliases' => ['BSE PSU', 'S&P BSE PSU'],
+        ],
+    ];
+
     /** @return array<string, int> */
     public function syncFromUrl(bool $dryRun = false): array
     {
@@ -252,16 +672,24 @@ class UpstoxInstrumentSyncService
         });
 
         if ($indices !== []) {
-            $indexRows = array_map(function (array $row) use ($now): array {
-                return $row + [
+            $existingByKey = DB::table('indices')
+                ->whereIn('upstox_instrument_key', array_column($indices, 'upstox_instrument_key'))
+                ->pluck('index_code', 'upstox_instrument_key')
+                ->all();
+
+            $indexRows = [];
+            foreach ($indices as $code => $data) {
+                $targetCode = $existingByKey[$data['upstox_instrument_key']] ?? $code;
+                $data['index_code'] = $targetCode;
+                $indexRows[$targetCode] = $data + [
                     'upstox_synced_at' => $now,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
-            }, array_values($indices));
+            }
 
             DB::table('indices')->upsert(
-                $indexRows,
+                array_values($indexRows),
                 ['index_code'],
                 ['index_name', 'exchange', 'upstox_instrument_key', 'upstox_metadata', 'upstox_synced_at', 'updated_at']
             );
@@ -404,5 +832,112 @@ class UpstoxInstrumentSyncService
         $code = trim(preg_replace('/_+/', '_', str_replace([' ', '&', '(', ')'], '_', strtoupper($name))), '_');
 
         return $exchange === 'BSE' ? 'BSE_'.$code : $code;
+    }
+
+    /**
+     * Ensure all standard NSE and BSE indices have their Upstox instrument keys populated.
+     * Maps existing indices without keys, and creates default tracking indices if missing.
+     *
+     * @return int Total number of indices configured with instrument keys
+     */
+    public function ensureIndexInstrumentKeys(): int
+    {
+        $existingRows = DB::table('indices')->get();
+        $usedKeys = $existingRows
+            ->whereNotNull('upstox_instrument_key')
+            ->where('upstox_instrument_key', '<>', '')
+            ->pluck('upstox_instrument_key')
+            ->flip()
+            ->all();
+
+        $tokenMap = [];
+        foreach (self::DEFAULT_INDICES as $def) {
+            $tokenMap[$this->normalizeToken($def['index_code'])] = $def;
+            $tokenMap[$this->normalizeToken($def['index_name'])] = $def;
+            $tokenMap[$this->normalizeToken($def['upstox_instrument_key'])] = $def;
+            foreach ($def['aliases'] ?? [] as $alias) {
+                $tokenMap[$this->normalizeToken($alias)] = $def;
+            }
+        }
+
+        $now = now();
+
+        // 1. Update any existing index records that lack an instrument key
+        foreach ($existingRows as $row) {
+            $currentKey = trim((string) ($row->upstox_instrument_key ?? ''));
+            if ($currentKey !== '') {
+                continue;
+            }
+
+            $matchedDef = $tokenMap[$this->normalizeToken($row->index_code)]
+                ?? $tokenMap[$this->normalizeToken($row->index_name)]
+                ?? null;
+
+            $candidateKey = $matchedDef['upstox_instrument_key'] ?? null;
+
+            // Dynamic heuristic if not in default table:
+            if (!$candidateKey) {
+                $exchange = strtoupper(trim((string) ($row->exchange ?? 'NSE')));
+                $cleanName = trim((string) $row->index_name);
+                if ($exchange === 'BSE') {
+                    $symbol = preg_replace('/^(S&P\s+)?BSE\s+/i', '', $cleanName);
+                    $candidateKey = 'BSE_INDEX|' . ($symbol ?: $row->index_code);
+                } else {
+                    $candidateKey = 'NSE_INDEX|' . ($cleanName ?: $row->index_code);
+                }
+            }
+
+            if ($candidateKey && !isset($usedKeys[$candidateKey])) {
+                DB::table('indices')
+                    ->where('index_code', $row->index_code)
+                    ->update([
+                        'upstox_instrument_key' => $candidateKey,
+                        'category' => $row->category ?? ($matchedDef['category'] ?? null),
+                        'updated_at' => $now,
+                    ]);
+
+                $usedKeys[$candidateKey] = true;
+            }
+        }
+
+        // 2. Insert any default indices that do not exist at all (by code or instrument key)
+        $existingCodes = DB::table('indices')->pluck('index_code')->flip()->all();
+        $toInsert = [];
+
+        foreach (self::DEFAULT_INDICES as $def) {
+            $code = $def['index_code'];
+            $key = $def['upstox_instrument_key'];
+
+            if (isset($existingCodes[$code]) || isset($usedKeys[$key])) {
+                continue;
+            }
+
+            $toInsert[] = [
+                'index_code' => $code,
+                'index_name' => $def['index_name'],
+                'exchange' => $def['exchange'],
+                'category' => $def['category'],
+                'upstox_instrument_key' => $key,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            $existingCodes[$code] = true;
+            $usedKeys[$key] = true;
+        }
+
+        if ($toInsert !== []) {
+            DB::table('indices')->insert($toInsert);
+        }
+
+        return DB::table('indices')
+            ->whereNotNull('upstox_instrument_key')
+            ->where('upstox_instrument_key', '<>', '')
+            ->count();
+    }
+
+    private function normalizeToken(string $value): string
+    {
+        return strtolower((string) preg_replace('/[^a-zA-Z0-9]/', '', $value));
     }
 }

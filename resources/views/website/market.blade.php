@@ -56,7 +56,7 @@
                 <div>
                     <p class="market-kicker">Index snapshot</p>
                     <h2 id="market-indices-heading" class="mt-1.5 text-2xl sm:text-3xl font-black tracking-tight text-white">Market indices</h2>
-                    <p class="mt-2 text-sm leading-6 market-muted">Live Upstox prices when available, with the latest EOD close as fallback.</p>
+                    <p class="mt-2 text-sm leading-6 market-muted">Live market prices when available, with the latest EOD close as fallback.</p>
                 </div>
             </header>
 

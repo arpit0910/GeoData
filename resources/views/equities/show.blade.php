@@ -59,7 +59,7 @@
     <div class="mb-8 bg-rose-50/70 dark:bg-rose-500/5 border border-rose-200 dark:border-rose-500/20 rounded-2xl p-5">
         <div class="flex items-center gap-2 mb-4">
             <i class="fas fa-lock text-rose-500"></i>
-            <h3 class="text-xs font-black text-rose-700 dark:text-rose-300 uppercase tracking-widest">Private Upstox Mapping — Admin Only</h3>
+            <h3 class="text-xs font-black text-rose-700 dark:text-rose-300 uppercase tracking-widest">Private Feed Mapping — Admin Only</h3>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -78,7 +78,7 @@
             <h3 class="text-xs font-black text-gray-700 dark:text-gray-200 uppercase tracking-widest">
                 <i class="fas fa-sliders-h text-violet-500 mr-2"></i> Exchange Trading Metadata
             </h3>
-            <span class="text-[10px] text-gray-400">Upstox synced {{ $equity->upstox_synced_at?->format('d M Y, H:i') ?? 'not yet' }}</span>
+            <span class="text-[10px] text-gray-400">Feed synced {{ $equity->upstox_synced_at?->format('d M Y, H:i') ?? 'not yet' }}</span>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
             @foreach([

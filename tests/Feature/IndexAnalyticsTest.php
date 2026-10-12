@@ -82,7 +82,7 @@ class IndexAnalyticsTest extends TestCase
             ->assertOk()
             ->assertSee('Index Holdings')
             ->assertSee('Reliance Industries')
-            ->assertSee(route('market.news'), false)
+            ->assertSee(route('admin.market-news.index'), false)
             ->assertSee('News');
 
         $this->actingAs($admin)

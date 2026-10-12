@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Services\UpstoxInstrumentSyncService;
 
 class IndexController extends Controller
 {
@@ -321,24 +322,30 @@ class IndexController extends Controller
     }
 
     /**
-     * Display live synced index quotes from Upstox.
+     * Display live synced index quotes.
      */
-    public function quotes(Request $request)
+    public function quotes(Request $request, UpstoxInstrumentSyncService $syncService)
     {
+        if (Index::query()->whereNotNull('upstox_instrument_key')->where('upstox_instrument_key', '<>', '')->doesntExist()) {
+            $syncService->ensureIndexInstrumentKeys();
+        }
+
         $filters = $request->validate([
             'search'    => 'nullable|string|max:100',
             'exchange'  => 'nullable|in:NSE,BSE',
             'category'  => 'nullable|string|max:100',
-            'freshness' => 'nullable|in:recent,stale',
+            'freshness' => 'nullable|in:recent,stale,pending',
         ]);
 
         $cutoff = now()->utc()->subSeconds(900)->format('Y-m-d H:i:s');
-        $query = DB::table('index_quotes as q')
-            ->leftJoin('indices as i', 'i.index_code', '=', 'q.index_code');
+        $query = DB::table('indices as i')
+            ->leftJoin('index_quotes as q', 'i.index_code', '=', 'q.index_code')
+            ->whereNotNull('i.upstox_instrument_key')
+            ->where('i.upstox_instrument_key', '<>', '');
 
         if ($search = trim($filters['search'] ?? '')) {
             $query->where(function ($q) use ($search) {
-                $q->where('q.index_code', 'like', "%{$search}%")
+                $q->where('i.index_code', 'like', "%{$search}%")
                   ->orWhere('i.index_name', 'like', "%{$search}%")
                   ->orWhere('i.category', 'like', "%{$search}%");
             });
@@ -355,15 +362,18 @@ class IndexController extends Controller
         if (!empty($filters['freshness'])) {
             if ($filters['freshness'] === 'recent') {
                 $query->where('q.quoted_at', '>=', $cutoff);
-            } else {
-                $query->where(function ($q) use ($cutoff) {
-                    $q->whereNull('q.quoted_at')->orWhere('q.quoted_at', '<', $cutoff);
-                });
+            } elseif ($filters['freshness'] === 'stale') {
+                $query->whereNotNull('q.price')
+                      ->where(function ($q) use ($cutoff) {
+                          $q->whereNull('q.quoted_at')->orWhere('q.quoted_at', '<', $cutoff);
+                      });
+            } elseif ($filters['freshness'] === 'pending') {
+                $query->whereNull('q.price');
             }
         }
 
         $stats = [
-            'total'        => DB::table('index_quotes')->count(),
+            'total'        => DB::table('indices')->whereNotNull('upstox_instrument_key')->where('upstox_instrument_key', '<>', '')->count(),
             'recent'       => DB::table('index_quotes')->where('quoted_at', '>=', $cutoff)->count(),
             'gainers'      => DB::table('index_quotes')->where('change', '>', 0)->count(),
             'losers'       => DB::table('index_quotes')->where('change', '<', 0)->count(),
@@ -371,13 +381,23 @@ class IndexController extends Controller
         ];
 
         $quotes = $query->select(
-            'q.*',
+            'i.index_code',
             'i.index_name',
             'i.exchange',
-            'i.category'
+            'i.category',
+            'i.upstox_instrument_key',
+            'q.price',
+            'q.previous_close',
+            'q.change',
+            'q.change_percent',
+            'q.volume',
+            'q.quoted_at',
+            'q.fetched_at',
+            'q.payload'
         )
+        ->orderByRaw("CASE WHEN q.price IS NOT NULL THEN 0 ELSE 1 END")
         ->orderByDesc('q.fetched_at')
-        ->orderBy('q.index_code')
+        ->orderBy('i.index_code')
         ->paginate(25)
         ->withQueryString();
 
@@ -399,14 +419,18 @@ class IndexController extends Controller
     }
 
     /**
-     * Manually trigger live index quotes synchronization from Upstox.
+     * Manually trigger live index quotes synchronization.
      */
-    public function syncQuotes()
+    public function syncQuotes(UpstoxInstrumentSyncService $syncService)
     {
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
 
         try {
+            if (Index::query()->whereNotNull('upstox_instrument_key')->where('upstox_instrument_key', '<>', '')->doesntExist()) {
+                $syncService->ensureIndexInstrumentKeys();
+            }
+
             $exitCode = Artisan::call('market:sync-upstox-index-quotes', ['--batch-size' => 500]);
             $output = trim(Artisan::output());
         } catch (\Throwable $exception) {
