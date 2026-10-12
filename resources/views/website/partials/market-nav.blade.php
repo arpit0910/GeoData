@@ -23,6 +23,7 @@
 @php
     $marketLinks = [
         ['market.index', 'Overview'],
+        ['market.indices', 'Indices'],
         ['market.stocks', 'Stocks'],
         ['market.mutual-funds', 'Mutual funds'],
         ['market.news', 'News'],
@@ -30,9 +31,6 @@
         ['market.fundamentals', 'Fundamentals'],
         ['market.corporate-actions', 'Corporate actions'],
     ];
-    if (Route::has('market.indices')) {
-        array_splice($marketLinks, 1, 0, [["market.indices", "Indices"]]);
-    }
 @endphp
 
 <div class="border-b border-white/10 bg-[#090d14]">
@@ -46,7 +44,7 @@
         <div class="mt-5 sm:mt-6 border-t border-white/[.07]">
             <nav class="market-nav-scroll flex items-center gap-6 sm:gap-8 overflow-x-auto" aria-label="Market sections">
                 @foreach($marketLinks as [$routeName, $label])
-                    <a href="{{ route($routeName) }}"
+                    <a href="{{ $routeName === 'market.indices' && !Route::has($routeName) ? url('/market/indices') : route($routeName) }}"
                        class="shrink-0 whitespace-nowrap border-b-2 py-3.5 text-sm font-semibold transition-colors {{ request()->routeIs($routeName) || request()->routeIs($routeName.'.*') ? 'border-amber-400 text-amber-400' : 'border-transparent text-slate-400 hover:border-slate-600 hover:text-white' }}">
                         {{ $label }}
                     </a>

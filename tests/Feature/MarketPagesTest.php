@@ -91,7 +91,10 @@ class MarketPagesTest extends TestCase
         $this->get(route('market.indices'))
             ->assertOk()
             ->assertSee('Nifty 50')
-            ->assertSee('Growth signal');
+            ->assertSee('Growth signal')
+            ->assertSee('Live')
+            ->assertSee('IST')
+            ->assertSee(route('market.indices'), false);
 
         $this->get(route('market.indices.show', $nifty))
             ->assertOk()

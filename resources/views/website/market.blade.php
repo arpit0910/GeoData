@@ -35,17 +35,15 @@
             $marketCoverage = [
                 ['Stocks', $stats['total_stocks'], 'market.stocks', 'fa-chart-line', 'Equities'],
                 ['Live quotes', $stats['live_quotes'], 'market.stocks', 'fa-bolt', 'Latest prices'],
+                ['Indices', $stats['total_indices'] ?? $indices->count(), 'market.indices', 'fa-arrow-trend-up', 'Synced indices'],
                 ['Mutual funds', $stats['total_mfs'], 'market.mutual-funds', 'fa-layer-group', 'AMFI schemes'],
                 ['News', $stats['total_news'], 'market.news', 'fa-newspaper', 'Market stories'],
                 ['Actions', $stats['total_corporate_actions'], 'market.corporate-actions', 'fa-calendar-check', 'Company events'],
             ];
-            if (Route::has('market.indices')) {
-                array_splice($marketCoverage, 2, 0, [['Indices', $stats['total_indices'] ?? $indices->count(), 'market.indices', 'fa-arrow-trend-up', 'Synced indices']]);
-            }
         @endphp
         <section aria-label="Market coverage" class="grid grid-cols-2 lg:grid-cols-6 gap-2.5 sm:gap-3 mb-8 sm:mb-10">
             @foreach($marketCoverage as $index => [$label, $value, $routeName, $icon, $note])
-                <a href="{{ route($routeName) }}" class="market-panel p-4 group hover:-translate-y-0.5 hover:border-amber-400/40 transition-all">
+                <a href="{{ $routeName === 'market.indices' && !Route::has($routeName) ? url('/market/indices') : route($routeName) }}" class="market-panel p-4 group hover:-translate-y-0.5 hover:border-amber-400/40 transition-all">
                     <div class="flex items-center justify-between gap-2">
                         <span class="grid h-9 w-9 place-items-center rounded-xl bg-amber-400/10 text-amber-400"><i class="fas {{ $icon }} text-sm"></i></span>
                         <i class="fas fa-arrow-right text-xs text-slate-600 group-hover:text-amber-400 transition-colors"></i>
@@ -64,9 +62,7 @@
                     <h2 id="market-indices-heading" class="mt-1.5 text-2xl sm:text-3xl font-black tracking-tight text-white">Market indices</h2>
                     <p class="mt-2 text-sm leading-6 market-muted">Live market prices when available, with the latest EOD close as fallback.</p>
                 </div>
-                @if(Route::has('market.indices'))
-                    <a href="{{ route('market.indices') }}" class="shrink-0 text-sm font-bold text-amber-400 hover:text-amber-300">View all indices <i class="fas fa-arrow-right ml-1"></i></a>
-                @endif
+                <a href="{{ Route::has('market.indices') ? route('market.indices') : url('/market/indices') }}" class="shrink-0 text-sm font-bold text-amber-400 hover:text-amber-300">View all indices <i class="fas fa-arrow-right ml-1"></i></a>
             </header>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
@@ -84,7 +80,7 @@
                                 : \Carbon\Carbon::parse($index->price_time)->format('d M Y'))
                             : null;
                     @endphp
-                    <a href="{{ Route::has('market.indices.show') ? route('market.indices.show', $index->index_code) : '#market-indices' }}" class="market-panel min-w-0 p-4 sm:p-5 transition-colors hover:border-amber-400/40">
+                    <a href="{{ Route::has('market.indices.show') ? route('market.indices.show', $index->index_code) : url('/market/indices/'.rawurlencode($index->index_code)) }}" class="market-panel min-w-0 p-4 sm:p-5 transition-colors hover:border-amber-400/40">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <h3 class="truncate font-extrabold text-white" title="{{ $index->index_name }}">{{ $index->index_name }}</h3>
