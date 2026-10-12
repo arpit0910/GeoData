@@ -49,6 +49,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     <style>
+        [x-cloak] { display: none !important; }
         body { font-family: 'Inter', sans-serif; }
         .dataTables_wrapper .dataTables_length select { padding-right: 2rem; border-radius: 0.375rem; border-color: #d1d5db; }
         .dataTables_wrapper .dataTables_filter input { padding: 0.5rem 0.75rem; border-radius: 0.375rem; border-color: #d1d5db; border-width: 1px; }
@@ -126,204 +127,364 @@
                         <img src="{{ asset('assets/img/logo.png') }}?v=1.0.1" alt="SetuGeo Logo" class="h-20 w-auto">
                     </a>
                 </div>
-                <div class="mt-4 px-4 pb-8 space-y-1.5">
-                    <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('dashboard') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
-                        <i class="fas fa-home mr-3 w-5"></i>
-                        Dashboard
+                                <div class="mt-4 px-3 pb-8 space-y-1">
+                    {{-- General Overview Links --}}
+                    <a href="{{ route('dashboard') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('dashboard') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-home"></i></span>
+                        <span class="truncate">Dashboard</span>
                     </a>
                     
-                    <a href="{{ route('profile.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('profile.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-user-circle mr-3 w-5"></i>
-                        Profile
+                    <a href="{{ route('profile.index') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('profile.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-user-circle"></i></span>
+                        <span class="truncate">Profile</span>
                     </a>
 
-                    <a href="{{ route('docs') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('docs') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-book-open mr-3 w-5"></i>
-                        Docs
+                    <a href="{{ route('docs') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('docs') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-book-open"></i></span>
+                        <span class="truncate">Docs</span>
                     </a>
+
+                    <a href="{{ route('market.index') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('market.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-tower-broadcast"></i></span>
+                        <span class="truncate flex-1">Live Market</span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-2 flex-shrink-0"></span>
+                    </a>
+
+                    {{-- Customer / Non-Admin Links --}}
                     @if(auth()->check() && !auth()->user()->is_admin)
-                    <a href="{{ route('available-apis.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('available-apis.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-code mr-3 w-5"></i>
-                        Available APIs
+                    <div class="pt-4 pb-1">
+                        <p class="px-3 text-[10px] font-bold text-amber-200/80 dark:text-gray-500 uppercase tracking-[0.2em]">API Access</p>
+                    </div>
+                    <a href="{{ route('available-apis.index') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('available-apis.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-code"></i></span>
+                        <span class="truncate">Available APIs</span>
                     </a>
-                    @endif
-                    @if(auth()->check() && auth()->user()->is_admin)
-                    <a href="{{ route('admin.api-tester.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.api-tester.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-vial mr-3 w-5"></i>
-                        API Tester
+
+                    <a href="{{ route('api-keys.index') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('api-keys.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-key"></i></span>
+                        <span class="truncate">API Keys</span>
+                    </a>
+
+                    <a href="{{ route('api-logs.index') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('api-logs.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-history"></i></span>
+                        <span class="truncate">API Logs</span>
+                    </a>
+
+                    <a href="{{ route('transactions.index') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('transactions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-file-invoice"></i></span>
+                        <span class="truncate">Transactions</span>
+                    </a>
+
+                    <a href="{{ route('support.index') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('support.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-life-ring"></i></span>
+                        <span class="truncate">Help & Support</span>
                     </a>
                     @endif
                     
-                    @if(auth()->check() && !auth()->user()->is_admin)
-                    <a href="{{ route('api-keys.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('api-keys.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-key mr-3 w-5"></i>
-                        API Keys
-                    </a>
-
-                    <a href="{{ route('api-logs.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('api-logs.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-history mr-3 w-5"></i>
-                        API Logs
-                    </a>
-
-                    <a href="{{ route('transactions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('transactions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-file-invoice mr-3 w-5"></i>
-                        Transactions
-                    </a>
-
-                    <a href="{{ route('support.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('support.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-life-ring mr-3 w-5"></i>
-                        Help & Support
-                    </a>
-                    @endif
-                    
+                    {{-- Admin Sections --}}
                     @if(auth()->check() && auth()->user()->is_admin)
-                    <div class="pt-6 pb-2">
-                        <p class="px-4 text-[10px] font-bold text-amber-200 dark:text-gray-500 uppercase tracking-[0.2em]">Administration</p>
+
+                    {{-- 1. MARKET DATA --}}
+                    <div class="pt-4 pb-1">
+                        <p class="px-3 text-[10px] font-bold text-amber-200/80 dark:text-gray-500 uppercase tracking-[0.2em]">Market Data</p>
                     </div>
-                    <a href="{{ route('user.list') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('user.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
-                        <i class="fas fa-users mr-3 w-5"></i>
-                        Users
-                    </a>
-                    <a href="{{ route('countries.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('countries.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-globe mr-3 w-5"></i>
-                        Countries
-                    </a>
-                    <a href="{{ route('admin.currency-conversions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.currency-conversions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-coins mr-3 w-5"></i>
-                        Currency Rates
-                    </a>
-                    <a href="{{ route('states.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('states.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-layer-group mr-3 w-5"></i>
-                        States
-                    </a>
-                    <a href="{{ route('cities.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('cities.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-building mr-3 w-5"></i>
-                        Cities
-                    </a>
-                    <a href="{{ route('regions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('regions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-map-marked-alt mr-3 w-5"></i>
-                        Regions
-                    </a>
-                    <a href="{{ route('subregions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('subregions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-map-pin mr-3 w-5"></i>
-                        Sub Regions
-                    </a>
-                    <a href="{{ route('timezones.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('timezones.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-clock mr-3 w-5"></i>
-                        Timezones
-                    </a>
-                    <a href="{{ route('pincodes.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('pincodes.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-location-dot mr-3 w-5"></i>
-                        Pincodes
-                    </a>
-                    <a href="{{ route('banks.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('banks.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-university mr-3 w-5"></i>
-                        Banks
-                    </a>
-                    <a href="{{ route('bank-branches.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('bank-branches.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-code-branch mr-3 w-5"></i>
-                        Bank Branches
-                    </a>
-                    <a href="{{ route('equities.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('equities.index') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-chart-line mr-3 w-5"></i>
-                        Equities
-                    </a>
-                    <a href="{{ route('admin.market-datasets.global-instruments') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.market-datasets.global-instruments*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-globe mr-3 w-5"></i>
-                        Global Instruments
-                    </a>
-                    <a href="{{ route('admin.market-datasets.company-fundamentals') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.market-datasets.company-fundamentals*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-file-invoice mr-3 w-5"></i>
-                        Company Fundamentals
-                    </a>
-                    <a href="{{ route('admin.corporate-actions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-calendar-check mr-3 w-5"></i>
-                        Corporate Actions
-                    </a>
-                    <a href="{{ route('admin.exchange-calendar.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.exchange-calendar.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-calendar-days mr-3 w-5"></i>
-                        Exchange Calendar
-                    </a>
-                    <a href="{{ route('equities.prices') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('equities.prices') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-indian-rupee-sign mr-3 w-5"></i>
-                        Equity Prices
-                    </a>
-                    <a href="{{ route('equities.quotes') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('equities.quotes') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-clock mr-3 w-5"></i>
-                        Latest Stock Quotes
-                    </a>
-                    <a href="{{ route('admin.market-news.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.market-news.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-newspaper mr-3 w-5"></i>
-                        News
-                    </a>
-                    <a href="{{ route('admin.indices.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.indices.index') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-arrow-trend-up mr-3 w-5"></i>
-                        Indices
-                    </a>
-                    <a href="{{ route('admin.indices.prices') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.indices.prices') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-list-ol mr-3 w-5"></i>
-                        Index Prices
-                    </a>
-                    <a href="{{ route('mutual-funds.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('mutual-funds.index') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-building-columns mr-3 w-5"></i>
-                        Mutual Funds
-                    </a>
-                    <a href="{{ route('mutual-funds.prices') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('mutual-funds.prices') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-chart-pie mr-3 w-5"></i>
-                        MF NAV Prices
-                    </a>
-                    <a href="{{ route('plans.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('plans.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-credit-card mr-3 w-5"></i>
-                        Plans
-                    </a>
-                    <a href="{{ route('subscription-features.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('subscription-features.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-sliders-h mr-3 w-5"></i>
-                        Subscription Features
-                    </a>
-                    <a href="{{ route('admin.subscriptions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.subscriptions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-file-invoice-dollar mr-3 w-5"></i>
-                        Subscriptions
-                    </a>
-                    <a href="{{ route('admin.coupons.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.coupons.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-ticket-alt mr-3 w-5"></i>
-                        Coupons
-                    </a>
-                    <a href="{{ route('admin.transactions.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.transactions.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-receipt mr-3 w-5"></i>
-                        Transactions
-                    </a>
-                    <div class="pt-6 pb-2">
-                        <p class="px-4 text-[10px] font-bold text-amber-200 dark:text-gray-500 uppercase tracking-[0.2em]">Support</p>
+
+                    {{-- Equities Dropdown --}}
+                    @php
+                        $isEquitiesActive = request()->routeIs('equities.*') || request()->routeIs('admin.market-datasets.*') || request()->routeIs('admin.corporate-actions.*') || request()->routeIs('admin.exchange-calendar.*');
+                    @endphp
+                    <div x-data="{ open: {{ $isEquitiesActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isEquitiesActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-chart-line"></i></span>
+                                <span class="truncate">Equities</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('equities.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('equities.index') || request()->routeIs('equities.show') || request()->routeIs('equities.edit') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('equities.index') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">All Equities</span>
+                            </a>
+                            <a href="{{ route('equities.prices') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('equities.prices*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('equities.prices*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Equity Prices</span>
+                            </a>
+                            <a href="{{ route('equities.quotes') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('equities.quotes*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('equities.quotes*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Latest Quotes</span>
+                            </a>
+                            <a href="{{ route('admin.market-datasets.company-fundamentals') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.market-datasets.company-fundamentals*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-datasets.company-fundamentals*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Fundamentals</span>
+                            </a>
+                            <a href="{{ route('admin.corporate-actions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Corporate Actions</span>
+                            </a>
+                            <a href="{{ route('admin.exchange-calendar.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.exchange-calendar.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.exchange-calendar.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Exchange Calendar</span>
+                            </a>
+                            <a href="{{ route('admin.market-datasets.global-instruments') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.market-datasets.global-instruments*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-datasets.global-instruments*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Global Instruments</span>
+                            </a>
+                        </div>
                     </div>
-                    <a href="{{ route('admin.ticket-categories.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.ticket-categories.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
-                        <i class="fas fa-tags mr-3 w-5"></i>
-                        Categories
+
+                    {{-- Indices Dropdown --}}
+                    @php
+                        $isIndicesActive = request()->routeIs('admin.indices.*');
+                    @endphp
+                    <div x-data="{ open: {{ $isIndicesActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isIndicesActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-arrow-trend-up"></i></span>
+                                <span class="truncate">Indices</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('admin.indices.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.indices.index') || request()->routeIs('admin.indices.show') || request()->routeIs('admin.indices.edit') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.indices.index') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">All Indices</span>
+                            </a>
+                            <a href="{{ route('admin.indices.prices') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.indices.prices*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.indices.prices*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Index Prices</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Mutual Funds Dropdown --}}
+                    @php
+                        $isMfActive = request()->routeIs('mutual-funds.*');
+                    @endphp
+                    <div x-data="{ open: {{ $isMfActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isMfActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-chart-pie"></i></span>
+                                <span class="truncate">Mutual Funds</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('mutual-funds.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('mutual-funds.index') || request()->routeIs('mutual-funds.show') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('mutual-funds.index') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">All Mutual Funds</span>
+                            </a>
+                            <a href="{{ route('mutual-funds.prices') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('mutual-funds.prices*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('mutual-funds.prices*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">MF NAV Prices</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Market News (Direct Item) --}}
+                    <a href="{{ route('admin.market-news.index') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('admin.market-news.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-newspaper"></i></span>
+                        <span class="truncate">Market News</span>
                     </a>
-                    <a href="{{ route('admin.ticket-sub-categories.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.ticket-sub-categories.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-sitemap mr-3 w-5"></i>
-                        Sub-Categories
+
+                    {{-- 2. GEOGRAPHY & BANKING --}}
+                    <div class="pt-4 pb-1">
+                        <p class="px-3 text-[10px] font-bold text-amber-200/80 dark:text-gray-500 uppercase tracking-[0.2em]">Geo &amp; Banking</p>
+                    </div>
+
+                    {{-- Locations Dropdown --}}
+                    @php
+                        $isGeoActive = request()->routeIs('countries.*') || request()->routeIs('states.*') || request()->routeIs('cities.*') || request()->routeIs('regions.*') || request()->routeIs('subregions.*') || request()->routeIs('pincodes.*') || request()->routeIs('timezones.*');
+                    @endphp
+                    <div x-data="{ open: {{ $isGeoActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isGeoActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-globe"></i></span>
+                                <span class="truncate">Locations</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('countries.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('countries.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('countries.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Countries</span>
+                            </a>
+                            <a href="{{ route('states.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('states.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('states.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">States</span>
+                            </a>
+                            <a href="{{ route('cities.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('cities.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('cities.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Cities</span>
+                            </a>
+                            <a href="{{ route('regions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('regions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('regions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Regions</span>
+                            </a>
+                            <a href="{{ route('subregions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('subregions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('subregions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Sub Regions</span>
+                            </a>
+                            <a href="{{ route('pincodes.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('pincodes.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('pincodes.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Pincodes</span>
+                            </a>
+                            <a href="{{ route('timezones.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('timezones.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('timezones.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Timezones</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Banking & Currency Dropdown --}}
+                    @php
+                        $isBankingActive = request()->routeIs('banks.*') || request()->routeIs('bank-branches.*') || request()->routeIs('admin.currency-conversions.*');
+                    @endphp
+                    <div x-data="{ open: {{ $isBankingActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isBankingActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-university"></i></span>
+                                <span class="truncate">Banking &amp; Rates</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('banks.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('banks.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('banks.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Banks</span>
+                            </a>
+                            <a href="{{ route('bank-branches.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('bank-branches.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('bank-branches.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Bank Branches</span>
+                            </a>
+                            <a href="{{ route('admin.currency-conversions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.currency-conversions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.currency-conversions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Currency Rates</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- 3. MANAGEMENT & BILLING --}}
+                    <div class="pt-4 pb-1">
+                        <p class="px-3 text-[10px] font-bold text-amber-200/80 dark:text-gray-500 uppercase tracking-[0.2em]">Management</p>
+                    </div>
+
+                    {{-- Users (Direct Item) --}}
+                    <a href="{{ route('user.list') }}" class="w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg {{ request()->routeIs('user.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                        <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-users"></i></span>
+                        <span class="truncate">Users</span>
                     </a>
-                    <a href="{{ route('admin.website-queries.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.website-queries.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-envelope-open-text mr-3 w-5"></i>
-                        Website Queries
-                    </a>
-                    <a href="{{ route('admin.tickets.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.tickets.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-headset mr-3 w-5"></i>
-                        User Tickets
-                    </a>
-                    <a href="{{ route('faqs.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('faqs.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-question-circle mr-3 w-5"></i>
-                        FAQs
-                    </a>
-                    <a href="{{ route('admin.crons.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.crons.*') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-clock mr-3 w-5"></i>
-                        Cron Jobs
-                    </a>
-                    <a href="{{ route('admin.logs') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.logs') ? 'bg-amber-700 dark:bg-amber-600/20 text-white dark:text-amber-500 shadow-sm' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200 mt-2">
-                        <i class="fas fa-terminal mr-3 w-5"></i>
-                        Server Logs
-                    </a>
-                    <!-- Add more navigation items here -->
+
+                    {{-- Plans & Subscriptions Dropdown --}}
+                    @php
+                        $isBillingActive = request()->routeIs('plans.*') || request()->routeIs('subscription-features.*') || request()->routeIs('admin.subscriptions.*') || request()->routeIs('admin.coupons.*') || request()->routeIs('admin.transactions.*');
+                    @endphp
+                    <div x-data="{ open: {{ $isBillingActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isBillingActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-file-invoice-dollar"></i></span>
+                                <span class="truncate">Plans &amp; Billing</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('plans.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('plans.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('plans.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Plans</span>
+                            </a>
+                            <a href="{{ route('admin.subscriptions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.subscriptions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.subscriptions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Subscriptions</span>
+                            </a>
+                            <a href="{{ route('subscription-features.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('subscription-features.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('subscription-features.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Subscription Features</span>
+                            </a>
+                            <a href="{{ route('admin.coupons.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.coupons.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.coupons.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Coupons</span>
+                            </a>
+                            <a href="{{ route('admin.transactions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.transactions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.transactions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Transactions</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- 4. SUPPORT --}}
+                    <div class="pt-4 pb-1">
+                        <p class="px-3 text-[10px] font-bold text-amber-200/80 dark:text-gray-500 uppercase tracking-[0.2em]">Support</p>
+                    </div>
+
+                    {{-- Support & Tickets Dropdown --}}
+                    @php
+                        $isSupportActive = request()->routeIs('admin.tickets.*') || request()->routeIs('admin.ticket-categories.*') || request()->routeIs('admin.ticket-sub-categories.*') || request()->routeIs('admin.website-queries.*') || request()->routeIs('faqs.*');
+                    @endphp
+                    <div x-data="{ open: {{ $isSupportActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isSupportActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-headset"></i></span>
+                                <span class="truncate">Support &amp; Help</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('admin.tickets.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.tickets.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.tickets.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">User Tickets</span>
+                            </a>
+                            <a href="{{ route('admin.ticket-categories.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.ticket-categories.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.ticket-categories.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Categories</span>
+                            </a>
+                            <a href="{{ route('admin.ticket-sub-categories.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.ticket-sub-categories.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.ticket-sub-categories.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Sub-Categories</span>
+                            </a>
+                            <a href="{{ route('admin.website-queries.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.website-queries.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.website-queries.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Website Queries</span>
+                            </a>
+                            <a href="{{ route('faqs.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('faqs.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('faqs.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">FAQs</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- 5. SYSTEM & DEVELOPER --}}
+                    <div class="pt-4 pb-1">
+                        <p class="px-3 text-[10px] font-bold text-amber-200/80 dark:text-gray-500 uppercase tracking-[0.2em]">Developer &amp; System</p>
+                    </div>
+
+                    {{-- Developer & System Tools Dropdown --}}
+                    @php
+                        $isSystemActive = request()->routeIs('admin.api-tester.*') || request()->routeIs('admin.crons.*') || request()->routeIs('admin.logs');
+                    @endphp
+                    <div x-data="{ open: {{ $isSystemActive ? 'true' : 'false' }} }">
+                        <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isSystemActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
+                            <div class="flex items-center min-w-0">
+                                <span class="w-5 text-center mr-3 flex-shrink-0 text-sm"><i class="fas fa-terminal"></i></span>
+                                <span class="truncate">System Tools</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('admin.api-tester.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.api-tester.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.api-tester.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">API Tester</span>
+                            </a>
+                            <a href="{{ route('admin.crons.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.crons.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.crons.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Cron Jobs</span>
+                            </a>
+                            <a href="{{ route('admin.logs') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.logs') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.logs') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Server Logs</span>
+                            </a>
+                        </div>
+                    </div>
+
                     @endif
                 </div>
             </nav>
