@@ -14,6 +14,7 @@ class RepairMarketPerformanceCommand extends Command
                             {--date= : Repair only a single trading date (YYYY-MM-DD)}
                             {--from= : Start date for repair range}
                             {--to= : End date for repair range (defaults to today)}
+                            {--batch=100 : Equity rows processed per memory-bounded batch}
                             {--equities-only : Repair only equity NSE/BSE performance values}
                             {--indices-only : Repair only index historical return values}';
 
@@ -21,7 +22,7 @@ class RepairMarketPerformanceCommand extends Command
 
     public function handle(): int
     {
-        ini_set('memory_limit', '-1');
+        ini_set('memory_limit', '512M');
         DB::disableQueryLog();
 
         $repairEquities = ! $this->option('indices-only');
@@ -107,7 +108,7 @@ class RepairMarketPerformanceCommand extends Command
         $query = DB::table($table)->select('traded_date')->distinct()->orderBy('traded_date');
 
         if ($this->option('date')) {
-            $query->where('traded_date', $this->option('date'));
+            $query->whereDate('traded_date', $this->option('date'));
         } elseif ($this->option('from')) {
             $query->whereBetween('traded_date', [
                 $this->option('from'),
@@ -123,91 +124,90 @@ class RepairMarketPerformanceCommand extends Command
     private function repairEquityDate(Carbon $date): void
     {
         $dateStr = $date->format('Y-m-d');
-        $prices = EquityPrice::where('traded_date', $dateStr)->get();
-
-        if ($prices->isEmpty()) {
+        $query = EquityPrice::whereDate('traded_date', $dateStr);
+        if (! (clone $query)->exists()) {
             return;
         }
 
         $windowMap = $this->buildEquityWindowMap($date);
         $targetDates = collect($windowMap)->flatten()->filter()->unique()->values()->all();
-        $equityIds = $prices->pluck('equity_id')->filter()->unique()->values()->all();
-
-        $historicalData = empty($targetDates) || empty($equityIds)
-            ? collect()
-            : EquityPrice::whereIn('equity_id', $equityIds)
-                ->whereIn('traded_date', $targetDates)
-                ->select('equity_id', 'traded_date', 'nse_close', 'bse_close')
-                ->get()
-                ->groupBy('equity_id');
-
-        $updates = [];
         $now = now();
+        $batchSize = max(1, (int) $this->option('batch'));
 
-        foreach ($prices as $price) {
-            $history = $historicalData->get($price->equity_id);
-            $historyByDate = $history
-                ? $history->keyBy(fn($item) => $item->traded_date instanceof Carbon ? $item->traded_date->format('Y-m-d') : (string) $item->traded_date)
-                : collect();
+        $query->orderBy('id')->chunkById($batchSize, function ($prices) use ($targetDates, $windowMap, $now) {
+            $equityIds = $prices->pluck('equity_id')->filter()->unique()->values()->all();
+            $historicalData = empty($targetDates) || empty($equityIds)
+                ? collect()
+                : DB::table('equity_prices')
+                    ->whereIn('equity_id', $equityIds)
+                    ->whereIn('traded_date', $targetDates)
+                    ->select('equity_id', 'traded_date', 'nse_close', 'bse_close')
+                    ->get()
+                    ->groupBy('equity_id');
+            $updates = [];
 
-            $update = [
-                'id' => $price->id,
-                'spread' => ($price->nse_close > 0 && $price->bse_close > 0) ? abs($price->nse_close - $price->bse_close) : 0,
-                'nse_gap_pct' => $price->nse_prev_close > 0 ? (($price->nse_open - $price->nse_prev_close) / $price->nse_prev_close) * 100 : null,
-                'nse_range_pct' => $price->nse_prev_close > 0 ? (($price->nse_high - $price->nse_low) / $price->nse_prev_close) * 100 : null,
-                'nse_intraday_chg_pct' => $price->nse_open > 0 ? (($price->nse_close - $price->nse_open) / $price->nse_open) * 100 : null,
-                'nse_avg_ticket_size' => $price->nse_trades > 0 ? $price->nse_turnover / $price->nse_trades : null,
-                'bse_gap_pct' => $price->bse_prev_close > 0 ? (($price->bse_open - $price->bse_prev_close) / $price->bse_prev_close) * 100 : null,
-                'bse_range_pct' => $price->bse_prev_close > 0 ? (($price->bse_high - $price->bse_low) / $price->bse_prev_close) * 100 : null,
-                'bse_intraday_chg_pct' => $price->bse_open > 0 ? (($price->bse_close - $price->bse_open) / $price->bse_open) * 100 : null,
-                'bse_avg_ticket_size' => $price->bse_trades > 0 ? $price->bse_turnover / $price->bse_trades : null,
-                'updated_at' => $now,
-            ];
+            foreach ($prices as $price) {
+                $historyByDate = $historicalData->get($price->equity_id, collect())
+                    ->keyBy(fn ($item) => substr((string) $item->traded_date, 0, 10));
+                $update = [
+                    'id' => $price->id,
+                    'spread' => ($price->nse_close > 0 && $price->bse_close > 0) ? abs($price->nse_close - $price->bse_close) : 0,
+                    'nse_gap_pct' => $price->nse_prev_close > 0 ? (($price->nse_open - $price->nse_prev_close) / $price->nse_prev_close) * 100 : null,
+                    'nse_range_pct' => $price->nse_prev_close > 0 ? (($price->nse_high - $price->nse_low) / $price->nse_prev_close) * 100 : null,
+                    'nse_intraday_chg_pct' => $price->nse_open > 0 ? (($price->nse_close - $price->nse_open) / $price->nse_open) * 100 : null,
+                    'nse_avg_ticket_size' => $price->nse_trades > 0 ? $price->nse_turnover / $price->nse_trades : null,
+                    'bse_gap_pct' => $price->bse_prev_close > 0 ? (($price->bse_open - $price->bse_prev_close) / $price->bse_prev_close) * 100 : null,
+                    'bse_range_pct' => $price->bse_prev_close > 0 ? (($price->bse_high - $price->bse_low) / $price->bse_prev_close) * 100 : null,
+                    'bse_intraday_chg_pct' => $price->bse_open > 0 ? (($price->bse_close - $price->bse_open) / $price->bse_open) * 100 : null,
+                    'bse_avg_ticket_size' => $price->bse_trades > 0 ? $price->bse_turnover / $price->bse_trades : null,
+                    'updated_at' => $now,
+                ];
 
-            foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'] as $period) {
-                $update["nse_chg_{$period}"] = null;
-                $update["nse_val_{$period}"] = null;
-                $update["bse_chg_{$period}"] = null;
-                $update["bse_val_{$period}"] = null;
-            }
-
-            if ($price->nse_prev_close > 0 && $price->nse_close > 0) {
-                $update['nse_chg_1d'] = (($price->nse_close - $price->nse_prev_close) / $price->nse_prev_close) * 100;
-                $update['nse_val_1d'] = $price->nse_prev_close;
-            }
-
-            if ($price->bse_prev_close > 0 && $price->bse_close > 0) {
-                $update['bse_chg_1d'] = (($price->bse_close - $price->bse_prev_close) / $price->bse_prev_close) * 100;
-                $update['bse_val_1d'] = $price->bse_prev_close;
-            }
-
-            foreach ($windowMap as $period => $candidateDates) {
-                foreach ($candidateDates as $candidateDate) {
-                    $pastPrice = $historyByDate->get($candidateDate);
-                    if (! $pastPrice) {
-                        continue;
-                    }
-
-                    if ($period !== '1d' && $pastPrice->nse_close > 0 && $price->nse_close > 0) {
-                        $update["nse_chg_{$period}"] = (($price->nse_close - $pastPrice->nse_close) / $pastPrice->nse_close) * 100;
-                        $update["nse_val_{$period}"] = $pastPrice->nse_close;
-                    }
-
-                    if ($period !== '1d' && $pastPrice->bse_close > 0 && $price->bse_close > 0) {
-                        $update["bse_chg_{$period}"] = (($price->bse_close - $pastPrice->bse_close) / $pastPrice->bse_close) * 100;
-                        $update["bse_val_{$period}"] = $pastPrice->bse_close;
-                    }
-
-                    break;
+                foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'] as $period) {
+                    $update["nse_chg_{$period}"] = null;
+                    $update["nse_val_{$period}"] = null;
+                    $update["bse_chg_{$period}"] = null;
+                    $update["bse_val_{$period}"] = null;
                 }
+
+                if ($price->nse_prev_close > 0 && $price->nse_close > 0) {
+                    $update['nse_chg_1d'] = (($price->nse_close - $price->nse_prev_close) / $price->nse_prev_close) * 100;
+                    $update['nse_val_1d'] = $price->nse_prev_close;
+                }
+
+                if ($price->bse_prev_close > 0 && $price->bse_close > 0) {
+                    $update['bse_chg_1d'] = (($price->bse_close - $price->bse_prev_close) / $price->bse_prev_close) * 100;
+                    $update['bse_val_1d'] = $price->bse_prev_close;
+                }
+
+                foreach ($windowMap as $period => $candidateDates) {
+                    foreach ($candidateDates as $candidateDate) {
+                        $pastPrice = $historyByDate->get($candidateDate);
+                        if (! $pastPrice) {
+                            continue;
+                        }
+
+                        if ($period !== '1d' && $pastPrice->nse_close > 0 && $price->nse_close > 0) {
+                            $update["nse_chg_{$period}"] = (($price->nse_close - $pastPrice->nse_close) / $pastPrice->nse_close) * 100;
+                            $update["nse_val_{$period}"] = $pastPrice->nse_close;
+                        }
+
+                        if ($period !== '1d' && $pastPrice->bse_close > 0 && $price->bse_close > 0) {
+                            $update["bse_chg_{$period}"] = (($price->bse_close - $pastPrice->bse_close) / $pastPrice->bse_close) * 100;
+                            $update["bse_val_{$period}"] = $pastPrice->bse_close;
+                        }
+
+                        break;
+                    }
+                }
+
+                $updates[] = $update;
             }
 
-            $updates[] = $update;
-        }
-
-        if (! empty($updates)) {
             $this->applyEquityUpdates($updates);
-        }
+            unset($historicalData, $updates);
+            gc_collect_cycles();
+        });
     }
 
     private function repairIndexDate(Carbon $date): void
