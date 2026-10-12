@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Equity;
 use App\Models\EquityPrice;
 use App\Models\MarketNews;
+use App\Models\StockNudge;
 use App\Services\EquityQuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,11 +22,52 @@ class MarketPagesTest extends TestCase
             '/market/stocks',
             '/market/mutual-funds',
             '/market/news',
+            '/market/nudges',
             '/market/fundamentals',
             '/market/corporate-actions',
         ] as $uri) {
             $this->get($uri)->assertOk();
         }
+    }
+
+    /** @test */
+    public function nudges_page_lists_and_filters_market_signals(): void
+    {
+        $equity = Equity::create([
+            'isin' => 'INE000A01001',
+            'company_name' => 'Nudge Example Limited',
+            'nse_symbol' => 'NUDGE',
+            'series' => 'EQ',
+            'is_active' => true,
+        ]);
+
+        foreach ([
+            ['rule' => 'daily_gain', 'title' => 'Growth signal', 'fingerprint' => str_repeat('a', 64)],
+            ['rule' => 'daily_drop', 'title' => 'Fall signal', 'fingerprint' => str_repeat('b', 64)],
+        ] as $signal) {
+            StockNudge::create($signal + [
+                'equity_id' => $equity->id,
+                'isin' => $equity->isin,
+                'exchange' => 'NSE',
+                'type' => 'price',
+                'severity' => 'info',
+                'message' => 'A market movement was detected.',
+                'observed_price' => 125.50,
+                'trading_date' => now('Asia/Kolkata')->toDateString(),
+                'observed_at' => now(),
+            ]);
+        }
+
+        $this->get(route('market.nudges'))
+            ->assertOk()
+            ->assertSee('Growth signal')
+            ->assertSee('Fall signal')
+            ->assertSee('Nudge Example Limited');
+
+        $this->get(route('market.nudges', ['category' => 'growth']))
+            ->assertOk()
+            ->assertSee('Growth signal')
+            ->assertDontSee('Fall signal');
     }
 
     /** @test */
@@ -99,6 +141,7 @@ class MarketPagesTest extends TestCase
             ->assertDontSee('FULL_ARTICLE_END_MARKER')
             ->assertDontSee('Private pending company update');
 
+        cache()->forget('website.market.overview');
         $this->get(route('market.index'))
             ->assertOk()
             ->assertSee('Published company update with complete verified details')

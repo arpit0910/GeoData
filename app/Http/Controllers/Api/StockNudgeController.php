@@ -10,12 +10,6 @@ use Illuminate\Http\Request;
 
 class StockNudgeController extends Controller
 {
-    private const CATEGORY_RULES = [
-        'growth' => ['daily_gain', 'month_high', 'year_high'],
-        'fall' => ['daily_drop', 'month_low', 'year_low'],
-        'volume' => ['volume_spike'],
-    ];
-
     public function byIsin(Request $request, string $isin): JsonResponse
     {
         $isin = strtoupper(trim($isin));
@@ -43,17 +37,18 @@ class StockNudgeController extends Controller
     public function byCategory(Request $request, string $category): JsonResponse
     {
         $category = strtolower(trim($category));
-        if (! isset(self::CATEGORY_RULES[$category])) {
+        $rules = StockNudge::rulesForCategory($category);
+        if ($rules === null) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid nudge category.',
-                'allowed_categories' => array_keys(self::CATEGORY_RULES),
+                'allowed_categories' => array_keys(StockNudge::CATEGORY_RULES),
             ], 422);
         }
 
         return $this->respond(
             $request,
-            StockNudge::query()->whereIn('rule', self::CATEGORY_RULES[$category]),
+            StockNudge::query()->whereIn('rule', $rules),
             ['category' => $category]
         );
     }
@@ -67,7 +62,7 @@ class StockNudgeController extends Controller
             'isin' => $nudge->isin,
             'exchange' => $nudge->exchange,
             'source' => $nudge->type,
-            'category' => $this->categoryFor($nudge->rule),
+            'category' => StockNudge::categoryForRule($nudge->rule),
             'rule' => $nudge->rule,
             'severity' => $nudge->severity,
             'title' => $nudge->title,
@@ -92,14 +87,4 @@ class StockNudgeController extends Controller
         ]));
     }
 
-    private function categoryFor(string $rule): ?string
-    {
-        foreach (self::CATEGORY_RULES as $category => $rules) {
-            if (in_array($rule, $rules, true)) {
-                return $category;
-            }
-        }
-
-        return null;
-    }
 }

@@ -19,6 +19,7 @@ class SitemapController extends Controller
             ['route' => 'market.stocks', 'changefreq' => 'daily', 'priority' => '0.8'],
             ['route' => 'market.mutual-funds', 'changefreq' => 'daily', 'priority' => '0.8'],
             ['route' => 'market.news', 'changefreq' => 'hourly', 'priority' => '0.8'],
+            ['route' => 'market.nudges', 'changefreq' => 'hourly', 'priority' => '0.8'],
             ['route' => 'market.fundamentals', 'changefreq' => 'daily', 'priority' => '0.8'],
             ['route' => 'market.corporate-actions', 'changefreq' => 'daily', 'priority' => '0.8'],
             ['route' => 'privacy', 'changefreq' => 'yearly', 'priority' => '0.3'],

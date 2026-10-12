@@ -63,6 +63,7 @@ Route::get('/market/news/{marketNews}', [\App\Http\Controllers\MarketController:
 Route::get('/market/fundamentals', [\App\Http\Controllers\MarketController::class, 'fundamentals'])->name('market.fundamentals');
 Route::get('/market/fundamentals/{companyFundamental}', [\App\Http\Controllers\MarketController::class, 'fundamental'])->name('market.fundamentals.show');
 Route::get('/market/corporate-actions', [\App\Http\Controllers\MarketController::class, 'corporateActions'])->name('market.corporate-actions');
+Route::get('/market/nudges', [\App\Http\Controllers\MarketController::class, 'nudges'])->name('market.nudges');
 Route::get('/market/data', [\App\Http\Controllers\MarketController::class, 'data'])->name('market.data');
 Route::get('/api/market/data', [\App\Http\Controllers\MarketController::class, 'data'])->name('api.market.data');
 Route::get('/market-demo', fn () => redirect()->route('market.index'));

@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\CorporateAction;
 use App\Models\CompanyFundamental;
 use App\Models\MarketNews;
+use App\Models\StockNudge;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class MarketController extends Controller
 {
@@ -18,14 +20,19 @@ class MarketController extends Controller
     public function index(Request $request)
     {
         $marketStatus = $this->getMarketStatus();
-        $stats = $this->getSummaryStats();
-        $latestNews = MarketNews::published()
-            ->select(['id', 'title', 'summary', 'symbol', 'thumbnail', 'article_url', 'published_at'])
-            ->orderByDesc('published_at')->orderByDesc('id')->limit(3)->get();
-        $upcomingActions = CorporateAction::select(['id', 'symbol', 'company_name', 'type', 'name', 'expiry_date'])
-            ->where(function ($query) {
-                $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()->toDateString());
-            })->orderBy('expiry_date')->limit(5)->get();
+        $overview = Cache::remember('website.market.overview', now()->addMinutes(2), function () {
+            return [
+                'stats' => $this->getSummaryStats(),
+                'latestNews' => MarketNews::published()
+                    ->select(['id', 'title', 'summary', 'symbol', 'thumbnail', 'article_url', 'published_at'])
+                    ->orderByDesc('published_at')->orderByDesc('id')->limit(3)->get(),
+                'upcomingActions' => CorporateAction::select(['id', 'symbol', 'company_name', 'type', 'name', 'expiry_date'])
+                    ->where(function ($query) {
+                        $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()->toDateString());
+                    })->orderBy('expiry_date')->limit(5)->get(),
+            ];
+        });
+        ['stats' => $stats, 'latestNews' => $latestNews, 'upcomingActions' => $upcomingActions] = $overview;
 
         return view('website.market', compact('marketStatus', 'stats', 'latestNews', 'upcomingActions'));
     }
@@ -117,6 +124,41 @@ class MarketController extends Controller
             ->orderByDesc('expiry_date')->orderByDesc('id')->paginate(20)->withQueryString();
 
         return view('website.market-actions', compact('actions'));
+    }
+
+    public function nudges(Request $request)
+    {
+        $category = strtolower(trim((string) $request->input('category', 'all')));
+        if ($category !== 'all' && StockNudge::rulesForCategory($category) === null) {
+            $category = 'all';
+        }
+
+        $search = trim((string) $request->input('search'));
+        $nudges = StockNudge::query()
+            ->with('equity:id,company_name,nse_symbol,bse_symbol')
+            ->when($category !== 'all', fn ($query) => $query->whereIn('rule', StockNudge::rulesForCategory($category)))
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($nested) use ($search) {
+                    $nested->where('isin', 'like', "%{$search}%")
+                        ->orWhere('title', 'like', "%{$search}%")
+                        ->orWhere('message', 'like', "%{$search}%")
+                        ->orWhereHas('equity', function ($equity) use ($search) {
+                            $equity->where('company_name', 'like', "%{$search}%")
+                                ->orWhere('nse_symbol', 'like', "%{$search}%")
+                                ->orWhere('bse_symbol', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->latest('observed_at')
+            ->latest('id')
+            ->paginate(24)
+            ->withQueryString();
+
+        return view('website.market-nudges', [
+            'nudges' => $nudges,
+            'category' => $category,
+            'categories' => array_keys(StockNudge::CATEGORY_RULES),
+        ]);
     }
 
     /**

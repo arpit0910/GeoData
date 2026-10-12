@@ -498,6 +498,22 @@ class GenerateSalesPostmanCollectionCommand extends Command
             'chg_1d' => 0.42,
             'chg_1y' => 18.74,
         ];
+        $nudge = [
+            'id' => 1,
+            'isin' => 'INE002A01018',
+            'exchange' => 'NSE',
+            'source' => 'price',
+            'category' => 'growth',
+            'rule' => 'daily_gain',
+            'severity' => 'info',
+            'title' => 'Strong daily gain',
+            'message' => 'The stock closed 4.25% higher for the day.',
+            'observed_price' => '3012.7500',
+            'metrics' => ['change_percent' => 4.25],
+            'trading_date' => '2026-10-12',
+            'observed_at' => '2026-10-12T10:00:00+05:30',
+            'expires_at' => null,
+        ];
 
         return match ($uri) {
             'api/v1/equities' => [
@@ -573,6 +589,24 @@ class GenerateSalesPostmanCollectionCommand extends Command
                     'corporate_actions' => [],
                     'news' => [],
                 ],
+            ],
+            'api/v1/nudges/fresh' => [
+                'success' => true,
+                'date' => '2026-10-12',
+                'data' => [$nudge],
+                'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
+            ],
+            'api/v1/nudges/isin/{isin}' => [
+                'success' => true,
+                'isin' => 'INE002A01018',
+                'data' => [$nudge],
+                'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
+            ],
+            'api/v1/nudges/category/{category}' => [
+                'success' => true,
+                'category' => 'growth',
+                'data' => [$nudge],
+                'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
             ],
             default => null,
         };
@@ -672,6 +706,18 @@ class GenerateSalesPostmanCollectionCommand extends Command
 
         if ($segments === ['market', 'company-fundamentals', '{isin}']) {
             return 'Get Complete Company Fundamentals';
+        }
+
+        if ($segments === ['nudges', 'fresh']) {
+            return "List Today's Stock Nudges";
+        }
+
+        if ($segments === ['nudges', 'isin', '{isin}']) {
+            return 'List Stock Nudges by ISIN';
+        }
+
+        if ($segments === ['nudges', 'category', '{category}']) {
+            return 'List Similar Stock Nudges by Category';
         }
 
         if ($segments === ['geospatial', 'statistics']) {
@@ -907,6 +953,7 @@ class GenerateSalesPostmanCollectionCommand extends Command
             'indices', 'index' => 'Indices',
             'mf' => 'Mutual Funds',
             'market' => 'Market',
+            'nudge', 'nudges' => 'Market',
             default => Str::title($category),
         };
     }

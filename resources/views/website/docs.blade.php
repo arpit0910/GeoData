@@ -81,6 +81,9 @@
                                 <li><a href="#exchange-calendar-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">NSE/BSE
                                         Holidays</a></li>
+                                <li><a href="#stock-nudges-api"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">Stock
+                                        Nudges</a></li>
                                 <li><a href="#market-sync-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Market
                                         Data &amp; Real-Time Sync</a></li>
@@ -2890,6 +2893,67 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
     }
   ]
 }</pre></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section id="stock-nudges-api" class="pt-8">
+                                <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Stock Nudges</h2>
+                                <p class="text-gray-400 mb-8">Retrieve generated stock signals by trading day, ISIN, or signal category. Results are returned newest first and use the standard bearer-token authentication.</p>
+
+                                <div class="space-y-6">
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /nudges/fresh</h3>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p>Returns nudges whose trading date is today in Asia/Kolkata.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /nudges/isin/{isin}</h3>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p>Returns all available nudges for one valid 12-character ISIN, for example <code class="text-white">INE002A01018</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /nudges/category/{category}</h3>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-5">Returns similar nudges. Allowed categories are <code class="text-white">growth</code>, <code class="text-white">fall</code>, and <code class="text-white">volume</code>.</p>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-3">Common query parameters</h4>
+                                            <table class="w-full text-sm mb-6">
+                                                <tbody class="divide-y divide-gray-800">
+                                                    <tr><td class="py-2 font-mono text-amber-500">page</td><td class="py-2">Page number; defaults to 1.</td></tr>
+                                                    <tr><td class="py-2 font-mono text-amber-500">per_page</td><td class="py-2">Records per page; defaults to 25 and is limited to 100.</td></tr>
+                                                </tbody>
+                                            </table>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-5">curl -X GET "https://setugeo.com/api/v1/nudges/category/growth?per_page=25" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Accept: application/json"</div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response example</h4>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
+  <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"category"</span>: <span class="text-green-400">"growth"</span>,
+  <span class="text-blue-400">"data"</span>: [{
+    <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
+    <span class="text-blue-400">"exchange"</span>: <span class="text-green-400">"NSE"</span>,
+    <span class="text-blue-400">"category"</span>: <span class="text-green-400">"growth"</span>,
+    <span class="text-blue-400">"rule"</span>: <span class="text-green-400">"daily_gain"</span>,
+    <span class="text-blue-400">"severity"</span>: <span class="text-green-400">"info"</span>,
+    <span class="text-blue-400">"title"</span>: <span class="text-green-400">"Strong daily gain"</span>,
+    <span class="text-blue-400">"observed_price"</span>: <span class="text-green-400">"3012.7500"</span>,
+    <span class="text-blue-400">"trading_date"</span>: <span class="text-green-400">"2026-10-12"</span>
+  }],
+  <span class="text-blue-400">"pagination"</span>: { <span class="text-blue-400">"current_page"</span>: <span class="text-blue-400">1</span>, <span class="text-blue-400">"last_page"</span>: <span class="text-blue-400">1</span>, <span class="text-blue-400">"per_page"</span>: <span class="text-blue-400">25</span>, <span class="text-blue-400">"total"</span>: <span class="text-blue-400">1</span> }
+}</pre></div>
+                                        </div>
                                     </div>
                                 </div>
                             </section>

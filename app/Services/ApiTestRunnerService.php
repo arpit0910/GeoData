@@ -391,6 +391,7 @@ class ApiTestRunnerService
             '{ifsc}' => $sampleData['ifsc'],
             '{pincode}' => $sampleData['pincode'],
             '{isin}' => $sampleData['equity_isin'],
+            '{category}' => 'growth',
             '{cap}' => 'large-cap',
             '{index_code}' => $sampleData['index_code'],
         ];
@@ -640,6 +641,11 @@ class ApiTestRunnerService
                 break;
             case 'api/v1/market-calendar/check':
                 $query = ['date' => now(config('exchange_calendar.timezone'))->toDateString(), 'exchange' => 'all'];
+                break;
+            case 'api/v1/nudges/fresh':
+            case 'api/v1/nudges/isin/{isin}':
+            case 'api/v1/nudges/category/{category}':
+                $query = ['per_page' => 25];
                 break;
         }
 

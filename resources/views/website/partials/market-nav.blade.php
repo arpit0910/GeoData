@@ -26,6 +26,7 @@
         ['market.stocks', 'Stocks'],
         ['market.mutual-funds', 'Mutual funds'],
         ['market.news', 'News'],
+        ['market.nudges', 'Nudges'],
         ['market.fundamentals', 'Fundamentals'],
         ['market.corporate-actions', 'Corporate actions'],
     ];
