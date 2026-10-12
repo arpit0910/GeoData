@@ -297,6 +297,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ->name('admin.market-news.regenerate');
     Route::post('admin/market-news/{marketNews}/approve', [MarketNewsController::class, 'approve'])
         ->name('admin.market-news.approve');
+    Route::post('admin/market-news/{marketNews}/publish-source', [MarketNewsController::class, 'publishSource'])
+        ->name('admin.market-news.publish-source');
     Route::post('admin/market-news/{marketNews}/unpublish', [MarketNewsController::class, 'unpublish'])
         ->name('admin.market-news.unpublish');
 

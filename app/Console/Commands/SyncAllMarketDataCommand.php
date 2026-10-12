@@ -13,7 +13,7 @@ class SyncAllMarketDataCommand extends Command
 {
     protected $signature = 'market:sync-all
         {--batch-size=500 : Batch size for Upstox quotes}
-        {--news-limit=100 : Equities to check for news}
+        {--news-limit= : Optional equities to check for news; all when omitted}
         {--ca-limit=100 : Equities to check for corporate actions}
         {--include-bonds : Also sync all 14,000+ bonds and debentures}
         {--skip-mf : Skip AMFI Mutual Funds download}';
@@ -62,11 +62,14 @@ class SyncAllMarketDataCommand extends Command
         // 3. SYNC NEWS (UPSTOX)
         $this->info("[3/4] Syncing breaking stock and market news from Upstox...");
         $t2 = microtime(true);
-        $newsLimit = (int) $this->option('news-limit');
-        $exitNews = Artisan::call('market:sync-upstox-news', [
-            '--limit' => $newsLimit,
-            '--batch-size' => 30,
-        ], $this->output);
+        $newsLimit = $this->option('news-limit');
+        $newsOptions = ['--batch-size' => 30];
+        if ($newsLimit === null) {
+            $newsOptions['--all'] = true;
+        } else {
+            $newsOptions['--limit'] = max(1, (int) $newsLimit);
+        }
+        $exitNews = Artisan::call('market:sync-upstox-news', $newsOptions, $this->output);
         $tNews = round(microtime(true) - $t2, 2);
         $this->line("--> News sync completed in {$tNews}s (exit code: {$exitNews})\n");
 

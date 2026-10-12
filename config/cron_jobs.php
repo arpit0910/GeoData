@@ -167,6 +167,15 @@ return [
             'overlap' => false,
         ],
         [
+            'title' => 'market:sync-upstox-news --all',
+            'command' => 'market:sync-upstox-news',
+            'args' => ['--batch-size' => 30, '--all' => true],
+            'description' => 'Runs a complete daily pass across every eligible stock and retains failed batches for retry.',
+            'schedule' => 'Daily at 01:00 IST',
+            'timezone' => 'Asia/Kolkata',
+            'overlap' => false,
+        ],
+        [
             'title' => 'market:sync-upstox-events',
             'command' => 'market:sync-upstox-events',
             'args' => ['--limit' => 500, '--delay' => 200],
@@ -178,8 +187,8 @@ return [
         [
             'title' => 'market:rewrite-news',
             'command' => 'market:rewrite-news',
-            'args' => ['--limit' => 2],
-            'description' => 'Rewrites and verifies a quota-safe news batch, then queues valid drafts for admin approval.',
+            'args' => ['--limit' => 20, '--retry' => true],
+            'description' => 'Rewrites and verifies pending news, retries failed source fetches, then queues valid drafts for admin approval.',
             'schedule' => 'Every 30 minutes at :05 and :35',
             'timezone' => 'Asia/Kolkata',
             'overlap' => false,

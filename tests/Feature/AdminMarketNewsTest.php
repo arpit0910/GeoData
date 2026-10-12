@@ -224,6 +224,66 @@ class AdminMarketNewsTest extends TestCase
             ->assertJsonPath('message', "News #{$news->id} was regenerated and is ready for approval.");
     }
 
+    public function test_admin_can_publish_the_upstox_source_directly_when_generation_failed(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $news = MarketNews::create([
+            'title' => 'Unusable generated title',
+            'summary' => 'Unusable generated summary.',
+            'original_title' => 'Upstox source title ready for direct publication',
+            'original_summary' => 'The original Upstox summary can be published after an administrator reviews it.',
+            'editorial_status' => MarketNews::STATUS_FAILED,
+            'is_published' => false,
+            'rewrite_error' => 'Generation provider unavailable.',
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.market-news.publish-source', $news))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $news->refresh();
+        $this->assertSame(MarketNews::STATUS_PUBLISHED, $news->editorial_status);
+        $this->assertTrue($news->is_published);
+        $this->assertSame($news->original_title, $news->title);
+        $this->assertSame($news->original_summary, $news->summary);
+        $this->get(route('market.news'))->assertSee($news->original_title);
+    }
+
+    public function test_scheduled_retry_refetches_the_source_before_generating_again(): void
+    {
+        $news = MarketNews::create([
+            'title' => 'Failed source title',
+            'summary' => 'Failed source summary.',
+            'original_title' => 'Failed source title',
+            'original_summary' => 'Failed source summary.',
+            'original_content' => 'Previously cached source content.',
+            'source_fetched_at' => now(),
+            'editorial_status' => MarketNews::STATUS_FAILED,
+            'is_published' => false,
+            'published_at' => now(),
+        ]);
+
+        $rewriter = $this->mock(NvidiaNewsRewriter::class);
+        $rewriter->shouldReceive('rewrite')->once()->andReturnUsing(function (MarketNews $story) {
+            $this->assertNull($story->fresh()->original_content);
+            $story->forceFill([
+                'title' => 'Generated retry title',
+                'summary' => 'Generated retry article.',
+                'editorial_status' => MarketNews::STATUS_READY,
+                'rewritten_at' => now(),
+            ])->save();
+
+            return ['title' => $story->title, 'summary' => $story->summary];
+        });
+
+        $this->artisan('market:rewrite-news', ['--retry' => true, '--limit' => 20])
+            ->assertSuccessful();
+
+        $this->assertSame(MarketNews::STATUS_READY, $news->fresh()->editorial_status);
+    }
+
     public function test_non_admin_cannot_view_market_news_monitor(): void
     {
         $this->actingAs(User::factory()->create(['is_admin' => false]))

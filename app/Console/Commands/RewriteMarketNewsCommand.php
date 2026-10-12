@@ -15,7 +15,7 @@ class RewriteMarketNewsCommand extends Command
         {--id=* : Rewrite specific news record IDs}
         {--retry : Include previously failed rewrites}';
 
-    protected $description = 'Rewrite, verify, and publish market news automatically';
+    protected $description = 'Rewrite and verify market news for publication review';
 
     public function handle(NvidiaNewsRewriter $rewriter): int
     {
@@ -35,6 +35,7 @@ class RewriteMarketNewsCommand extends Command
                 $query->whereNull('rewrite_retry_at')
                     ->orWhere('rewrite_retry_at', '<=', now());
             })
+            ->orderByRaw("CASE WHEN editorial_status = 'pending' THEN 0 ELSE 1 END")
             ->orderBy('id')
             ->limit(max(1, min(100, (int) $this->option('limit'))))
             ->get();
@@ -44,6 +45,12 @@ class RewriteMarketNewsCommand extends Command
         $deferred = 0;
         foreach ($items as $news) {
             try {
+                if ($news->editorial_status === MarketNews::STATUS_FAILED) {
+                    $news->forceFill([
+                        'original_content' => null,
+                        'source_fetched_at' => null,
+                    ])->save();
+                }
                 $rewriter->rewrite($news);
                 $completed++;
                 $this->line("Generated news #{$news->id}; awaiting admin approval.");

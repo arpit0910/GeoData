@@ -15,7 +15,8 @@ class SyncUpstoxNewsCommand extends Command
     protected $signature = 'market:sync-upstox-news
         {--batch-size=30 : Instrument keys per Upstox news request (max 30)}
         {--max-batches= : Maximum batches in a normal rotating run}
-        {--limit= : Optional maximum instruments to query; all eligible instruments when omitted}
+        {--limit= : Optional maximum instruments to query; bounded rotating coverage when omitted}
+        {--all : Scan every eligible stock in one run}
         {--isin=* : Specific ISINs to fetch news for}
         {--reset-cursor : Restart the rotating scan from the first eligible equity}';
 
@@ -54,23 +55,39 @@ class SyncUpstoxNewsCommand extends Command
 
         $totalEligible = (clone $query)->count();
         $cursorKey = 'market_news_sync:last_equity_id';
-        $usesCursor = $isinFilter->isEmpty() && $limit === null;
+        $retryKey = 'market_news_sync:retry_equity_ids';
+        $syncAll = (bool) $this->option('all');
+        $usesCursor = ! $syncAll && $isinFilter->isEmpty() && $limit === null;
         if ($this->option('reset-cursor')) {
             Cache::forget($cursorKey);
+            Cache::forget($retryKey);
         }
         $cursor = $usesCursor ? max(0, (int) Cache::get($cursorKey, 0)) : 0;
-        $selectionLimit = $limit ?? ($batchSize * $maxBatches);
+        $selectionLimit = $syncAll ? $totalEligible : ($limit ?? ($batchSize * $maxBatches));
         $columns = [
             'id', 'isin', 'nse_symbol', 'bse_symbol',
             'upstox_nse_instrument_key', 'upstox_bse_instrument_key',
         ];
-        $selection = (clone $query)->when($cursor > 0, fn ($query) => $query->where('id', '>', $cursor));
-        $equities = $selection->orderBy('id')->limit($selectionLimit)->get($columns);
-        if ($usesCursor && $equities->isEmpty() && $cursor > 0) {
+        $retryIds = $usesCursor
+            ? collect(Cache::get($retryKey, []))->map(fn ($id) => (int) $id)->filter()->unique()->values()
+            : collect();
+        $retryEquities = $retryIds->isEmpty()
+            ? collect()
+            : (clone $query)->whereIn('id', $retryIds)->orderBy('id')->limit($selectionLimit)->get($columns);
+        $retryIds = $retryEquities->pluck('id')->values();
+        $remaining = max(0, $selectionLimit - $retryEquities->count());
+        $selection = (clone $query)
+            ->when($cursor > 0, fn ($query) => $query->where('id', '>', $cursor))
+            ->when($retryIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $retryIds));
+        $regularEquities = $selection->orderBy('id')->limit($remaining)->get($columns);
+        if ($usesCursor && $retryEquities->isEmpty() && $regularEquities->isEmpty() && $remaining > 0 && $cursor > 0) {
             $cursor = 0;
             Cache::forget($cursorKey);
-            $equities = (clone $query)->orderBy('id')->limit($selectionLimit)->get($columns);
+            $regularEquities = (clone $query)
+                ->when($retryIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $retryIds))
+                ->orderBy('id')->limit($remaining)->get($columns);
         }
+        $equities = $retryEquities->concat($regularEquities)->unique('id')->values();
 
         if ($equities->isEmpty()) {
             $this->warn('No active equities found with Upstox instrument keys.');
@@ -80,7 +97,8 @@ class SyncUpstoxNewsCommand extends Command
         $symbolMap = $equities->mapWithKeys(fn ($equity) => [
             $equity->isin => $equity->nse_symbol ?: $equity->bse_symbol,
         ])->all();
-        $this->info("Fetching news for {$equities->count()} of {$totalEligible} eligible stocks in batches of {$batchSize} (max {$maxBatches} batches)...");
+        $coverage = $syncAll ? 'complete catalog pass' : "max {$maxBatches} batches";
+        $this->info("Fetching news for {$equities->count()} of {$totalEligible} eligible stocks in batches of {$batchSize} ({$coverage})...");
 
         $totalFetched = 0;
         $uniqueFetched = 0;
@@ -167,11 +185,16 @@ class SyncUpstoxNewsCommand extends Command
                 }
 
                 if ($usesCursor && ($lastEquity = $batch->last())) {
-                    Cache::forever($cursorKey, $lastEquity->id);
+                    $retryIds = $retryIds->diff($batch->pluck('id'))->values();
+                    $retryIds->isEmpty()
+                        ? Cache::forget($retryKey)
+                        : Cache::forever($retryKey, $retryIds->all());
+                    $cursor = max($cursor, (int) $batch->max('id'));
+                    Cache::forever($cursorKey, $cursor);
                 }
             } catch (Throwable $e) {
                 $failedBatches++;
-                $this->warn("News batch error: {$e->getMessage()}");
+                $this->warn("News batch error: {$e->getMessage()} This batch will be retried on the next run.");
                 report($e);
                 if (str_contains($e->getMessage(), 'HTTP 401')
                     || str_contains($e->getMessage(), 'No active Upstox token')) {
@@ -181,18 +204,20 @@ class SyncUpstoxNewsCommand extends Command
                     }
                     break;
                 }
-                if ($usesCursor && ($lastEquity = $batch->last())) {
-                    Cache::forever($cursorKey, $lastEquity->id);
+
+                if ($usesCursor) {
+                    $retryIds = $retryIds->merge($batch->pluck('id'))->unique()->values();
+                    Cache::forever($retryKey, $retryIds->all());
+                    $cursor = max($cursor, (int) $batch->max('id'));
+                    Cache::forever($cursorKey, $cursor);
                 }
             }
         }
 
         $this->info("News sync complete: {$totalFetched} fetched, {$uniqueFetched} unique, {$duplicates} duplicate; {$created} created, {$updated} updated, {$unchanged} unchanged; {$failedBatches} batches failed.");
 
-        // A transient failure in one batch must not mark an otherwise useful
-        // scheduled run as failed. The cursor advances past failed batches, so
-        // later rotations continue making progress. Fail only when every batch
-        // failed (including authorization failures).
+        // Preserve successful work, but fail when the provider could not sync
+        // any batch so monitoring can alert while the cursor retains the retry.
         return $failedBatches > 0 && $successfulBatches === 0
             ? self::FAILURE
             : self::SUCCESS;

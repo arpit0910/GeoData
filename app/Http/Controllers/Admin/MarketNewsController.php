@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Throwable;
 
@@ -202,6 +203,27 @@ class MarketNewsController extends Controller
         return back()->with('success', $message);
     }
 
+    public function publishSource(Request $request, MarketNews $marketNews): RedirectResponse
+    {
+        $title = trim((string) ($marketNews->original_title ?: $marketNews->title));
+        $summary = trim((string) ($marketNews->original_summary ?: $marketNews->summary));
+        if ($title === '' || $summary === '') {
+            return back()->with('error', 'The Upstox source must include both a title and summary before it can be published directly.');
+        }
+
+        $marketNews->forceFill([
+            'title' => $title,
+            'summary' => $summary,
+            'editorial_status' => MarketNews::STATUS_PUBLISHED,
+            'is_published' => true,
+            'reviewed_at' => now(),
+            'reviewed_by' => $request->user()->id,
+        ])->save();
+        Cache::forget('website.market.overview');
+
+        return back()->with('success', "News #{$marketNews->id} was published directly from the Upstox source.");
+    }
+
     public function unpublish(MarketNews $marketNews): RedirectResponse
     {
         $marketNews->forceFill([
@@ -212,6 +234,7 @@ class MarketNewsController extends Controller
             'reviewed_at' => null,
             'reviewed_by' => null,
         ])->save();
+        Cache::forget('website.market.overview');
 
         return back()->with('success', "News #{$marketNews->id} was removed from the public website.");
     }
@@ -224,6 +247,7 @@ class MarketNewsController extends Controller
             'reviewed_at' => now(),
             'reviewed_by' => $userId,
         ])->save();
+        Cache::forget('website.market.overview');
     }
 
     private function regenerateDraft(MarketNews $marketNews, NvidiaNewsRewriter $rewriter): void

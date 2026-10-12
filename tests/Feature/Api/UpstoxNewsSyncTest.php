@@ -17,6 +17,7 @@ class UpstoxNewsSyncTest extends TestCase
     {
         parent::setUp();
         Cache::forget('market_news_sync:last_equity_id');
+        Cache::forget('market_news_sync:retry_equity_ids');
     }
 
     public function test_news_sync_processes_every_eligible_instrument_in_thirty_item_batches(): void
@@ -47,7 +48,7 @@ class UpstoxNewsSyncTest extends TestCase
 
         Http::fake(fn () => Http::response(['status' => 'success', 'data' => []]));
 
-        $this->artisan('market:sync-upstox-news', ['--batch-size' => 30])
+        $this->artisan('market:sync-upstox-news', ['--batch-size' => 30, '--max-batches' => 1, '--all' => true])
             ->expectsOutputToContain('Fetching news for 61 of 61 eligible stocks in batches of 30')
             ->assertExitCode(0);
 
@@ -196,7 +197,7 @@ class UpstoxNewsSyncTest extends TestCase
         Http::assertSentCount(1);
     }
 
-    public function test_news_sync_succeeds_when_a_transient_batch_failure_is_partial(): void
+    public function test_news_sync_retries_a_transiently_failed_batch_on_the_next_run(): void
     {
         config([
             'market_data.upstox.access_token' => 'test-access-token',
@@ -215,15 +216,25 @@ class UpstoxNewsSyncTest extends TestCase
                 'updated_at' => now(),
             ]);
         }
-        Http::fake(function (Request $request) {
-            return str_contains($request->url(), 'INE000001001')
+        $attempts = 0;
+        Http::fake(function () use (&$attempts) {
+            $attempts++;
+
+            return $attempts <= 3
                 ? Http::response(['status' => 'error'], 503)
                 : Http::response(['status' => 'success', 'data' => []]);
         });
 
         $this->artisan('market:sync-upstox-news', ['--max-batches' => 2])
-            ->expectsOutputToContain('1 batches failed')
+            ->expectsOutputToContain('This batch will be retried on the next run')
             ->assertExitCode(0);
+        $this->assertCount(30, Cache::get('market_news_sync:retry_equity_ids'));
+
+        $this->artisan('market:sync-upstox-news', ['--max-batches' => 2])
+            ->assertExitCode(0);
+
+        Http::assertSentCount(5);
+        $this->assertSame([], Cache::get('market_news_sync:retry_equity_ids', []));
     }
 
     public function test_news_sync_deduplicates_the_same_article_returned_for_multiple_instruments(): void
