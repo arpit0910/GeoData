@@ -23,6 +23,7 @@
 @php
     $marketLinks = [
         ['market.index', 'Overview'],
+        ['market.indices', 'Indices'],
         ['market.stocks', 'Stocks'],
         ['market.mutual-funds', 'Mutual funds'],
         ['market.news', 'News'],
@@ -44,7 +45,7 @@
             <nav class="market-nav-scroll flex items-center gap-6 sm:gap-8 overflow-x-auto" aria-label="Market sections">
                 @foreach($marketLinks as [$routeName, $label])
                     <a href="{{ route($routeName) }}"
-                       class="shrink-0 whitespace-nowrap border-b-2 py-3.5 text-sm font-semibold transition-colors {{ request()->routeIs($routeName) || ($routeName === 'market.fundamentals' && request()->routeIs('market.fundamentals.*')) ? 'border-amber-400 text-amber-400' : 'border-transparent text-slate-400 hover:border-slate-600 hover:text-white' }}">
+                       class="shrink-0 whitespace-nowrap border-b-2 py-3.5 text-sm font-semibold transition-colors {{ request()->routeIs($routeName) || request()->routeIs($routeName.'.*') ? 'border-amber-400 text-amber-400' : 'border-transparent text-slate-400 hover:border-slate-600 hover:text-white' }}">
                         {{ $label }}
                     </a>
                 @endforeach

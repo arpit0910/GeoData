@@ -6,6 +6,7 @@ use App\Models\CorporateAction;
 use App\Models\CompanyFundamental;
 use App\Models\MarketNews;
 use App\Models\StockNudge;
+use App\Models\Index as MarketIndex;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -86,6 +87,55 @@ class MarketController extends Controller
             ->distinct()->orderBy('amc_name')->pluck('amc_name');
 
         return view('website.market-mutual-funds', compact('funds', 'categories', 'amcs'));
+    }
+
+    public function indices(Request $request)
+    {
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:100',
+            'exchange' => 'nullable|in:NSE,BSE',
+            'category' => 'nullable|string|max:100',
+            'signal' => 'nullable|in:growth,fall,flat',
+        ]);
+
+        $search = trim((string) ($filters['search'] ?? ''));
+        $indices = MarketIndex::query()
+            ->with('quote')
+            ->whereHas('quote')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($nested) use ($search) {
+                    $nested->where('index_name', 'like', "%{$search}%")
+                        ->orWhere('index_code', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['exchange'] ?? null, fn ($query, $exchange) => $query->where('exchange', $exchange))
+            ->when($filters['category'] ?? null, fn ($query, $category) => $query->where('category', $category))
+            ->when($filters['signal'] ?? null, function ($query, $signal) {
+                $query->whereHas('quote', fn ($quote) => match ($signal) {
+                    'growth' => $quote->where('change_percent', '>', 0),
+                    'fall' => $quote->where('change_percent', '<', 0),
+                    default => $quote->where('change_percent', 0),
+                });
+            })
+            ->orderBy('index_name')
+            ->paginate(24)
+            ->withQueryString();
+
+        $categories = MarketIndex::query()->whereHas('quote')->whereNotNull('category')
+            ->distinct()->orderBy('category')->pluck('category');
+
+        return view('website.market-indices', compact('indices', 'categories', 'filters'));
+    }
+
+    public function indexDetail(MarketIndex $index)
+    {
+        $index->load('quote');
+        abort_unless($index->quote, 404);
+
+        $history = $index->prices()->latest('traded_date')->limit(30)->get();
+        $latestPrice = $history->first();
+
+        return view('website.market-index-show', compact('index', 'history', 'latestPrice'));
     }
 
     public function news(Request $request)
@@ -521,6 +571,7 @@ class MarketController extends Controller
         $totalStocks = DB::table('equities')->where('is_active', true)->whereIn('series', ['EQ', 'BE', 'SM', 'BZ'])->count();
         $totalQuotes = DB::table('equity_quotes')->count();
         $totalMfs = DB::table('mutual_funds')->count();
+        $totalIndices = DB::table('index_quotes')->count();
         $totalNews = MarketNews::published()->count();
         $totalCorporateActions = DB::table('corporate_actions')->count();
 
@@ -530,6 +581,7 @@ class MarketController extends Controller
             'total_stocks' => $totalStocks,
             'live_quotes' => $totalQuotes,
             'total_mfs' => $totalMfs,
+            'total_indices' => $totalIndices,
             'total_news' => $totalNews,
             'total_corporate_actions' => $totalCorporateActions,
             'last_sync_time' => $lastQuote ? Carbon::parse($lastQuote->quoted_at)->setTimezone('Asia/Kolkata')->format('d M, h:i A') : 'Live Now',

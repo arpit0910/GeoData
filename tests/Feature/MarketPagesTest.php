@@ -25,6 +25,7 @@ class MarketPagesTest extends TestCase
         foreach ([
             '/market',
             '/market/stocks',
+            '/market/indices',
             '/market/mutual-funds',
             '/market/news',
             '/market/nudges',
@@ -80,10 +81,38 @@ class MarketPagesTest extends TestCase
             ->assertSee('Nifty 50')
             ->assertSee('25,125.50')
             ->assertSee('Live')
+            ->assertSee('Growth signal')
+            ->assertSee(route('market.indices.show', 'NIFTY_50'), false)
             ->assertSee('S&amp;P BSE SENSEX', false)
             ->assertSee('81,000.00')
             ->assertSee('EOD')
             ->assertDontSee('Stock vs index');
+
+        $this->get(route('market.indices'))
+            ->assertOk()
+            ->assertSee('Nifty 50')
+            ->assertSee('Growth signal');
+
+        $this->get(route('market.indices.show', $nifty))
+            ->assertOk()
+            ->assertSee('Nifty 50')
+            ->assertSee('Growth signal')
+            ->assertSee('Recent performance');
+
+        IndexQuote::create([
+            'index_code' => $sensex->index_code,
+            'price' => 79500,
+            'previous_close' => 80000,
+            'change' => -500,
+            'change_percent' => -0.625,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+        ]);
+        $this->get(route('market.indices', ['signal' => 'fall']))
+            ->assertOk()
+            ->assertSee('S&amp;P BSE SENSEX', false)
+            ->assertSee('Fall signal')
+            ->assertDontSee('Nifty 50');
 
         $this->get('/market/compare')->assertNotFound();
     }
