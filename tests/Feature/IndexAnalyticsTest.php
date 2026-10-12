@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Index;
 use App\Models\IndexPrice;
+use App\Models\IndexQuote;
 use App\Models\User;
 use App\Console\Commands\SyncIndices;
 use Carbon\Carbon;
@@ -90,5 +91,40 @@ class IndexAnalyticsTest extends TestCase
             ->assertOk()
             ->assertJsonPath('holdings.0.symbol', 'RELIANCE')
             ->assertJsonPath('holdings_as_of', '2026-10-02');
+    }
+
+    public function test_quote_page_only_displays_indices_with_synced_quotes(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        Index::create([
+            'index_code' => 'SYNCED_INDEX',
+            'index_name' => 'Synced Index',
+            'exchange' => 'NSE',
+            'category' => 'Broad Market',
+        ]);
+        Index::create([
+            'index_code' => 'UNSYNCED_INDEX',
+            'index_name' => 'Unsynced Index',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+        ]);
+        IndexQuote::create([
+            'index_code' => 'SYNCED_INDEX',
+            'price' => 25000,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.indices.quotes'))
+            ->assertOk()
+            ->assertSee('Synced Index')
+            ->assertDontSee('Unsynced Index')
+            ->assertSee('Synced index instruments')
+            ->assertDontSee('Pending Sync');
+
+        $this->get('/indices/quote')
+            ->assertRedirect('/indices/quotes');
     }
 }

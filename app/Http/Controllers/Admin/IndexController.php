@@ -334,14 +334,12 @@ class IndexController extends Controller
             'search'    => 'nullable|string|max:100',
             'exchange'  => 'nullable|in:NSE,BSE',
             'category'  => 'nullable|string|max:100',
-            'freshness' => 'nullable|in:recent,stale,pending',
+            'freshness' => 'nullable|in:recent,stale',
         ]);
 
         $cutoff = now()->utc()->subSeconds(900)->format('Y-m-d H:i:s');
         $query = DB::table('indices as i')
-            ->leftJoin('index_quotes as q', 'i.index_code', '=', 'q.index_code')
-            ->whereNotNull('i.upstox_instrument_key')
-            ->where('i.upstox_instrument_key', '<>', '');
+            ->join('index_quotes as q', 'i.index_code', '=', 'q.index_code');
 
         if ($search = trim($filters['search'] ?? '')) {
             $query->where(function ($q) use ($search) {
@@ -367,13 +365,11 @@ class IndexController extends Controller
                       ->where(function ($q) use ($cutoff) {
                           $q->whereNull('q.quoted_at')->orWhere('q.quoted_at', '<', $cutoff);
                       });
-            } elseif ($filters['freshness'] === 'pending') {
-                $query->whereNull('q.price');
             }
         }
 
         $stats = [
-            'total'        => DB::table('indices')->whereNotNull('upstox_instrument_key')->where('upstox_instrument_key', '<>', '')->count(),
+            'total'        => DB::table('index_quotes')->count(),
             'recent'       => DB::table('index_quotes')->where('quoted_at', '>=', $cutoff)->count(),
             'gainers'      => DB::table('index_quotes')->where('change', '>', 0)->count(),
             'losers'       => DB::table('index_quotes')->where('change', '<', 0)->count(),
@@ -413,7 +409,11 @@ class IndexController extends Controller
             $quote->is_stale = !$quote->quoted_at || $quote->quoted_at < $cutoff;
         }
 
-        $categories = DB::table('indices')->whereNotNull('category')->distinct()->pluck('category');
+        $categories = DB::table('indices as i')
+            ->join('index_quotes as q', 'i.index_code', '=', 'q.index_code')
+            ->whereNotNull('i.category')
+            ->distinct()
+            ->pluck('i.category');
 
         return view('admin.indices.quotes', compact('quotes', 'filters', 'stats', 'categories'));
     }

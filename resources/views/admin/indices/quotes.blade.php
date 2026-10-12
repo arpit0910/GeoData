@@ -56,7 +56,7 @@
             <i class="fas fa-layer-group text-amber-500"></i>
         </div>
         <div class="mt-2 text-2xl font-black text-gray-900 dark:text-white font-mono">{{ number_format($stats['total']) }}</div>
-        <div class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Tracked index instruments</div>
+        <div class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Synced index instruments</div>
     </div>
 
     <div class="bg-white dark:bg-[#0f172a]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-2xl p-4 shadow-sm">
@@ -136,7 +136,6 @@
                 <option value="">All Quote Ages</option>
                 <option value="recent" @selected(($filters['freshness'] ?? '') === 'recent')>Live (&le; 15 mins)</option>
                 <option value="stale" @selected(($filters['freshness'] ?? '') === 'stale')>Stale (&gt; 15 mins)</option>
-                <option value="pending" @selected(($filters['freshness'] ?? '') === 'pending')>Pending Sync</option>
             </select>
         </div>
 
@@ -256,11 +255,7 @@
 
                     {{-- Status Badge --}}
                     <td class="px-5 py-3.5 text-center">
-                        @if ($quote->price === null)
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-500/10 text-gray-400 border border-gray-500/20">
-                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Pending Sync
-                            </span>
-                        @elseif ($quote->is_stale)
+                        @if ($quote->is_stale)
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                                 <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Stale (&gt;15m)
                             </span>
