@@ -172,6 +172,16 @@ in the existing cron logs. If one provider batch fails, later batches are still
 attempted and the command returns a failure status for the partial cycle.
 Holidays may return the previous session's quote.
 
+After the 18:00 EOD quote snapshot, `equities:sync --force` runs at 19:00 to
+replace partial quote-only rows with the complete NSE/BSE bhavcopy fields and
+calculate equity returns. The force flag is required because the earlier
+snapshot has already created the day's `equity_prices` rows.
+
+Mutual-fund NAVs and returns are synchronized together by
+`mf:sync-and-calculate` at 21:30 and retried at 23:30. The independent 06:10
+Upstox fallback and 06:45 recent-date backfill remain available for delayed or
+missed provider data.
+
 On Linux, add this crontab entry (replace the deployment path):
 
 ```cron
@@ -201,6 +211,20 @@ for failed quotes, unmatched requested symbols/ISINs, or an empty universe.
 Upstox V3 full market quotes are the scheduled equity source. Quote time and
 fetch time are distinct. Provider instrument tokens are removed before quote
 payloads are stored or broadcast and are not returned by public APIs.
+
+### Stock nudges
+
+The stock and mutual-fund subscription exposes three paginated nudge endpoints:
+
+- `GET /api/v1/nudges/isin/{isin}` returns all nudges for one ISIN.
+- `GET /api/v1/nudges/fresh` returns nudges whose trading date is today in
+  `Asia/Kolkata`.
+- `GET /api/v1/nudges/category/{category}` returns related nudges. Supported
+  categories are `growth` (daily gains and record highs), `fall` (daily drops
+  and record lows), and `volume` (volume spikes).
+
+All three accept `per_page` (default 25, maximum 100) and return newest results
+first with pagination metadata.
 
 ### Equity instrument metadata
 

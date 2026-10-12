@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\IndexApiController;
 use App\Http\Controllers\Api\MarketApiController;
 use App\Http\Controllers\Api\MarketDatasetController;
 use App\Http\Controllers\Api\MfApiController;
+use App\Http\Controllers\Api\StockNudgeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/equities', [EquityApiController::class, 'index']);
@@ -34,6 +35,10 @@ Route::get('/equity/{isin}/metrics', [EquityApiController::class, 'metrics']);
 Route::get('/equity/{isin}/ohlc', [EquityApiController::class, 'ohlc']);
 Route::get('/equity/{isin}/dual-exchange', [EquityApiController::class, 'dualExchange']);
 Route::get('/equity/{isin}/activity-metrics', [EquityApiController::class, 'activityMetrics']);
+
+Route::get('/nudges/fresh', [StockNudgeController::class, 'fresh']);
+Route::get('/nudges/isin/{isin}', [StockNudgeController::class, 'byIsin']);
+Route::get('/nudges/category/{category}', [StockNudgeController::class, 'byCategory']);
 
 Route::get('/indices/snapshot', [IndexApiController::class, 'snapshot']);
 Route::get('/indices/search', [IndexApiController::class, 'search']);

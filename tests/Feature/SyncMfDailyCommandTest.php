@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -10,6 +11,12 @@ use Tests\TestCase;
 class SyncMfDailyCommandTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
     public function test_long_amfi_plan_type_does_not_abort_the_daily_sync(): void
     {
@@ -73,6 +80,46 @@ class SyncMfDailyCommandTest extends TestCase
             'isin' => 'INF000000001',
             'nav_date' => $today,
             'nav' => 15.4321,
+        ]);
+    }
+
+    public function test_scheduled_workflow_syncs_nav_and_returns_together(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-12 21:30:00', 'Asia/Kolkata'));
+        DB::table('mutual_funds')->insert([
+            'isin' => 'INF000000001',
+            'scheme_code' => '123456',
+            'scheme_name' => 'Daily Return Fund',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $fundId = DB::table('mutual_funds')->where('isin', 'INF000000001')->value('id');
+        DB::table('mutual_fund_prices')->insert([
+            'mf_id' => $fundId,
+            'isin' => 'INF000000001',
+            'nav_date' => '2026-10-09',
+            'nav' => 100,
+        ]);
+
+        $feed = implode("\n", [
+            'Open Ended Schemes(Equity Scheme - Large Cap Fund)',
+            'Example Mutual Fund',
+            'Scheme Code;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Scheme Name;Plan;Option;Net Asset Value;Date',
+            '123456;INF000000001;;Daily Return Fund;Direct;Growth;110.0000;12-Oct-2026',
+        ]);
+        Http::fake([
+            'https://www.amfiindia.com/spages/NAVAll.txt' => Http::response($feed),
+        ]);
+
+        $this->artisan('mf:sync-and-calculate')->assertSuccessful();
+
+        $this->assertDatabaseHas('mutual_fund_prices', [
+            'isin' => 'INF000000001',
+            'nav_date' => '2026-10-12',
+            'nav' => 110,
+            'chg_1d' => 10,
+            'val_1d' => 100,
         ]);
     }
 }

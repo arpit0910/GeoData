@@ -13,13 +13,15 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('currency:fetch-rates')
             ->dailyAt('20:30')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('equities:sync')
+        // The 18:00 quote snapshot already creates today's rows. Force the
+        // bhavcopy pass to enrich those rows with full details and returns.
+        $this->markScheduled($schedule->command('equities:sync --force')
             ->dailyAt('19:00')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
         $this->markScheduled($schedule->command('indices:sync')
             ->dailyAt('19:15')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('sync:mf-daily --force --skip-returns')
+        $this->markScheduled($schedule->command('mf:sync-and-calculate')
             ->dailyAt('21:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
         // Independent morning recovery from Upstox's daily MF instrument file.
@@ -72,6 +74,20 @@ class Kernel extends ConsoleKernel
             ->timezone('Asia/Kolkata')
             ->runInBackground()
             ->withoutOverlapping(120));
+
+        $this->markScheduled($schedule->command('stock-nudges:generate market')
+            ->cron(config('stock_nudges.market_schedule'))
+            ->timezone('Asia/Kolkata')
+            ->weekdays()
+            ->between('09:15', '15:30')
+            ->runInBackground()
+            ->withoutOverlapping(10));
+
+        $this->markScheduled($schedule->command('stock-nudges:generate eod')
+            ->cron(config('stock_nudges.eod_schedule'))
+            ->timezone('Asia/Kolkata')
+            ->runInBackground()
+            ->withoutOverlapping(60));
 
         // 2. Bonds, Debentures & Fixed Income: Synced once daily after market closing.
         $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=bonds --mode=ltp --once-daily')
