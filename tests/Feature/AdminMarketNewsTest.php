@@ -6,6 +6,7 @@ use App\Models\MarketNews;
 use App\Models\User;
 use App\Services\NvidiaNewsRewriter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class AdminMarketNewsTest extends TestCase
@@ -282,6 +283,50 @@ class AdminMarketNewsTest extends TestCase
             ->assertSuccessful();
 
         $this->assertSame(MarketNews::STATUS_READY, $news->fresh()->editorial_status);
+    }
+
+    public function test_scheduled_rewrite_recovers_stale_processing_news(): void
+    {
+        config(['services.nvidia.processing_timeout_minutes' => 30]);
+        $stale = MarketNews::create([
+            'title' => 'Stale processing story',
+            'summary' => 'Source summary.',
+            'original_title' => 'Stale processing story',
+            'original_summary' => 'Source summary.',
+            'editorial_status' => MarketNews::STATUS_PROCESSING,
+            'is_published' => false,
+            'published_at' => now(),
+        ]);
+        $active = MarketNews::create([
+            'title' => 'Active processing story',
+            'summary' => 'Source summary.',
+            'original_title' => 'Active processing story',
+            'original_summary' => 'Source summary.',
+            'editorial_status' => MarketNews::STATUS_PROCESSING,
+            'is_published' => false,
+            'published_at' => now(),
+        ]);
+        DB::table('market_news')->where('id', $stale->id)->update([
+            'updated_at' => now()->subMinutes(31),
+        ]);
+
+        $rewriter = $this->mock(NvidiaNewsRewriter::class);
+        $rewriter->shouldReceive('rewrite')->once()->withArgs(fn (MarketNews $story) => $story->is($stale))
+            ->andReturnUsing(function (MarketNews $story) {
+                $story->forceFill([
+                    'editorial_status' => MarketNews::STATUS_READY,
+                    'rewritten_at' => now(),
+                ])->save();
+
+                return ['title' => $story->title, 'summary' => $story->summary];
+            });
+
+        $this->artisan('market:rewrite-news', ['--retry' => true, '--limit' => 20])
+            ->expectsOutputToContain('Recovered 1 stale processing story for retry.')
+            ->assertSuccessful();
+
+        $this->assertSame(MarketNews::STATUS_READY, $stale->fresh()->editorial_status);
+        $this->assertSame(MarketNews::STATUS_PROCESSING, $active->fresh()->editorial_status);
     }
 
     public function test_non_admin_cannot_view_market_news_monitor(): void

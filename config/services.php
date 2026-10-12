@@ -82,6 +82,7 @@ return [
         'verification_max_tokens' => (int) env('NVIDIA_NEWS_VERIFICATION_MAX_TOKENS', 2048),
         'qwen_max_tokens' => (int) env('NVIDIA_NEWS_QWEN_MAX_TOKENS', 1200),
         'editorial_attempts' => (int) env('NVIDIA_NEWS_EDITORIAL_ATTEMPTS', 2),
+        'processing_timeout_minutes' => (int) env('NVIDIA_NEWS_PROCESSING_TIMEOUT_MINUTES', 30),
         'ca_bundle' => env('NVIDIA_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
     ],
 

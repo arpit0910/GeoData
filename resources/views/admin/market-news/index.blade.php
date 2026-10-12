@@ -20,8 +20,8 @@
         </div>
     @endif
 
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        @foreach(['Total' => $summary['total'], 'Published' => $summary['published'], 'Ready' => $summary['ready'], 'Pending' => $summary['pending'], 'Failed' => $summary['failed']] as $label => $value)
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        @foreach(['Total' => $summary['total'], 'Published' => $summary['published'], 'Ready' => $summary['ready'], 'Pending' => $summary['pending'], 'Processing' => $summary['processing'], 'Failed' => $summary['failed']] as $label => $value)
             <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-richdark-surface">
                 <div class="text-xs font-black uppercase tracking-widest text-gray-400">{{ $label }}</div>
                 <div class="mt-2 text-2xl font-black text-gray-900 dark:text-white">{{ number_format($value) }}</div>

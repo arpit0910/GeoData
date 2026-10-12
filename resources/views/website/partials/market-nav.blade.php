@@ -23,7 +23,6 @@
 @php
     $marketLinks = [
         ['market.index', 'Overview'],
-        ['market.indices', 'Indices'],
         ['market.stocks', 'Stocks'],
         ['market.mutual-funds', 'Mutual funds'],
         ['market.news', 'News'],
@@ -31,6 +30,9 @@
         ['market.fundamentals', 'Fundamentals'],
         ['market.corporate-actions', 'Corporate actions'],
     ];
+    if (Route::has('market.indices')) {
+        array_splice($marketLinks, 1, 0, [["market.indices", "Indices"]]);
+    }
 @endphp
 
 <div class="border-b border-white/10 bg-[#090d14]">

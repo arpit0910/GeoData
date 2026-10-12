@@ -51,6 +51,7 @@ class MarketNewsController extends Controller
             'total' => MarketNews::count(),
             'published' => (int) ($counts[MarketNews::STATUS_PUBLISHED] ?? 0),
             'pending' => (int) ($counts[MarketNews::STATUS_PENDING] ?? 0),
+            'processing' => (int) ($counts[MarketNews::STATUS_PROCESSING] ?? 0),
             'ready' => (int) ($counts[MarketNews::STATUS_READY] ?? 0),
             'failed' => (int) ($counts[MarketNews::STATUS_FAILED] ?? 0),
         ];

@@ -19,6 +19,20 @@ class RewriteMarketNewsCommand extends Command
 
     public function handle(NvidiaNewsRewriter $rewriter): int
     {
+        $staleAfterMinutes = max(5, (int) config('services.nvidia.processing_timeout_minutes', 30));
+        $recovered = MarketNews::query()
+            ->where('editorial_status', MarketNews::STATUS_PROCESSING)
+            ->where('updated_at', '<=', now()->subMinutes($staleAfterMinutes))
+            ->update([
+                'editorial_status' => MarketNews::STATUS_PENDING,
+                'rewrite_error' => 'The previous generation worker stopped before completion. The story was queued for automatic retry.',
+                'rewrite_retry_at' => null,
+                'updated_at' => now(),
+            ]);
+        if ($recovered > 0) {
+            $this->warn("Recovered {$recovered} stale processing ".($recovered === 1 ? 'story' : 'stories').' for retry.');
+        }
+
         $statuses = [MarketNews::STATUS_PENDING];
         if ($this->option('retry')) {
             $statuses[] = MarketNews::STATUS_FAILED;
