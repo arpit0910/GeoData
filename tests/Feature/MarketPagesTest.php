@@ -347,7 +347,8 @@ class MarketPagesTest extends TestCase
             'val_1y' => 17.7778,
         ]);
 
-        $this->get(route('market.mutual-funds.details', ['isin' => 'inf000000001']))
+        $response = $this->get(route('market.mutual-funds.details', ['isin' => 'inf000000001']));
+        $response
             ->assertOk()
             ->assertSee('Example Direct Growth Fund')
             ->assertSee('Example Mutual Fund')
@@ -355,7 +356,10 @@ class MarketPagesTest extends TestCase
             ->assertSee('Minimum Purchase Amount')
             ->assertSee('Reinvestment ISIN')
             ->assertSee('market-table-compact', false)
-            ->assertSee('AMC monthly portfolio disclosure ingestion is not configured yet.');
+            ->assertDontSee('Scheme holdings')
+            ->assertDontSee('Sector allocation')
+            ->assertDontSee('Upstox');
+        $this->assertStringNotContainsStringIgnoringCase('upstox', $response->getContent());
 
         $this->get(route('market.mutual-funds.details', ['isin' => 'inf000000002']))
             ->assertOk()

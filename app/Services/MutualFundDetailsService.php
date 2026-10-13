@@ -129,8 +129,8 @@ class MutualFundDetailsService
             ],
             'sources' => [
                 'scheme' => 'AMFI',
-                'nav' => 'AMFI, with Upstox mutual-fund instruments as fallback',
-                'transaction_details' => $transactionDetails !== [] ? 'Upstox public mutual-fund instrument file' : null,
+                'nav' => 'AMFI and public mutual-fund instrument data',
+                'transaction_details' => $transactionDetails !== [] ? 'Public mutual-fund instrument data' : null,
                 'portfolio' => null,
                 'upstox_synced_at' => $scheme->upstox_synced_at,
             ],

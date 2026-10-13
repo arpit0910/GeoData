@@ -29,7 +29,7 @@
             <div class="market-panel mx-auto mt-5 max-w-3xl p-8 text-center">
                 <i class="fas fa-chart-pie text-3xl text-amber-400"></i>
                 <h2 class="mt-4 text-lg font-bold text-white">Search a mutual-fund scheme</h2>
-                <p class="mx-auto mt-2 max-w-xl text-sm leading-6 market-muted">Scheme identity and NAV come from stored AMFI records. Public Upstox instrument metadata is included when it has been imported.</p>
+                <p class="mx-auto mt-2 max-w-xl text-sm leading-6 market-muted">Scheme identity and NAV come from stored AMFI records. Public instrument metadata is included when it has been imported.</p>
             </div>
         @else
             @php
@@ -102,29 +102,19 @@
                 @endif
             </section>
 
-            <div class="mt-5 grid gap-5 lg:grid-cols-2">
-                <section class="market-panel p-5 sm:p-6" aria-labelledby="mf-transaction-heading">
-                    <p class="market-kicker">Scheme transactions</p><h2 id="mf-transaction-heading" class="mt-1 text-lg font-bold text-white">Public instrument details</h2>
-                    <dl class="mt-4 divide-y divide-white/[.07]">
-                        @forelse($fund['transaction_details'] as $key => $value)
-                            <div class="flex flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-5">
-                                <dt class="text-sm market-muted">{{ str($key)->replace('_', ' ')->title() }}</dt>
-                                <dd class="break-words text-left text-sm font-semibold text-white sm:max-w-[58%] sm:text-right">@if(is_bool($value)){{ $value ? 'Yes' : 'No' }}@elseif($value === null || $value === '')&mdash;@else{{ $value }}@endif</dd>
-                            </div>
-                        @empty
-                            <p class="rounded-xl border border-dashed border-white/10 p-4 text-sm leading-6 market-muted">Upstox public instrument metadata has not been imported for this scheme.</p>
-                        @endforelse
-                    </dl>
-                </section>
-
-                <section class="market-panel p-5 sm:p-6" aria-labelledby="mf-coverage-heading">
-                    <p class="market-kicker">Coverage</p><h2 id="mf-coverage-heading" class="mt-1 text-lg font-bold text-white">Holdings and allocation</h2>
-                    <div class="mt-4 space-y-3">
-                        <div class="rounded-xl border border-amber-500/20 bg-amber-500/[.05] p-4"><div class="flex items-center gap-2"><i class="fas fa-clock text-amber-400"></i><h3 class="font-bold text-white">Scheme holdings</h3></div><p class="mt-2 text-sm leading-6 market-muted">{{ $fund['holdings']['reason'] }}</p></div>
-                        <div class="rounded-xl border border-amber-500/20 bg-amber-500/[.05] p-4"><div class="flex items-center gap-2"><i class="fas fa-clock text-amber-400"></i><h3 class="font-bold text-white">Sector allocation</h3></div><p class="mt-2 text-sm leading-6 market-muted">{{ $fund['sector_allocation']['reason'] }}</p></div>
-                    </div>
-                </section>
-            </div>
+            <section class="market-panel mt-5 p-5 sm:p-6" aria-labelledby="mf-transaction-heading">
+                <p class="market-kicker">Scheme transactions</p><h2 id="mf-transaction-heading" class="mt-1 text-lg font-bold text-white">Public instrument details</h2>
+                <dl class="mt-4 grid gap-x-8 md:grid-cols-2">
+                    @forelse($fund['transaction_details'] as $key => $value)
+                        <div class="flex flex-col gap-1 border-b border-white/[.07] py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-5">
+                            <dt class="text-sm market-muted">{{ str($key)->replace('_', ' ')->title() }}</dt>
+                            <dd class="break-words text-left text-sm font-semibold text-white sm:max-w-[58%] sm:text-right">@if(is_bool($value)){{ $value ? 'Yes' : 'No' }}@elseif($value === null || $value === '')&mdash;@else{{ $value }}@endif</dd>
+                        </div>
+                    @empty
+                        <p class="col-span-full rounded-xl border border-dashed border-white/10 p-4 text-sm leading-6 market-muted">Public instrument metadata has not been imported for this scheme.</p>
+                    @endforelse
+                </dl>
+            </section>
 
             <section class="market-panel mt-5 p-5 sm:p-6" aria-labelledby="mf-sources-heading">
                 <p class="market-kicker">Provenance</p><h2 id="mf-sources-heading" class="mt-1 text-lg font-bold text-white">Data sources</h2>
@@ -134,7 +124,7 @@
                     @endforeach
                 </div>
                 @if($fund['sources']['upstox_synced_at'])
-                    <p class="mt-3 text-xs market-muted">Upstox metadata last imported {{ \Carbon\Carbon::parse($fund['sources']['upstox_synced_at'])->format('d M Y, h:i A') }}.</p>
+                    <p class="mt-3 text-xs market-muted">Instrument metadata last imported {{ \Carbon\Carbon::parse($fund['sources']['upstox_synced_at'])->format('d M Y, h:i A') }}.</p>
                 @endif
             </section>
         @endif
