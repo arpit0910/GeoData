@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\MutualFundDetailsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -113,52 +114,21 @@ class MfApiController extends Controller
     // GET /api/v1/mf/details/{isin}
     // Uses pre-computed chg_* / val_* columns â€” no runtime return computation
     // -------------------------------------------------------------------------
-    public function details(string $isin): JsonResponse
+    public function details(string $isin, MutualFundDetailsService $details): JsonResponse
     {
-        $scheme = DB::table('mutual_funds as m')
-            ->leftJoin(
-                DB::raw('(
-                    SELECT mfp.isin, mfp.nav, mfp.nav_date,
-                           mfp.chg_1d, mfp.val_1d, mfp.chg_3d, mfp.val_3d,
-                           mfp.chg_7d, mfp.val_7d, mfp.chg_1m, mfp.val_1m,
-                           mfp.chg_3m, mfp.val_3m, mfp.chg_6m, mfp.val_6m,
-                           mfp.chg_9m, mfp.val_9m, mfp.chg_1y, mfp.val_1y,
-                           mfp.chg_3y, mfp.val_3y
-                    FROM mutual_fund_prices mfp
-                    INNER JOIN (SELECT isin, MAX(nav_date) as max_date FROM mutual_fund_prices GROUP BY isin) latest
-                        ON mfp.isin = latest.isin AND mfp.nav_date = latest.max_date
-                ) as n'),
-                'm.isin', '=', 'n.isin'
-            )
-            ->select('m.*', 'n.nav as latest_nav', 'n.nav_date as latest_nav_date',
-                     'n.chg_1d', 'n.val_1d', 'n.chg_3d', 'n.val_3d',
-                     'n.chg_7d', 'n.val_7d', 'n.chg_1m', 'n.val_1m',
-                     'n.chg_3m', 'n.val_3m', 'n.chg_6m', 'n.val_6m',
-                     'n.chg_9m', 'n.val_9m', 'n.chg_1y', 'n.val_1y',
-                     'n.chg_3y', 'n.val_3y')
-            ->where('m.isin', $isin)
-            ->first();
-
-        if (!$scheme) {
-            return response()->json(['success' => false, 'message' => 'Scheme not found.'], 404);
+        $isin = strtoupper(trim($isin));
+        if (preg_match('/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/', $isin) !== 1) {
+            return response()->json(['success' => false, 'message' => 'A valid 12-character ISIN is required.'], 422);
         }
 
-        $returns = [];
-        foreach (self::VALID_PERIODS as $p) {
-            $chgKey = "chg_{$p}";
-            $valKey = "val_{$p}";
-            if ($scheme->$chgKey !== null) {
-                $returns[$p] = [
-                    'return_pct' => (float)$scheme->$chgKey,
-                    'ref_nav'    => (float)$scheme->$valKey,
-                ];
-            }
-            unset($scheme->$chgKey, $scheme->$valKey);
+        $scheme = $details->find($isin);
+        if (! $scheme) {
+            return response()->json(['success' => false, 'message' => 'Scheme not found.'], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data'    => array_merge((array)$scheme, ['returns' => $returns]),
+            'data' => $scheme,
         ]);
     }
 

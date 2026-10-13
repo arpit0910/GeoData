@@ -7,6 +7,7 @@ use App\Models\CompanyFundamental;
 use App\Models\MarketNews;
 use App\Models\StockNudge;
 use App\Models\Index as MarketIndex;
+use App\Services\MutualFundDetailsService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -77,6 +78,26 @@ class MarketController extends Controller
             ->distinct()->orderBy('amc_name')->pluck('amc_name');
 
         return view('website.market-mutual-funds', compact('funds', 'categories', 'amcs'));
+    }
+
+    public function mutualFundDetails(Request $request, MutualFundDetailsService $details)
+    {
+        $isin = strtoupper(trim((string) $request->input('isin')));
+        $fund = null;
+        $error = null;
+
+        if ($isin !== '') {
+            if (preg_match('/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/', $isin) !== 1) {
+                $error = 'Enter a valid 12-character ISIN.';
+            } else {
+                $fund = $details->find($isin);
+                if (! $fund) {
+                    $error = 'No mutual-fund scheme was found for this ISIN.';
+                }
+            }
+        }
+
+        return view('website.market-mutual-fund-details', compact('isin', 'fund', 'error'));
     }
 
     public function indices(Request $request)

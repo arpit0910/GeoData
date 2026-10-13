@@ -21,9 +21,15 @@ class MfMaster extends Model
         'sub_category',
         'type',
         'is_active',
+        'upstox_metadata',
+        'upstox_synced_at',
     ];
 
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = [
+        'is_active' => 'boolean',
+        'upstox_metadata' => 'array',
+        'upstox_synced_at' => 'datetime',
+    ];
 
     public function navHistory()
     {

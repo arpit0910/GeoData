@@ -66,6 +66,12 @@ class SyncMfDailyCommandTest extends TestCase
             'https://provider.test/mf.json.gz' => Http::response(gzencode(json_encode([[
                 'instrument_key' => 'INF000000001',
                 'name' => 'Fallback Mutual Fund',
+                'amc' => 'EXAMPLE',
+                'purchase_allowed' => true,
+                'redemption_allowed' => true,
+                'minimum_purchase_amount' => 500,
+                'plan' => 'Direct',
+                'dividend_type' => 'Growth',
                 'last_price' => 15.4321,
                 'last_price_date' => $today,
             ]], JSON_THROW_ON_ERROR))),
@@ -81,6 +87,14 @@ class SyncMfDailyCommandTest extends TestCase
             'nav_date' => $today,
             'nav' => 15.4321,
         ]);
+        $metadata = json_decode((string) DB::table('mutual_funds')
+            ->where('isin', 'INF000000001')
+            ->value('upstox_metadata'), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertTrue($metadata['purchase_allowed']);
+        $this->assertSame(500, $metadata['minimum_purchase_amount']);
+        $this->assertNotNull(DB::table('mutual_funds')
+            ->where('isin', 'INF000000001')
+            ->value('upstox_synced_at'));
     }
 
     public function test_scheduled_workflow_syncs_nav_and_returns_together(): void

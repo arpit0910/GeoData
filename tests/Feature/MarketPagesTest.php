@@ -9,7 +9,9 @@ use App\Models\StockNudge;
 use App\Models\Index as MarketIndex;
 use App\Models\IndexPrice;
 use App\Models\IndexQuote;
+use App\Http\Controllers\Api\MfApiController;
 use App\Services\EquityQuoteService;
+use App\Services\MutualFundDetailsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -27,6 +29,7 @@ class MarketPagesTest extends TestCase
             '/market/stocks',
             '/market/indices',
             '/market/mutual-funds',
+            '/market/mutual-funds/details',
             '/market/news',
             '/market/nudges',
             '/market/fundamentals',
@@ -311,6 +314,68 @@ class MarketPagesTest extends TestCase
             ->assertDontSee('Beta Debt Fund')
             ->assertSee('name="amc"', false)
             ->assertSee('name="sort"', false);
+    }
+
+    /** @test */
+    public function mutual_fund_details_can_be_researched_by_isin(): void
+    {
+        $fundId = DB::table('mutual_funds')->insertGetId([
+            'isin' => 'INF000000001',
+            'scheme_code' => '123456',
+            'scheme_name' => 'Example Direct Growth Fund',
+            'amc_name' => 'Example Mutual Fund',
+            'category' => 'Equity',
+            'type' => 'Direct - Growth',
+            'is_active' => true,
+            'upstox_metadata' => json_encode([
+                'instrument_key' => 'INF000000001',
+                'purchase_allowed' => true,
+                'minimum_purchase_amount' => 500,
+                'plan' => 'Direct',
+            ], JSON_THROW_ON_ERROR),
+            'upstox_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('mutual_fund_prices')->insert([
+            'mf_id' => $fundId,
+            'isin' => 'INF000000001',
+            'nav_date' => '2026-10-10',
+            'nav' => 20,
+            'chg_1y' => 12.5,
+            'val_1y' => 17.7778,
+        ]);
+
+        $this->get(route('market.mutual-funds.details', ['isin' => 'inf000000001']))
+            ->assertOk()
+            ->assertSee('Example Direct Growth Fund')
+            ->assertSee('Example Mutual Fund')
+            ->assertSee('12.50%')
+            ->assertSee('Minimum Purchase Amount')
+            ->assertSee('AMC monthly portfolio disclosure ingestion is not configured yet.');
+
+        $details = app(MutualFundDetailsService::class)->find('INF000000001');
+        $this->assertSame(20.0, $details['latest_nav']);
+        $this->assertSame(12.5, $details['returns']['1y']['return_pct']);
+        $this->assertTrue($details['transaction_details']['purchase_allowed']);
+        $this->assertFalse($details['holdings']['available']);
+
+        $apiResponse = app(MfApiController::class)->details(
+            'inf000000001',
+            app(MutualFundDetailsService::class)
+        );
+        $apiPayload = json_decode($apiResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertTrue($apiPayload['success']);
+        $this->assertSame('INF000000001', $apiPayload['data']['isin']);
+        $this->assertSame(500, $apiPayload['data']['transaction_details']['minimum_purchase_amount']);
+    }
+
+    /** @test */
+    public function mutual_fund_details_reject_an_invalid_isin(): void
+    {
+        $this->get(route('market.mutual-funds.details', ['isin' => 'invalid']))
+            ->assertOk()
+            ->assertSee('Enter a valid 12-character ISIN.');
     }
 
     /** @test */

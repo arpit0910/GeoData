@@ -25,7 +25,7 @@
         </div>
         <div class="bg-white dark:bg-[#0f172a]/80 border border-gray-200 dark:border-white/5 rounded-2xl p-4 shadow-sm">
             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Daily NAV Sources</p>
-            <p class="mt-1 text-sm font-bold text-gray-900 dark:text-white">AMFI <span class="text-gray-400">→</span> Secondary Feed fallback</p>
+            <p class="mt-1 text-sm font-bold text-gray-900 dark:text-white">AMFI <span class="text-gray-400">→</span> Upstox fallback</p>
             <p class="text-[10px] text-gray-400 mt-1">Secondary market feed is used automatically when the AMFI daily feed is unavailable or incomplete.</p>
         </div>
     </div>

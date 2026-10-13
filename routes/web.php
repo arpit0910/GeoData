@@ -62,6 +62,7 @@ Route::get('/market/indices/{index}', [\App\Http\Controllers\MarketController::c
     ->where('index', '[A-Za-z0-9_-]+')
     ->name('market.indices.show');
 Route::get('/market/mutual-funds', [\App\Http\Controllers\MarketController::class, 'mutualFunds'])->name('market.mutual-funds');
+Route::get('/market/mutual-funds/details', [\App\Http\Controllers\MarketController::class, 'mutualFundDetails'])->name('market.mutual-funds.details');
 Route::get('/market/news', [\App\Http\Controllers\MarketController::class, 'news'])->name('market.news');
 Route::get('/market/news/{marketNews}', [\App\Http\Controllers\MarketController::class, 'newsDetail'])->name('market.news.show');
 Route::get('/market/fundamentals', [\App\Http\Controllers\MarketController::class, 'fundamentals'])->name('market.fundamentals');

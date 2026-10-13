@@ -16,7 +16,7 @@ class UpstoxMutualFundNavSyncService
     /**
      * Import the latest published NAVs from Upstox's daily MF instrument file.
      *
-     * @return array{received: int, matched: int, saved: int, unmatched: int, latest_date: string|null}
+     * @return array{received: int, matched: int, saved: int, metadata_saved: int, unmatched: int, latest_date: string|null}
      */
     public function sync(bool $dryRun = false): array
     {
@@ -46,7 +46,7 @@ class UpstoxMutualFundNavSyncService
         unset($response, $body);
 
         $funds = DB::table('mutual_funds')
-            ->select('id', 'isin', 'isin_reinvest')
+            ->select('id', 'isin', 'isin_reinvest', 'scheme_code', 'scheme_name', 'is_active')
             ->get();
         $byIsin = [];
         foreach ($funds as $fund) {
@@ -59,6 +59,7 @@ class UpstoxMutualFundNavSyncService
         $received = 0;
         $unmatched = 0;
         $rows = [];
+        $metadataRows = [];
         $latestDate = null;
         $oldestAcceptedDate = CarbonImmutable::today('Asia/Kolkata')->subDays(10);
         $today = CarbonImmutable::today('Asia/Kolkata');
@@ -71,6 +72,19 @@ class UpstoxMutualFundNavSyncService
                 $nav = $item['last_price'] ?? null;
                 $dateValue = trim((string) ($item['last_price_date'] ?? $fallbackDate));
                 $fund = $byIsin[$isin] ?? null;
+
+                if ($fund && ($isin === strtoupper((string) $fund->isin) || ! isset($metadataRows[$fund->id]))) {
+                    $metadataRows[$fund->id] = [
+                        'id' => (int) $fund->id,
+                        'isin' => $fund->isin,
+                        'scheme_code' => $fund->scheme_code,
+                        'scheme_name' => $fund->scheme_name,
+                        'is_active' => (bool) $fund->is_active,
+                        'upstox_metadata' => json_encode($item, JSON_THROW_ON_ERROR),
+                        'upstox_synced_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
 
                 try {
                     $date = CarbonImmutable::createFromFormat('Y-m-d', $dateValue, 'Asia/Kolkata');
@@ -107,6 +121,13 @@ class UpstoxMutualFundNavSyncService
         }
 
         if (! $dryRun) {
+            foreach (array_chunk(array_values($metadataRows), 500) as $chunk) {
+                DB::table('mutual_funds')->upsert(
+                    $chunk,
+                    ['id'],
+                    ['upstox_metadata', 'upstox_synced_at', 'updated_at']
+                );
+            }
             foreach (array_chunk(array_values($rows), 1000) as $chunk) {
                 DB::table('mutual_fund_prices')->upsert(
                     $chunk,
@@ -120,6 +141,7 @@ class UpstoxMutualFundNavSyncService
             'received' => $received,
             'matched' => count($rows),
             'saved' => $dryRun ? 0 : count($rows),
+            'metadata_saved' => $dryRun ? 0 : count($metadataRows),
             'unmatched' => $unmatched,
             'latest_date' => $latestDate,
         ];
