@@ -6,6 +6,7 @@ return [
     'amfi_ca_bundle' => env('AMFI_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
 
     'upstox' => [
+        'analytics_token' => env('UPSTOX_ANALYTICS_TOKEN'),
         'access_token' => env('UPSTOX_ACCESS_TOKEN') ?: env('UPSTOX_TOKEN'),
         'client_id' => env('UPSTOX_CLIENT_ID') ?: env('UPSTOX_API_KEY'),
         'client_secret' => env('UPSTOX_CLIENT_SECRET') ?: env('UPSTOX_API_SECRET'),

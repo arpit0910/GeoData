@@ -15,14 +15,17 @@ the app's Notifier Webhook Endpoint in Upstox Developer Apps:
 
 `https://your-domain.example/api/v1/integrations/market-data/upstox-token/{UPSTOX_NOTIFIER_SECRET}`
 
-The application accepts Upstox access tokens for up to ten years (configurable
-with `UPSTOX_TOKEN_LIFETIME_YEARS`) and does not request a replacement every day.
-A replacement is requested only after the effective expiry or when Upstox
-rejects the stored token with HTTP 401.
-Upstox requires the account holder to approve the request; after approval, the
-notifier stores the token encrypted in the database. `UPSTOX_ACCESS_TOKEN`
-remains a fallback for initial setup. Never commit credentials. If configuration
-is cached, rebuild it after updating the environment. If PHP reports cURL error 60, set
+For this read-only market-data application, prefer an Upstox Analytics Token in
+`UPSTOX_ANALYTICS_TOKEN`. Upstox documents it as valid for one year, so it avoids
+the standard token's daily approval cycle. `UPSTOX_ACCESS_TOKEN` remains a
+fallback for initial setup.
+
+The semi-automated notifier flow keeps exactly one encrypted
+`upstox_access_tokens` row per client and updates that row in place on renewal.
+The provider's `expires_at` is respected, and a replacement is requested only
+after expiry or an HTTP 401. Upstox requires the account holder to approve that
+request before the notifier updates the existing row. Never commit credentials.
+If configuration is cached, rebuild it after updating the environment. If PHP reports cURL error 60, set
 `MARKET_DATA_CA_BUNDLE` to a trusted CA bundle. TLS verification stays enabled.
 
 ### News rewriting workflow

@@ -14,8 +14,10 @@ class UpstoxTokenManager
     public function current(): ?UpstoxAccessToken
     {
         $lifetimeYears = $this->lifetimeYears();
+        $clientId = trim((string) config('market_data.upstox.client_id'));
 
         return UpstoxAccessToken::query()
+            ->when($clientId !== '', fn ($query) => $query->where('client_id', $clientId))
             ->where('status', 'active')
             ->whereNotNull('access_token')
             ->where('expires_at', '>', now()->addMinute())
@@ -26,12 +28,18 @@ class UpstoxTokenManager
 
     public function accessToken(): string
     {
+        $analyticsToken = trim((string) config('market_data.upstox.analytics_token'));
+        if ($analyticsToken !== '') {
+            return $analyticsToken;
+        }
+
         if ($current = $this->current()) {
             return $current->access_token;
         }
 
+        $clientId = trim((string) config('market_data.upstox.client_id'));
         $pending = UpstoxAccessToken::query()
-            ->where('status', 'pending')
+            ->when($clientId !== '', fn ($query) => $query->where('client_id', $clientId))
             ->where('authorization_expires_at', '>', now())
             ->exists();
 
@@ -57,12 +65,9 @@ class UpstoxTokenManager
             throw new RuntimeException('UPSTOX_CLIENT_ID and UPSTOX_CLIENT_SECRET must be configured to renew tokens.');
         }
 
+        $record = UpstoxAccessToken::query()->where('client_id', $clientId)->first();
         if (! $force) {
-            $pending = UpstoxAccessToken::query()
-                ->where('client_id', $clientId)
-                ->where('status', 'pending')
-                ->latest()
-                ->first();
+            $pending = $record;
             if ($pending?->authorization_expires_at?->isFuture()) {
                 return [
                     'requested' => false,
@@ -86,12 +91,11 @@ class UpstoxTokenManager
 
         $authorizationExpiry = $this->fromMilliseconds($response->json('data.authorization_expiry'));
         $notifierUrl = $response->json('data.notifier_url');
-        UpstoxAccessToken::create([
-            'client_id' => $clientId,
-            'status' => 'pending',
+        UpstoxAccessToken::query()->updateOrCreate(['client_id' => $clientId], [
+            'status' => $record?->status === 'active' ? 'active' : 'pending',
             'renewal_requested_at' => now()->utc(),
             'authorization_expires_at' => $authorizationExpiry,
-            'metadata' => ['notifier_url' => $notifierUrl],
+            'metadata' => array_merge($record?->metadata ?? [], ['notifier_url' => $notifierUrl]),
         ]);
 
         return [
@@ -104,7 +108,17 @@ class UpstoxTokenManager
     /** Reject the current database token and request one replacement. */
     public function handleUnauthorized(): array
     {
+        if (trim((string) config('market_data.upstox.analytics_token')) !== '') {
+            return [
+                'requested' => false,
+                'authorization_expires_at' => null,
+                'notifier_url' => null,
+            ];
+        }
+
+        $clientId = trim((string) config('market_data.upstox.client_id'));
         UpstoxAccessToken::query()
+            ->when($clientId !== '', fn ($query) => $query->where('client_id', $clientId))
             ->where('status', 'active')
             ->update(['status' => 'unauthorized']);
 
@@ -133,11 +147,8 @@ class UpstoxTokenManager
         );
 
         return DB::transaction(function () use ($payload, $clientId, $issuedAt, $providerExpiresAt, $expiresAt) {
-            UpstoxAccessToken::where('status', 'active')->update(['status' => 'expired']);
             $record = UpstoxAccessToken::query()
                 ->where('client_id', $clientId)
-                ->where('status', 'pending')
-                ->latest()
                 ->lockForUpdate()
                 ->first() ?: new UpstoxAccessToken(['client_id' => $clientId]);
             $record->fill([
@@ -147,6 +158,8 @@ class UpstoxTokenManager
                 'status' => 'active',
                 'issued_at' => $issuedAt,
                 'expires_at' => $expiresAt,
+                'renewal_requested_at' => null,
+                'authorization_expires_at' => null,
                 'metadata' => [
                     'message_type' => 'access_token',
                     'provider_expires_at' => $providerExpiresAt->toIso8601String(),

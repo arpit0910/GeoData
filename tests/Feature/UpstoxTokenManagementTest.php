@@ -23,6 +23,7 @@ class UpstoxTokenManagementTest extends TestCase
             'market_data.upstox.client_secret' => 'secret-456',
             'market_data.upstox.notifier_secret' => 'webhook-secret',
             'market_data.upstox.token_request_url' => 'https://provider.test/v3/login/auth/token/request',
+            'market_data.upstox.analytics_token' => null,
             'market_data.upstox.access_token' => null,
             'market_data.upstox.token_lifetime_years' => 10,
         ]);
@@ -47,7 +48,13 @@ class UpstoxTokenManagementTest extends TestCase
 
         Http::assertSentCount(1);
         Http::assertSent(fn ($request) => $request['client_secret'] === 'secret-456');
+        $this->assertDatabaseCount('upstox_access_tokens', 1);
         $this->assertDatabaseHas('upstox_access_tokens', ['client_id' => 'client-123', 'status' => 'pending']);
+
+        UpstoxAccessToken::query()->update(['authorization_expires_at' => now()->subMinute()]);
+        $this->assertTrue($manager->requestRenewal()['requested']);
+        $this->assertDatabaseCount('upstox_access_tokens', 1);
+        Http::assertSentCount(2);
     }
 
     public function test_notifier_stores_the_token_encrypted_and_it_becomes_the_live_token(): void
@@ -75,6 +82,22 @@ class UpstoxTokenManagementTest extends TestCase
         $rawToken = DB::table('upstox_access_tokens')->value('access_token');
         $this->assertNotSame('live-secret-token', $rawToken);
         $this->assertSame('live-secret-token', app(UpstoxTokenManager::class)->accessToken());
+        $this->assertDatabaseCount('upstox_access_tokens', 1);
+        $this->assertNull(UpstoxAccessToken::firstOrFail()->authorization_expires_at);
+
+        $replacement = $this->postJson('/api/v1/integrations/market-data/upstox-token/webhook-secret', [
+            'client_id' => 'client-123',
+            'user_id' => 'USER1',
+            'access_token' => 'replacement-secret-token',
+            'token_type' => 'Bearer',
+            'issued_at' => (string) now()->getTimestampMs(),
+            'expires_at' => (string) now()->addDay()->getTimestampMs(),
+            'message_type' => 'access_token',
+        ]);
+
+        $replacement->assertOk();
+        $this->assertDatabaseCount('upstox_access_tokens', 1);
+        $this->assertSame('replacement-secret-token', app(UpstoxTokenManager::class)->accessToken());
     }
 
     public function test_notifier_limits_a_long_provider_expiry_to_ten_years(): void
@@ -122,6 +145,15 @@ class UpstoxTokenManagementTest extends TestCase
         $this->assertSame('old-long-lived-token', app(UpstoxTokenManager::class)->accessToken());
     }
 
+    public function test_one_year_analytics_token_is_preferred_without_database_churn(): void
+    {
+        config(['market_data.upstox.analytics_token' => 'analytics-token']);
+
+        $this->assertSame('analytics-token', app(UpstoxTokenManager::class)->accessToken());
+        $this->assertFalse(app(UpstoxTokenManager::class)->handleUnauthorized()['requested']);
+        $this->assertDatabaseCount('upstox_access_tokens', 0);
+    }
+
     public function test_http_401_invalidates_the_token_and_requests_one_replacement(): void
     {
         UpstoxAccessToken::create([
@@ -157,8 +189,8 @@ class UpstoxTokenManagementTest extends TestCase
             $this->assertStringContainsString('HTTP 401', $exception->getMessage());
         }
 
-        $this->assertDatabaseHas('upstox_access_tokens', ['status' => 'unauthorized']);
         $this->assertDatabaseHas('upstox_access_tokens', ['status' => 'pending']);
+        $this->assertDatabaseCount('upstox_access_tokens', 1);
         Http::assertSentCount(2);
     }
 }
