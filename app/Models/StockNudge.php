@@ -16,7 +16,7 @@ class StockNudge extends Model
     ];
 
     protected $fillable = [
-        'equity_id', 'isin', 'exchange', 'type', 'rule', 'severity',
+        'equity_id', 'isin', 'index_code', 'exchange', 'type', 'rule', 'severity',
         'title', 'message', 'observed_price', 'metrics', 'trading_date',
         'observed_at', 'expires_at', 'fingerprint',
     ];
@@ -32,6 +32,11 @@ class StockNudge extends Model
     public function equity()
     {
         return $this->belongsTo(Equity::class);
+    }
+
+    public function index()
+    {
+        return $this->belongsTo(Index::class, 'index_code', 'index_code');
     }
 
     public static function rulesForCategory(string $category): ?array

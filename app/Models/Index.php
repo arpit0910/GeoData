@@ -36,4 +36,9 @@ class Index extends Model
     {
         return $this->hasOne(IndexQuote::class, 'index_code', 'index_code');
     }
+
+    public function nudges()
+    {
+        return $this->hasMany(StockNudge::class, 'index_code', 'index_code');
+    }
 }

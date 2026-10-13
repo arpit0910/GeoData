@@ -598,7 +598,7 @@
                     const company = safeText(holding.company_name);
                     const symbol = safeText(holding.symbol);
                     const weight = holding.weightage_percentage !== null && holding.weightage_percentage !== undefined
-                        ? parseFloat(holding.weightage_percentage).toFixed(2) + '%'
+                        ? parseFloat(holding.weightage_percentage).toFixed(2) + '%' + (holding.weightage_is_estimate ? ' est.' : '')
                         : 'N/A';
 
                     holdingsHtml += `

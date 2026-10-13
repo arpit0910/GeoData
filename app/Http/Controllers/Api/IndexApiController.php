@@ -287,6 +287,9 @@ class IndexApiController extends Controller
             'traded_date' => $price->traded_date,
             'close' => $price->close,
             'count' => is_array($holdings) ? count($holdings) : 0,
+            'weightage_basis' => collect($holdings)->contains(fn ($holding) => ($holding['weightage_is_estimate'] ?? false) === true)
+                ? 'equal_weight_estimate'
+                : 'provider_reported',
             'data' => is_array($holdings) ? array_values($holdings) : [],
             'sector_weightages' => is_array($composition) ? ($composition['sector_weightages'] ?? []) : [],
         ]);

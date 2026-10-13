@@ -12,9 +12,9 @@ class GenerateStockNudgesCommand extends Command
     protected $signature = 'stock-nudges:generate
         {type : market or eod}
         {--date= : Trading date for EOD generation (YYYY-MM-DD)}
-        {--limit= : Maximum stocks to inspect}';
+        {--limit= : Maximum stocks and indices to inspect per asset type}';
 
-    protected $description = 'Generate deduplicated market or end-of-day stock nudges';
+    protected $description = 'Generate deduplicated market or end-of-day stock and index nudges';
 
     public function handle(StockNudgeService $nudges): int
     {
@@ -39,11 +39,15 @@ class GenerateStockNudgesCommand extends Command
             return self::INVALID;
         }
 
-        $created = $type === 'market'
-            ? $nudges->generateMarket($limit === null ? null : (int) $limit)
-            : $nudges->generateEod($date, $limit === null ? null : (int) $limit);
+        $limit = $limit === null ? null : (int) $limit;
+        $stockCreated = $type === 'market'
+            ? $nudges->generateMarket($limit)
+            : $nudges->generateEod($date, $limit);
+        $indexCreated = $type === 'market'
+            ? $nudges->generateIndexMarket($limit)
+            : $nudges->generateIndexEod($date, $limit);
 
-        $this->info("Created {$created} {$type} stock nudge(s).");
+        $this->info("Created {$stockCreated} stock and {$indexCreated} index {$type} nudge(s).");
         return self::SUCCESS;
     }
 }

@@ -223,19 +223,26 @@ class MarketController extends Controller
 
         $search = trim((string) $request->input('search'));
         $nudges = StockNudge::query()
-            ->with('equity:id,company_name,nse_symbol,bse_symbol,sector,market_cap_category')
+            ->with([
+                'equity:id,company_name,nse_symbol,bse_symbol,sector,market_cap_category',
+                'index:index_code,index_name,exchange,category',
+            ])
             ->when($category !== 'all', fn ($query) => $query->whereIn('rule', StockNudge::rulesForCategory($category)))
             ->when($sector !== '', fn ($query) => $query->whereHas('equity', fn ($equity) => $equity->where('sector', $sector)))
             ->when($stockCategory !== '', fn ($query) => $query->whereHas('equity', fn ($equity) => $equity->where('market_cap_category', $stockCategory)))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($nested) use ($search) {
                     $nested->where('isin', 'like', "%{$search}%")
+                        ->orWhere('index_code', 'like', "%{$search}%")
                         ->orWhere('title', 'like', "%{$search}%")
                         ->orWhere('message', 'like', "%{$search}%")
                         ->orWhereHas('equity', function ($equity) use ($search) {
                             $equity->where('company_name', 'like', "%{$search}%")
                                 ->orWhere('nse_symbol', 'like', "%{$search}%")
                                 ->orWhere('bse_symbol', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('index', function ($index) use ($search) {
+                            $index->where('index_name', 'like', "%{$search}%");
                         });
                 });
             })

@@ -61,6 +61,44 @@ class StockNudgeService
         return $created;
     }
 
+    public function generateIndexMarket(?int $limit = null): int
+    {
+        $now = now('Asia/Kolkata');
+        $freshAfter = $now->copy()->subMinutes(config('stock_nudges.max_quote_age_minutes'))->utc();
+        $query = DB::table('index_quotes as q')
+            ->join('indices as i', 'i.index_code', '=', 'q.index_code')
+            ->where('q.fetched_at', '>=', $freshAfter)
+            ->orderBy('q.id')
+            ->select('q.*', 'i.index_name', 'i.exchange');
+
+        if ($limit !== null) {
+            $query->limit($limit);
+        }
+
+        $quotes = $query->get();
+        $history = $this->indexHistory($quotes->pluck('index_code')->all(), $now, false);
+        $created = 0;
+
+        foreach ($quotes as $quote) {
+            $created += $this->priceRules(
+                $quote,
+                strtoupper((string) $quote->exchange),
+                (float) $quote->price,
+                is_numeric($quote->change_percent) ? (float) $quote->change_percent : null,
+                $history->get($quote->index_code),
+                'market',
+                $now,
+                $now,
+                $now->copy()->addMinutes(config('stock_nudges.market_expiry_minutes')),
+                null,
+                null,
+                is_numeric($quote->previous_close) ? (float) $quote->previous_close : null
+            );
+        }
+
+        return $created;
+    }
+
     public function generateEod(Carbon $date, ?int $limit = null): int
     {
         $query = DB::table('equity_prices as p')
@@ -120,6 +158,60 @@ class StockNudgeService
         return $created;
     }
 
+    public function generateIndexEod(Carbon $date, ?int $limit = null): int
+    {
+        $query = DB::table('indices_prices as p')
+            ->join('indices as i', 'i.index_code', '=', 'p.index_code')
+            ->whereDate('p.traded_date', $date->toDateString())
+            ->whereNotNull('p.close')
+            ->where('p.close', '>', 0)
+            ->orderBy('p.id')
+            ->select('p.*', 'i.index_name', 'i.exchange');
+
+        if ($limit !== null) {
+            $query->limit($limit);
+        }
+
+        $rows = $query->get();
+        $history = $this->indexHistory($rows->pluck('index_code')->all(), $date, true);
+        $created = 0;
+
+        foreach ($rows as $row) {
+            $previousClose = $row->prev_close;
+            $changePercent = is_numeric($previousClose) && (float) $previousClose > 0
+                ? (((float) $row->close - (float) $previousClose) / (float) $previousClose) * 100
+                : null;
+            $created += $this->priceRules(
+                $row,
+                strtoupper((string) $row->exchange),
+                (float) $row->close,
+                $changePercent,
+                $history->get($row->index_code),
+                'eod',
+                $date,
+                $date->copy()->setTime(18, 15),
+                null,
+                is_numeric($row->high) ? (float) $row->high : null,
+                is_numeric($row->low) ? (float) $row->low : null,
+                is_numeric($previousClose) ? (float) $previousClose : null
+            );
+
+            $averageVolume = $this->metric($history->get($row->index_code), 'avg_volume_20');
+            $volume = $row->volume;
+            $multiple = is_numeric($volume) && $averageVolume > 0 ? (float) $volume / $averageVolume : 0;
+            if ($multiple >= config('stock_nudges.volume_spike_multiple')) {
+                $aboveAveragePercent = ($multiple - 1) * 100;
+                $created += $this->store($row, strtoupper((string) $row->exchange), 'eod', 'volume_spike', 'notable',
+                    sprintf('%s volume was %.2fx normal', $this->name($row), $multiple),
+                    sprintf('%s volume was %s on %s versus its recent average of %s—%.2f%% above normal.', $this->name($row), number_format((int) $volume), strtoupper((string) $row->exchange), number_format((int) round($averageVolume)), $aboveAveragePercent),
+                    (float) $row->close, ['volume' => (int) $volume, 'average_volume_20' => round($averageVolume), 'multiple' => round($multiple, 2), 'above_average_percent' => round($aboveAveragePercent, 2)],
+                    $date, $date->copy()->setTime(18, 15), null);
+            }
+        }
+
+        return $created;
+    }
+
     private function priceRules(object $stock, string $exchange, float $price, ?float $changePercent, ?object $history, string $type, Carbon $date, Carbon $observedAt, ?Carbon $expiresAt, ?float $sessionHigh = null, ?float $sessionLow = null, ?float $previousClose = null): int
     {
         $created = 0;
@@ -143,7 +235,8 @@ class StockNudgeService
                 continue;
             }
             [$rule, $metric, $label, $side] = $record;
-            $level = $this->metric($history, strtolower($exchange).'_'.$metric);
+            $level = $this->metric($history, strtolower($exchange).'_'.$metric)
+                ?: $this->metric($history, 'index_'.$metric);
             $rulePrice = $side === 'high' ? ($sessionHigh ?? $price) : ($sessionLow ?? $price);
             $difference = $rulePrice - $level;
             $differencePercent = ($difference / $level) * 100;
@@ -162,8 +255,10 @@ class StockNudgeService
     private function recordRule(?object $history, string $exchange, float $price, string $side): ?array
     {
         $prefix = strtolower($exchange);
-        $yearLevel = $this->metric($history, "{$prefix}_year_{$side}");
-        $monthLevel = $this->metric($history, "{$prefix}_month_{$side}");
+        $yearLevel = $this->metric($history, "{$prefix}_year_{$side}")
+            ?: $this->metric($history, "index_year_{$side}");
+        $monthLevel = $this->metric($history, "{$prefix}_month_{$side}")
+            ?: $this->metric($history, "index_month_{$side}");
         $comparison = $side === 'high' ? fn (float $level) => $price >= $level : fn (float $level) => $price <= $level;
 
         if ($yearLevel > 0 && $comparison($yearLevel)) {
@@ -205,17 +300,45 @@ class StockNudgeService
         return $query->get()->keyBy('equity_id');
     }
 
+    private function indexHistory(array $indexCodes, Carbon $date, bool $withVolume): Collection
+    {
+        if ($indexCodes === []) {
+            return collect();
+        }
+
+        $monthStart = $date->copy()->subMonth()->toDateString();
+        $yearStart = $date->copy()->subYear()->toDateString();
+        $query = DB::table('indices_prices')
+            ->whereIn('index_code', array_unique($indexCodes))
+            ->where('traded_date', '<', $date->toDateString())
+            ->where('traded_date', '>=', $yearStart)
+            ->groupBy('index_code')
+            ->select('index_code')
+            ->selectRaw('MAX(CASE WHEN traded_date >= ? THEN high END) as index_month_high', [$monthStart])
+            ->selectRaw('MIN(CASE WHEN traded_date >= ? AND low > 0 THEN low END) as index_month_low', [$monthStart])
+            ->selectRaw('MAX(high) as index_year_high')
+            ->selectRaw('MIN(CASE WHEN low > 0 THEN low END) as index_year_low');
+
+        if ($withVolume) {
+            $query->selectRaw('AVG(CASE WHEN traded_date >= ? THEN volume END) as avg_volume_20', [$monthStart]);
+        }
+
+        return $query->get()->keyBy('index_code');
+    }
+
     private function store(object $stock, string $exchange, string $type, string $rule, string $severity, string $title, string $message, float $price, array $metrics, Carbon $date, Carbon $observedAt, ?Carbon $expiresAt): int
     {
-        $fingerprint = hash('sha256', implode('|', [$rule, $stock->isin, $exchange, $date->toDateString()]));
+        $identifier = (string) ($stock->index_code ?? $stock->isin);
+        $fingerprint = hash('sha256', implode('|', [$rule, $identifier, $exchange, $date->toDateString()]));
 
-        if ($this->isSimilarRecentNudge($stock->isin, $exchange, $rule, $price, $date)) {
+        if ($this->isSimilarRecentNudge($stock, $exchange, $rule, $price, $date)) {
             return 0;
         }
 
         return StockNudge::query()->insertOrIgnore([
-            'equity_id' => $stock->equity_id,
-            'isin' => $stock->isin,
+            'equity_id' => $stock->equity_id ?? null,
+            'isin' => $stock->isin ?? null,
+            'index_code' => $stock->index_code ?? null,
             'exchange' => $exchange,
             'type' => $type,
             'rule' => $rule,
@@ -233,10 +356,14 @@ class StockNudgeService
         ]);
     }
 
-    private function isSimilarRecentNudge(string $isin, string $exchange, string $rule, float $price, Carbon $date): bool
+    private function isSimilarRecentNudge(object $stock, string $exchange, string $rule, float $price, Carbon $date): bool
     {
         $matchingRule = StockNudge::query()
-            ->where('isin', $isin)
+            ->when(
+                isset($stock->index_code),
+                fn ($query) => $query->where('index_code', $stock->index_code),
+                fn ($query) => $query->where('isin', $stock->isin)
+            )
             ->where('exchange', $exchange)
             ->where('rule', $rule);
 
@@ -273,6 +400,7 @@ class StockNudgeService
 
     private function name(object $stock): string
     {
-        return trim((string) ($stock->company_name ?? '')) ?: $stock->isin;
+        return trim((string) ($stock->company_name ?? $stock->index_name ?? ''))
+            ?: (string) ($stock->isin ?? $stock->index_code);
     }
 }

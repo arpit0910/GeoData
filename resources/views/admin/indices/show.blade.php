@@ -134,7 +134,7 @@
                             <td class="p-4 text-sm font-semibold text-gray-900 dark:text-white">{{ $holding['company_name'] ?? 'N/A' }}</td>
                             <td class="p-4 text-sm text-gray-600 dark:text-gray-300">{{ $holding['symbol'] ?? 'N/A' }}</td>
                             <td class="p-4 text-sm font-bold text-right text-amber-600 dark:text-amber-300">
-                                {{ isset($holding['weightage_percentage']) ? number_format((float) $holding['weightage_percentage'], 2).'%' : 'N/A' }}
+                                {{ isset($holding['weightage_percentage']) ? number_format((float) $holding['weightage_percentage'], 2).'%'.(!empty($holding['weightage_is_estimate']) ? ' est.' : '') : 'N/A' }}
                             </td>
                         </tr>
                     @empty

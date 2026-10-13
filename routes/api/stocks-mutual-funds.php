@@ -39,6 +39,7 @@ Route::get('/equity/{isin}/compare-index', [EquityApiController::class, 'compare
 
 Route::get('/nudges/fresh', [StockNudgeController::class, 'fresh']);
 Route::get('/nudges/isin/{isin}', [StockNudgeController::class, 'byIsin']);
+Route::get('/nudges/index/{indexCode}', [StockNudgeController::class, 'byIndex']);
 Route::get('/nudges/category/{category}', [StockNudgeController::class, 'byCategory']);
 
 Route::get('/indices/snapshot', [IndexApiController::class, 'snapshot']);

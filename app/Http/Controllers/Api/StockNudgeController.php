@@ -23,6 +23,20 @@ class StockNudgeController extends Controller
         return $this->respond($request, StockNudge::query()->where('isin', $isin), ['isin' => $isin]);
     }
 
+    public function byIndex(Request $request, string $indexCode): JsonResponse
+    {
+        $indexCode = strtoupper(trim($indexCode));
+        if ($indexCode === '' || strlen($indexCode) > 255) {
+            return response()->json(['success' => false, 'message' => 'Invalid index code.'], 422);
+        }
+
+        return $this->respond(
+            $request,
+            StockNudge::query()->where('index_code', $indexCode),
+            ['index_code' => $indexCode]
+        );
+    }
+
     public function fresh(Request $request): JsonResponse
     {
         $date = now('Asia/Kolkata')->toDateString();
@@ -60,6 +74,8 @@ class StockNudgeController extends Controller
         $nudges->setCollection($nudges->getCollection()->map(fn (StockNudge $nudge) => [
             'id' => $nudge->id,
             'isin' => $nudge->isin,
+            'index_code' => $nudge->index_code,
+            'instrument_type' => $nudge->index_code ? 'index' : 'stock',
             'exchange' => $nudge->exchange,
             'source' => $nudge->type,
             'category' => StockNudge::categoryForRule($nudge->rule),

@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\StockNudge;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class StockNudgeApiTest extends TestCase
@@ -71,6 +72,37 @@ class StockNudgeApiTest extends TestCase
     public function test_invalid_isin_is_rejected(): void
     {
         $this->getJson('/api/v1/nudges/isin/bad')->assertStatus(422);
+    }
+
+    public function test_index_nudges_can_be_fetched_by_index_code(): void
+    {
+        DB::table('indices')->insert([
+            'index_code' => 'NIFTY_50',
+            'index_name' => 'Nifty 50',
+            'exchange' => 'NSE',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        StockNudge::create([
+            'index_code' => 'NIFTY_50',
+            'exchange' => 'NSE',
+            'type' => 'market',
+            'rule' => 'daily_gain',
+            'severity' => 'significant',
+            'title' => 'Nifty 50 is up 10%',
+            'message' => 'Index nudge',
+            'observed_price' => 25000,
+            'trading_date' => '2026-10-12',
+            'observed_at' => now(),
+            'fingerprint' => hash('sha256', 'NIFTY_50|daily_gain|2026-10-12'),
+        ]);
+
+        $this->getJson('/api/v1/nudges/index/nifty_50')
+            ->assertOk()
+            ->assertJsonPath('index_code', 'NIFTY_50')
+            ->assertJsonPath('pagination.total', 1)
+            ->assertJsonPath('data.0.instrument_type', 'index')
+            ->assertJsonPath('data.0.index_code', 'NIFTY_50');
     }
 
     private function nudge(string $isin, string $rule, string $date): StockNudge

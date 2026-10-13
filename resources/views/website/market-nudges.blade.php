@@ -66,7 +66,7 @@
                         'volume' => 'fa-chart-column',
                         default => 'fa-bell',
                     };
-                    $symbol = $nudge->equity?->nse_symbol ?: $nudge->equity?->bse_symbol;
+                    $symbol = $nudge->index_code ?: ($nudge->equity?->nse_symbol ?: $nudge->equity?->bse_symbol);
                     $observedAt = $nudge->observed_at?->copy()->timezone('Asia/Kolkata');
                 @endphp
                 <article class="market-panel flex min-w-0 flex-col p-5 transition-colors hover:border-amber-400/30">
@@ -84,11 +84,11 @@
                             @if($symbol)<span class="market-chip">{{ $symbol }}</span>@endif
                             @if($nudge->equity?->sector)<span class="market-chip">{{ $nudge->equity->sector }}</span>@endif
                             @if($nudge->equity?->market_cap_category)<span class="market-chip">{{ $nudge->equity->market_cap_category }}</span>@endif
-                            <span class="font-mono text-slate-500">{{ $nudge->isin }}</span>
+                            <span class="font-mono text-slate-500">{{ $nudge->index_code ?: $nudge->isin }}</span>
                             <span class="text-slate-600">{{ $nudge->exchange }}</span>
                         </div>
-                        @if($nudge->equity?->company_name)
-                            <p class="mt-3 truncate text-xs font-semibold uppercase tracking-wide text-slate-500" title="{{ $nudge->equity->company_name }}">{{ $nudge->equity->company_name }}</p>
+                        @if($nudge->equity?->company_name || $nudge->index?->index_name)
+                            <p class="mt-3 truncate text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $nudge->equity?->company_name ?: $nudge->index?->index_name }}</p>
                         @endif
                         <h2 class="mt-1.5 text-lg font-extrabold leading-snug text-white">{{ $nudge->title }}</h2>
                         <p class="mt-3 text-sm leading-6 text-slate-300">{{ $nudge->message }}</p>

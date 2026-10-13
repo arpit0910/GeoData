@@ -1655,6 +1655,7 @@ class SyncIndices extends Command
                 'company_name' => trim((string) $row['company_name']),
                 'symbol' => trim((string) $row['symbol']),
                 'weightage_percentage' => $weight,
+                'weightage_is_estimate' => true,
             ];
         }, $rows);
     }

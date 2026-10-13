@@ -90,6 +90,70 @@ class StockNudgeGenerationTest extends TestCase
         ]);
     }
 
+    public function test_market_and_eod_nudges_are_generated_for_indices(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-13 10:00:00', 'Asia/Kolkata'));
+        DB::table('indices')->insert([
+            'index_code' => 'NIFTY_50',
+            'index_name' => 'Nifty 50',
+            'exchange' => 'NSE',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        foreach ([
+            ['2026-09-12', 100, 105, 95, 100, 1000],
+            ['2026-10-12', 100, 105, 95, 100, 1000],
+        ] as [$date, $open, $high, $low, $close, $volume]) {
+            DB::table('indices_prices')->insert([
+                'index_code' => 'NIFTY_50',
+                'traded_date' => $date,
+                'open' => $open,
+                'high' => $high,
+                'low' => $low,
+                'close' => $close,
+                'prev_close' => $open,
+                'volume' => $volume,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        DB::table('index_quotes')->insert([
+            'index_code' => 'NIFTY_50',
+            'price' => 112,
+            'previous_close' => 100,
+            'change' => 12,
+            'change_percent' => 12,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->artisan('stock-nudges:generate market')->assertSuccessful();
+        $this->assertDatabaseHas('stock_nudges', [
+            'index_code' => 'NIFTY_50',
+            'isin' => null,
+            'rule' => 'daily_gain',
+            'type' => 'market',
+        ]);
+        $this->assertDatabaseHas('stock_nudges', ['index_code' => 'NIFTY_50', 'rule' => 'year_high']);
+
+        DB::table('indices_prices')->insert([
+            'index_code' => 'NIFTY_50',
+            'traded_date' => '2026-10-13',
+            'open' => 100,
+            'high' => 105,
+            'low' => 95,
+            'close' => 100,
+            'prev_close' => 100,
+            'volume' => 3000,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->artisan('stock-nudges:generate eod --date=2026-10-13')->assertSuccessful();
+        $this->assertDatabaseHas('stock_nudges', ['index_code' => 'NIFTY_50', 'rule' => 'volume_spike']);
+    }
+
     private function price(int $equityId, string $date, float $open, float $high, float $low, float $close, int $volume): void
     {
         DB::table('equity_prices')->insert([

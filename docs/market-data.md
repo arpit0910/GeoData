@@ -246,6 +246,18 @@ The stock and mutual-fund subscription exposes three paginated nudge endpoints:
 All three accept `per_page` (default 25, maximum 100) and return newest results
 first with pagination metadata.
 
+The same scheduled generation now evaluates live and EOD index quotes for daily
+moves, one-month/52-week records, and EOD volume spikes. Index nudges have
+`index_code` set and `isin`/`equity_id` null. Fetch one index with
+`GET /api/v1/nudges/index/{index_code}`; fresh and category feeds include both
+stocks and indices and expose `instrument_type` as `stock` or `index`.
+
+Index constituents come from the official exchange downloads used by
+`indices:sync`, not from Upstox. When those files omit actual index allocation,
+the stored percentage is an equal-weight estimate marked by
+`weightage_is_estimate: true`; `/indices/holdings` reports its basis in
+`weightage_basis`.
+
 ### Equity instrument metadata
 
 The daily `equities:sync-upstox-instruments` job refreshes public instrument
