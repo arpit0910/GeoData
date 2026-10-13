@@ -321,6 +321,7 @@ class MarketPagesTest extends TestCase
     {
         $fundId = DB::table('mutual_funds')->insertGetId([
             'isin' => 'INF000000001',
+            'isin_reinvest' => 'INF000000002',
             'scheme_code' => '123456',
             'scheme_name' => 'Example Direct Growth Fund',
             'amc_name' => 'Example Mutual Fund',
@@ -352,13 +353,26 @@ class MarketPagesTest extends TestCase
             ->assertSee('Example Mutual Fund')
             ->assertSee('12.50%')
             ->assertSee('Minimum Purchase Amount')
+            ->assertSee('Reinvestment ISIN')
+            ->assertSee('market-table-compact', false)
             ->assertSee('AMC monthly portfolio disclosure ingestion is not configured yet.');
+
+        $this->get(route('market.mutual-funds.details', ['isin' => 'inf000000002']))
+            ->assertOk()
+            ->assertSee('Example Direct Growth Fund')
+            ->assertSee('Matched by reinvestment ISIN')
+            ->assertSee('20.0000');
 
         $details = app(MutualFundDetailsService::class)->find('INF000000001');
         $this->assertSame(20.0, $details['latest_nav']);
         $this->assertSame(12.5, $details['returns']['1y']['return_pct']);
         $this->assertTrue($details['transaction_details']['purchase_allowed']);
         $this->assertFalse($details['holdings']['available']);
+
+        $reinvestmentDetails = app(MutualFundDetailsService::class)->find('INF000000002');
+        $this->assertSame('INF000000001', $reinvestmentDetails['isin']);
+        $this->assertSame('INF000000002', $reinvestmentDetails['requested_isin']);
+        $this->assertSame(20.0, $reinvestmentDetails['latest_nav']);
 
         $apiResponse = app(MfApiController::class)->details(
             'inf000000001',

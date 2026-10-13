@@ -33,21 +33,30 @@ class MutualFundDetailsService
     public function find(string $isin): ?array
     {
         $isin = strtoupper(trim($isin));
-        $scheme = DB::table('mutual_funds')->where('isin', $isin)->first();
+        $scheme = DB::table('mutual_funds')
+            ->where(function ($query) use ($isin) {
+                $query->where('isin', $isin)
+                    ->orWhere('isin_reinvest', $isin);
+            })
+            ->first();
         if (! $scheme) {
             return null;
         }
 
+        // NAV rows are stored against the scheme's primary ISIN, even when the
+        // lookup used the scheme's reinvestment ISIN.
+        $priceIsin = $scheme->isin;
+
         $latestNav = DB::table('mutual_fund_prices')
-            ->where('isin', $isin)
+            ->where('isin', $priceIsin)
             ->orderByDesc('nav_date')
             ->first();
         $history = DB::table('mutual_fund_prices')
-            ->where('isin', $isin)
+            ->where('isin', $priceIsin)
             ->selectRaw('COUNT(*) as observations, MIN(nav_date) as first_date, MAX(nav_date) as last_date, MIN(nav) as lowest_nav, MAX(nav) as highest_nav')
             ->first();
         $recentNavs = DB::table('mutual_fund_prices')
-            ->where('isin', $isin)
+            ->where('isin', $priceIsin)
             ->orderByDesc('nav_date')
             ->limit(12)
             ->get(['nav_date', 'nav'])
@@ -82,6 +91,7 @@ class MutualFundDetailsService
 
         return [
             'id' => (int) $scheme->id,
+            'requested_isin' => $isin,
             'isin' => $scheme->isin,
             'scheme_code' => $scheme->scheme_code,
             'isin_reinvest' => $scheme->isin_reinvest,
