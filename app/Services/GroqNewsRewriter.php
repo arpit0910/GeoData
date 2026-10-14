@@ -272,7 +272,7 @@ class GroqNewsRewriter
                 "Article contains non-substantive paragraphs ({$details}); each paragraph requires at least {$minimumWordsPerParagraph} words."
             );
         }
-        if (preg_match('/\b(as an ai|language model|source article|upstox)\b/i', $summary)) {
+        if (preg_match('/\b(as an ai|language model|source article|upstox)\b/i', $title."\n".$summary)) {
             throw new RuntimeException('Article contains prohibited process language (AI, source article, or Upstox).');
         }
     }

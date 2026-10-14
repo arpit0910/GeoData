@@ -546,7 +546,7 @@ class GenerateSalesPostmanCollectionCommand extends Command
                 'data' => [$fund],
                 'sources' => [
                     'primary' => 'AMFI',
-                    'fallback' => 'Upstox mutual-fund instruments',
+                    'fallback' => 'Public mutual-fund instrument data',
                 ],
                 'meta' => ['total' => 13241, 'per_page' => 5, 'current_page' => 1, 'last_page' => 2649],
             ],
@@ -555,10 +555,10 @@ class GenerateSalesPostmanCollectionCommand extends Command
                 'type' => 'mutual_funds',
                 'data' => [$fund],
                 'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 10, 'total' => 1],
-                'provider' => 'AMFI Official Mutual Fund Feeds with Upstox daily-rates fallback',
+                'provider' => 'AMFI Official Mutual Fund Feeds with public instrument-data fallback',
                 'sources' => [
                     'primary' => 'AMFI',
-                    'fallback' => 'Upstox mutual-fund instruments',
+                    'fallback' => 'Public mutual-fund instrument data',
                 ],
             ],
             'api/v1/market/isin/{isin}', 'api/v1/market/equity/{isin}' => [

@@ -209,7 +209,7 @@ class MarketNewsController extends Controller
         $title = trim((string) ($marketNews->original_title ?: $marketNews->title));
         $summary = trim((string) ($marketNews->original_summary ?: $marketNews->summary));
         if ($title === '' || $summary === '') {
-            return back()->with('error', 'The Upstox source must include both a title and summary before it can be published directly.');
+            return back()->with('error', 'The source must include both a title and summary before it can be published directly.');
         }
 
         $marketNews->forceFill([
@@ -222,7 +222,7 @@ class MarketNewsController extends Controller
         ])->save();
         Cache::forget('website.market.overview');
 
-        return back()->with('success', "News #{$marketNews->id} was published directly from the Upstox source.");
+        return back()->with('success', "News #{$marketNews->id} was published directly from the source.");
     }
 
     public function unpublish(MarketNews $marketNews): RedirectResponse

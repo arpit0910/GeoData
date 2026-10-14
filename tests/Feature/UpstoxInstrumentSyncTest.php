@@ -155,7 +155,7 @@ class UpstoxInstrumentSyncTest extends TestCase
         $this->assertStringNotContainsString('NSE_EQ|INE002A01018', $response->getContent());
     }
 
-    public function test_only_admin_equity_listing_explicitly_reveals_upstox_keys(): void
+    public function test_admin_equity_listing_keeps_provider_keys_private(): void
     {
         $admin = $this->createAdminUser();
         $equity = Equity::create([
@@ -172,7 +172,7 @@ class UpstoxInstrumentSyncTest extends TestCase
             ->withHeader('X-Requested-With', 'XMLHttpRequest')
             ->getJson(route('equities.index'))
             ->assertOk()
-            ->assertJsonPath('data.0.upstox_nse_instrument_key', 'NSE_EQ|INE002A01018');
+            ->assertJsonMissingPath('data.0.upstox_nse_instrument_key');
     }
 
     public function test_admin_can_upload_an_upstox_json_master_without_keys_in_the_response(): void
@@ -190,7 +190,7 @@ class UpstoxInstrumentSyncTest extends TestCase
             ],
         ], JSON_THROW_ON_ERROR));
 
-        $response = $this->actingAs($admin)->postJson(route('equities.upstox.import'), [
+        $response = $this->actingAs($admin)->postJson(route('equities.market-data.import'), [
             'file' => $file,
         ]);
 
@@ -210,7 +210,7 @@ class UpstoxInstrumentSyncTest extends TestCase
         $user = $this->createUser();
         $file = UploadedFile::fake()->createWithContent('complete.json', '[]');
 
-        $response = $this->actingAs($user)->postJson(route('equities.upstox.import'), [
+        $response = $this->actingAs($user)->postJson(route('equities.market-data.import'), [
             'file' => $file,
         ]);
 
@@ -266,7 +266,7 @@ class UpstoxInstrumentSyncTest extends TestCase
         $splitAt = (int) floor(strlen($json) / 2);
         $uploadId = '12345678-1234-1234-1234-123456789012';
 
-        $first = $this->actingAs($admin)->postJson(route('equities.upstox.import.chunk'), [
+        $first = $this->actingAs($admin)->postJson(route('equities.market-data.import.chunk'), [
             'upload_id' => $uploadId,
             'chunk_index' => 0,
             'total_chunks' => 2,
@@ -275,7 +275,7 @@ class UpstoxInstrumentSyncTest extends TestCase
         ]);
         $first->assertOk()->assertJsonPath('complete', false);
 
-        $second = $this->actingAs($admin)->postJson(route('equities.upstox.import.chunk'), [
+        $second = $this->actingAs($admin)->postJson(route('equities.market-data.import.chunk'), [
             'upload_id' => $uploadId,
             'chunk_index' => 1,
             'total_chunks' => 2,

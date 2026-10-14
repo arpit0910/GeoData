@@ -79,6 +79,31 @@ class MarketNews extends Model
         return $this->belongsTo(Equity::class, 'isin', 'isin');
     }
 
+    public function getTitleAttribute(?string $value): ?string
+    {
+        return $this->withoutProviderBranding($value);
+    }
+
+    public function getSummaryAttribute(?string $value): ?string
+    {
+        return $this->withoutProviderBranding($value);
+    }
+
+    public function getOriginalTitleAttribute(?string $value): ?string
+    {
+        return $this->withoutProviderBranding($value);
+    }
+
+    public function getOriginalSummaryAttribute(?string $value): ?string
+    {
+        return $this->withoutProviderBranding($value);
+    }
+
+    public function getRewriteErrorAttribute(?string $value): ?string
+    {
+        return $this->withoutProviderBranding($value);
+    }
+
     public function scopeRecent(Builder $query, int $limit = 50): Builder
     {
         return $query->orderByDesc('published_at')->orderByDesc('id')->limit($limit);
@@ -93,5 +118,10 @@ class MarketNews extends Model
     public function scopeForIsin(Builder $query, string $isin): Builder
     {
         return $query->where('isin', strtoupper(trim($isin)));
+    }
+
+    private function withoutProviderBranding(?string $value): ?string
+    {
+        return $value === null ? null : preg_replace('/upstox/i', 'market data provider', $value);
     }
 }

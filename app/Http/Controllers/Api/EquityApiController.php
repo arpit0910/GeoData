@@ -60,7 +60,7 @@ class EquityApiController extends Controller
         }
 
         $equities = $query->select(
-            'isin', 'company_name', 'short_name', 'nse_symbol', 'bse_symbol',
+            'isin', 'company_name', 'short_name', 'logo_url', 'nse_symbol', 'bse_symbol',
             'series', 'security_type', 'industry', 'sector', 'market_cap',
             'market_cap_category', 'listing_date', 'face_value', 'market_lot',
             'qty_multiplier', 'mtf_enabled', 'mtf_bracket', 'cas_eligible',

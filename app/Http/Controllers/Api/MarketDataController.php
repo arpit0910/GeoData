@@ -62,6 +62,7 @@ class MarketDataController extends Controller
                 'equities.isin',
                 'equities.company_name',
                 'equities.short_name',
+                'equities.logo_url',
                 'equities.nse_symbol',
                 'equities.bse_symbol',
                 'equities.series',
@@ -168,6 +169,7 @@ class MarketDataController extends Controller
                 'isin' => $stock->isin,
                 'company_name' => $stock->company_name,
                 'short_name' => $stock->short_name,
+                'logo_url' => $stock->logo_url,
                 'nse_symbol' => $stock->nse_symbol,
                 'bse_symbol' => $stock->bse_symbol,
                 'security_type' => $stock->security_type,
@@ -310,10 +312,10 @@ class MarketDataController extends Controller
                 'from' => $paginator->firstItem() ?? 0,
                 'to' => $paginator->lastItem() ?? 0,
             ],
-            'provider' => 'AMFI Official Mutual Fund Feeds with Upstox daily-rates fallback',
+            'provider' => 'AMFI Official Mutual Fund Feeds with public instrument-data fallback',
             'sources' => [
                 'primary' => 'AMFI',
-                'fallback' => 'Upstox mutual-fund instruments',
+                'fallback' => 'Public mutual-fund instrument data',
             ],
             'timestamp' => now()->toIso8601String(),
         ]);

@@ -5,6 +5,10 @@ return [
     'ca_bundle' => env('MARKET_DATA_CA_BUNDLE'),
     'amfi_ca_bundle' => env('AMFI_CA_BUNDLE', env('MARKET_DATA_CA_BUNDLE')),
 
+    'equity_icons' => [
+        'url' => env('EQUITY_ICON_URL', 'https://company-logo.shareperks.in/logo/{isin}/icon.svg'),
+    ],
+
     'upstox' => [
         'analytics_token' => env('UPSTOX_ANALYTICS_TOKEN'),
         'access_token' => env('UPSTOX_ACCESS_TOKEN') ?: env('UPSTOX_TOKEN'),

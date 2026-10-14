@@ -95,13 +95,14 @@ class MarketMetadataVisibilityTest extends TestCase
         $payload = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame('2026-10-07', $payload['data'][0]['nav_date']);
         $this->assertSame('AMFI', $payload['sources']['primary']);
-        $this->assertSame('Upstox mutual-fund instruments', $payload['sources']['fallback']);
+        $this->assertSame('Public mutual-fund instrument data', $payload['sources']['fallback']);
 
         $admin = $this->createAdminUser();
         $this->actingAs($admin)
             ->get(route('mutual-funds.index'))
             ->assertOk()
             ->assertSee('07 Oct 2026')
-            ->assertSee('Upstox fallback');
+            ->assertSee('public data fallback')
+            ->assertDontSee('Upstox');
     }
 }

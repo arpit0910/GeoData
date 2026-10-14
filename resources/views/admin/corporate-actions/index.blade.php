@@ -7,7 +7,7 @@
     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
             <h1 class="text-3xl font-black text-gray-900 dark:text-white">Corporate Actions</h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Monitor Upstox company-event coverage and inspect dividends, splits, bonuses, rights and other events. Automatic batches run every ten minutes.</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Monitor company-event coverage and inspect dividends, splits, bonuses, rights and other events. Automatic batches run every ten minutes.</p>
         </div>
         <form method="POST" action="{{ route('admin.corporate-actions.sync') }}" class="flex flex-col gap-2 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:flex-row dark:border-white/5 dark:bg-richdark-surface">
             @csrf

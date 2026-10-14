@@ -608,7 +608,7 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         Http::assertSentCount(2);
 
         $this->artisan('market:rewrite-news', ['--limit' => 20])
-            ->expectsOutputToContain('0 generated for review, 0 deferred, 0 failed')
+            ->expectsOutputToContain('0 published, 0 deferred, 0 failed')
             ->assertSuccessful();
         Http::assertSentCount(2);
     }

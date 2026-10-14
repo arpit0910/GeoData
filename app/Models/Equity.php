@@ -49,6 +49,7 @@ class Equity extends Model
         'basic_industry',
         'index_membership',
         'company_website',
+        'logo_url',
         'cin',
         'nse_tick_size',
         'bse_tick_size',

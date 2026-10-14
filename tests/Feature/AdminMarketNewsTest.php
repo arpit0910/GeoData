@@ -37,7 +37,7 @@ class AdminMarketNewsTest extends TestCase
             ->assertOk()
             ->assertSee('Market News')
             ->assertSee('Failed source story')
-            ->assertSee('Upstox title')
+            ->assertSee('Source title')
             ->assertSee('Regenerated title')
             ->assertSee('View Details')
             ->assertSee('Generating news content')
@@ -71,7 +71,7 @@ class AdminMarketNewsTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.market-news.show', $readyStories->first()))
             ->assertOk()
-            ->assertSee('Upstox source headline 1')
+            ->assertSee('market data provider source headline 1')
             ->assertSee('Regenerated headline 1')
             ->assertSee('Extracted source article')
             ->assertSee('Approve & Publish', false);
@@ -279,10 +279,12 @@ class AdminMarketNewsTest extends TestCase
             return ['title' => $story->title, 'summary' => $story->summary];
         });
 
-        $this->artisan('market:rewrite-news', ['--retry' => true, '--limit' => 20])
+        $this->artisan('market:rewrite-news', ['--limit' => 20])
             ->assertSuccessful();
 
-        $this->assertSame(MarketNews::STATUS_READY, $news->fresh()->editorial_status);
+        $news->refresh();
+        $this->assertSame(MarketNews::STATUS_PUBLISHED, $news->editorial_status);
+        $this->assertTrue($news->is_published);
     }
 
     public function test_scheduled_rewrite_recovers_stale_processing_news(): void
@@ -325,8 +327,34 @@ class AdminMarketNewsTest extends TestCase
             ->expectsOutputToContain('Recovered 1 stale processing story for retry.')
             ->assertSuccessful();
 
-        $this->assertSame(MarketNews::STATUS_READY, $stale->fresh()->editorial_status);
+        $stale->refresh();
+        $this->assertSame(MarketNews::STATUS_PUBLISHED, $stale->editorial_status);
+        $this->assertTrue($stale->is_published);
         $this->assertSame(MarketNews::STATUS_PROCESSING, $active->fresh()->editorial_status);
+    }
+
+    public function test_scheduled_rewrite_publishes_an_existing_verified_draft_without_regenerating_it(): void
+    {
+        $news = MarketNews::create([
+            'title' => 'Verified market story ready to publish automatically',
+            'summary' => 'This verified market story has complete publishable content.',
+            'original_title' => 'Source title',
+            'original_summary' => 'Source summary.',
+            'editorial_status' => MarketNews::STATUS_READY,
+            'is_published' => false,
+            'rewritten_at' => now(),
+            'published_at' => now(),
+        ]);
+
+        $this->mock(NvidiaNewsRewriter::class)->shouldNotReceive('rewrite');
+
+        $this->artisan('market:rewrite-news', ['--retry' => true, '--limit' => 20])
+            ->expectsOutputToContain("Published verified news #{$news->id}.")
+            ->assertSuccessful();
+
+        $news->refresh();
+        $this->assertSame(MarketNews::STATUS_PUBLISHED, $news->editorial_status);
+        $this->assertTrue($news->is_published);
     }
 
     public function test_non_admin_cannot_view_market_news_monitor(): void

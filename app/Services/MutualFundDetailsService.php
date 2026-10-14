@@ -132,7 +132,7 @@ class MutualFundDetailsService
                 'nav' => 'AMFI and public mutual-fund instrument data',
                 'transaction_details' => $transactionDetails !== [] ? 'Public mutual-fund instrument data' : null,
                 'portfolio' => null,
-                'upstox_synced_at' => $scheme->upstox_synced_at,
+                'instrument_metadata_synced_at' => $scheme->upstox_synced_at,
             ],
         ];
     }

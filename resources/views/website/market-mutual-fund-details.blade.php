@@ -123,8 +123,8 @@
                         <div class="min-w-0 rounded-xl border border-white/[.05] bg-white/[.03] p-3"><div class="text-[10px] font-bold uppercase tracking-wider market-muted">{{ $label }}</div><div class="mt-1 break-words text-sm font-semibold text-white">{{ $source ?: 'Not available' }}</div></div>
                     @endforeach
                 </div>
-                @if($fund['sources']['upstox_synced_at'])
-                    <p class="mt-3 text-xs market-muted">Instrument metadata last imported {{ \Carbon\Carbon::parse($fund['sources']['upstox_synced_at'])->format('d M Y, h:i A') }}.</p>
+                @if($fund['sources']['instrument_metadata_synced_at'])
+                    <p class="mt-3 text-xs market-muted">Instrument metadata last imported {{ \Carbon\Carbon::parse($fund['sources']['instrument_metadata_synced_at'])->format('d M Y, h:i A') }}.</p>
                 @endif
             </section>
         @endif

@@ -61,7 +61,7 @@ class MfApiController extends Controller
             'data'    => $paginated->items(),
             'sources' => [
                 'primary' => 'AMFI',
-                'fallback' => 'Upstox mutual-fund instruments',
+                'fallback' => 'Public mutual-fund instrument data',
             ],
             'meta'    => [
                 'total'        => $paginated->total(),

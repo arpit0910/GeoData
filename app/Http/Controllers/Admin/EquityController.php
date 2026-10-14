@@ -43,10 +43,6 @@ class EquityController extends Controller
             $start = $request->start ?? 0;
 
             $data = $query->skip($start)->take($limit)->get();
-            $data->each(fn (Equity $equity) => $equity->makeVisible([
-                'upstox_nse_instrument_key',
-                'upstox_bse_instrument_key',
-            ]));
 
             return response()->json([
                 'draw' => $request->draw,
@@ -72,7 +68,7 @@ class EquityController extends Controller
         if (strtolower($file->getClientOriginalExtension()) !== 'json') {
             return response()->json([
                 'success' => false,
-                'message' => 'Please upload the Upstox complete.json file.',
+                'message' => 'Please upload the market instrument complete.json file.',
             ], 422);
         }
 
@@ -89,7 +85,7 @@ class EquityController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Upstox instruments synced successfully.',
+                'message' => 'Market instruments synced successfully.',
                 'data' => $stats,
             ]);
         } catch (\Throwable $exception) {
@@ -100,7 +96,7 @@ class EquityController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'The Upstox instrument file could not be processed.',
+                'message' => 'The market instrument file could not be processed.',
             ], 422);
         }
     }
@@ -183,7 +179,7 @@ class EquityController extends Controller
             return response()->json([
                 'success' => true,
                 'complete' => true,
-                'message' => 'Upstox instruments synced successfully.',
+                'message' => 'Market instruments synced successfully.',
                 'data' => $stats,
             ]);
         } catch (\Throwable $exception) {

@@ -6,6 +6,7 @@ use App\Exceptions\GroqRateLimitException;
 use App\Models\MarketNews;
 use App\Services\NvidiaNewsRewriter;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 class RewriteMarketNewsCommand extends Command
@@ -33,10 +34,11 @@ class RewriteMarketNewsCommand extends Command
             $this->warn("Recovered {$recovered} stale processing ".($recovered === 1 ? 'story' : 'stories').' for retry.');
         }
 
-        $statuses = [MarketNews::STATUS_PENDING];
-        if ($this->option('retry')) {
-            $statuses[] = MarketNews::STATUS_FAILED;
-        }
+        $statuses = [
+            MarketNews::STATUS_PENDING,
+            MarketNews::STATUS_READY,
+            MarketNews::STATUS_FAILED,
+        ];
 
         $ids = collect($this->option('id'))->map(fn ($id) => (int) $id)->filter()->unique()->values();
         $items = MarketNews::query()
@@ -59,6 +61,12 @@ class RewriteMarketNewsCommand extends Command
         $deferred = 0;
         foreach ($items as $news) {
             try {
+                if ($news->editorial_status === MarketNews::STATUS_READY) {
+                    $this->publish($news);
+                    $completed++;
+                    $this->line("Published verified news #{$news->id}.");
+                    continue;
+                }
                 if ($news->editorial_status === MarketNews::STATUS_FAILED) {
                     $news->forceFill([
                         'original_content' => null,
@@ -66,8 +74,9 @@ class RewriteMarketNewsCommand extends Command
                     ])->save();
                 }
                 $rewriter->rewrite($news);
+                $this->publish($news->refresh());
                 $completed++;
-                $this->line("Generated news #{$news->id}; awaiting admin approval.");
+                $this->line("Generated and published news #{$news->id}.");
             } catch (GroqRateLimitException $exception) {
                 $deferred++;
                 $this->warn("News #{$news->id} deferred until NVIDIA quota is available again.");
@@ -78,8 +87,26 @@ class RewriteMarketNewsCommand extends Command
             }
         }
 
-        $this->info("News rewrite complete: {$completed} generated for review, {$deferred} deferred, {$failed} failed.");
+        $this->info("News rewrite complete: {$completed} published, {$deferred} deferred, {$failed} failed.");
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
+    }
+
+    private function publish(MarketNews $news): void
+    {
+        if ($news->editorial_status !== MarketNews::STATUS_READY
+            || ! $news->rewritten_at
+            || trim((string) $news->title) === ''
+            || trim((string) $news->summary) === '') {
+            throw new \RuntimeException('The generated story did not produce a verified publishable draft.');
+        }
+
+        $news->forceFill([
+            'editorial_status' => MarketNews::STATUS_PUBLISHED,
+            'is_published' => true,
+            'reviewed_at' => now(),
+            'reviewed_by' => null,
+        ])->save();
+        Cache::forget('website.market.overview');
     }
 }

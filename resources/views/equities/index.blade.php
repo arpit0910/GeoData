@@ -16,7 +16,7 @@
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-gray-50 transition-all">
                 <i class="fas fa-upload mr-2 text-amber-500"></i> Import CSV
             </button>
-            <button type="button" onclick="document.getElementById('upstoxImportModal').classList.remove('hidden')"
+            <button type="button" onclick="document.getElementById('marketDataImportModal').classList.remove('hidden')"
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-violet-200 dark:border-violet-500/20 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 transition-all">
                 <i class="fas fa-cloud-upload-alt mr-2"></i> Sync Instrument JSON
             </button>
@@ -28,10 +28,10 @@
     </div>
 
     {{-- Instrument JSON Import Modal --}}
-    <div id="upstoxImportModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div id="marketDataImportModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen px-4">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"
-                onclick="document.getElementById('upstoxImportModal').classList.add('hidden')"></div>
+                onclick="document.getElementById('marketDataImportModal').classList.add('hidden')"></div>
             <div class="relative bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-lg p-6 z-10">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-violet-50 dark:bg-violet-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -41,26 +41,26 @@
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Upload exchange <code>complete.json</code>. Records are matched by ISIN and NSE/BSE attributes are updated.</p>
                 </div>
 
-                <form id="upstoxImportForm" enctype="multipart/form-data">
+                <form id="marketDataImportForm" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-6">
                         <label class="block text-xs font-bold text-gray-400 mb-2">Instrument Master JSON File</label>
-                        <input type="file" name="file" id="upstox_file" required accept=".json,application/json"
+                        <input type="file" name="file" id="market_data_file" required accept=".json,application/json"
                             class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all">
                         <p class="mt-2 text-xs text-gray-400">Maximum size: 100 MB. Only NSE_EQ and BSE_EQ instruments with valid ISINs are imported.</p>
                     </div>
 
-                    <div id="upstoxImportStatus" class="hidden mb-6 p-4 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20">
+                    <div id="marketDataImportStatus" class="hidden mb-6 p-4 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20">
                         <div class="flex items-center gap-3">
                             <i class="fas fa-circle-notch fa-spin text-violet-600 dark:text-violet-400"></i>
-                            <span id="upstoxImportStatusText" class="text-xs font-bold text-violet-700 dark:text-violet-300">Uploading and mapping instruments...</span>
+                            <span id="marketDataImportStatusText" class="text-xs font-bold text-violet-700 dark:text-violet-300">Uploading and mapping instruments...</span>
                         </div>
                     </div>
 
-                    <div id="upstoxImportResult" class="hidden mb-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-200"></div>
+                    <div id="marketDataImportResult" class="hidden mb-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-200"></div>
 
-                    <div class="flex justify-end gap-3" id="upstoxImportActions">
-                        <button type="button" onclick="document.getElementById('upstoxImportModal').classList.add('hidden')"
+                    <div class="flex justify-end gap-3" id="marketDataImportActions">
+                        <button type="button" onclick="document.getElementById('marketDataImportModal').classList.add('hidden')"
                             class="flex-1 px-4 py-3 text-sm font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">Close</button>
                         <button type="submit"
                             class="flex-1 px-4 py-3 text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl shadow-lg shadow-violet-500/30 transition-all">Upload & Sync</button>
@@ -127,6 +127,8 @@
                 <thead>
                     <tr>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
+                            Icon</th>
+                        <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             ISIN</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Company Name</th>
@@ -134,8 +136,6 @@
                             NSE Symbol</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             BSE Symbol</th>
-                        <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
-                            Feed Keys <span class="text-[9px] text-rose-500">Admin only</span></th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
                             Industry</th>
                         <th class="text-xs font-bold text-gray-400 border-b border-gray-100 dark:border-white/5 pb-4 px-4">
@@ -165,6 +165,20 @@
                 pageLength: 100,
                 ajax: "{{ route('equities.index') }}",
                 columns: [{
+                        data: 'logo_url',
+                        name: 'logo_url',
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row) {
+                            const initials = (row.company_name || row.nse_symbol || '?')
+                                .split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase();
+                            const safeInitials = $('<div>').text(initials).html();
+                            if (!data) {
+                                return `<span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-[10px] font-black text-gray-500 dark:bg-white/10">${safeInitials}</span>`;
+                            }
+                            return `<span class="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white p-1 ring-1 ring-gray-200 dark:ring-white/10"><img src="${data}" alt="" class="h-full w-full object-contain" loading="lazy" onerror="this.parentElement.outerHTML='<span class=&quot;inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-[10px] font-black text-gray-500 dark:bg-white/10&quot;>${safeInitials}</span>'"></span>`;
+                        }
+                    }, {
                         data: 'isin',
                         name: 'isin',
                         className: 'text-xs'
@@ -186,22 +200,6 @@
                         name: 'bse_symbol',
                         render: function(data) {
                             return data ? data : '<span class="text-gray-400">N/A</span>';
-                        }
-                    },
-                    {
-                        data: null,
-                        name: 'upstox_keys',
-                        orderable: false,
-                        render: function(data, type, row) {
-                            const escape = value => $('<div>').text(value).html();
-                            const keys = [];
-                            if (row.upstox_nse_instrument_key) {
-                                keys.push(`<div class="text-[10px] font-mono text-indigo-600 dark:text-indigo-400">${escape(row.upstox_nse_instrument_key)}</div>`);
-                            }
-                            if (row.upstox_bse_instrument_key) {
-                                keys.push(`<div class="text-[10px] font-mono text-amber-600 dark:text-amber-400">${escape(row.upstox_bse_instrument_key)}</div>`);
-                            }
-                            return keys.length ? keys.join('') : '<span class="text-gray-400">N/A</span>';
                         }
                     },
                     {
@@ -312,18 +310,18 @@
                 });
             });
 
-            $('#upstoxImportForm').on('submit', async function(e) {
+            $('#marketDataImportForm').on('submit', async function(e) {
                 e.preventDefault();
                 const form = this;
-                const file = document.getElementById('upstox_file').files[0];
-                const status = $('#upstoxImportStatus');
-                const statusText = $('#upstoxImportStatusText');
-                const result = $('#upstoxImportResult');
-                const actions = $('#upstoxImportActions');
+                const file = document.getElementById('market_data_file').files[0];
+                const status = $('#marketDataImportStatus');
+                const statusText = $('#marketDataImportStatusText');
+                const result = $('#marketDataImportResult');
+                const actions = $('#marketDataImportActions');
                 const chunkSize = 512 * 1024;
 
                 if (!file || !file.name.toLowerCase().endsWith('.json')) {
-                    result.text('Please select an Upstox JSON file.').removeClass('hidden');
+                    result.text('Please select a market instrument JSON file.').removeClass('hidden');
                     return;
                 }
                 if (file.size > 100 * 1024 * 1024) {
@@ -351,7 +349,7 @@
                         payload.append('original_name', file.name);
                         payload.append('chunk', file.slice(index * chunkSize, Math.min(file.size, (index + 1) * chunkSize)), `${index}.part`);
 
-                        const response = await fetch("{{ route('equities.upstox.import.chunk') }}", {
+                        const response = await fetch("{{ route('equities.market-data.import.chunk') }}", {
                             method: 'POST',
                             headers: { 'Accept': 'application/json' },
                             body: payload

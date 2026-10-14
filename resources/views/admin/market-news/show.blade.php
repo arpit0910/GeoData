@@ -20,9 +20,9 @@
             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ $marketNews->symbol ?: 'No symbol' }} · {{ $marketNews->isin ?: 'No ISIN' }} · {{ $marketNews->published_at?->timezone('Asia/Kolkata')->format('d M Y, h:i A') ?: 'No story date' }}</p>
         </div>
         <div class="flex flex-wrap gap-2">
-            <form method="POST" action="{{ route('admin.market-news.regenerate', $marketNews) }}" onsubmit="return confirm('Refresh the Upstox source and regenerate this story?');">@csrf<button class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-black text-white hover:bg-blue-700"><i class="fas fa-rotate mr-2"></i>{{ $marketNews->rewritten_at ? 'Regenerate' : 'Generate' }}</button></form>
+            <form method="POST" action="{{ route('admin.market-news.regenerate', $marketNews) }}" onsubmit="return confirm('Refresh the source and regenerate this story?');">@csrf<button class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-black text-white hover:bg-blue-700"><i class="fas fa-rotate mr-2"></i>{{ $marketNews->rewritten_at ? 'Regenerate' : 'Generate' }}</button></form>
             @if($marketNews->editorial_status === 'ready')<form method="POST" action="{{ route('admin.market-news.approve', $marketNews) }}">@csrf<button class="rounded-xl bg-green-600 px-4 py-2.5 text-sm font-black text-white hover:bg-green-700"><i class="fas fa-check mr-2"></i>Approve & Publish</button></form>@endif
-            @if(Route::has('admin.market-news.publish-source') && !$marketNews->is_published && $marketNews->original_title && $marketNews->original_summary)<form method="POST" action="{{ route('admin.market-news.publish-source', $marketNews) }}" onsubmit="return confirm('Publish the original Upstox title and summary without AI generation?');">@csrf<button class="rounded-xl border border-amber-500 px-4 py-2.5 text-sm font-black text-amber-700 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-500/10"><i class="fas fa-upload mr-2"></i>Publish Source Directly</button></form>@endif
+            @if(Route::has('admin.market-news.publish-source') && !$marketNews->is_published && $marketNews->original_title && $marketNews->original_summary)<form method="POST" action="{{ route('admin.market-news.publish-source', $marketNews) }}" onsubmit="return confirm('Publish the original title and summary without AI generation?');">@csrf<button class="rounded-xl border border-amber-500 px-4 py-2.5 text-sm font-black text-amber-700 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-500/10"><i class="fas fa-upload mr-2"></i>Publish Source Directly</button></form>@endif
             @if($marketNews->is_published)<form method="POST" action="{{ route('admin.market-news.unpublish', $marketNews) }}" onsubmit="return confirm('Remove this story from the public website?');">@csrf<button class="rounded-xl bg-gray-700 px-4 py-2.5 text-sm font-black text-white hover:bg-gray-800"><i class="fas fa-eye-slash mr-2"></i>Unpublish</button></form>@endif
         </div>
     </div>
@@ -34,7 +34,7 @@
 
     <div class="grid gap-6 xl:grid-cols-2">
         <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-richdark-surface">
-            <div class="flex items-center justify-between gap-3"><h2 class="text-lg font-black text-gray-900 dark:text-white">Original source</h2>@if($marketNews->article_url)<a href="{{ $marketNews->article_url }}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-amber-600 hover:text-amber-700">Open original <i class="fas fa-arrow-up-right-from-square ml-1"></i></a>@endif</div>
+            <div class="flex items-center justify-between gap-3"><h2 class="text-lg font-black text-gray-900 dark:text-white">Original source</h2></div>
             <div class="mt-5 text-xs font-black uppercase tracking-wider text-gray-400">Title</div>
             <h3 class="mt-2 text-xl font-black leading-8 text-gray-900 dark:text-white">{{ $marketNews->original_title ?: 'No source title' }}</h3>
             <div class="mt-6 text-xs font-black uppercase tracking-wider text-gray-400">Summary supplied by source feed</div>
