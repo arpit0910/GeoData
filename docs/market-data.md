@@ -244,7 +244,8 @@ The stock and mutual-fund subscription exposes three paginated nudge endpoints:
   `Asia/Kolkata`.
 - `GET /api/v1/nudges/category/{category}` returns related nudges. Supported
   categories are `growth` (daily gains and record highs), `fall` (daily drops
-  and record lows), and `volume` (volume spikes).
+  and record lows), `volume` (volume spikes), and `comparison` (stock/index
+  outperformance or underperformance against Nifty 50 and sector benchmarks).
 
 All three accept `per_page` (default 25, maximum 100) and return newest results
 first with pagination metadata.
@@ -254,6 +255,11 @@ moves, one-month/52-week records, and EOD volume spikes. Index nudges have
 `index_code` set and `isin`/`equity_id` null. Fetch one index with
 `GET /api/v1/nudges/index/{index_code}`; fresh and category feeds include both
 stocks and indices and expose `instrument_type` as `stock` or `index`.
+
+Market nudges inspect every available stock at 09:15, 12:15, and 15:15 IST on
+weekdays. NSE data is authoritative when both exchanges are available; BSE is
+used only for BSE-only stocks. Daily-move and benchmark-relative nudges use a
+5% default threshold.
 
 Index constituents come from the official exchange downloads used by
 `indices:sync`, not from Upstox. When those files omit actual index allocation,

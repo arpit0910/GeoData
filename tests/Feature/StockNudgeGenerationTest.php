@@ -74,6 +74,103 @@ class StockNudgeGenerationTest extends TestCase
         $this->assertSame(2, DB::table('stock_nudges')->where('rule', 'year_high')->count());
     }
 
+    public function test_market_nudges_use_five_percent_threshold_and_prefer_nse(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-14 12:15:00', 'Asia/Kolkata'));
+        config(['stock_nudges.daily_move_percent' => 5]);
+        $equity = Equity::create([
+            'isin' => 'INE000000003',
+            'company_name' => 'Dual Listed Limited',
+            'nse_symbol' => 'DUAL',
+            'bse_symbol' => '500003',
+        ]);
+        $nsePayload = json_encode(['dp' => 5, 'previous_close' => 100]);
+        $bsePayload = json_encode(['dp' => -8, 'previous_close' => 100]);
+
+        DB::table('equity_quotes')->insert([
+            'isin' => $equity->isin,
+            'exchange' => 'NSE',
+            'symbol' => 'DUAL',
+            'price' => 105,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+            'payload' => $nsePayload,
+            'nse_symbol' => 'DUAL',
+            'nse_price' => 105,
+            'nse_quoted_at' => now()->utc(),
+            'nse_fetched_at' => now()->utc(),
+            'nse_payload' => $nsePayload,
+            'bse_symbol' => '500003',
+            'bse_price' => 92,
+            'bse_quoted_at' => now()->utc(),
+            'bse_fetched_at' => now()->utc(),
+            'bse_payload' => $bsePayload,
+        ]);
+
+        $this->artisan('stock-nudges:generate market')->assertSuccessful();
+
+        $this->assertDatabaseHas('stock_nudges', [
+            'isin' => $equity->isin,
+            'exchange' => 'NSE',
+            'rule' => 'daily_gain',
+        ]);
+        $this->assertDatabaseMissing('stock_nudges', ['isin' => $equity->isin, 'exchange' => 'BSE']);
+        $this->assertDatabaseMissing('stock_nudges', ['isin' => $equity->isin, 'rule' => 'daily_drop']);
+    }
+
+    public function test_stocks_use_nifty_and_sector_benchmarks_and_indices_use_nifty(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-14 12:15:00', 'Asia/Kolkata'));
+        config(['stock_nudges.comparison_move_percent' => 5]);
+        $equity = Equity::create([
+            'isin' => 'INE000000004',
+            'company_name' => 'Technology Leader Limited',
+            'nse_symbol' => 'TECHLEAD',
+            'sector' => 'Information Technology',
+        ]);
+        $payload = json_encode(['dp' => 8, 'previous_close' => 100]);
+        DB::table('equity_quotes')->insert([
+            'isin' => $equity->isin,
+            'exchange' => 'NSE',
+            'symbol' => 'TECHLEAD',
+            'price' => 108,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+            'payload' => $payload,
+            'nse_symbol' => 'TECHLEAD',
+            'nse_price' => 108,
+            'nse_quoted_at' => now()->utc(),
+            'nse_fetched_at' => now()->utc(),
+            'nse_payload' => $payload,
+        ]);
+
+        $this->indexQuote('NIFTY_50', 'Nifty 50', 'Broad-based', 2);
+        $this->indexQuote('NIFTY_IT', 'Nifty IT', 'Sectoral', -1);
+        $this->indexQuote('NIFTY_BANK', 'Nifty Bank', 'Sectoral', 9);
+
+        $this->artisan('stock-nudges:generate market')->assertSuccessful();
+
+        $this->assertSame(2, DB::table('stock_nudges')
+            ->where('isin', $equity->isin)
+            ->where('rule', 'index_outperformance')
+            ->count());
+        $this->assertDatabaseHas('stock_nudges', [
+            'isin' => $equity->isin,
+            'rule' => 'index_outperformance',
+            'metrics->benchmark_index_code' => 'NIFTY_50',
+        ]);
+        $this->assertDatabaseHas('stock_nudges', [
+            'isin' => $equity->isin,
+            'rule' => 'index_outperformance',
+            'metrics->benchmark_index_code' => 'NIFTY_IT',
+        ]);
+        $this->assertDatabaseHas('stock_nudges', [
+            'index_code' => 'NIFTY_BANK',
+            'rule' => 'index_outperformance',
+            'metrics->benchmark_index_code' => 'NIFTY_50',
+        ]);
+    }
+
     public function test_eod_volume_spike_is_generated(): void
     {
         $equity = Equity::create(['isin' => 'INE000000002', 'company_name' => 'Volume Limited']);
@@ -88,6 +185,38 @@ class StockNudgeGenerationTest extends TestCase
             'type' => 'eod',
             'rule' => 'volume_spike',
         ]);
+    }
+
+    public function test_eod_nudges_prefer_nse_when_both_exchange_prices_exist(): void
+    {
+        config(['stock_nudges.daily_move_percent' => 5]);
+        $equity = Equity::create([
+            'isin' => 'INE000000005',
+            'company_name' => 'Dual EOD Limited',
+            'nse_symbol' => 'DUALEOD',
+            'bse_symbol' => '500005',
+        ]);
+        DB::table('equity_prices')->insert([
+            'equity_id' => $equity->id,
+            'isin' => $equity->isin,
+            'traded_date' => '2026-10-14',
+            'nse_close' => 106,
+            'nse_prev_close' => 100,
+            'bse_close' => 90,
+            'bse_prev_close' => 100,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->artisan('stock-nudges:generate eod --date=2026-10-14')->assertSuccessful();
+
+        $this->assertDatabaseHas('stock_nudges', [
+            'isin' => $equity->isin,
+            'exchange' => 'NSE',
+            'rule' => 'daily_gain',
+        ]);
+        $this->assertDatabaseMissing('stock_nudges', ['isin' => $equity->isin, 'exchange' => 'BSE']);
+        $this->assertDatabaseMissing('stock_nudges', ['isin' => $equity->isin, 'rule' => 'daily_drop']);
     }
 
     public function test_market_and_eod_nudges_are_generated_for_indices(): void
@@ -183,6 +312,29 @@ class StockNudgeGenerationTest extends TestCase
             'nse_quoted_at' => now()->utc(),
             'nse_fetched_at' => now()->utc(),
             'nse_payload' => $payload,
+        ]);
+    }
+
+    private function indexQuote(string $code, string $name, string $category, float $changePercent): void
+    {
+        DB::table('indices')->insert([
+            'index_code' => $code,
+            'index_name' => $name,
+            'exchange' => 'NSE',
+            'category' => $category,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('index_quotes')->insert([
+            'index_code' => $code,
+            'price' => 100 + $changePercent,
+            'previous_close' => 100,
+            'change' => $changePercent,
+            'change_percent' => $changePercent,
+            'quoted_at' => now()->utc(),
+            'fetched_at' => now()->utc(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

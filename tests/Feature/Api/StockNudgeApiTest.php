@@ -105,6 +105,31 @@ class StockNudgeApiTest extends TestCase
             ->assertJsonPath('data.0.index_code', 'NIFTY_50');
     }
 
+    public function test_stock_comparison_nudges_can_be_fetched_by_benchmark_index(): void
+    {
+        StockNudge::create([
+            'isin' => 'INE000000006',
+            'exchange' => 'NSE',
+            'type' => 'market',
+            'rule' => 'index_outperformance',
+            'severity' => 'notable',
+            'title' => 'Stock outperformed Nifty 50',
+            'message' => 'Comparison nudge',
+            'observed_price' => 105,
+            'metrics' => ['benchmark_index_code' => 'NIFTY_50'],
+            'trading_date' => '2026-10-12',
+            'observed_at' => now(),
+            'fingerprint' => hash('sha256', 'INE000000006|NIFTY_50|2026-10-12'),
+        ]);
+
+        $this->getJson('/api/v1/nudges/index/nifty_50')
+            ->assertOk()
+            ->assertJsonPath('pagination.total', 1)
+            ->assertJsonPath('data.0.instrument_type', 'stock')
+            ->assertJsonPath('data.0.category', 'comparison')
+            ->assertJsonPath('data.0.metrics.benchmark_index_code', 'NIFTY_50');
+    }
+
     private function nudge(string $isin, string $rule, string $date): StockNudge
     {
         return StockNudge::create([

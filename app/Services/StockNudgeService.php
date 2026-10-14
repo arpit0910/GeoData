@@ -20,41 +20,37 @@ class StockNudgeService
                     ->orWhere('q.bse_fetched_at', '>=', $freshAfter);
             })
             ->orderBy('q.id')
-            ->select('q.*', 'e.id as equity_id', 'e.company_name');
+            ->select('q.*', 'e.id as equity_id', 'e.company_name', 'e.sector');
 
         if ($limit !== null) {
             $query->limit($limit);
         }
 
         $created = 0;
-        $query->get()->chunk(500)->each(function (Collection $quotes) use ($now, &$created) {
+        $benchmarks = $this->marketBenchmarks($now);
+        $query->get()->chunk(500)->each(function (Collection $quotes) use ($now, $benchmarks, &$created) {
             $history = $this->history($quotes->pluck('equity_id')->all(), $now, false);
 
             foreach ($quotes as $quote) {
-                foreach (['nse', 'bse'] as $exchange) {
-                    $price = $quote->{$exchange.'_price'};
-                    $quotedAt = $quote->{$exchange.'_quoted_at'};
-                    if ($price === null || $quotedAt === null || Carbon::parse($quotedAt, 'UTC')->lt($now->copy()->subMinutes(config('stock_nudges.max_quote_age_minutes')))) {
-                        continue;
-                    }
-
-                    $payload = json_decode((string) $quote->{$exchange.'_payload'}, true) ?: [];
-                    $changePercent = $payload['dp'] ?? null;
-                    $created += $this->priceRules(
-                        $quote,
-                        strtoupper($exchange),
-                        (float) $price,
-                        is_numeric($changePercent) ? (float) $changePercent : null,
-                        $history->get($quote->equity_id),
-                        'market',
-                        $now,
-                        $now,
-                        $now->copy()->addMinutes(config('stock_nudges.market_expiry_minutes')),
-                        null,
-                        null,
-                        is_numeric($payload['previous_close'] ?? null) ? (float) $payload['previous_close'] : null
-                    );
+                $exchange = $this->preferredMarketExchange($quote, $now);
+                if ($exchange === null) {
+                    continue;
                 }
+
+                $price = (float) $quote->{$exchange.'_price'};
+                $payload = json_decode((string) $quote->{$exchange.'_payload'}, true) ?: [];
+                $changePercent = is_numeric($payload['dp'] ?? null) ? (float) $payload['dp'] : null;
+                $expiresAt = $now->copy()->addMinutes(config('stock_nudges.market_expiry_minutes'));
+                $created += $this->priceRules(
+                    $quote, strtoupper($exchange), $price, $changePercent,
+                    $history->get($quote->equity_id), 'market', $now, $now, $expiresAt,
+                    null, null,
+                    is_numeric($payload['previous_close'] ?? null) ? (float) $payload['previous_close'] : null
+                );
+                $created += $this->comparisonRules(
+                    $quote, strtoupper($exchange), $price, $changePercent,
+                    $this->stockBenchmarkCodes($quote), $benchmarks, $now, $expiresAt
+                );
             }
         });
 
@@ -76,6 +72,7 @@ class StockNudgeService
         }
 
         $quotes = $query->get();
+        $benchmarks = $this->marketBenchmarks($now);
         $history = $this->indexHistory($quotes->pluck('index_code')->all(), $now, false);
         $created = 0;
 
@@ -94,6 +91,18 @@ class StockNudgeService
                 null,
                 is_numeric($quote->previous_close) ? (float) $quote->previous_close : null
             );
+            if ($quote->index_code !== config('stock_nudges.market_benchmark')) {
+                $created += $this->comparisonRules(
+                    $quote,
+                    strtoupper((string) $quote->exchange),
+                    (float) $quote->price,
+                    is_numeric($quote->change_percent) ? (float) $quote->change_percent : null,
+                    [(string) config('stock_nudges.market_benchmark')],
+                    $benchmarks,
+                    $now,
+                    $now->copy()->addMinutes(config('stock_nudges.market_expiry_minutes'))
+                );
+            }
         }
 
         return $created;
@@ -116,42 +125,42 @@ class StockNudgeService
         $created = 0;
 
         foreach ($rows as $row) {
-            foreach (['nse', 'bse'] as $exchange) {
-                $close = $row->{$exchange.'_close'};
-                if ($close === null || (float) $close <= 0) {
-                    continue;
-                }
+            $exchange = $this->preferredEodExchange($row);
+            if ($exchange === null) {
+                continue;
+            }
 
-                $previousClose = $row->{$exchange.'_prev_close'};
-                $changePercent = is_numeric($previousClose) && (float) $previousClose > 0
-                    ? (((float) $close - (float) $previousClose) / (float) $previousClose) * 100
-                    : null;
-                $created += $this->priceRules(
-                    $row,
-                    strtoupper($exchange),
-                    (float) $close,
-                    $changePercent,
-                    $history->get($row->equity_id),
-                    'eod',
-                    $date,
-                    $date->copy()->setTime(18, 15),
-                    null,
-                    is_numeric($row->{$exchange.'_high'}) ? (float) $row->{$exchange.'_high'} : null,
-                    is_numeric($row->{$exchange.'_low'}) ? (float) $row->{$exchange.'_low'} : null,
-                    is_numeric($previousClose) ? (float) $previousClose : null
-                );
+            $close = $row->{$exchange.'_close'};
 
-                $averageVolume = $this->metric($history->get($row->equity_id), $exchange.'_avg_volume_20');
-                $volume = $row->{$exchange.'_volume'};
-                $multiple = is_numeric($volume) && $averageVolume > 0 ? (float) $volume / $averageVolume : 0;
-                if ($multiple >= config('stock_nudges.volume_spike_multiple')) {
-                    $aboveAveragePercent = ($multiple - 1) * 100;
-                    $created += $this->store($row, strtoupper($exchange), 'eod', 'volume_spike', 'notable',
-                        sprintf('%s volume was %.2fx normal', $this->name($row), $multiple),
+            $previousClose = $row->{$exchange.'_prev_close'};
+            $changePercent = is_numeric($previousClose) && (float) $previousClose > 0
+                ? (((float) $close - (float) $previousClose) / (float) $previousClose) * 100
+                : null;
+            $created += $this->priceRules(
+                $row,
+                strtoupper($exchange),
+                (float) $close,
+                $changePercent,
+                $history->get($row->equity_id),
+                'eod',
+                $date,
+                $date->copy()->setTime(18, 15),
+                null,
+                is_numeric($row->{$exchange.'_high'}) ? (float) $row->{$exchange.'_high'} : null,
+                is_numeric($row->{$exchange.'_low'}) ? (float) $row->{$exchange.'_low'} : null,
+                is_numeric($previousClose) ? (float) $previousClose : null
+            );
+
+            $averageVolume = $this->metric($history->get($row->equity_id), $exchange.'_avg_volume_20');
+            $volume = $row->{$exchange.'_volume'};
+            $multiple = is_numeric($volume) && $averageVolume > 0 ? (float) $volume / $averageVolume : 0;
+            if ($multiple >= config('stock_nudges.volume_spike_multiple')) {
+                $aboveAveragePercent = ($multiple - 1) * 100;
+                $created += $this->store($row, strtoupper($exchange), 'eod', 'volume_spike', 'notable',
+                    sprintf('%s volume was %.2fx normal', $this->name($row), $multiple),
                         sprintf('%s traded %s shares on %s versus its recent average of %s shares—%.2f%% above normal.', $this->name($row), number_format((int) $volume), strtoupper($exchange), number_format((int) round($averageVolume)), $aboveAveragePercent),
-                        (float) $close, ['volume' => (int) $volume, 'average_volume_20' => round($averageVolume), 'multiple' => round($multiple, 2), 'above_average_percent' => round($aboveAveragePercent, 2)],
-                        $date, $date->copy()->setTime(18, 15), null);
-                }
+                    (float) $close, ['volume' => (int) $volume, 'average_volume_20' => round($averageVolume), 'multiple' => round($multiple, 2), 'above_average_percent' => round($aboveAveragePercent, 2)],
+                    $date, $date->copy()->setTime(18, 15), null);
             }
         }
 
@@ -207,6 +216,108 @@ class StockNudgeService
                     (float) $row->close, ['volume' => (int) $volume, 'average_volume_20' => round($averageVolume), 'multiple' => round($multiple, 2), 'above_average_percent' => round($aboveAveragePercent, 2)],
                     $date, $date->copy()->setTime(18, 15), null);
             }
+        }
+
+        return $created;
+    }
+
+    private function preferredMarketExchange(object $quote, Carbon $now): ?string
+    {
+        foreach (['nse', 'bse'] as $exchange) {
+            $price = $quote->{$exchange.'_price'};
+            $quotedAt = $quote->{$exchange.'_quoted_at'};
+            if (is_numeric($price) && (float) $price > 0 && $quotedAt !== null
+                && Carbon::parse($quotedAt, 'UTC')->gte($now->copy()->subMinutes(config('stock_nudges.max_quote_age_minutes')))) {
+                return $exchange;
+            }
+        }
+
+        return null;
+    }
+
+    private function preferredEodExchange(object $row): ?string
+    {
+        foreach (['nse', 'bse'] as $exchange) {
+            if (is_numeric($row->{$exchange.'_close'}) && (float) $row->{$exchange.'_close'} > 0) {
+                return $exchange;
+            }
+        }
+
+        return null;
+    }
+
+    private function marketBenchmarks(Carbon $now): Collection
+    {
+        return DB::table('index_quotes as q')
+            ->join('indices as i', 'i.index_code', '=', 'q.index_code')
+            ->where('q.fetched_at', '>=', $now->copy()->subMinutes(config('stock_nudges.max_quote_age_minutes'))->utc())
+            ->whereNotNull('q.change_percent')
+            ->select('q.*', 'i.index_name', 'i.exchange', 'i.category')
+            ->get()
+            ->keyBy('index_code');
+    }
+
+    private function stockBenchmarkCodes(object $stock): array
+    {
+        $codes = [(string) config('stock_nudges.market_benchmark')];
+        $sector = strtolower(trim((string) ($stock->sector ?? '')));
+
+        foreach (config('stock_nudges.sector_indices', []) as $sectorName => $indexCode) {
+            if ($sector !== '' && str_contains($sector, strtolower($sectorName))) {
+                $codes[] = $indexCode;
+                break;
+            }
+        }
+
+        return array_values(array_unique(array_filter($codes)));
+    }
+
+    private function comparisonRules(object $instrument, string $exchange, float $price, ?float $changePercent, array $benchmarkCodes, Collection $benchmarks, Carbon $observedAt, ?Carbon $expiresAt): int
+    {
+        if ($changePercent === null) {
+            return 0;
+        }
+
+        $created = 0;
+        $threshold = (float) config('stock_nudges.comparison_move_percent');
+
+        foreach ($benchmarkCodes as $benchmarkCode) {
+            if (($instrument->index_code ?? null) === $benchmarkCode) {
+                continue;
+            }
+
+            $benchmark = $benchmarks->get($benchmarkCode);
+            if (!$benchmark || !is_numeric($benchmark->change_percent)) {
+                continue;
+            }
+
+            $benchmarkChange = (float) $benchmark->change_percent;
+            $relativeChange = $changePercent - $benchmarkChange;
+            if (abs($relativeChange) < $threshold) {
+                continue;
+            }
+
+            $direction = $relativeChange > 0 ? 'outperformance' : 'underperformance';
+            $created += $this->store(
+                $instrument,
+                $exchange,
+                'market',
+                'index_'.$direction,
+                'notable',
+                sprintf('%s %s %s by %.2f%%', $this->name($instrument), $relativeChange > 0 ? 'outperformed' : 'underperformed', $benchmark->index_name, abs($relativeChange)),
+                sprintf('%s moved %.2f%% versus %.2f%% for %s, a relative difference of %.2f%%.', $this->name($instrument), $changePercent, $benchmarkChange, $benchmark->index_name, $relativeChange),
+                $price,
+                [
+                    'instrument_change_percent' => round($changePercent, 2),
+                    'benchmark_index_code' => $benchmarkCode,
+                    'benchmark_name' => $benchmark->index_name,
+                    'benchmark_change_percent' => round($benchmarkChange, 2),
+                    'relative_change_percent' => round($relativeChange, 2),
+                ],
+                $observedAt,
+                $observedAt,
+                $expiresAt
+            );
         }
 
         return $created;
@@ -329,9 +440,10 @@ class StockNudgeService
     private function store(object $stock, string $exchange, string $type, string $rule, string $severity, string $title, string $message, float $price, array $metrics, Carbon $date, Carbon $observedAt, ?Carbon $expiresAt): int
     {
         $identifier = (string) ($stock->index_code ?? $stock->isin);
-        $fingerprint = hash('sha256', implode('|', [$rule, $identifier, $exchange, $date->toDateString()]));
+        $benchmarkIndexCode = $metrics['benchmark_index_code'] ?? null;
+        $fingerprint = hash('sha256', implode('|', [$rule, $identifier, $exchange, $benchmarkIndexCode, $date->toDateString()]));
 
-        if ($this->isSimilarRecentNudge($stock, $exchange, $rule, $price, $date)) {
+        if ($this->isSimilarRecentNudge($stock, $exchange, $rule, $price, $date, $benchmarkIndexCode)) {
             return 0;
         }
 
@@ -356,7 +468,7 @@ class StockNudgeService
         ]);
     }
 
-    private function isSimilarRecentNudge(object $stock, string $exchange, string $rule, float $price, Carbon $date): bool
+    private function isSimilarRecentNudge(object $stock, string $exchange, string $rule, float $price, Carbon $date, ?string $benchmarkIndexCode = null): bool
     {
         $matchingRule = StockNudge::query()
             ->when(
@@ -365,7 +477,8 @@ class StockNudgeService
                 fn ($query) => $query->where('isin', $stock->isin)
             )
             ->where('exchange', $exchange)
-            ->where('rule', $rule);
+            ->where('rule', $rule)
+            ->when($benchmarkIndexCode !== null, fn ($query) => $query->where('metrics->benchmark_index_code', $benchmarkIndexCode));
 
         if ((clone $matchingRule)->whereDate('trading_date', $date->toDateString())->exists()) {
             return true;

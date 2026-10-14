@@ -43,9 +43,7 @@ class Plan extends Model
     public function benefitItems(): BelongsToMany
     {
         return $this->belongsToMany(Benefit::class, 'benefit_plan')
-            ->withTimestamps()
-            ->orderBy('sort_order')
-            ->orderBy('name');
+            ->withTimestamps();
     }
 
     public function hasFeature(string $featureKey): bool
@@ -63,11 +61,15 @@ class Plan extends Model
     public function resolvedBenefits(): array
     {
         if (Schema::hasTable('benefits') && Schema::hasTable('benefit_plan')) {
-            if ($this->relationLoaded('benefitItems')) {
-                $benefits = $this->benefitItems->pluck('name')->filter()->values()->all();
-            } else {
-                $benefits = $this->benefitItems()->pluck('name')->filter()->values()->all();
-            }
+            $benefits = $this->benefitItems
+                ->sortBy([
+                    ['sort_order', 'asc'],
+                    ['name', 'asc'],
+                ])
+                ->pluck('name')
+                ->filter()
+                ->values()
+                ->all();
 
             if ($benefits !== []) {
                 return $benefits;

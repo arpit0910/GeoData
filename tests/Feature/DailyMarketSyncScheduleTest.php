@@ -17,6 +17,7 @@ class DailyMarketSyncScheduleTest extends TestCase
         $this->assertStringContainsString('market:sync-upstox-index-quotes --mode=full --snapshot-eod', $schedule);
         $this->assertSame(2, substr_count($schedule, 'market:sync-upstox-index-quotes'));
         $this->assertStringContainsString('stock-nudges:generate market', $schedule);
+        $this->assertSame('15 9,12,15 * * 1-5', config('stock_nudges.market_schedule'));
         $this->assertSame(2, substr_count($schedule, 'mf:sync-and-calculate'));
         $this->assertStringNotContainsString('sync:mf-daily --force --skip-returns', $schedule);
         $this->assertStringContainsString('market:sync-upstox-news --batch-size=30 --all', $schedule);

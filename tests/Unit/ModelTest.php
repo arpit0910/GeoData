@@ -219,6 +219,18 @@ class ModelTest extends TestCase
         $this->assertCount(1, $plan->subscriptions);
     }
 
+    /** @test */
+    public function plan_resolves_benefits_in_display_order_without_database_sorting()
+    {
+        $plan = $this->createPlan(['benefit_names' => ['Zulu', 'Alpha', 'Middle']]);
+
+        \App\Models\Benefit::where('name', 'Middle')->update(['sort_order' => 1]);
+        \App\Models\Benefit::whereIn('name', ['Zulu', 'Alpha'])->update(['sort_order' => 2]);
+
+        $this->assertStringNotContainsString('order by', strtolower($plan->benefitItems()->toSql()));
+        $this->assertSame(['Middle', 'Alpha', 'Zulu'], $plan->resolvedBenefits());
+    }
+
     // ─── API LOG MODEL ────────────────────────────────────────────────
 
     /** @test */

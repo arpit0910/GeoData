@@ -58,12 +58,14 @@
                         'growth' => 'border-emerald-400/25 bg-emerald-400/10 text-emerald-300',
                         'fall' => 'border-rose-400/25 bg-rose-400/10 text-rose-300',
                         'volume' => 'border-sky-400/25 bg-sky-400/10 text-sky-300',
+                        'comparison' => 'border-violet-400/25 bg-violet-400/10 text-violet-300',
                         default => 'border-slate-400/25 bg-slate-400/10 text-slate-300',
                     };
                     $icon = match($nudgeCategory) {
                         'growth' => 'fa-arrow-trend-up',
                         'fall' => 'fa-arrow-trend-down',
                         'volume' => 'fa-chart-column',
+                        'comparison' => 'fa-scale-balanced',
                         default => 'fa-bell',
                     };
                     $symbol = $nudge->index_code ?: ($nudge->equity?->nse_symbol ?: $nudge->equity?->bse_symbol);

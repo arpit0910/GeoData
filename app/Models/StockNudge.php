@@ -13,6 +13,7 @@ class StockNudge extends Model
         'growth' => ['daily_gain', 'month_high', 'year_high'],
         'fall' => ['daily_drop', 'month_low', 'year_low'],
         'volume' => ['volume_spike'],
+        'comparison' => ['index_outperformance', 'index_underperformance'],
     ];
 
     protected $fillable = [

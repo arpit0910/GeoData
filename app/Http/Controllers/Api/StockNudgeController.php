@@ -32,7 +32,10 @@ class StockNudgeController extends Controller
 
         return $this->respond(
             $request,
-            StockNudge::query()->where('index_code', $indexCode),
+            StockNudge::query()->where(function ($query) use ($indexCode) {
+                $query->where('index_code', $indexCode)
+                    ->orWhere('metrics->benchmark_index_code', $indexCode);
+            }),
             ['index_code' => $indexCode]
         );
     }
