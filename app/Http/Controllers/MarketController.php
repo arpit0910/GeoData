@@ -11,6 +11,7 @@ use App\Services\MutualFundDetailsService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
@@ -110,7 +111,7 @@ class MarketController extends Controller
         ]);
 
         $search = trim((string) ($filters['search'] ?? ''));
-        $indices = MarketIndex::query()
+        $matchingIndices = MarketIndex::query()
             ->with('quote')
             ->whereHas('quote')
             ->when($search !== '', function ($query) use ($search) {
@@ -128,12 +129,22 @@ class MarketController extends Controller
                     default => $quote->where('change_percent', 0),
                 });
             })
-            ->orderBy('index_name')
-            ->paginate(24)
-            ->withQueryString();
+            ->get()
+            ->sortBy('index_name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        $perPage = 24;
+        $page = max(1, (int) $request->input('page', 1));
+        $indices = new LengthAwarePaginator(
+            $matchingIndices->forPage($page, $perPage)->values(),
+            $matchingIndices->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $categories = MarketIndex::query()->whereHas('quote')->whereNotNull('category')
-            ->distinct()->orderBy('category')->pluck('category');
+            ->pluck('category')->unique()->sort(SORT_NATURAL | SORT_FLAG_CASE)->values();
 
         return view('website.market-indices', compact('indices', 'categories', 'filters'));
     }

@@ -40,6 +40,41 @@ class MarketPagesTest extends TestCase
     }
 
     /** @test */
+    public function indices_are_sorted_without_a_database_order_by(): void
+    {
+        foreach ([['Z_INDEX', 'Zulu Index'], ['A_INDEX', 'Alpha Index']] as [$code, $name]) {
+            MarketIndex::create([
+                'index_code' => $code,
+                'index_name' => $name,
+                'exchange' => 'NSE',
+                'category' => 'Broad Market',
+            ]);
+            IndexQuote::create([
+                'index_code' => $code,
+                'price' => 100,
+                'previous_close' => 99,
+                'change' => 1,
+                'change_percent' => 1.01,
+                'quoted_at' => now()->utc(),
+                'fetched_at' => now()->utc(),
+            ]);
+        }
+
+        $queries = [];
+        DB::listen(function ($query) use (&$queries): void {
+            $queries[] = strtolower($query->sql);
+        });
+
+        $response = $this->get(route('market.indices'))->assertOk();
+
+        $response->assertSeeInOrder(['Alpha Index', 'Zulu Index']);
+        $this->assertFalse(collect($queries)->contains(
+            fn (string $sql) => str_contains($sql, 'order by')
+                && (str_contains($sql, 'index_name') || str_contains($sql, 'category'))
+        ));
+    }
+
+    /** @test */
     public function market_overview_displays_live_first_index_prices_without_a_compare_page(): void
     {
         $nifty = MarketIndex::create([
