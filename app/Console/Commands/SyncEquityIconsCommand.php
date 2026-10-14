@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Equity;
 use App\Support\TlsCaBundle;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Throwable;
@@ -47,6 +48,7 @@ class SyncEquityIconsCommand extends Command
         $downloaded = 0;
         $existing = 0;
         $missing = 0;
+        $connectionSkipped = 0;
         $failed = 0;
         $progress = $this->output->createProgressBar($equities->count());
         $progress->start();
@@ -91,6 +93,10 @@ class SyncEquityIconsCommand extends Command
                 File::put($path, $svg);
                 $equity->update(['logo_url' => $logoUrl]);
                 $downloaded++;
+            } catch (ConnectionException) {
+                $connectionSkipped++;
+                $this->newLine();
+                $this->warn("{$isin} ({$equity->company_name}): connection unavailable; skipped.");
             } catch (Throwable $exception) {
                 $failed++;
                 $this->newLine();
@@ -102,7 +108,7 @@ class SyncEquityIconsCommand extends Command
 
         $progress->finish();
         $this->newLine(2);
-        $this->info("Equity icon sync complete: {$downloaded} downloaded, {$existing} already present, {$missing} unavailable, {$failed} failed.");
+        $this->info("Equity icon sync complete: {$downloaded} downloaded, {$existing} already present, {$missing} unavailable, {$connectionSkipped} connection skipped, {$failed} failed.");
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }

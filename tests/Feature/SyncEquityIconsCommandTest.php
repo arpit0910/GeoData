@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\EquityApiController;
 use App\Http\Controllers\Api\MarketDataController;
 use App\Models\Equity;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -89,5 +90,37 @@ class SyncEquityIconsCommandTest extends TestCase
 
         $this->artisan('equities:sync-icons')->assertFailed();
         $this->assertFileDoesNotExist($this->iconPath);
+    }
+
+    public function test_it_skips_connection_failures_and_continues_with_the_next_equity(): void
+    {
+        Equity::create([
+            'isin' => 'INE052T01013',
+            'company_name' => 'Best Agrolife Limited',
+            'is_active' => true,
+        ]);
+        Equity::create([
+            'isin' => 'INE002A01018',
+            'company_name' => 'Reliance Industries',
+            'is_active' => true,
+        ]);
+        Http::fake(function ($request) {
+            if (str_contains($request->url(), 'INE052T01013')) {
+                throw new ConnectionException('Could not connect to server');
+            }
+
+            return Http::response('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        });
+
+        $this->artisan('equities:sync-icons')->assertSuccessful();
+
+        $this->assertDatabaseHas('equities', [
+            'isin' => 'INE052T01013',
+            'logo_url' => null,
+        ]);
+        $this->assertDatabaseHas('equities', [
+            'isin' => 'INE002A01018',
+            'logo_url' => asset('assets/equity-icons/INE002A01018.svg'),
+        ]);
     }
 }
