@@ -16,7 +16,7 @@ class SyncEquityIconsCommand extends Command
         {--force : Download icons that already exist again}
         {--limit= : Limit the number of equities processed}';
 
-    protected $description = 'Download company icons for active equities from the configured ISIN logo source';
+    protected $description = 'Download company icons for active stocks from the configured ISIN logo source';
 
     public function handle(): int
     {
@@ -31,6 +31,7 @@ class SyncEquityIconsCommand extends Command
         $limit = $this->option('limit') === null ? null : max(1, (int) $this->option('limit'));
         $query = Equity::query()
             ->where('is_active', true)
+            ->whereIn('series', ['EQ', 'BE', 'SM', 'BZ'])
             ->whereNotNull('isin')
             ->where('isin', '<>', '')
             ->orderBy('id');
@@ -40,7 +41,7 @@ class SyncEquityIconsCommand extends Command
 
         $equities = $query->get(['id', 'isin', 'company_name', 'logo_url']);
         if ($equities->isEmpty()) {
-            $this->warn('No active equities were found.');
+            $this->warn('No active stocks were found.');
             return self::SUCCESS;
         }
 
