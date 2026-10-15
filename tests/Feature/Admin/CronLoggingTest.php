@@ -90,6 +90,36 @@ class CronLoggingTest extends TestCase
         ]);
     }
 
+    public function test_command_variants_are_logged_under_their_configured_cron_titles(): void
+    {
+        Artisan::command('test:news-sync {--all}', fn () => 0);
+        config(['cron_jobs.jobs' => [
+            [
+                'title' => 'test:news-sync',
+                'command' => 'test:news-sync',
+                'args' => [],
+            ],
+            [
+                'title' => 'test:news-sync --all',
+                'command' => 'test:news-sync',
+                'args' => ['--all' => true],
+            ],
+        ]]);
+
+        putenv('SETUGEO_CRON_TITLE=test:news-sync --all');
+
+        try {
+            $this->artisan('test:news-sync', ['--all' => true])->assertExitCode(0);
+        } finally {
+            putenv('SETUGEO_CRON_TITLE');
+        }
+
+        $this->assertDatabaseHas('cron_logs', [
+            'title' => 'test:news-sync --all',
+            'status' => true,
+        ]);
+    }
+
     public function test_cli_only_maintenance_command_cannot_be_started_by_browser_request(): void
     {
         $this->setJobs(['test:long-maintenance']);

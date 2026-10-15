@@ -11,12 +11,13 @@ use Throwable;
 
 class CronExecutionLogger
 {
-    /** @var array<string, array<int, array{log_id: ?int, started_at: CarbonImmutable, source: string, ip: ?string}>> */
+    /** @var array<string, array<int, array{title: string, log_id: ?int, started_at: CarbonImmutable, source: string, ip: ?string}>> */
     private static array $started = [];
 
     public function starting(CommandStarting $event): void
     {
-        if (! $this->isTracked($event->command)) {
+        $title = $this->trackedTitle($event->command);
+        if ($title === null) {
             return;
         }
 
@@ -25,7 +26,8 @@ class CronExecutionLogger
         $ip = $this->ipAddress();
 
         self::$started[$event->command][] = [
-            'log_id' => $this->createStartedLog($event->command, $startedAt, $source, $ip),
+            'title' => $title,
+            'log_id' => $this->createStartedLog($title, $startedAt, $source, $ip),
             'started_at' => $startedAt,
             'source' => $source,
             'ip' => $ip,
@@ -34,12 +36,14 @@ class CronExecutionLogger
 
     public function finished(CommandFinished $event): void
     {
-        if (! $this->isTracked($event->command)) {
+        $title = $this->trackedTitle($event->command);
+        if ($title === null) {
             return;
         }
 
         $finishedAt = CarbonImmutable::now('Asia/Kolkata');
         $execution = array_pop(self::$started[$event->command]) ?? [
+            'title' => $title,
             'log_id' => null,
             'started_at' => $finishedAt,
             'source' => $this->source(),
@@ -48,7 +52,7 @@ class CronExecutionLogger
 
         $this->finishLog(
             $execution['log_id'],
-            $event->command,
+            $execution['title'],
             (int) $event->exitCode,
             $execution['started_at'],
             $finishedAt,
@@ -65,7 +69,7 @@ class CronExecutionLogger
             while ($execution = array_pop(self::$started[$command])) {
                 $this->finishLog(
                     $execution['log_id'],
-                    $command,
+                    $execution['title'],
                     1,
                     $execution['started_at'],
                     $finishedAt,
@@ -140,13 +144,21 @@ class CronExecutionLogger
         }
     }
 
-    private function isTracked(?string $command): bool
+    private function trackedTitle(?string $command): ?string
     {
         if (! $command) {
-            return false;
+            return null;
         }
 
-        return collect(config('cron_jobs.jobs', []))->contains('command', $command);
+        $definitions = collect(config('cron_jobs.jobs', []))
+            ->where('command', $command);
+
+        $requestedTitle = getenv('SETUGEO_CRON_TITLE');
+        if ($requestedTitle && $definitions->contains('title', $requestedTitle)) {
+            return $requestedTitle;
+        }
+
+        return $definitions->first()['title'] ?? null;
     }
 
     private function source(): string

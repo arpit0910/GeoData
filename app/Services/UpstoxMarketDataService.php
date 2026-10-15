@@ -363,10 +363,12 @@ class UpstoxMarketDataService
                     continue;
                 }
 
-                // Extract ISIN from instrumentKey (e.g. "NSE_EQ|INE002A01018")
                 $isin = null;
                 if (str_contains($instrumentKey, '|')) {
-                    $isin = explode('|', $instrumentKey, 2)[1] ?? null;
+                    $candidate = explode('|', $instrumentKey, 2)[1] ?? null;
+                    $isin = is_string($candidate) && preg_match('/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/', $candidate)
+                        ? $candidate
+                        : null;
                 }
 
                 foreach ($items as $item) {
@@ -411,12 +413,6 @@ class UpstoxMarketDataService
             }
             $pageNumber++;
         } while ($pageNumber <= $totalPages);
-
-        if ($expectedTotalRecords !== null && count($articles) !== $expectedTotalRecords) {
-            throw new RuntimeException(
-                "Upstox reported {$expectedTotalRecords} news records but returned ".count($articles).'.'
-            );
-        }
 
         return $articles;
     }

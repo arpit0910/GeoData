@@ -58,6 +58,8 @@ class CronController extends Controller
             ], 422);
         }
 
+        putenv("SETUGEO_CRON_TITLE={$cron['title']}");
+
         try {
             $exitCode = Artisan::call($cron['command'], $cron['args']);
             $output = Artisan::output();
@@ -77,6 +79,8 @@ class CronController extends Controller
                 'output' => $exception->getMessage(),
                 'exit_code' => 1,
             ], 500);
+        } finally {
+            putenv('SETUGEO_CRON_TITLE');
         }
     }
 

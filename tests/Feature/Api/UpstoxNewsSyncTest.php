@@ -49,7 +49,7 @@ class UpstoxNewsSyncTest extends TestCase
         Http::fake(fn () => Http::response(['status' => 'success', 'data' => []]));
 
         $this->artisan('market:sync-upstox-news', ['--batch-size' => 30, '--max-batches' => 1, '--all' => true])
-            ->expectsOutputToContain('Fetching news for 61 of 61 eligible stocks in batches of 30')
+            ->expectsOutputToContain('Fetching news for 61 of 61 eligible equity and index instruments in batches of 30')
             ->assertExitCode(0);
 
         Http::assertSentCount(3);
@@ -65,6 +65,50 @@ class UpstoxNewsSyncTest extends TestCase
 
         $this->assertCount(61, array_unique($requestedKeys));
         $this->assertContains('BSE_EQ|INE000061061', $requestedKeys);
+    }
+
+    public function test_news_sync_fetches_and_stores_index_news(): void
+    {
+        config([
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.news_url' => 'https://provider.test/v2/news',
+        ]);
+        DB::table('indices')->insert([
+            'index_code' => 'NIFTY_50',
+            'index_name' => 'Nifty 50',
+            'exchange' => 'NSE',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty 50',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Http::fake(fn () => Http::response([
+            'status' => 'success',
+            'data' => [
+                'NSE_INDEX|Nifty 50' => [[
+                    'heading' => 'Nifty closes higher after broad market rally',
+                    'summary' => 'The benchmark index ended the session higher.',
+                    'article_link' => 'https://provider.test/news/nifty-rally',
+                    'published_time' => now()->getTimestampMs(),
+                ]],
+            ],
+            'metadata' => ['page' => [
+                'page_number' => 1,
+                'page_size' => 100,
+                'total_records' => 1,
+                'total_pages' => 1,
+            ]],
+        ]));
+
+        $this->artisan('market:sync-upstox-news')->assertExitCode(0);
+
+        Http::assertSent(fn (Request $request): bool => str_contains($request->url(), 'NSE_INDEX%7CNifty%2050'));
+        $this->assertDatabaseHas('market_news', [
+            'isin' => null,
+            'symbol' => 'NIFTY_50',
+            'instrument_key' => 'NSE_INDEX|Nifty 50',
+            'original_title' => 'Nifty closes higher after broad market rally',
+        ]);
     }
 
     public function test_news_sync_fetches_and_stores_every_page_returned_by_upstox(): void
@@ -161,7 +205,7 @@ class UpstoxNewsSyncTest extends TestCase
         Http::assertSentCount(1);
     }
 
-    public function test_news_sync_rotates_bounded_batches_and_excludes_non_stock_series(): void
+    public function test_news_sync_rotates_bounded_batches_across_every_active_instrument_series(): void
     {
         config([
             'market_data.upstox.access_token' => 'test-access-token',
@@ -194,7 +238,12 @@ class UpstoxNewsSyncTest extends TestCase
 
         Http::fake(fn () => Http::response(['status' => 'success', 'data' => []]));
         $this->artisan('market:sync-upstox-news', ['--max-batches' => 2])->assertExitCode(0);
-        Http::assertSentCount(1);
+        Http::assertSentCount(2);
+        Http::assertSent(function (Request $request): bool {
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+
+            return in_array('NSE_EQ|INE000091091', explode(',', $query['instrument_keys'] ?? ''), true);
+        });
     }
 
     public function test_news_sync_retries_a_transiently_failed_batch_on_the_next_run(): void
@@ -273,7 +322,9 @@ class UpstoxNewsSyncTest extends TestCase
                 'metadata' => ['page' => [
                     'page_number' => 1,
                     'page_size' => 100,
-                    'total_records' => 2,
+                    // Provider totals may count the unique story once even when
+                    // it is mapped to more than one requested instrument.
+                    'total_records' => 1,
                     'total_pages' => 1,
                 ]],
             ]);

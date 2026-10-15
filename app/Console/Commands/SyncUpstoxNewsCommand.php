@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Equity;
+use App\Models\Index as MarketIndex;
 use App\Models\MarketNews;
 use App\Services\UpstoxMarketDataService;
 use Carbon\Carbon;
@@ -16,7 +17,7 @@ class SyncUpstoxNewsCommand extends Command
         {--batch-size=30 : Instrument keys per Upstox news request (max 30)}
         {--max-batches= : Maximum batches in a normal rotating run}
         {--limit= : Optional maximum instruments to query; bounded rotating coverage when omitted}
-        {--all : Scan every eligible stock in one run}
+        {--all : Scan every eligible equity and index in one run}
         {--isin=* : Specific ISINs to fetch news for}
         {--reset-cursor : Restart the rotating scan from the first eligible equity}';
 
@@ -33,7 +34,6 @@ class SyncUpstoxNewsCommand extends Command
 
         $query = Equity::query()
             ->where('is_active', true)
-            ->whereIn('series', ['EQ', 'BE', 'SM', 'BZ'])
             ->where(function ($query) {
                 $query->where(function ($query) {
                     $query->whereNotNull('upstox_nse_instrument_key')
@@ -53,7 +53,22 @@ class SyncUpstoxNewsCommand extends Command
             $query->whereIn('isin', $isinFilter->all());
         }
 
-        $totalEligible = (clone $query)->count();
+        $indexInstruments = $isinFilter->isEmpty()
+            ? MarketIndex::query()
+                ->whereNotNull('upstox_instrument_key')
+                ->where('upstox_instrument_key', '<>', '')
+                ->orderBy('index_code')
+                ->get(['index_code', 'upstox_instrument_key'])
+                ->map(fn ($index) => (object) [
+                    'id' => null,
+                    'isin' => null,
+                    'nse_symbol' => $index->index_code,
+                    'bse_symbol' => null,
+                    'upstox_nse_instrument_key' => $index->upstox_instrument_key,
+                    'upstox_bse_instrument_key' => null,
+                ])
+            : collect();
+        $totalEligible = (clone $query)->count() + $indexInstruments->count();
         $cursorKey = 'market_news_sync:last_equity_id';
         $retryKey = 'market_news_sync:retry_equity_ids';
         $syncAll = (bool) $this->option('all');
@@ -88,17 +103,20 @@ class SyncUpstoxNewsCommand extends Command
                 ->orderBy('id')->limit($remaining)->get($columns);
         }
         $equities = $retryEquities->concat($regularEquities)->unique('id')->values();
+        $instruments = $equities->concat($indexInstruments)->values();
 
-        if ($equities->isEmpty()) {
-            $this->warn('No active equities found with Upstox instrument keys.');
+        if ($instruments->isEmpty()) {
+            $this->warn('No active equities or indices found with Upstox instrument keys.');
             return self::SUCCESS;
         }
 
-        $symbolMap = $equities->mapWithKeys(fn ($equity) => [
-            $equity->isin => $equity->nse_symbol ?: $equity->bse_symbol,
-        ])->all();
+        $symbolMap = $instruments->mapWithKeys(function ($instrument) {
+            $key = $instrument->upstox_nse_instrument_key ?: $instrument->upstox_bse_instrument_key;
+
+            return [$key => $instrument->nse_symbol ?: $instrument->bse_symbol];
+        })->all();
         $coverage = $syncAll ? 'complete catalog pass' : "max {$maxBatches} batches";
-        $this->info("Fetching news for {$equities->count()} of {$totalEligible} eligible stocks in batches of {$batchSize} ({$coverage})...");
+        $this->info("Fetching news for {$instruments->count()} of {$totalEligible} eligible equity and index instruments in batches of {$batchSize} ({$coverage})...");
 
         $totalFetched = 0;
         $uniqueFetched = 0;
@@ -110,7 +128,7 @@ class SyncUpstoxNewsCommand extends Command
         $successfulBatches = 0;
         $seenArticles = [];
 
-        $batches = $equities->chunk($batchSize)->values();
+        $batches = $instruments->chunk($batchSize)->values();
         foreach ($batches as $batchIndex => $batch) {
             $batchKeys = $batch->map(
                 fn ($equity) => $equity->upstox_nse_instrument_key ?: $equity->upstox_bse_instrument_key
@@ -131,7 +149,7 @@ class SyncUpstoxNewsCommand extends Command
                     $seenArticles[$dedupeKey] = true;
                     $uniqueFetched++;
                     $isin = $article['isin'] ?? null;
-                    $symbol = $isin && isset($symbolMap[$isin]) ? $symbolMap[$isin] : null;
+                    $symbol = $symbolMap[$article['instrument_key'] ?? ''] ?? null;
 
                     $originalTitle = trim((string) $article['title']);
                     $originalSummary = trim((string) ($article['summary'] ?? '')) ?: null;
@@ -184,12 +202,13 @@ class SyncUpstoxNewsCommand extends Command
                     }
                 }
 
-                if ($usesCursor && ($lastEquity = $batch->last())) {
-                    $retryIds = $retryIds->diff($batch->pluck('id'))->values();
+                $batchEquityIds = $batch->pluck('id')->filter()->values();
+                if ($usesCursor && $batchEquityIds->isNotEmpty()) {
+                    $retryIds = $retryIds->diff($batchEquityIds)->values();
                     $retryIds->isEmpty()
                         ? Cache::forget($retryKey)
                         : Cache::forever($retryKey, $retryIds->all());
-                    $cursor = max($cursor, (int) $batch->max('id'));
+                    $cursor = max($cursor, (int) $batchEquityIds->max());
                     Cache::forever($cursorKey, $cursor);
                 }
             } catch (Throwable $e) {
@@ -206,10 +225,13 @@ class SyncUpstoxNewsCommand extends Command
                 }
 
                 if ($usesCursor) {
-                    $retryIds = $retryIds->merge($batch->pluck('id'))->unique()->values();
-                    Cache::forever($retryKey, $retryIds->all());
-                    $cursor = max($cursor, (int) $batch->max('id'));
-                    Cache::forever($cursorKey, $cursor);
+                    $batchEquityIds = $batch->pluck('id')->filter()->values();
+                    if ($batchEquityIds->isNotEmpty()) {
+                        $retryIds = $retryIds->merge($batchEquityIds)->unique()->values();
+                        Cache::forever($retryKey, $retryIds->all());
+                        $cursor = max($cursor, (int) $batchEquityIds->max());
+                        Cache::forever($cursorKey, $cursor);
+                    }
                 }
             }
         }

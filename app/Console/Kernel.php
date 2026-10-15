@@ -115,13 +115,13 @@ class Kernel extends ConsoleKernel
             ->timezone('Asia/Kolkata')
             ->between('07:00', '23:00')
             ->runInBackground()
-            ->withoutOverlapping(120));
+            ->withoutOverlapping(120), 'market:sync-upstox-news');
 
         $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --all')
-            ->dailyAt('01:00')
+            ->cron('30 6,18 * * *')
             ->timezone('Asia/Kolkata')
             ->runInBackground()
-            ->withoutOverlapping(360));
+            ->withoutOverlapping(360), 'market:sync-upstox-news --all');
 
         // Upstox exposes every corporate-action type through a per-ISIN endpoint.
         // A bounded hourly rotation avoids provider throttling while eventually
@@ -149,10 +149,18 @@ class Kernel extends ConsoleKernel
         require base_path('routes/console.php');
     }
 
-    private function markScheduled(Event $event): void
+    private function markScheduled(Event $event, ?string $title = null): void
     {
         $event
-            ->before(fn () => putenv('SETUGEO_CRON_SOURCE=scheduled'))
-            ->after(fn () => putenv('SETUGEO_CRON_SOURCE'));
+            ->before(function () use ($title) {
+                putenv('SETUGEO_CRON_SOURCE=scheduled');
+                if ($title) {
+                    putenv("SETUGEO_CRON_TITLE={$title}");
+                }
+            })
+            ->after(function () {
+                putenv('SETUGEO_CRON_SOURCE');
+                putenv('SETUGEO_CRON_TITLE');
+            });
     }
 }
