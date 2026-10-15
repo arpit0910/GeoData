@@ -15,6 +15,7 @@ class SyncUpstoxIndexQuotesCommand extends Command
     protected $signature = 'market:sync-upstox-index-quotes
         {--batch-size=500 : Instruments per Upstox request}
         {--mode=ltp : ltp or full quote mode}
+        {--quoted-only : Refresh only indices that have previously returned a valid quote}
         {--snapshot-eod : Upsert the final quotes into indices_prices}';
 
     protected $description = 'Fetch and store live NSE/BSE index quotes from Upstox';
@@ -32,10 +33,21 @@ class SyncUpstoxIndexQuotesCommand extends Command
             return self::INVALID;
         }
 
-        $indices = Index::query()
+        $quotedOnly = (bool) $this->option('quoted-only');
+        $hasQuotedIndices = Index::query()->whereHas('quote')->exists();
+        if ($quotedOnly && ! $hasQuotedIndices) {
+            $this->info('No previously quoted indices found; running the initial index bootstrap.');
+        }
+
+        $indexQuery = Index::query()
             ->whereNotNull('upstox_instrument_key')
-            ->where('upstox_instrument_key', '<>', '')
-            ->get(['index_code', 'upstox_instrument_key']);
+            ->where('upstox_instrument_key', '<>', '');
+
+        if ($quotedOnly && $hasQuotedIndices) {
+            $indexQuery->whereHas('quote');
+        }
+
+        $indices = $indexQuery->get(['index_code', 'upstox_instrument_key']);
 
         if ($indices->isEmpty()) {
             $this->info('Initializing index instrument keys...');
@@ -44,6 +56,7 @@ class SyncUpstoxIndexQuotesCommand extends Command
             $indices = Index::query()
                 ->whereNotNull('upstox_instrument_key')
                 ->where('upstox_instrument_key', '<>', '')
+                ->when($quotedOnly && $hasQuotedIndices, fn ($query) => $query->whereHas('quote'))
                 ->get(['index_code', 'upstox_instrument_key']);
         }
 

@@ -155,4 +155,54 @@ class UpstoxIndexQuoteSyncTest extends TestCase
         $this->assertDatabaseHas('index_quotes', ['index_code' => 'SENSEX', 'price' => 81000]);
         $this->assertDatabaseMissing('index_quotes', ['index_code' => 'STALE_INDEX']);
     }
+
+    public function test_minute_refresh_requests_only_indices_with_a_valid_stored_quote(): void
+    {
+        config([
+            'cache.default' => 'array',
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.ltp_url' => 'https://api.upstox.test/v3/market-quote/ltp',
+        ]);
+
+        foreach ([
+            ['NIFTY_50', 'Nifty 50', 'NSE_INDEX|Nifty 50'],
+            ['STALE_INDEX', 'Stale Index', 'NSE_INDEX|Stale Index'],
+        ] as [$code, $name, $key]) {
+            DB::table('indices')->insert([
+                'index_code' => $code,
+                'index_name' => $name,
+                'exchange' => 'NSE',
+                'upstox_instrument_key' => $key,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        DB::table('index_quotes')->insert([
+            'index_code' => 'NIFTY_50',
+            'price' => 25000,
+            'quoted_at' => now()->subMinute()->utc()->format('Y-m-d H:i:s'),
+            'fetched_at' => now()->subMinute()->utc()->format('Y-m-d H:i:s'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Http::fake(function ($request) {
+            $this->assertSame('NSE_INDEX|Nifty 50', $request['instrument_key']);
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['NSE_INDEX:Nifty 50' => [
+                    'last_price' => 25125.5,
+                    'cp' => 25000,
+                ]],
+            ]);
+        });
+
+        $this->artisan('market:sync-upstox-index-quotes', ['--quoted-only' => true])
+            ->expectsOutputToContain('Requested: 1; saved: 1; missing/failed: 0')
+            ->assertExitCode(0);
+
+        Http::assertSentCount(1);
+        $this->assertDatabaseHas('index_quotes', ['index_code' => 'NIFTY_50', 'price' => 25125.5]);
+    }
 }

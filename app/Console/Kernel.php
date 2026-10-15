@@ -58,16 +58,18 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:sync-company-fundamentals --dataset=profile --missing-profile --limit=250 --delay=200')
             ->dailyAt('02:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        // 1. Equities / Stocks: Constantly synced every minute during active trading hours (09:15 to 15:30 IST)
-        $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=stocks --mode=ltp')
+        // Refresh previously validated indices first so unsupported index keys
+        // cannot delay the one-minute live quote path.
+        $this->markScheduled($schedule->command('market:sync-upstox-index-quotes --quoted-only')
             ->everyMinute()
             ->timezone('Asia/Kolkata')
             ->weekdays()
             ->between('09:15', '15:30')
             ->runInBackground()
-            ->withoutOverlapping(2));
+            ->withoutOverlapping(2), 'market:sync-upstox-index-quotes (Live)');
 
-        $this->markScheduled($schedule->command('market:sync-upstox-index-quotes')
+        // 1. Equities / Stocks: Constantly synced every minute during active trading hours (09:15 to 15:30 IST)
+        $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=stocks --mode=ltp')
             ->everyMinute()
             ->timezone('Asia/Kolkata')
             ->weekdays()
@@ -79,7 +81,7 @@ class Kernel extends ConsoleKernel
             ->dailyAt('18:05')
             ->timezone('Asia/Kolkata')
             ->runInBackground()
-            ->withoutOverlapping(120));
+            ->withoutOverlapping(120), 'market:sync-upstox-index-quotes (EOD)');
 
         // Capture the final full quote as the day's EOD history. The snapshot
         // is idempotent on ISIN + date, so retries update instead of duplicate.
