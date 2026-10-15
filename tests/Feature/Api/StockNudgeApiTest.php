@@ -60,9 +60,9 @@ class StockNudgeApiTest extends TestCase
         $this->getJson('/api/v1/nudges/category/fall')
             ->assertOk()
             ->assertJsonPath('category', 'fall')
-            ->assertJsonPath('pagination.total', 2)
-            ->assertJsonPath('data.0.category', 'fall')
-            ->assertJsonPath('data.1.category', 'fall');
+            ->assertJsonPath('date', '2026-10-12')
+            ->assertJsonPath('pagination.total', 1)
+            ->assertJsonPath('data.0.category', 'fall');
 
         $this->getJson('/api/v1/nudges/category/unknown')
             ->assertStatus(422)
@@ -72,6 +72,25 @@ class StockNudgeApiTest extends TestCase
     public function test_invalid_isin_is_rejected(): void
     {
         $this->getJson('/api/v1/nudges/isin/bad')->assertStatus(422);
+    }
+
+    public function test_nudges_use_requested_date_or_latest_available_date(): void
+    {
+        $this->nudge('INE000000001', 'daily_gain', '2026-10-10');
+        $this->nudge('INE000000001', 'daily_gain', '2026-10-12');
+
+        $this->getJson('/api/v1/nudges/isin/INE000000001')
+            ->assertOk()
+            ->assertJsonPath('date', '2026-10-12')
+            ->assertJsonPath('pagination.total', 1);
+
+        $this->getJson('/api/v1/nudges/isin/INE000000001?date=2026-10-10')
+            ->assertOk()
+            ->assertJsonPath('date', '2026-10-10')
+            ->assertJsonPath('pagination.total', 1)
+            ->assertJsonPath('data.0.trading_date', '2026-10-10');
+
+        $this->getJson('/api/v1/nudges/fresh?date=10-10-2026')->assertStatus(422);
     }
 
     public function test_index_nudges_can_be_fetched_by_index_code(): void

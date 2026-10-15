@@ -1862,7 +1862,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         </div>
                                         <div class="p-6">
                                             <p class="mb-4">Fetch comprehensive profile details for a specific equity
-                                                using its ISIN or Symbol.</p>
+                                                using its ISIN or Symbol. Add <code class="text-white">?date=YYYY-MM-DD</code>
+                                                for an exact trading date; omit it for the latest available price.</p>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-5">curl -X GET "https://setugeo.com/api/v1/equity/INE002A01018?date=2026-10-12" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Accept: application/json"</div>
                                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Route Parameters
                                             </h4>
                                             <table class="w-full text-sm mb-6">
@@ -1886,6 +1890,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                                 class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
                                                 <pre>{
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"date"</span>: <span class="text-green-400">"2026-10-12"</span>,
   <span class="text-blue-400">"data"</span>: {
     <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
     <span class="text-blue-400">"company_name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
@@ -1895,7 +1900,11 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
     <span class="text-blue-400">"market_cap"</span>: <span class="text-green-400">"2098450.50"</span>,
     <span class="text-blue-400">"market_cap_category"</span>: <span class="text-green-400">"Large Cap"</span>,
     <span class="text-blue-400">"face_value"</span>: <span class="text-blue-400">10.00</span>,
-    <span class="text-blue-400">"listing_date"</span>: <span class="text-green-400">"1977-01-01"</span>
+    <span class="text-blue-400">"listing_date"</span>: <span class="text-green-400">"1977-01-01"</span>,
+    <span class="text-blue-400">"price"</span>: {
+      <span class="text-blue-400">"traded_date"</span>: <span class="text-green-400">"2026-10-12"</span>,
+      <span class="text-blue-400">"nse_close"</span>: <span class="text-green-400">"3012.7500"</span>
+    }
   }
 }</pre>
                                             </div>
@@ -2360,18 +2369,22 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             </span>
                                         </div>
                                         <div class="p-6">
-                                            <p class="mb-4 text-gray-400">Full scheme profile with latest NAV and pre-computed returns for all 9 periods (1D → 3Y). Returns are read directly from the database — zero computation overhead.</p>
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-5">curl -X GET "https://setugeo.com/api/v1/mf/details/INF109K01VQ0?date=2026-10-07" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Accept: application/json"</div>
+                                            <p class="mb-4 text-gray-400">Full scheme profile with NAV and pre-computed returns for all 9 periods (1D → 3Y). Add <code class="text-white">?date=YYYY-MM-DD</code> for an exact NAV date; omit it for the latest available data.</p>
                                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response Example</h4>
                                             <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400">
                                                 <pre>{
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"date"</span>: <span class="text-green-400">"2026-10-07"</span>,
   <span class="text-blue-400">"data"</span>: {
     <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INF109K01VQ0"</span>,
     <span class="text-blue-400">"scheme_name"</span>: <span class="text-green-400">"Axis Bluechip Fund - Growth"</span>,
     <span class="text-blue-400">"amc_name"</span>: <span class="text-green-400">"Axis Mutual Fund"</span>,
     <span class="text-blue-400">"category"</span>: <span class="text-green-400">"Equity"</span>,
     <span class="text-blue-400">"latest_nav"</span>: <span class="text-blue-400">54.32</span>,
-    <span class="text-blue-400">"latest_nav_date"</span>: <span class="text-green-400">"2026-04-17"</span>,
+    <span class="text-blue-400">"latest_nav_date"</span>: <span class="text-green-400">"2026-10-07"</span>,
     <span class="text-blue-400">"returns"</span>: {
       <span class="text-blue-400">"1d"</span>: { <span class="text-blue-400">"return_pct"</span>: <span class="text-blue-400">0.42</span>, <span class="text-blue-400">"ref_nav"</span>: <span class="text-blue-400">54.09</span> },
       <span class="text-blue-400">"1m"</span>: { <span class="text-blue-400">"return_pct"</span>: <span class="text-blue-400">2.81</span>, <span class="text-blue-400">"ref_nav"</span>: <span class="text-blue-400">52.83</span> },
@@ -2905,7 +2918,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                             <section id="stock-nudges-api" class="pt-8">
                                 <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Stock Nudges</h2>
-                                <p class="text-gray-400 mb-8">Retrieve generated stock signals by trading day, ISIN, or signal category. Results are returned newest first and use the standard bearer-token authentication.</p>
+                                <p class="text-gray-400 mb-8">Retrieve generated stock signals by trading day, ISIN, index, or signal category. Every endpoint accepts <code class="text-white">date=YYYY-MM-DD</code>; when omitted, the latest available trading date is returned.</p>
 
                                 <div class="space-y-6">
                                     <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
@@ -2913,7 +2926,7 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /nudges/fresh</h3>
                                         </div>
                                         <div class="p-6 text-gray-400">
-                                            <p>Returns nudges whose trading date is today in Asia/Kolkata.</p>
+                                            <p>Returns nudges for the requested date, or the latest available nudge date when omitted.</p>
                                         </div>
                                     </div>
 
@@ -2922,7 +2935,16 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /nudges/isin/{isin}</h3>
                                         </div>
                                         <div class="p-6 text-gray-400">
-                                            <p>Returns all available nudges for one valid 12-character ISIN, for example <code class="text-white">INE002A01018</code>.</p>
+                                            <p>Returns nudges on the requested or latest available date for one valid 12-character ISIN, for example <code class="text-white">INE002A01018</code>.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /nudges/index/{indexCode}</h3>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p>Returns index-movement and stock-versus-benchmark nudges for an index code, for example <code class="text-white">NIFTY_50</code>.</p>
                                         </div>
                                     </div>
 
@@ -2931,21 +2953,23 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                             <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /nudges/category/{category}</h3>
                                         </div>
                                         <div class="p-6 text-gray-400">
-                                            <p class="mb-5">Returns similar nudges. Allowed categories are <code class="text-white">growth</code>, <code class="text-white">fall</code>, and <code class="text-white">volume</code>.</p>
+                                            <p class="mb-5">Returns similar nudges. Allowed categories are <code class="text-white">growth</code>, <code class="text-white">fall</code>, <code class="text-white">volume</code>, and <code class="text-white">comparison</code>.</p>
                                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-3">Common query parameters</h4>
                                             <table class="w-full text-sm mb-6">
                                                 <tbody class="divide-y divide-gray-800">
                                                     <tr><td class="py-2 font-mono text-amber-500">page</td><td class="py-2">Page number; defaults to 1.</td></tr>
                                                     <tr><td class="py-2 font-mono text-amber-500">per_page</td><td class="py-2">Records per page; defaults to 25 and is limited to 100.</td></tr>
+                                                    <tr><td class="py-2 font-mono text-amber-500">date</td><td class="py-2">Optional exact trading date in YYYY-MM-DD format; defaults to the latest available date. An invalid format returns 422.</td></tr>
                                                 </tbody>
                                             </table>
                                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">cURL example</h4>
-                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-5">curl -X GET "https://setugeo.com/api/v1/nudges/category/growth?per_page=25" \
+                                            <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-5">curl -X GET "https://setugeo.com/api/v1/nudges/category/growth?date=2026-10-12&amp;per_page=25" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Accept: application/json"</div>
                                             <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Response example</h4>
                                             <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-gray-400"><pre>{
   <span class="text-blue-400">"success"</span>: <span class="text-blue-400">true</span>,
+  <span class="text-blue-400">"date"</span>: <span class="text-green-400">"2026-10-12"</span>,
   <span class="text-blue-400">"category"</span>: <span class="text-green-400">"growth"</span>,
   <span class="text-blue-400">"data"</span>: [{
     <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,

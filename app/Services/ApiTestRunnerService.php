@@ -390,10 +390,13 @@ class ApiTestRunnerService
             '{bank}' => $sampleData['bank_id'],
             '{ifsc}' => $sampleData['ifsc'],
             '{pincode}' => $sampleData['pincode'],
-            '{isin}' => $sampleData['equity_isin'],
+            '{isin}' => str_starts_with($uri, 'api/v1/mf/')
+                ? $sampleData['mf_isin']
+                : $sampleData['equity_isin'],
             '{category}' => 'growth',
             '{cap}' => 'large-cap',
             '{index_code}' => $sampleData['index_code'],
+            '{indexCode}' => $sampleData['index_code'],
         ];
 
         foreach ($replacements as $token => $value) {
@@ -647,6 +650,7 @@ class ApiTestRunnerService
                 break;
             case 'api/v1/nudges/fresh':
             case 'api/v1/nudges/isin/{isin}':
+            case 'api/v1/nudges/index/{indexCode}':
             case 'api/v1/nudges/category/{category}':
                 $query = ['per_page' => 25];
                 break;

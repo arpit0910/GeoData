@@ -7,6 +7,7 @@ use App\Models\StockNudge;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class StockNudgeController extends Controller
 {
@@ -42,13 +43,7 @@ class StockNudgeController extends Controller
 
     public function fresh(Request $request): JsonResponse
     {
-        $date = now('Asia/Kolkata')->toDateString();
-
-        return $this->respond(
-            $request,
-            StockNudge::query()->whereDate('trading_date', $date),
-            ['date' => $date]
-        );
+        return $this->respond($request, StockNudge::query());
     }
 
     public function byCategory(Request $request, string $category): JsonResponse
@@ -72,6 +67,15 @@ class StockNudgeController extends Controller
 
     private function respond(Request $request, Builder $query, array $context = []): JsonResponse
     {
+        $validated = $request->validate([
+            'date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+        $latestDate = isset($validated['date']) ? null : (clone $query)->max('trading_date');
+        $date = $validated['date'] ?? ($latestDate ? Carbon::parse($latestDate)->toDateString() : null);
+        if ($date !== null) {
+            $query->whereDate('trading_date', $date);
+        }
+
         $perPage = min(max((int) $request->input('per_page', 25), 1), 100);
         $nudges = $query->latest('observed_at')->latest('id')->paginate($perPage);
         $nudges->setCollection($nudges->getCollection()->map(fn (StockNudge $nudge) => [
@@ -95,6 +99,7 @@ class StockNudgeController extends Controller
 
         return response()->json(array_merge([
             'success' => true,
+            'date' => $date,
         ], $context, [
             'data' => $nudges->items(),
             'pagination' => [

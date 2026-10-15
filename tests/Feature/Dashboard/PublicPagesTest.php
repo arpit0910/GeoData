@@ -49,6 +49,7 @@ class PublicPagesTest extends TestCase
             ->assertSee('Stock Nudges')
             ->assertSee('/nudges/fresh')
             ->assertSee('/nudges/isin/{isin}')
+            ->assertSee('/nudges/index/{indexCode}')
             ->assertSee('/nudges/category/{category}');
     }
 
@@ -72,10 +73,26 @@ class PublicPagesTest extends TestCase
         $collection = json_decode(file_get_contents(public_path('postman_collection.json')), true, 512, JSON_THROW_ON_ERROR);
         $encoded = json_encode($collection, JSON_UNESCAPED_SLASHES);
 
-        $this->assertStringContainsString('{{baseUrl}}/nudges/fresh?per_page=25', $encoded);
-        $this->assertStringContainsString('{{baseUrl}}/nudges/isin/INE000000000?per_page=25', $encoded);
-        $this->assertStringContainsString('{{baseUrl}}/nudges/category/growth?per_page=25', $encoded);
+        $this->assertStringContainsString('{{baseUrl}}/nudges/fresh?per_page=25&date={{marketDate}}', $encoded);
+        $this->assertMatchesRegularExpression('/\{\{baseUrl\}\}\/nudges\/isin\/[^?]+\?per_page=25&date=\{\{marketDate\}\}/', $encoded);
+        $this->assertMatchesRegularExpression('/\{\{baseUrl\}\}\/nudges\/index\/[^?]+\?per_page=25&date=\{\{marketDate\}\}/', $encoded);
+        $this->assertStringContainsString('{{baseUrl}}/nudges/category/growth?per_page=25&date={{marketDate}}', $encoded);
         $this->assertStringContainsString('Strong daily gain', $encoded);
+    }
+
+    /** @test */
+    public function postman_collection_documents_date_aware_detail_requests()
+    {
+        $primary = file_get_contents(public_path('postman_collection.json'));
+        $download = file_get_contents(public_path('SetuGeo.postman_collection.json'));
+        $collection = json_decode($primary, true, 512, JSON_THROW_ON_ERROR);
+        $encoded = json_encode($collection, JSON_UNESCAPED_SLASHES);
+
+        $this->assertSame($primary, $download);
+        $this->assertStringContainsString('"key":"marketDate"', $encoded);
+        $this->assertMatchesRegularExpression('/\{\{baseUrl\}\}\/equity\/[^?\/]+\?date=\{\{marketDate\}\}/', $encoded);
+        $this->assertMatchesRegularExpression('/\{\{baseUrl\}\}\/mf\/details\/[^?]+\?date=\{\{marketDate\}\}/', $encoded);
+        $this->assertStringContainsString('latest_nav_date', $encoded);
     }
 
     /** @test */

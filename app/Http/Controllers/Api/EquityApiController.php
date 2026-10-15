@@ -290,10 +290,14 @@ class EquityApiController extends Controller
     }
 
     /**
-     * Get detailed information for a specific ISIN (Static info).
+     * Get equity details with the requested or latest available daily price.
      */
-    public function show(string $isin)
+    public function show(Request $request, string $isin)
     {
+        $validated = $request->validate([
+            'date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+        $isin = strtoupper(trim($isin));
         $equity = Equity::where('isin', $isin)->first();
 
         if (!$equity) {
@@ -303,9 +307,26 @@ class EquityApiController extends Controller
             ], 404);
         }
 
+        $priceQuery = EquityPrice::where('equity_id', $equity->id);
+        if (isset($validated['date'])) {
+            $priceQuery->whereDate('traded_date', $validated['date']);
+        }
+        $price = $priceQuery->orderByDesc('traded_date')->orderByDesc('id')->first();
+
+        if (isset($validated['date']) && !$price) {
+            return response()->json([
+                'success' => false,
+                'message' => "No stock data found for {$isin} on {$validated['date']}.",
+            ], 404);
+        }
+
+        $data = $equity->toArray();
+        $data['price'] = $price?->toArray();
+
         return response()->json([
             'success' => true,
-            'data' => $equity
+            'date' => $price?->traded_date?->toDateString(),
+            'data' => $data,
         ]);
     }
 

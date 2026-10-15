@@ -53,6 +53,12 @@ class GenerateSalesPostmanCollectionCommand extends Command
                 ['key' => 'clientKey', 'value' => 'YOUR_CLIENT_KEY', 'type' => 'string'],
                 ['key' => 'clientSecret', 'value' => 'YOUR_CLIENT_SECRET', 'type' => 'string'],
                 ['key' => 'bearerToken', 'value' => 'YOUR_TOKEN_HERE', 'type' => 'string'],
+                [
+                    'key' => 'marketDate',
+                    'value' => '',
+                    'type' => 'string',
+                    'description' => 'Optional market date in YYYY-MM-DD format. Leave blank to use the latest available data.',
+                ],
                 ['key' => 'lastStatusCode', 'value' => '', 'type' => 'string'],
             ],
             'item' => array_values(array_filter([
@@ -200,14 +206,21 @@ class GenerateSalesPostmanCollectionCommand extends Command
 
     private function buildRequestItem(array $endpoint): array
     {
-        $query = collect($endpoint['sample_query'] ?? [])
+        $queryValues = $endpoint['sample_query'] ?? [];
+        if ($this->supportsMarketDate($endpoint['uri'])) {
+            $queryValues['date'] = '{{marketDate}}';
+        }
+
+        $query = collect($queryValues)
             ->map(fn ($value, $key) => ['key' => (string) $key, 'value' => (string) $value])
             ->values()
             ->all();
 
         $rawUrl = '{{baseUrl}}/' . str_replace('api/v1/', '', $endpoint['sample_path']);
         if ($query !== []) {
-            $rawUrl .= '?' . http_build_query($endpoint['sample_query']);
+            $queryString = http_build_query($queryValues);
+            $queryString = str_replace('%7B%7BmarketDate%7D%7D', '{{marketDate}}', $queryString);
+            $rawUrl .= '?' . $queryString;
         }
 
         return [
@@ -263,7 +276,23 @@ class GenerateSalesPostmanCollectionCommand extends Command
             ? 'Requires bearer token.'
             : 'Does not require bearer token.';
 
-        return trim($authNote . ' Sample request is aligned with the in-app company API tester.');
+        $dateNote = $this->supportsMarketDate($endpoint['uri'])
+            ? ' Set marketDate to YYYY-MM-DD for an exact date, or leave it blank for the latest available data.'
+            : '';
+
+        return trim($authNote . $dateNote . ' Sample request is aligned with the in-app company API tester.');
+    }
+
+    private function supportsMarketDate(string $uri): bool
+    {
+        return in_array($uri, [
+            'api/v1/equity/{isin}',
+            'api/v1/mf/details/{isin}',
+            'api/v1/nudges/fresh',
+            'api/v1/nudges/isin/{isin}',
+            'api/v1/nudges/index/{indexCode}',
+            'api/v1/nudges/category/{category}',
+        ], true);
     }
 
     private function buildTokenResponses(): array
@@ -527,7 +556,15 @@ class GenerateSalesPostmanCollectionCommand extends Command
             ],
             'api/v1/equity/{isin}' => [
                 'success' => true,
-                'data' => $stock,
+                'date' => '2026-10-12',
+                'data' => $stock + [
+                    'price' => [
+                        'traded_date' => '2026-10-12',
+                        'nse_close' => '3012.7500',
+                        'nse_chg_1d' => '4.2500',
+                        'nse_volume' => 1250000,
+                    ],
+                ],
             ],
             'api/v1/market/stocks' => [
                 'success' => true,
@@ -549,6 +586,23 @@ class GenerateSalesPostmanCollectionCommand extends Command
                     'fallback' => 'Public mutual-fund instrument data',
                 ],
                 'meta' => ['total' => 13241, 'per_page' => 5, 'current_page' => 1, 'last_page' => 2649],
+            ],
+            'api/v1/mf/details/{isin}' => [
+                'success' => true,
+                'date' => '2026-10-07',
+                'data' => [
+                    'isin' => $fund['isin'],
+                    'scheme_code' => $fund['scheme_code'],
+                    'scheme_name' => $fund['scheme_name'],
+                    'amc_name' => $fund['amc_name'],
+                    'category' => $fund['category'],
+                    'latest_nav' => $fund['nav'],
+                    'latest_nav_date' => $fund['nav_date'],
+                    'returns' => [
+                        '1d' => ['return_pct' => $fund['chg_1d'], 'ref_nav' => 54.09],
+                        '1y' => ['return_pct' => $fund['chg_1y'], 'ref_nav' => 45.75],
+                    ],
+                ],
             ],
             'api/v1/market/mutual-funds', 'api/v1/market/mf' => [
                 'success' => true,
@@ -598,12 +652,28 @@ class GenerateSalesPostmanCollectionCommand extends Command
             ],
             'api/v1/nudges/isin/{isin}' => [
                 'success' => true,
+                'date' => '2026-10-12',
                 'isin' => 'INE002A01018',
                 'data' => [$nudge],
                 'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
             ],
+            'api/v1/nudges/index/{indexCode}' => [
+                'success' => true,
+                'date' => '2026-10-12',
+                'index_code' => 'NIFTY_50',
+                'data' => [[
+                    ...$nudge,
+                    'isin' => null,
+                    'index_code' => 'NIFTY_50',
+                    'instrument_type' => 'index',
+                    'source' => 'index_price',
+                    'title' => 'NIFTY 50 daily move',
+                ]],
+                'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
+            ],
             'api/v1/nudges/category/{category}' => [
                 'success' => true,
+                'date' => '2026-10-12',
                 'category' => 'growth',
                 'data' => [$nudge],
                 'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
@@ -714,6 +784,10 @@ class GenerateSalesPostmanCollectionCommand extends Command
 
         if ($segments === ['nudges', 'isin', '{isin}']) {
             return 'List Stock Nudges by ISIN';
+        }
+
+        if ($segments === ['nudges', 'index', '{indexCode}']) {
+            return 'List Nudges by Index';
         }
 
         if ($segments === ['nudges', 'category', '{category}']) {

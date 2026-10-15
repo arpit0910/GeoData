@@ -30,7 +30,7 @@ class MutualFundDetailsService
         'hair_cut',
     ];
 
-    public function find(string $isin): ?array
+    public function find(string $isin, ?string $date = null): ?array
     {
         $isin = strtoupper(trim($isin));
         $scheme = DB::table('mutual_funds')
@@ -47,16 +47,22 @@ class MutualFundDetailsService
         // lookup used the scheme's reinvestment ISIN.
         $priceIsin = $scheme->isin;
 
-        $latestNav = DB::table('mutual_fund_prices')
-            ->where('isin', $priceIsin)
-            ->orderByDesc('nav_date')
-            ->first();
-        $history = DB::table('mutual_fund_prices')
-            ->where('isin', $priceIsin)
+        $latestNavQuery = DB::table('mutual_fund_prices')->where('isin', $priceIsin);
+        if ($date !== null) {
+            $latestNavQuery->whereDate('nav_date', $date);
+        }
+        $latestNav = $latestNavQuery->orderByDesc('nav_date')->orderByDesc('id')->first();
+
+        $historyQuery = DB::table('mutual_fund_prices')->where('isin', $priceIsin);
+        $recentNavsQuery = DB::table('mutual_fund_prices')->where('isin', $priceIsin);
+        if ($date !== null) {
+            $historyQuery->whereDate('nav_date', '<=', $date);
+            $recentNavsQuery->whereDate('nav_date', '<=', $date);
+        }
+        $history = $historyQuery
             ->selectRaw('COUNT(*) as observations, MIN(nav_date) as first_date, MAX(nav_date) as last_date, MIN(nav) as lowest_nav, MAX(nav) as highest_nav')
             ->first();
-        $recentNavs = DB::table('mutual_fund_prices')
-            ->where('isin', $priceIsin)
+        $recentNavs = $recentNavsQuery
             ->orderByDesc('nav_date')
             ->limit(12)
             ->get(['nav_date', 'nav'])

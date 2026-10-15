@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\MfApiController;
 use App\Services\EquityQuoteService;
 use App\Services\MutualFundDetailsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -414,6 +415,7 @@ class MarketPagesTest extends TestCase
         $this->assertSame(20.0, $reinvestmentDetails['latest_nav']);
 
         $apiResponse = app(MfApiController::class)->details(
+            Request::create('/api/v1/mf/details/inf000000001'),
             'inf000000001',
             app(MutualFundDetailsService::class)
         );

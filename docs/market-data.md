@@ -237,18 +237,49 @@ live quote is unavailable.
 
 ### Stock nudges
 
-The stock and mutual-fund subscription exposes three paginated nudge endpoints:
+Stock and mutual-fund detail endpoints accept an optional `date=YYYY-MM-DD`
+query parameter:
 
-- `GET /api/v1/nudges/isin/{isin}` returns all nudges for one ISIN.
-- `GET /api/v1/nudges/fresh` returns nudges whose trading date is today in
-  `Asia/Kolkata`.
+- `GET /api/v1/equity/{isin}` returns the stock price row for that exact trading
+  date, or the latest available row when `date` is omitted.
+- `GET /api/v1/mf/details/{isin}` returns the NAV and precomputed returns for
+  that exact NAV date, or the latest available row when `date` is omitted.
+
+An invalid date returns `422`; a valid date without data for that instrument
+returns `404`.
+
+Examples:
+
+```text
+GET /api/v1/equity/INE002A01018?date=2026-10-12
+GET /api/v1/mf/details/INF109K01VQ0?date=2026-10-07
+```
+
+The stock and mutual-fund subscription exposes four paginated nudge endpoints:
+
+- `GET /api/v1/nudges/isin/{isin}` returns nudges for one ISIN.
+- `GET /api/v1/nudges/index/{index_code}` returns index and benchmark-comparison nudges.
+- `GET /api/v1/nudges/fresh` returns the latest available nudge date.
 - `GET /api/v1/nudges/category/{category}` returns related nudges. Supported
   categories are `growth` (daily gains and record highs), `fall` (daily drops
   and record lows), `volume` (volume spikes), and `comparison` (stock/index
   outperformance or underperformance against Nifty 50 and sector benchmarks).
 
-All three accept `per_page` (default 25, maximum 100) and return newest results
-first with pagination metadata.
+All four accept `date=YYYY-MM-DD` and `per_page` (default 25, maximum 100).
+When `date` is omitted, they return the latest available trading date for the
+selected ISIN, index, or category. The selected date is included in the
+response alongside pagination metadata.
+
+```text
+GET /api/v1/nudges/fresh?date=2026-10-12&per_page=25
+GET /api/v1/nudges/isin/INE002A01018?date=2026-10-12&per_page=25
+GET /api/v1/nudges/index/NIFTY_50?date=2026-10-12&per_page=25
+GET /api/v1/nudges/category/growth?date=2026-10-12&per_page=25
+```
+
+The downloadable Postman collection exposes `marketDate`; leave it blank for
+latest data or set it once to run all date-aware detail and nudge requests for
+the same date.
 
 The same scheduled generation now evaluates live and EOD index quotes for daily
 moves, one-month/52-week records, and EOD volume spikes. Index nudges have

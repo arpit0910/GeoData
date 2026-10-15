@@ -114,20 +114,31 @@ class MfApiController extends Controller
     // GET /api/v1/mf/details/{isin}
     // Uses pre-computed chg_* / val_* columns â€” no runtime return computation
     // -------------------------------------------------------------------------
-    public function details(string $isin, MutualFundDetailsService $details): JsonResponse
+    public function details(Request $request, string $isin, MutualFundDetailsService $details): JsonResponse
     {
+        $validated = $request->validate([
+            'date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
         $isin = strtoupper(trim($isin));
         if (preg_match('/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/', $isin) !== 1) {
             return response()->json(['success' => false, 'message' => 'A valid 12-character ISIN is required.'], 422);
         }
 
-        $scheme = $details->find($isin);
+        $date = $validated['date'] ?? null;
+        $scheme = $details->find($isin, $date);
         if (! $scheme) {
             return response()->json(['success' => false, 'message' => 'Scheme not found.'], 404);
+        }
+        if ($date !== null && $scheme['latest_nav_date'] !== $date) {
+            return response()->json([
+                'success' => false,
+                'message' => "No mutual fund data found for {$isin} on {$date}.",
+            ], 404);
         }
 
         return response()->json([
             'success' => true,
+            'date' => $scheme['latest_nav_date'],
             'data' => $scheme,
         ]);
     }
