@@ -3,7 +3,18 @@
 @section('header', 'Dashboard')
 
 @section('content')
+    @php
+        $dashboardTimezone = 'Asia/Kolkata';
+        $dashboardNow = now($dashboardTimezone);
+    @endphp
     @if (auth()->user()->is_admin)
+        @php
+            $latestNudges = \App\Models\StockNudge::query()
+                ->with(['equity:id,company_name,nse_symbol,bse_symbol', 'index:index_code,index_name'])
+                ->latest('observed_at')
+                ->limit(6)
+                ->get();
+        @endphp
         <div
             class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-200 dark:border-white/5 p-6 md:p-8 transition-all duration-500">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -11,7 +22,7 @@
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Welcome to your <span
                             class="text-amber-600 dark:text-amber-500">Admin Console</span></h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium">Real-time overview of the SetuGeo
-                        ecosystem.</p>
+                        ecosystem. All dashboard times are shown in IST.</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <span
@@ -187,6 +198,12 @@
                                     'color' => 'amber',
                                 ],
                                 [
+                                    'label' => 'Market Nudges',
+                                    'count' => \App\Models\StockNudge::count(),
+                                    'icon' => 'fa-bell',
+                                    'color' => 'rose',
+                                ],
+                                [
                                     'label' => 'Banks',
                                     'count' => \App\Models\Bank::count(),
                                     'icon' => 'fa-university',
@@ -249,6 +266,40 @@
                     </div>
                 </div>
 
+                <div>
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-bell text-rose-600 dark:text-rose-500 text-sm"></i>
+                            <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Latest Market Nudges</h4>
+                        </div>
+                        <a href="{{ route('market.nudges') }}" class="text-xs font-black text-amber-600 hover:text-amber-700">View All <i class="fas fa-arrow-right ml-1"></i></a>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/5">
+                        <table class="w-full min-w-[760px] text-left text-sm">
+                            <thead class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-400 dark:bg-white/[0.02]"><tr><th class="p-3">Instrument</th><th class="p-3">Signal</th><th class="p-3">Type</th><th class="p-3">Observed</th><th class="p-3 text-right">Price</th></tr></thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+                                @forelse($latestNudges as $nudge)
+                                    @php
+                                        $nudgeCategory = \App\Models\StockNudge::categoryForRule($nudge->rule) ?? 'market';
+                                        $nudgeName = $nudge->equity?->company_name ?: ($nudge->index?->index_name ?: ($nudge->index_code ?: $nudge->isin));
+                                        $nudgeSymbol = $nudge->index_code ?: ($nudge->equity?->nse_symbol ?: $nudge->equity?->bse_symbol);
+                                        $nudgeObservedAt = $nudge->observed_at?->copy()->timezone($dashboardTimezone);
+                                    @endphp
+                                    <tr>
+                                        <td class="p-3"><div class="font-bold text-gray-900 dark:text-white">{{ $nudgeName }}</div><div class="text-[10px] text-gray-400">{{ $nudgeSymbol }} · {{ $nudge->exchange }}</div></td>
+                                        <td class="p-3"><div class="font-bold text-gray-800 dark:text-gray-200">{{ $nudge->title }}</div><div class="text-xs text-gray-500 dark:text-gray-400">{{ str_replace('_', ' ', $nudge->rule) }}</div></td>
+                                        <td class="p-3"><span class="text-[10px] font-black uppercase text-rose-600 dark:text-rose-400">{{ $nudgeCategory }}</span></td>
+                                        <td class="p-3 text-xs text-gray-600 dark:text-gray-300">{{ $nudgeObservedAt?->format('d M Y, h:i A') ?: '—' }}{{ $nudgeObservedAt ? ' IST' : '' }}</td>
+                                        <td class="p-3 text-right font-bold text-gray-900 dark:text-white">{{ $nudge->observed_price !== null ? '₹'.number_format((float) $nudge->observed_price, 2) : '—' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" class="p-6 text-center text-sm text-gray-400">No market nudges have been generated yet.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 @php
                     $latestCorporateActions = \App\Models\CorporateAction::query()
                         ->orderByDesc('expiry_date')
@@ -304,8 +355,8 @@
                         ->subscriptions()
                         ->with('plan.features')
                         ->where('status', 'active')
-                        ->where(function ($query) {
-                            $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+                        ->where(function ($query) use ($dashboardNow) {
+                            $query->whereNull('expires_at')->orWhere('expires_at', '>', $dashboardNow);
                         })
                         ->latest()
                         ->first();
@@ -376,7 +427,7 @@
                                 @if (\Carbon\Carbon::parse($dashboardSub->expires_at)->year > 2100)
                                     LIFETIME ACCESS GRANTED
                                 @else
-                                    VALIID UNTIL {{ $dashboardSub->expires_at->format('M d, Y') }}
+                                    VALID UNTIL {{ $dashboardSub->expires_at->copy()->timezone($dashboardTimezone)->format('M d, Y, h:i A') }} IST
                                 @endif
                             </p>
                         @else
