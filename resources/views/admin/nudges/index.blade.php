@@ -23,8 +23,15 @@
         @endforeach
     </div>
 
-    <form method="GET" class="grid gap-3 rounded-2xl border border-gray-200 bg-white p-4 md:grid-cols-4 dark:border-white/5 dark:bg-richdark-surface">
-        <input type="date" name="date" value="{{ $date }}" class="rounded-xl border-gray-200 bg-transparent text-sm dark:border-white/10 dark:text-white">
+    <form method="GET" class="grid gap-3 rounded-2xl border border-gray-200 bg-white p-4 md:grid-cols-5 dark:border-white/5 dark:bg-richdark-surface">
+        <label class="grid gap-1 text-xs font-bold uppercase tracking-wide text-gray-500">
+            From
+            <input type="date" name="date_from" value="{{ $dateFrom }}" class="rounded-xl border-gray-200 bg-transparent text-sm font-normal normal-case tracking-normal dark:border-white/10 dark:text-white">
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase tracking-wide text-gray-500">
+            To
+            <input type="date" name="date_to" value="{{ $dateTo }}" class="rounded-xl border-gray-200 bg-transparent text-sm font-normal normal-case tracking-normal dark:border-white/10 dark:text-white">
+        </label>
         <select name="category" class="rounded-xl border-gray-200 bg-transparent text-sm dark:border-white/10 dark:text-white">
             <option value="">All categories</option>
             @foreach(['growth' => 'Growth', 'fall' => 'Fall', 'volume' => 'Volume', 'comparison' => 'Comparison'] as $value => $label)
@@ -55,7 +62,7 @@
                         <td class="p-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{{ $nudge->observed_at?->timezone('Asia/Kolkata')->format('d M Y, h:i A') ?: '—' }} IST</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="p-10 text-center text-gray-400">No nudges found for {{ \Carbon\Carbon::parse($date)->format('d M Y') }}.</td></tr>
+                    <tr><td colspan="5" class="p-10 text-center text-gray-400">No nudges found from {{ \Carbon\Carbon::parse($dateFrom)->format('d M Y') }} to {{ \Carbon\Carbon::parse($dateTo)->format('d M Y') }}.</td></tr>
                 @endforelse
             </tbody>
         </table>

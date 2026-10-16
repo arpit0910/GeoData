@@ -13,6 +13,12 @@ class AdminDashboardNudgeTest extends TestCase
 {
     use CreatesTestData, RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     /** @test */
     public function admin_dashboard_shows_recent_nudges_in_indian_time(): void
     {
@@ -75,5 +81,46 @@ class AdminDashboardNudgeTest extends TestCase
             ->assertSee('Today growth signal')
             ->assertSee('Example Industries')
             ->assertSee('IST');
+    }
+
+    /** @test */
+    public function admin_can_filter_nudges_by_an_inclusive_date_range(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-16 12:00:00', 'Asia/Kolkata'));
+        $admin = $this->createAdminUser();
+
+        foreach ([
+            ['2026-10-09', 'Outside range'],
+            ['2026-10-10', 'Range start'],
+            ['2026-10-15', 'Range end'],
+            ['2026-10-16', 'After range'],
+        ] as [$date, $title]) {
+            StockNudge::create([
+                'exchange' => 'NSE',
+                'type' => 'market',
+                'rule' => 'daily_gain',
+                'severity' => 'significant',
+                'title' => $title,
+                'message' => 'Date range test signal.',
+                'trading_date' => $date,
+                'observed_at' => Carbon::parse("{$date} 15:30:00", 'Asia/Kolkata'),
+                'fingerprint' => hash('sha256', "admin-range-{$date}"),
+            ]);
+        }
+
+        $this->actingAs($admin)->get(route('admin.nudges.index', [
+            'date_from' => '2026-10-10',
+            'date_to' => '2026-10-15',
+        ]))
+            ->assertOk()
+            ->assertSee('Range start')
+            ->assertSee('Range end')
+            ->assertDontSee('Outside range')
+            ->assertDontSee('After range');
+
+        $this->actingAs($admin)->get(route('admin.nudges.index', [
+            'date_from' => '2026-10-15',
+            'date_to' => '2026-10-10',
+        ]))->assertSessionHasErrors('date_to');
     }
 }

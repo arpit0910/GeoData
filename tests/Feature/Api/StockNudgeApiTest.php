@@ -79,13 +79,18 @@ class StockNudgeApiTest extends TestCase
 
     public function test_nudges_use_requested_date_or_the_default_seven_day_window(): void
     {
+        $this->nudge('INE000000001', 'daily_gain', '2026-10-06');
         $this->nudge('INE000000001', 'daily_gain', '2026-10-10');
         $this->nudge('INE000000001', 'daily_gain', '2026-10-12');
+        $this->nudge('INE000000001', 'daily_gain', '2026-10-05');
 
         $this->getJson('/api/v1/nudges/isin/INE000000001')
             ->assertOk()
             ->assertJsonPath('date', '2026-10-12')
-            ->assertJsonPath('pagination.total', 2);
+            ->assertJsonPath('date_from', '2026-10-06')
+            ->assertJsonPath('date_to', '2026-10-12')
+            ->assertJsonPath('pagination.total', 3)
+            ->assertJsonMissing(['trading_date' => '2026-10-05']);
 
         $this->getJson('/api/v1/nudges/isin/INE000000001?date=2026-10-10')
             ->assertOk()

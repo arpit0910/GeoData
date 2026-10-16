@@ -12,15 +12,20 @@ class StockNudgeController extends Controller
     public function index(Request $request): View
     {
         $filters = $request->validate([
-            'date' => 'nullable|date_format:Y-m-d',
+            'date_from' => 'nullable|date_format:Y-m-d',
+            'date_to' => 'nullable|date_format:Y-m-d|after_or_equal:date_from',
             'category' => 'nullable|in:growth,fall,volume,comparison',
             'search' => 'nullable|string|max:100',
         ]);
-        $date = $filters['date'] ?? now('Asia/Kolkata')->toDateString();
+        $today = now('Asia/Kolkata')->toDateString();
+        $dateFrom = $filters['date_from'] ?? $filters['date_to'] ?? $today;
+        $dateTo = $filters['date_to'] ?? $filters['date_from'] ?? $today;
         $category = $filters['category'] ?? null;
         $search = trim((string) ($filters['search'] ?? ''));
 
-        $baseQuery = StockNudge::query()->whereDate('trading_date', $date);
+        $baseQuery = StockNudge::query()
+            ->whereDate('trading_date', '>=', $dateFrom)
+            ->whereDate('trading_date', '<=', $dateTo);
         $nudges = (clone $baseQuery)
             ->with([
                 'equity:id,company_name,nse_symbol,bse_symbol,sector,market_cap_category',
@@ -48,6 +53,6 @@ class StockNudgeController extends Controller
             'significant' => (clone $baseQuery)->where('severity', 'significant')->count(),
         ];
 
-        return view('admin.nudges.index', compact('nudges', 'summary', 'date', 'category'));
+        return view('admin.nudges.index', compact('nudges', 'summary', 'dateFrom', 'dateTo', 'category'));
     }
 }
