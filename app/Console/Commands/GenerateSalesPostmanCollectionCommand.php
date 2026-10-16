@@ -644,6 +644,7 @@ class GenerateSalesPostmanCollectionCommand extends Command
                     'company' => [
                         'name' => 'RELIANCE INDUSTRIES LTD',
                         'short_name' => 'Reliance',
+                        'logo_url' => 'https://setugeo.com/assets/equity-icons/INE002A01018.svg',
                         'nse_symbol' => 'RELIANCE',
                         'bse_symbol' => '500325',
                         'series' => 'EQ',

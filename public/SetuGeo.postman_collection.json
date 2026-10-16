@@ -1,8 +1,8 @@
 {
     "info": {
-        "_postman_id": "d99bec2f-dcaf-40f8-8f1b-d6ca633f1a75",
+        "_postman_id": "7c4f2fce-c7ea-4174-9338-06a262f53caf",
         "name": "SetuGeo API - Demo & Sales Collection",
-        "description": "Generated on 2026-10-16 12:50:14 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
+        "description": "Generated on 2026-10-16 13:09:27 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "auth": {
@@ -1607,7 +1607,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-10-16+12%3A50%3A14&from=UTC&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-10-16+13%3A09%3A27&from=UTC&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1618,7 +1618,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-10-16 12:50:14"
+                                            "value": "2026-10-16 13:09:27"
                                         },
                                         {
                                             "key": "from",
@@ -1681,7 +1681,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-10-16+12%3A50%3A14&from=UTC&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-10-16+13%3A09%3A27&from=UTC&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1692,7 +1692,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-10-16 12:50:14"
+                                            "value": "2026-10-16 13:09:27"
                                         },
                                         {
                                             "key": "from",
@@ -5229,7 +5229,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"type\": \"equity\",\n    \"isin\": \"INE002A01018\",\n    \"data\": {\n        \"company\": {\n            \"name\": \"RELIANCE INDUSTRIES LTD\",\n            \"short_name\": \"Reliance\",\n            \"nse_symbol\": \"RELIANCE\",\n            \"bse_symbol\": \"500325\",\n            \"series\": \"EQ\",\n            \"security_type\": \"NORMAL\",\n            \"industry\": \"Oil & Gas\",\n            \"market_lot\": 1,\n            \"qty_multiplier\": 1,\n            \"mtf_enabled\": true,\n            \"mtf_bracket\": 26.5,\n            \"cas_eligible\": true,\n            \"intraday_margin\": 20,\n            \"intraday_leverage\": 5,\n            \"tick_size\": {\n                \"nse\": 5,\n                \"bse\": 5\n            },\n            \"freeze_quantity\": {\n                \"nse\": 100000,\n                \"bse\": null\n            }\n        },\n        \"live_quote\": {\n            \"price\": 1450.25,\n            \"change\": 12.25,\n            \"change_percent\": 0.85\n        },\n        \"fundamentals\": {\n            \"market_cap\": null,\n            \"pe_ratio\": null\n        },\n        \"price_history\": [\n            {\n                \"traded_date\": \"2026-10-12\",\n                \"nse_open\": 1438,\n                \"nse_high\": 1455,\n                \"nse_low\": 1432.5,\n                \"nse_close\": 1450.25,\n                \"nse_prev_close\": 1438,\n                \"nse_volume\": 1250000,\n                \"bse_open\": 1437.8,\n                \"bse_high\": 1454.9,\n                \"bse_low\": 1432.25,\n                \"bse_close\": 1450.1,\n                \"bse_prev_close\": 1437.9,\n                \"bse_volume\": 185000\n            }\n        ],\n        \"corporate_actions\": [],\n        \"news\": []\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"type\": \"equity\",\n    \"isin\": \"INE002A01018\",\n    \"data\": {\n        \"company\": {\n            \"name\": \"RELIANCE INDUSTRIES LTD\",\n            \"short_name\": \"Reliance\",\n            \"logo_url\": \"https://setugeo.com/assets/equity-icons/INE002A01018.svg\",\n            \"nse_symbol\": \"RELIANCE\",\n            \"bse_symbol\": \"500325\",\n            \"series\": \"EQ\",\n            \"security_type\": \"NORMAL\",\n            \"industry\": \"Oil & Gas\",\n            \"market_lot\": 1,\n            \"qty_multiplier\": 1,\n            \"mtf_enabled\": true,\n            \"mtf_bracket\": 26.5,\n            \"cas_eligible\": true,\n            \"intraday_margin\": 20,\n            \"intraday_leverage\": 5,\n            \"tick_size\": {\n                \"nse\": 5,\n                \"bse\": 5\n            },\n            \"freeze_quantity\": {\n                \"nse\": 100000,\n                \"bse\": null\n            }\n        },\n        \"live_quote\": {\n            \"price\": 1450.25,\n            \"change\": 12.25,\n            \"change_percent\": 0.85\n        },\n        \"fundamentals\": {\n            \"market_cap\": null,\n            \"pe_ratio\": null\n        },\n        \"price_history\": [\n            {\n                \"traded_date\": \"2026-10-12\",\n                \"nse_open\": 1438,\n                \"nse_high\": 1455,\n                \"nse_low\": 1432.5,\n                \"nse_close\": 1450.25,\n                \"nse_prev_close\": 1438,\n                \"nse_volume\": 1250000,\n                \"bse_open\": 1437.8,\n                \"bse_high\": 1454.9,\n                \"bse_low\": 1432.25,\n                \"bse_close\": 1450.1,\n                \"bse_prev_close\": 1437.9,\n                \"bse_volume\": 185000\n            }\n        ],\n        \"corporate_actions\": [],\n        \"news\": []\n    }\n}"
                                 },
                                 {
                                     "name": "Resource Not Found",
@@ -5532,7 +5532,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"type\": \"equity\",\n    \"isin\": \"INE002A01018\",\n    \"data\": {\n        \"company\": {\n            \"name\": \"RELIANCE INDUSTRIES LTD\",\n            \"short_name\": \"Reliance\",\n            \"nse_symbol\": \"RELIANCE\",\n            \"bse_symbol\": \"500325\",\n            \"series\": \"EQ\",\n            \"security_type\": \"NORMAL\",\n            \"industry\": \"Oil & Gas\",\n            \"market_lot\": 1,\n            \"qty_multiplier\": 1,\n            \"mtf_enabled\": true,\n            \"mtf_bracket\": 26.5,\n            \"cas_eligible\": true,\n            \"intraday_margin\": 20,\n            \"intraday_leverage\": 5,\n            \"tick_size\": {\n                \"nse\": 5,\n                \"bse\": 5\n            },\n            \"freeze_quantity\": {\n                \"nse\": 100000,\n                \"bse\": null\n            }\n        },\n        \"live_quote\": {\n            \"price\": 1450.25,\n            \"change\": 12.25,\n            \"change_percent\": 0.85\n        },\n        \"fundamentals\": {\n            \"market_cap\": null,\n            \"pe_ratio\": null\n        },\n        \"price_history\": [\n            {\n                \"traded_date\": \"2026-10-12\",\n                \"nse_open\": 1438,\n                \"nse_high\": 1455,\n                \"nse_low\": 1432.5,\n                \"nse_close\": 1450.25,\n                \"nse_prev_close\": 1438,\n                \"nse_volume\": 1250000,\n                \"bse_open\": 1437.8,\n                \"bse_high\": 1454.9,\n                \"bse_low\": 1432.25,\n                \"bse_close\": 1450.1,\n                \"bse_prev_close\": 1437.9,\n                \"bse_volume\": 185000\n            }\n        ],\n        \"corporate_actions\": [],\n        \"news\": []\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"type\": \"equity\",\n    \"isin\": \"INE002A01018\",\n    \"data\": {\n        \"company\": {\n            \"name\": \"RELIANCE INDUSTRIES LTD\",\n            \"short_name\": \"Reliance\",\n            \"logo_url\": \"https://setugeo.com/assets/equity-icons/INE002A01018.svg\",\n            \"nse_symbol\": \"RELIANCE\",\n            \"bse_symbol\": \"500325\",\n            \"series\": \"EQ\",\n            \"security_type\": \"NORMAL\",\n            \"industry\": \"Oil & Gas\",\n            \"market_lot\": 1,\n            \"qty_multiplier\": 1,\n            \"mtf_enabled\": true,\n            \"mtf_bracket\": 26.5,\n            \"cas_eligible\": true,\n            \"intraday_margin\": 20,\n            \"intraday_leverage\": 5,\n            \"tick_size\": {\n                \"nse\": 5,\n                \"bse\": 5\n            },\n            \"freeze_quantity\": {\n                \"nse\": 100000,\n                \"bse\": null\n            }\n        },\n        \"live_quote\": {\n            \"price\": 1450.25,\n            \"change\": 12.25,\n            \"change_percent\": 0.85\n        },\n        \"fundamentals\": {\n            \"market_cap\": null,\n            \"pe_ratio\": null\n        },\n        \"price_history\": [\n            {\n                \"traded_date\": \"2026-10-12\",\n                \"nse_open\": 1438,\n                \"nse_high\": 1455,\n                \"nse_low\": 1432.5,\n                \"nse_close\": 1450.25,\n                \"nse_prev_close\": 1438,\n                \"nse_volume\": 1250000,\n                \"bse_open\": 1437.8,\n                \"bse_high\": 1454.9,\n                \"bse_low\": 1432.25,\n                \"bse_close\": 1450.1,\n                \"bse_prev_close\": 1437.9,\n                \"bse_volume\": 185000\n            }\n        ],\n        \"corporate_actions\": [],\n        \"news\": []\n    }\n}"
                                 },
                                 {
                                     "name": "Resource Not Found",

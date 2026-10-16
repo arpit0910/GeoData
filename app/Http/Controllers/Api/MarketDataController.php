@@ -419,6 +419,7 @@ class MarketDataController extends Controller
                     'company' => [
                         'name' => $equity->company_name,
                         'short_name' => $equity->short_name,
+                        'logo_url' => $equity->logo_url,
                         'nse_symbol' => $equity->nse_symbol,
                         'bse_symbol' => $equity->bse_symbol,
                         'series' => $equity->series,

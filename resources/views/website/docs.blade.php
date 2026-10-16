@@ -3238,6 +3238,7 @@ curl -X GET "https://setugeo.com/api/v1/market/isin/INE002A01018?live=1" \
   <span class="text-blue-400">"data"</span>: {
     <span class="text-blue-400">"company"</span>: {
       <span class="text-blue-400">"name"</span>: <span class="text-green-400">"RELIANCE INDUSTRIES LTD"</span>,
+      <span class="text-blue-400">"logo_url"</span>: <span class="text-green-400">"https://setugeo.com/assets/equity-icons/INE002A01018.svg"</span>,
       <span class="text-blue-400">"nse_symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
       <span class="text-blue-400">"bse_symbol"</span>: <span class="text-green-400">"500325"</span>,
       <span class="text-blue-400">"industry"</span>: <span class="text-green-400">"Refineries"</span>,
