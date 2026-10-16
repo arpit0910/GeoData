@@ -1863,7 +1863,9 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         <div class="p-6">
                                             <p class="mb-4">Fetch comprehensive profile details for a specific equity
                                                 using its ISIN or Symbol. Add <code class="text-white">?date=YYYY-MM-DD</code>
-                                                for an exact trading date; omit it for the latest available price.</p>
+                                                for an exact trading date; omit it for the latest available price. The
+                                                response includes four calendar months of daily EOD OHLCV data ending
+                                                on the returned date in <code class="text-white">price_history</code>.</p>
                                             <div class="bg-[#0f172a] rounded-lg p-4 font-mono text-xs overflow-x-auto text-amber-400 mb-5">curl -X GET "https://setugeo.com/api/v1/equity/INE002A01018?date=2026-10-12" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Accept: application/json"</div>
@@ -1904,7 +1906,15 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
     <span class="text-blue-400">"price"</span>: {
       <span class="text-blue-400">"traded_date"</span>: <span class="text-green-400">"2026-10-12"</span>,
       <span class="text-blue-400">"nse_close"</span>: <span class="text-green-400">"3012.7500"</span>
-    }
+    },
+    <span class="text-blue-400">"price_history"</span>: [{
+      <span class="text-blue-400">"traded_date"</span>: <span class="text-green-400">"2026-06-12"</span>,
+      <span class="text-blue-400">"nse_open"</span>: <span class="text-green-400">"2860.00"</span>,
+      <span class="text-blue-400">"nse_high"</span>: <span class="text-green-400">"2895.50"</span>,
+      <span class="text-blue-400">"nse_low"</span>: <span class="text-green-400">"2848.25"</span>,
+      <span class="text-blue-400">"nse_close"</span>: <span class="text-green-400">"2884.75"</span>,
+      <span class="text-blue-400">"nse_volume"</span>: <span class="text-blue-400">1150000</span>
+    }]
   }
 }</pre>
                                             </div>

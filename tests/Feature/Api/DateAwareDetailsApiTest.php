@@ -27,7 +27,12 @@ class DateAwareDetailsApiTest extends TestCase
             'nse_symbol' => 'EXAMPLE',
             'logo_url' => 'https://setugeo.test/assets/equity-icons/INE000000001.svg',
         ]);
-        foreach ([['2026-10-10', 100], ['2026-10-13', 125]] as [$date, $close]) {
+        foreach ([
+            ['2026-06-12', 80],
+            ['2026-06-13', 90],
+            ['2026-10-10', 100],
+            ['2026-10-13', 125],
+        ] as [$date, $close]) {
             EquityPrice::create([
                 'equity_id' => $equity->id,
                 'isin' => $equity->isin,
@@ -40,12 +45,18 @@ class DateAwareDetailsApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('date', '2026-10-13')
             ->assertJsonPath('data.logo_url', 'https://setugeo.test/assets/equity-icons/INE000000001.svg')
-            ->assertJsonPath('data.price.nse_close', '125.00');
+            ->assertJsonPath('data.price.nse_close', '125.00')
+            ->assertJsonCount(3, 'data.price_history')
+            ->assertJsonPath('data.price_history.0.traded_date', '2026-06-13')
+            ->assertJsonPath('data.price_history.2.traded_date', '2026-10-13');
 
         $this->getJson('/api/v1/equity/INE000000001?date=2026-10-10')
             ->assertOk()
             ->assertJsonPath('date', '2026-10-10')
-            ->assertJsonPath('data.price.nse_close', '100.00');
+            ->assertJsonPath('data.price.nse_close', '100.00')
+            ->assertJsonCount(3, 'data.price_history')
+            ->assertJsonPath('data.price_history.0.traded_date', '2026-06-12')
+            ->assertJsonPath('data.price_history.2.traded_date', '2026-10-10');
 
         $this->getJson('/api/v1/equity/INE000000001?date=2026-10-11')->assertNotFound();
         $this->getJson('/api/v1/equity/INE000000001?date=10-10-2026')->assertStatus(422);

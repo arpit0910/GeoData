@@ -322,6 +322,24 @@ class EquityApiController extends Controller
 
         $data = $equity->toArray();
         $data['price'] = $price?->toArray();
+        $data['price_history'] = $price
+            ? EquityPrice::where('equity_id', $equity->id)
+                ->whereDate('traded_date', '>=', $price->traded_date->copy()->subMonthsNoOverflow(4)->toDateString())
+                ->whereDate('traded_date', '<=', $price->traded_date->toDateString())
+                ->orderBy('traded_date')
+                ->orderBy('id')
+                ->get([
+                    'traded_date',
+                    'nse_open', 'nse_high', 'nse_low', 'nse_close', 'nse_prev_close', 'nse_volume',
+                    'bse_open', 'bse_high', 'bse_low', 'bse_close', 'bse_prev_close', 'bse_volume',
+                ])
+                ->map(function (EquityPrice $dailyPrice) {
+                    $data = $dailyPrice->toArray();
+                    $data['traded_date'] = $dailyPrice->traded_date->toDateString();
+
+                    return $data;
+                })
+            : collect();
 
         return response()->json([
             'success' => true,

@@ -1,8 +1,8 @@
 {
     "info": {
-        "_postman_id": "7c4f2fce-c7ea-4174-9338-06a262f53caf",
+        "_postman_id": "975055c8-8dd8-4c00-9b66-4e082305377e",
         "name": "SetuGeo API - Demo & Sales Collection",
-        "description": "Generated on 2026-10-16 13:09:27 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
+        "description": "Generated on 2026-10-16 13:31:01 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "auth": {
@@ -1607,7 +1607,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-10-16+13%3A09%3A27&from=UTC&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-10-16+13%3A31%3A01&from=UTC&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1618,7 +1618,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-10-16 13:09:27"
+                                            "value": "2026-10-16 13:31:01"
                                         },
                                         {
                                             "key": "from",
@@ -1681,7 +1681,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-10-16+13%3A09%3A27&from=UTC&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-10-16+13%3A31%3A01&from=UTC&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1692,7 +1692,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-10-16 13:09:27"
+                                            "value": "2026-10-16 13:31:01"
                                         },
                                         {
                                             "key": "from",
@@ -2704,7 +2704,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"date\": \"2026-10-12\",\n    \"data\": {\n        \"isin\": \"INE002A01018\",\n        \"company_name\": \"RELIANCE INDUSTRIES LTD\",\n        \"short_name\": \"Reliance\",\n        \"nse_symbol\": \"RELIANCE\",\n        \"bse_symbol\": \"500325\",\n        \"series\": \"EQ\",\n        \"security_type\": \"NORMAL\",\n        \"industry\": \"Oil & Gas\",\n        \"market_lot\": 1,\n        \"qty_multiplier\": 1,\n        \"mtf_enabled\": true,\n        \"mtf_bracket\": 26.5,\n        \"cas_eligible\": true,\n        \"intraday_margin\": 20,\n        \"intraday_leverage\": 5,\n        \"nse_tick_size\": 5,\n        \"bse_tick_size\": 5,\n        \"nse_freeze_quantity\": 100000,\n        \"bse_freeze_quantity\": null,\n        \"price\": {\n            \"traded_date\": \"2026-10-12\",\n            \"nse_close\": \"3012.7500\",\n            \"nse_chg_1d\": \"4.2500\",\n            \"nse_volume\": 1250000\n        }\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"date\": \"2026-10-12\",\n    \"data\": {\n        \"isin\": \"INE002A01018\",\n        \"company_name\": \"RELIANCE INDUSTRIES LTD\",\n        \"short_name\": \"Reliance\",\n        \"nse_symbol\": \"RELIANCE\",\n        \"bse_symbol\": \"500325\",\n        \"series\": \"EQ\",\n        \"security_type\": \"NORMAL\",\n        \"industry\": \"Oil & Gas\",\n        \"market_lot\": 1,\n        \"qty_multiplier\": 1,\n        \"mtf_enabled\": true,\n        \"mtf_bracket\": 26.5,\n        \"cas_eligible\": true,\n        \"intraday_margin\": 20,\n        \"intraday_leverage\": 5,\n        \"nse_tick_size\": 5,\n        \"bse_tick_size\": 5,\n        \"nse_freeze_quantity\": 100000,\n        \"bse_freeze_quantity\": null,\n        \"price\": {\n            \"traded_date\": \"2026-10-12\",\n            \"nse_close\": \"3012.7500\",\n            \"nse_chg_1d\": \"4.2500\",\n            \"nse_volume\": 1250000\n        },\n        \"price_history\": [\n            {\n                \"traded_date\": \"2026-06-12\",\n                \"nse_open\": \"2860.00\",\n                \"nse_high\": \"2895.50\",\n                \"nse_low\": \"2848.25\",\n                \"nse_close\": \"2884.75\",\n                \"nse_prev_close\": \"2856.10\",\n                \"nse_volume\": 1150000,\n                \"bse_open\": \"2859.80\",\n                \"bse_high\": \"2895.25\",\n                \"bse_low\": \"2848.00\",\n                \"bse_close\": \"2884.60\",\n                \"bse_prev_close\": \"2855.90\",\n                \"bse_volume\": 165000\n            }\n        ]\n    }\n}"
                                 },
                                 {
                                     "name": "Unauthenticated",

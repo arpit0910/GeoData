@@ -241,7 +241,9 @@ Stock and mutual-fund detail endpoints accept an optional `date=YYYY-MM-DD`
 query parameter:
 
 - `GET /api/v1/equity/{isin}` returns the stock price row for that exact trading
-  date, or the latest available row when `date` is omitted.
+  date, or the latest available row when `date` is omitted. Its `price_history`
+  field contains four calendar months of daily EOD OHLCV rows ending on the
+  returned date, ordered from oldest to newest.
 - `GET /api/v1/mf/details/{isin}` returns the NAV and precomputed returns for
   that exact NAV date, or the latest available row when `date` is omitted.
 
