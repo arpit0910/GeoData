@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\IndexApiController;
 use App\Http\Controllers\Api\MarketApiController;
 use App\Http\Controllers\Api\MarketDatasetController;
 use App\Http\Controllers\Api\MfApiController;
-use App\Http\Controllers\Api\StockNudgeController;
+use App\Http\Controllers\Api\NudgeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/equities', [EquityApiController::class, 'index']);
@@ -37,10 +37,11 @@ Route::get('/equity/{isin}/dual-exchange', [EquityApiController::class, 'dualExc
 Route::get('/equity/{isin}/activity-metrics', [EquityApiController::class, 'activityMetrics']);
 Route::get('/equity/{isin}/compare-index', [EquityApiController::class, 'compareIndex']);
 
-Route::get('/nudges/fresh', [StockNudgeController::class, 'fresh']);
-Route::get('/nudges/isin/{isin}', [StockNudgeController::class, 'byIsin']);
-Route::get('/nudges/index/{indexCode}', [StockNudgeController::class, 'byIndex']);
-Route::get('/nudges/category/{category}', [StockNudgeController::class, 'byCategory']);
+Route::get('/nudges/fresh', [NudgeController::class, 'fresh']);
+Route::get('/nudges/isin/{isin}', [NudgeController::class, 'byIsin']);
+Route::get('/nudges/index/{indexCode}', [NudgeController::class, 'byIndex']);
+Route::get('/nudges/category/{category}', [NudgeController::class, 'byCategory']);
+Route::get('/stock/nudges', [NudgeController::class, 'fresh']);
 
 Route::get('/indices/snapshot', [IndexApiController::class, 'snapshot']);
 Route::get('/indices/search', [IndexApiController::class, 'search']);
@@ -63,6 +64,7 @@ Route::get('/mf/analysis/top-losers', [MfApiController::class, 'topLosers']);
 Route::get('/mf/analysis/category-returns', [MfApiController::class, 'categoryReturns']);
 Route::get('/mf/analysis/amc-performance', [MfApiController::class, 'amcPerformance']);
 Route::get('/mf/analysis/consistent-performers', [MfApiController::class, 'consistentPerformers']);
+Route::get('/mf/nudges', [NudgeController::class, 'mutualFunds']);
 Route::get('/mf/details/{isin}', [MfApiController::class, 'details']);
 Route::get('/mf/history/{isin}', [MfApiController::class, 'history']);
 Route::get('/mf/{isin}/similar-funds', [MfApiController::class, 'similarFunds']);

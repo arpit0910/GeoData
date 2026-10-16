@@ -47,6 +47,7 @@ class PublicPagesTest extends TestCase
             ->assertSee('NSE/BSE Holiday Calendar')
             ->assertSee('/api/v1/market-calendar/holidays?exchange=all&amp;type=holiday', false)
             ->assertSee('Stock Nudges')
+            ->assertSee('/stock/nudges')
             ->assertSee('/nudges/fresh')
             ->assertSee('/nudges/isin/{isin}')
             ->assertSee('/nudges/index/{indexCode}')
@@ -74,9 +75,12 @@ class PublicPagesTest extends TestCase
         $encoded = json_encode($collection, JSON_UNESCAPED_SLASHES);
 
         $this->assertStringContainsString('{{baseUrl}}/nudges/fresh?per_page=25&date={{marketDate}}', $encoded);
+        $this->assertStringContainsString('{{baseUrl}}/stock/nudges?date={{marketDate}}', $encoded);
         $this->assertMatchesRegularExpression('/\{\{baseUrl\}\}\/nudges\/isin\/[^?]+\?per_page=25&date=\{\{marketDate\}\}/', $encoded);
         $this->assertMatchesRegularExpression('/\{\{baseUrl\}\}\/nudges\/index\/[^?]+\?per_page=25&date=\{\{marketDate\}\}/', $encoded);
         $this->assertStringContainsString('{{baseUrl}}/nudges/category/growth?per_page=25&date={{marketDate}}', $encoded);
+        $this->assertStringContainsString('{{baseUrl}}/mf/nudges?date={{marketDate}}', $encoded);
+        $this->assertStringContainsString('List Mutual Fund Nudges', $encoded);
         $this->assertStringContainsString('Strong daily gain', $encoded);
     }
 

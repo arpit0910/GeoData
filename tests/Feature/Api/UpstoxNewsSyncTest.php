@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\MarketNews;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class UpstoxNewsSyncTest extends TestCase
@@ -18,6 +20,74 @@ class UpstoxNewsSyncTest extends TestCase
         parent::setUp();
         Cache::forget('market_news_sync:last_equity_id');
         Cache::forget('market_news_sync:retry_equity_ids');
+    }
+
+    public function test_news_sync_stores_thumbnail_locally_and_api_returns_its_accessible_url(): void
+    {
+        Storage::fake('public');
+        config([
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.news_url' => 'https://provider.test/v2/news',
+        ]);
+        $isin = 'INE002A01018';
+        DB::table('equities')->insert([
+            'isin' => $isin,
+            'company_name' => 'Reliance Industries',
+            'nse_symbol' => 'RELIANCE',
+            'upstox_nse_instrument_key' => 'NSE_EQ|'.$isin,
+            'series' => 'EQ',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $image = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true);
+
+        Http::fake(function (Request $request) use ($isin, $image) {
+            if ($request->url() === 'https://images.provider.test/story.png') {
+                return Http::response($image, 200, ['Content-Type' => 'image/png']);
+            }
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['NSE_EQ|'.$isin => [[
+                    'heading' => 'Reliance market update',
+                    'summary' => 'A verified company update.',
+                    'thumbnail' => 'https://images.provider.test/story.png',
+                    'article_link' => 'https://provider.test/news/reliance-update',
+                    'published_time' => now()->getTimestampMs(),
+                ]]],
+                'metadata' => ['page' => [
+                    'page_number' => 1,
+                    'page_size' => 100,
+                    'total_records' => 1,
+                    'total_pages' => 1,
+                ]],
+            ]);
+        });
+
+        $this->artisan('market:sync-upstox-news')->assertExitCode(0);
+
+        $news = MarketNews::firstOrFail();
+        $path = $news->getRawOriginal('thumbnail');
+        $this->assertStringStartsWith('news-thumbnails/', $path);
+        Storage::disk('public')->assertExists($path);
+
+        $news->forceFill([
+            'editorial_status' => MarketNews::STATUS_PUBLISHED,
+            'is_published' => true,
+        ])->save();
+        $thumbnailUrl = route('market.news.thumbnail', $news);
+
+        $this->getJson('/api/v1/market/news')
+            ->assertOk()
+            ->assertJsonPath('data.0.thumbnail', $thumbnailUrl);
+        $this->get($thumbnailUrl)
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'immutable, max-age=2592000, public');
+        $this->get(route('market.news'))
+            ->assertOk()
+            ->assertSee($thumbnailUrl, false)
+            ->assertDontSee('images.provider.test', false);
     }
 
     public function test_news_sync_processes_every_eligible_instrument_in_thirty_item_batches(): void

@@ -226,13 +226,29 @@ class MarketPagesTest extends TestCase
             ]);
         }
 
+        StockNudge::create([
+            'equity_id' => $equity->id,
+            'isin' => $equity->isin,
+            'exchange' => 'NSE',
+            'type' => 'price',
+            'rule' => 'daily_gain',
+            'title' => 'Yesterday growth signal',
+            'fingerprint' => str_repeat('c', 64),
+            'severity' => 'info',
+            'message' => 'This signal must not appear on the public page.',
+            'observed_price' => 120,
+            'trading_date' => now('Asia/Kolkata')->subDay()->toDateString(),
+            'observed_at' => now()->subDay(),
+        ]);
+
         $this->get(route('market.nudges'))
             ->assertOk()
             ->assertSee('Growth signal')
             ->assertSee('Fall signal')
             ->assertSee('Nudge Example Limited')
             ->assertSee('Technology')
-            ->assertSee('Large Cap');
+            ->assertSee('Large Cap')
+            ->assertDontSee('Yesterday growth signal');
 
         $this->get(route('market.nudges', ['category' => 'growth']))
             ->assertOk()

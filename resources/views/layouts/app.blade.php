@@ -271,7 +271,7 @@
 
                     {{-- Market Content Dropdown --}}
                     @php
-                        $isDatasetsActive = request()->routeIs('admin.market-news.*') || request()->routeIs('admin.corporate-actions.*') || request()->routeIs('admin.exchange-calendar.*') || request()->routeIs('admin.market-datasets.*');
+                        $isDatasetsActive = request()->routeIs('admin.market-news.*') || request()->routeIs('admin.nudges.*') || request()->routeIs('admin.corporate-actions.*') || request()->routeIs('admin.exchange-calendar.*') || request()->routeIs('admin.market-datasets.*');
                     @endphp
                     <div x-data="{ open: {{ $isDatasetsActive ? 'true' : 'false' }} }">
                         <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isDatasetsActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
@@ -285,6 +285,10 @@
                             <a href="{{ route('admin.market-news.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.market-news.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-news.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
                                 <span class="truncate">Market News</span>
+                            </a>
+                            <a href="{{ route('admin.nudges.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.nudges.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.nudges.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">Market Nudges</span>
                             </a>
                             <a href="{{ route('admin.corporate-actions.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.corporate-actions.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>

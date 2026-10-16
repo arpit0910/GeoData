@@ -255,26 +255,32 @@ GET /api/v1/equity/INE002A01018?date=2026-10-12
 GET /api/v1/mf/details/INF109K01VQ0?date=2026-10-07
 ```
 
-The stock and mutual-fund subscription exposes four paginated nudge endpoints:
+The stock and mutual-fund subscription exposes these paginated nudge endpoints:
 
 - `GET /api/v1/nudges/isin/{isin}` returns nudges for one ISIN.
 - `GET /api/v1/nudges/index/{index_code}` returns index and benchmark-comparison nudges.
-- `GET /api/v1/nudges/fresh` returns the latest available nudge date.
+- `GET /api/v1/stock/nudges` returns stock and index nudges from the last seven calendar days.
+  `GET /api/v1/nudges/fresh` remains available as a backward-compatible alias.
 - `GET /api/v1/nudges/category/{category}` returns related nudges. Supported
   categories are `growth` (daily gains and record highs), `fall` (daily drops
   and record lows), `volume` (volume spikes), and `comparison` (stock/index
   outperformance or underperformance against Nifty 50 and sector benchmarks).
 
-All four accept `date=YYYY-MM-DD` and `per_page` (default 25, maximum 100).
-When `date` is omitted, they return the latest available trading date for the
-selected ISIN, index, or category. The selected date is included in the
-response alongside pagination metadata.
+- `GET /api/v1/mf/nudges` returns mutual-fund NAV nudges. It supports optional
+  `isin`, `category=growth|fall`, `date`, and `per_page` filters. MF nudges are
+  generated once after the daily NAV sync and returns calculation; they never
+  include Nifty or other index comparisons.
+
+All nudge endpoints accept `date=YYYY-MM-DD` and `per_page` (default 25,
+maximum 100). When `date` is omitted, they return the current seven-calendar-day
+window and expose `date_from` and `date_to` in the response.
 
 ```text
-GET /api/v1/nudges/fresh?date=2026-10-12&per_page=25
+GET /api/v1/stock/nudges?date=2026-10-12&per_page=25
 GET /api/v1/nudges/isin/INE002A01018?date=2026-10-12&per_page=25
 GET /api/v1/nudges/index/NIFTY_50?date=2026-10-12&per_page=25
 GET /api/v1/nudges/category/growth?date=2026-10-12&per_page=25
+GET /api/v1/mf/nudges?isin=INF109K01VQ0&per_page=25
 ```
 
 The downloadable Postman collection exposes `marketDate`; leave it blank for

@@ -364,6 +364,22 @@ class MarketDataController extends Controller
                 ->orderByDesc('id')
                 ->first();
 
+            $priceHistory = DB::table('equity_prices')
+                ->where('isin', $isin)
+                ->orderByDesc('traded_date')
+                ->orderByDesc('id')
+                ->limit(30)
+                ->get([
+                    'traded_date',
+                    'nse_open', 'nse_high', 'nse_low', 'nse_close', 'nse_prev_close', 'nse_volume',
+                    'bse_open', 'bse_high', 'bse_low', 'bse_close', 'bse_prev_close', 'bse_volume',
+                ])
+                ->map(function ($row) {
+                    $row->traded_date = substr((string) $row->traded_date, 0, 10);
+
+                    return $row;
+                });
+
             // Corporate Actions for this ISIN
             $actions = CorporateAction::where('isin', $isin)
                 ->orderByDesc('expiry_date')
@@ -457,6 +473,7 @@ class MarketDataController extends Controller
                         'market_cap' => $price ? $price->market_cap : null,
                         'pe_ratio' => $price ? $price->pe_ratio : null,
                     ],
+                    'price_history' => $priceHistory,
                     'corporate_actions' => $actions,
                     'news' => $news,
                 ],

@@ -288,6 +288,8 @@ class GenerateSalesPostmanCollectionCommand extends Command
         return in_array($uri, [
             'api/v1/equity/{isin}',
             'api/v1/mf/details/{isin}',
+            'api/v1/mf/nudges',
+            'api/v1/stock/nudges',
             'api/v1/nudges/fresh',
             'api/v1/nudges/isin/{isin}',
             'api/v1/nudges/index/{indexCode}',
@@ -604,6 +606,25 @@ class GenerateSalesPostmanCollectionCommand extends Command
                     ],
                 ],
             ],
+            'api/v1/mf/nudges' => [
+                'success' => true,
+                'date_from' => '2026-10-06',
+                'date_to' => '2026-10-12',
+                'data' => [[
+                    'id' => 1,
+                    'isin' => $fund['isin'],
+                    'scheme_name' => $fund['scheme_name'],
+                    'amc_name' => $fund['amc_name'],
+                    'fund_category' => $fund['category'],
+                    'category' => 'growth',
+                    'rule' => 'daily_gain',
+                    'severity' => 'significant',
+                    'title' => 'Axis Bluechip Fund NAV is up 5.25%',
+                    'observed_nav' => $fund['nav'],
+                    'nav_date' => '2026-10-12',
+                ]],
+                'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
+            ],
             'api/v1/market/mutual-funds', 'api/v1/market/mf' => [
                 'success' => true,
                 'type' => 'mutual_funds',
@@ -640,11 +661,26 @@ class GenerateSalesPostmanCollectionCommand extends Command
                     ],
                     'live_quote' => ['price' => 1450.25, 'change' => 12.25, 'change_percent' => 0.85],
                     'fundamentals' => ['market_cap' => null, 'pe_ratio' => null],
+                    'price_history' => [[
+                        'traded_date' => '2026-10-12',
+                        'nse_open' => 1438.0,
+                        'nse_high' => 1455.0,
+                        'nse_low' => 1432.5,
+                        'nse_close' => 1450.25,
+                        'nse_prev_close' => 1438.0,
+                        'nse_volume' => 1250000,
+                        'bse_open' => 1437.8,
+                        'bse_high' => 1454.9,
+                        'bse_low' => 1432.25,
+                        'bse_close' => 1450.1,
+                        'bse_prev_close' => 1437.9,
+                        'bse_volume' => 185000,
+                    ]],
                     'corporate_actions' => [],
                     'news' => [],
                 ],
             ],
-            'api/v1/nudges/fresh' => [
+            'api/v1/stock/nudges', 'api/v1/nudges/fresh' => [
                 'success' => true,
                 'date' => '2026-10-12',
                 'data' => [$nudge],
@@ -779,7 +815,15 @@ class GenerateSalesPostmanCollectionCommand extends Command
         }
 
         if ($segments === ['nudges', 'fresh']) {
-            return "List Today's Stock Nudges";
+            return 'List Recent Stock Nudges';
+        }
+
+        if ($segments === ['stock', 'nudges']) {
+            return 'List Stock Nudges';
+        }
+
+        if ($segments === ['mf', 'nudges']) {
+            return 'List Mutual Fund Nudges';
         }
 
         if ($segments === ['nudges', 'isin', '{isin}']) {

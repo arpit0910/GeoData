@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\ExchangeCalendarEventController;
 use App\Http\Controllers\Admin\CorporateActionController;
 use App\Http\Controllers\Admin\MarketDatasetController;
 use App\Http\Controllers\Admin\MarketNewsController;
+use App\Http\Controllers\Admin\StockNudgeController as AdminStockNudgeController;
 use App\Http\Controllers\SitemapController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -64,6 +65,9 @@ Route::get('/market/indices/{index}', [\App\Http\Controllers\MarketController::c
 Route::get('/market/mutual-funds', [\App\Http\Controllers\MarketController::class, 'mutualFunds'])->name('market.mutual-funds');
 Route::get('/market/mutual-funds/details', [\App\Http\Controllers\MarketController::class, 'mutualFundDetails'])->name('market.mutual-funds.details');
 Route::get('/market/news', [\App\Http\Controllers\MarketController::class, 'news'])->name('market.news');
+Route::get('/market/news/{marketNews}/thumbnail', [\App\Http\Controllers\MarketController::class, 'newsThumbnail'])
+    ->whereNumber('marketNews')
+    ->name('market.news.thumbnail');
 Route::get('/market/news/{marketNews}', [\App\Http\Controllers\MarketController::class, 'newsDetail'])->name('market.news.show');
 Route::get('/market/fundamentals', [\App\Http\Controllers\MarketController::class, 'fundamentals'])->name('market.fundamentals');
 Route::get('/market/fundamentals/{companyFundamental}', [\App\Http\Controllers\MarketController::class, 'fundamental'])->name('market.fundamentals.show');
@@ -295,6 +299,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('admin/market-news', [MarketNewsController::class, 'index'])
         ->name('admin.market-news.index');
+    Route::get('admin/nudges', [AdminStockNudgeController::class, 'index'])
+        ->name('admin.nudges.index');
     Route::post('admin/market-news/bulk-approve', [MarketNewsController::class, 'bulkApprove'])
         ->name('admin.market-news.bulk-approve');
     Route::post('admin/market-news/bulk-regenerate', [MarketNewsController::class, 'bulkRegenerate'])

@@ -135,5 +135,14 @@ class SyncMfDailyCommandTest extends TestCase
             'chg_1d' => 10,
             'val_1d' => 100,
         ]);
+        $this->assertDatabaseHas('mutual_fund_nudges', [
+            'isin' => 'INF000000001',
+            'nav_date' => '2026-10-12',
+            'rule' => 'daily_gain',
+        ]);
+        $nudgeCount = DB::table('mutual_fund_nudges')->count();
+
+        $this->artisan('mf:sync-and-calculate')->assertSuccessful();
+        $this->assertSame($nudgeCount, DB::table('mutual_fund_nudges')->count());
     }
 }

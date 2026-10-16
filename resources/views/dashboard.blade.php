@@ -272,7 +272,7 @@
                             <i class="fas fa-bell text-rose-600 dark:text-rose-500 text-sm"></i>
                             <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Latest Market Nudges</h4>
                         </div>
-                        <a href="{{ route('market.nudges') }}" class="text-xs font-black text-amber-600 hover:text-amber-700">View All <i class="fas fa-arrow-right ml-1"></i></a>
+                        <a href="{{ auth()->user()->is_admin ? route('admin.nudges.index') : route('market.nudges') }}" class="text-xs font-black text-amber-600 hover:text-amber-700">{{ auth()->user()->is_admin ? 'Manage Nudges' : 'View All' }} <i class="fas fa-arrow-right ml-1"></i></a>
                     </div>
                     <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/5">
                         <table class="w-full min-w-[760px] text-left text-sm">

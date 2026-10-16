@@ -3,12 +3,13 @@
 namespace App\Console\Commands;
 
 use App\Services\MfService;
+use App\Services\MutualFundNudgeService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Orchestrator command scheduled at 23:30 IST.
+ * Orchestrator command scheduled at 21:30 and 23:30 IST.
  *
  * Step 1 — Sync: delegates to sync:mf-daily (downloads AMFI NAVAll.txt,
  *           upserts mutual_funds and mutual_fund_prices).
@@ -22,14 +23,13 @@ class SyncAndCalculateMfCommand extends Command
                             {--skip-returns : Skip return computation after sync}
                             {--dry-run      : Pass through to sync:mf-daily; no DB writes}';
 
-    protected $description = 'Fetch today\'s MF NAVs from AMFI then compute all performance returns';
+    protected $description = 'Fetch MF NAVs, compute returns, and generate daily mutual-fund nudges';
 
-    private MfService $mfService;
-
-    public function __construct(MfService $mfService)
-    {
+    public function __construct(
+        private MfService $mfService,
+        private MutualFundNudgeService $nudgeService
+    ) {
         parent::__construct();
-        $this->mfService = $mfService;
     }
 
     public function handle(): int
@@ -43,7 +43,7 @@ class SyncAndCalculateMfCommand extends Command
         Log::info('[mf:sync-and-calculate] started');
 
         // ── Step 1: Sync NAVs via existing command ────────────────────────────
-        $this->info('[1/2] Syncing NAVs from AMFI...');
+        $this->info('[1/3] Syncing NAVs from AMFI...');
 
         $syncArgs = ['--force' => true, '--skip-returns' => true];
         if ($this->option('dry-run')) {
@@ -78,7 +78,7 @@ class SyncAndCalculateMfCommand extends Command
         }
 
         // ── Step 3: Compute returns using MfService ───────────────────────────
-        $this->info("[2/2] Computing returns for {$navDate} via MfService...");
+        $this->info("[2/3] Computing returns for {$navDate} via MfService...");
         Log::info('[mf:sync-and-calculate] computing returns', ['nav_date' => $navDate]);
 
         try {
@@ -96,6 +96,24 @@ class SyncAndCalculateMfCommand extends Command
                 'error'    => $e->getMessage(),
             ]);
             $this->warn('Prices were saved. Returns were not computed.');
+            return Command::FAILURE;
+        }
+
+        $this->info("[3/3] Generating mutual-fund nudges for {$navDate}...");
+        try {
+            $created = $this->nudgeService->generateForDate($navDate);
+            $this->info("  Created {$created} mutual-fund nudge(s).");
+            Log::info('[mf:sync-and-calculate] nudges done', [
+                'nav_date' => $navDate,
+                'created' => $created,
+            ]);
+        } catch (\Exception $e) {
+            $this->error('Mutual-fund nudge generation failed: '.$e->getMessage());
+            Log::error('[mf:sync-and-calculate] nudge generation failed', [
+                'nav_date' => $navDate,
+                'error' => $e->getMessage(),
+            ]);
+
             return Command::FAILURE;
         }
 

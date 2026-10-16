@@ -2397,6 +2397,18 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
                                         </div>
                                     </div>
 
+                                    <!-- MF Nudges -->
+                                    <div id="mf-nudges" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2 uppercase">GET</span> /mf/nudges</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-2 sm:px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits Required</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Daily NAV movement and one-month/52-week record nudges generated after the EOD mutual-fund sync. No Nifty or index comparison nudges are created.</p>
+                                            <p class="text-sm">Optional parameters: <code class="text-white">isin</code>, <code class="text-white">category=growth|fall</code>, <code class="text-white">date=YYYY-MM-DD</code>, and <code class="text-white">per_page</code>. Without a date, the API returns the latest seven calendar days.</p>
+                                        </div>
+                                    </div>
+
                                     <!-- MF History -->
                                     <div id="mf-history" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                                         <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
@@ -2918,15 +2930,15 @@ $response = Http::<span class="text-yellow-400">post</span>(<span class="text-gr
 
                             <section id="stock-nudges-api" class="pt-8">
                                 <h2 class="text-xl sm:text-3xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-800 pb-4">Stock Nudges</h2>
-                                <p class="text-gray-400 mb-8">Retrieve generated stock signals by trading day, ISIN, index, or signal category. Every endpoint accepts <code class="text-white">date=YYYY-MM-DD</code>; when omitted, the latest available trading date is returned.</p>
+                                <p class="text-gray-400 mb-8">Retrieve generated stock signals separately from mutual-fund nudges. Every endpoint accepts <code class="text-white">date=YYYY-MM-DD</code>; when omitted, the latest seven calendar days are returned.</p>
 
                                 <div class="space-y-6">
                                     <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
                                         <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800">
-                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /nudges/fresh</h3>
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /stock/nudges</h3>
                                         </div>
                                         <div class="p-6 text-gray-400">
-                                            <p>Returns nudges for the requested date, or the latest available nudge date when omitted.</p>
+                                            <p>Returns stock and index nudges for the requested date, or the latest seven calendar days when omitted. The existing <code class="text-white">/nudges/fresh</code> route remains available as an alias.</p>
                                         </div>
                                     </div>
 
@@ -3190,7 +3202,7 @@ curl -X GET "https://setugeo.com/api/v1/market/mutual-funds?category=Equity&per_
                                             <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
                                         </div>
                                         <div class="p-6 text-gray-400">
-                                            <p class="mb-4">Unified ISIN data endpoint. Automatically identifies whether the specified ISIN is an Equity or a Mutual Fund scheme, and returns full company/scheme metadata, a real-time market quote, fundamentals, corporate actions, and relevant news. Alternate alias: <code class="text-white">/market/equity/{isin}</code>.</p>
+                                            <p class="mb-4">Unified ISIN data endpoint. Automatically identifies whether the specified ISIN is an Equity or a Mutual Fund scheme, and returns full company/scheme metadata, a real-time market quote, recent daily history, fundamentals, corporate actions, and relevant news. Equity responses include the latest 30 daily EOD OHLCV rows in <code class="text-white">price_history</code>; mutual-fund responses include NAV rows in <code class="text-white">nav_history</code>. Alternate alias: <code class="text-white">/market/equity/{isin}</code>.</p>
                                             <table class="w-full text-sm mb-6">
                                                 <thead class="text-gray-500 text-left border-b border-gray-800">
                                                     <tr>
@@ -3248,6 +3260,16 @@ curl -X GET "https://setugeo.com/api/v1/market/isin/INE002A01018?live=1" \
       <span class="text-blue-400">"day_volume"</span>: <span class="text-blue-400">4820150</span>,
       <span class="text-blue-400">"source"</span>: <span class="text-green-400">"live"</span>
     },
+    <span class="text-blue-400">"price_history"</span>: [
+      {
+        <span class="text-blue-400">"traded_date"</span>: <span class="text-green-400">"2026-10-12"</span>,
+        <span class="text-blue-400">"nse_open"</span>: <span class="text-blue-400">2988.00</span>,
+        <span class="text-blue-400">"nse_high"</span>: <span class="text-blue-400">3025.00</span>,
+        <span class="text-blue-400">"nse_low"</span>: <span class="text-blue-400">2975.10</span>,
+        <span class="text-blue-400">"nse_close"</span>: <span class="text-blue-400">3012.75</span>,
+        <span class="text-blue-400">"nse_volume"</span>: <span class="text-blue-400">4820150</span>
+      }
+    ],
     <span class="text-blue-400">"corporate_actions"</span>: [ ... ],
     <span class="text-blue-400">"news"</span>: [ ... ]
   }
@@ -3353,8 +3375,8 @@ curl -X POST "https://setugeo.com/api/v1/market/sync" \
       <span class="text-blue-400">"id"</span>: <span class="text-blue-400">1024</span>,
       <span class="text-blue-400">"title"</span>: <span class="text-green-400">"Reliance Industries expands new energy gigafactory operations"</span>,
       <span class="text-blue-400">"summary"</span>: <span class="text-green-400">"Reliance Industries announces progress in its solar and battery manufacturing ecosystem."</span>,
-      <span class="text-blue-400">"source"</span>: <span class="text-green-400">"Market Wire"</span>,
-      <span class="text-blue-400">"url"</span>: <span class="text-green-400">"https://..."</span>,
+      <span class="text-blue-400">"thumbnail"</span>: <span class="text-green-400">"https://setugeo.com/market/news/1024/thumbnail"</span>,
+      <span class="text-blue-400">"article_url"</span>: <span class="text-green-400">"https://..."</span>,
       <span class="text-blue-400">"symbol"</span>: <span class="text-green-400">"RELIANCE"</span>,
       <span class="text-blue-400">"isin"</span>: <span class="text-green-400">"INE002A01018"</span>,
       <span class="text-blue-400">"published_at"</span>: <span class="text-green-400">"2026-09-25T08:45:00.000000Z"</span>

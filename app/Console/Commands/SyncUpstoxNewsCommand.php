@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Equity;
 use App\Models\Index as MarketIndex;
 use App\Models\MarketNews;
+use App\Services\MarketNewsThumbnailService;
 use App\Services\UpstoxMarketDataService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -23,7 +24,7 @@ class SyncUpstoxNewsCommand extends Command
 
     protected $description = 'Sync latest market and stock news from Upstox API';
 
-    public function handle(UpstoxMarketDataService $upstox): int
+    public function handle(UpstoxMarketDataService $upstox, MarketNewsThumbnailService $thumbnails): int
     {
         $batchSize = min(30, max(1, (int) $this->option('batch-size')));
         $maxBatches = min(100, max(1, (int) ($this->option('max-batches')
@@ -171,7 +172,7 @@ class SyncUpstoxNewsCommand extends Command
                         'original_title' => $originalTitle,
                         'original_summary' => $originalSummary,
                         'source_hash' => $sourceHash,
-                        'thumbnail' => $article['thumbnail'],
+                        'thumbnail' => $thumbnails->store($article['thumbnail'] ?? null),
                         'article_url' => $article['article_url'],
                         'source' => $article['source'] ?? 'Upstox',
                         'published_at' => $article['published_at'] ?? now(),

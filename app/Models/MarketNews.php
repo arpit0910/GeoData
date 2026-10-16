@@ -89,6 +89,22 @@ class MarketNews extends Model
         return $this->withoutProviderBranding($value);
     }
 
+    public function getThumbnailAttribute(?string $value): ?string
+    {
+        return $this->thumbnailPath($value)
+            ? route('market.news.thumbnail', $this)
+            : null;
+    }
+
+    public function thumbnailPath(?string $value = null): ?string
+    {
+        $value ??= $this->getRawOriginal('thumbnail');
+
+        return is_string($value) && str_starts_with($value, 'news-thumbnails/')
+            ? $value
+            : null;
+    }
+
     public function getOriginalTitleAttribute(?string $value): ?string
     {
         return $this->withoutProviderBranding($value);

@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\MutualFundNudge;
 use App\Models\StockNudge;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
-class StockNudgeController extends Controller
+class NudgeController extends Controller
 {
     public function byIsin(Request $request, string $isin): JsonResponse
     {
@@ -65,15 +66,70 @@ class StockNudgeController extends Controller
         );
     }
 
+    public function mutualFunds(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'isin' => ['nullable', 'regex:/^[A-Za-z]{2}[A-Za-z0-9]{9}[0-9]$/'],
+            'category' => ['nullable', 'in:growth,fall'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+        $isin = isset($validated['isin']) ? strtoupper($validated['isin']) : null;
+        $query = MutualFundNudge::query()
+            ->with('fund:id,isin,scheme_name,amc_name,category')
+            ->when($isin, fn ($query) => $query->where('isin', $isin))
+            ->when($validated['category'] ?? null, fn ($query, $category) => $query->whereIn('rule', MutualFundNudge::CATEGORY_RULES[$category]));
+
+        if (isset($validated['date'])) {
+            $query->whereDate('nav_date', $validated['date']);
+            $dateFrom = $dateTo = $validated['date'];
+        } else {
+            $dateTo = now('Asia/Kolkata')->toDateString();
+            $dateFrom = now('Asia/Kolkata')->subDays(6)->toDateString();
+            $query->whereDate('nav_date', '>=', $dateFrom)
+                ->whereDate('nav_date', '<=', $dateTo);
+        }
+
+        $perPage = min(max((int) $request->input('per_page', 25), 1), 100);
+        $nudges = $query->latest('nav_date')->latest('id')->paginate($perPage);
+        $nudges->setCollection($nudges->getCollection()->map(fn (MutualFundNudge $nudge) => [
+            'id' => $nudge->id,
+            'isin' => $nudge->isin,
+            'scheme_name' => $nudge->fund?->scheme_name,
+            'amc_name' => $nudge->fund?->amc_name,
+            'fund_category' => $nudge->fund?->category,
+            'category' => MutualFundNudge::categoryForRule($nudge->rule),
+            'rule' => $nudge->rule,
+            'severity' => $nudge->severity,
+            'title' => $nudge->title,
+            'message' => $nudge->message,
+            'observed_nav' => $nudge->observed_nav,
+            'metrics' => $nudge->metrics,
+            'nav_date' => $nudge->nav_date?->toDateString(),
+            'observed_at' => $nudge->observed_at?->copy()->timezone('Asia/Kolkata')->toIso8601String(),
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'data' => $nudges->items(),
+            'pagination' => $this->pagination($nudges),
+        ]);
+    }
+
     private function respond(Request $request, Builder $query, array $context = []): JsonResponse
     {
         $validated = $request->validate([
             'date' => ['nullable', 'date_format:Y-m-d'],
         ]);
-        $latestDate = isset($validated['date']) ? null : (clone $query)->max('trading_date');
-        $date = $validated['date'] ?? ($latestDate ? Carbon::parse($latestDate)->toDateString() : null);
-        if ($date !== null) {
-            $query->whereDate('trading_date', $date);
+        if (isset($validated['date'])) {
+            $dateFrom = $dateTo = $validated['date'];
+            $query->whereDate('trading_date', $validated['date']);
+        } else {
+            $dateTo = now('Asia/Kolkata')->toDateString();
+            $dateFrom = now('Asia/Kolkata')->subDays(6)->toDateString();
+            $query->whereDate('trading_date', '>=', $dateFrom)
+                ->whereDate('trading_date', '<=', $dateTo);
         }
 
         $perPage = min(max((int) $request->input('per_page', 25), 1), 100);
@@ -99,16 +155,22 @@ class StockNudgeController extends Controller
 
         return response()->json(array_merge([
             'success' => true,
-            'date' => $date,
+            'date' => $dateTo,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
         ], $context, [
             'data' => $nudges->items(),
-            'pagination' => [
-                'current_page' => $nudges->currentPage(),
-                'last_page' => $nudges->lastPage(),
-                'per_page' => $nudges->perPage(),
-                'total' => $nudges->total(),
-            ],
+            'pagination' => $this->pagination($nudges),
         ]));
     }
 
+    private function pagination(LengthAwarePaginator $paginator): array
+    {
+        return [
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ];
+    }
 }

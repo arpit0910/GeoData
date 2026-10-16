@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MarketController extends Controller
 {
@@ -187,6 +189,16 @@ class MarketController extends Controller
         return view('website.market-news-show', compact('marketNews'));
     }
 
+    public function newsThumbnail(MarketNews $marketNews): StreamedResponse
+    {
+        $path = $marketNews->thumbnailPath();
+        abort_unless($path && Storage::disk('public')->exists($path), 404);
+
+        return Storage::disk('public')->response($path, null, [
+            'Cache-Control' => 'public, max-age=2592000, immutable',
+        ]);
+    }
+
     public function fundamentals(Request $request)
     {
         $search = trim((string) $request->input('search'));
@@ -236,16 +248,18 @@ class MarketController extends Controller
 
     public function nudges(Request $request)
     {
+        $today = now('Asia/Kolkata')->toDateString();
         $category = strtolower(trim((string) $request->input('category', 'all')));
         if ($category !== 'all' && StockNudge::rulesForCategory($category) === null) {
             $category = 'all';
         }
 
         $stockFilters = DB::table('equities')
-            ->whereExists(function ($query) {
+            ->whereExists(function ($query) use ($today) {
                 $query->selectRaw('1')
                     ->from('stock_nudges')
-                    ->whereColumn('stock_nudges.equity_id', 'equities.id');
+                    ->whereColumn('stock_nudges.equity_id', 'equities.id')
+                    ->whereDate('stock_nudges.trading_date', $today);
             })
             ->get(['sector', 'market_cap_category']);
         $sectors = $stockFilters->pluck('sector')->filter()->unique()->sort()->values();
@@ -255,6 +269,7 @@ class MarketController extends Controller
 
         $search = trim((string) $request->input('search'));
         $nudges = StockNudge::query()
+            ->whereDate('trading_date', $today)
             ->with([
                 'equity:id,company_name,nse_symbol,bse_symbol,sector,market_cap_category',
                 'index:index_code,index_name,exchange,category',

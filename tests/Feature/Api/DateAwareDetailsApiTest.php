@@ -84,4 +84,33 @@ class DateAwareDetailsApiTest extends TestCase
         $this->getJson('/api/v1/mf/details/INF000000001?date=2026-10-11')->assertNotFound();
         $this->getJson('/api/v1/mf/details/INF000000001?date=10-10-2026')->assertStatus(422);
     }
+
+    /** @test */
+    public function unified_stock_details_include_recent_daily_eod_history(): void
+    {
+        $equity = Equity::create([
+            'isin' => 'INE000000001',
+            'company_name' => 'Example Industries',
+            'nse_symbol' => 'EXAMPLE',
+        ]);
+        foreach ([['2026-10-10', 100], ['2026-10-13', 125]] as [$date, $close]) {
+            EquityPrice::create([
+                'equity_id' => $equity->id,
+                'isin' => $equity->isin,
+                'traded_date' => $date,
+                'nse_open' => $close - 1,
+                'nse_high' => $close + 2,
+                'nse_low' => $close - 3,
+                'nse_close' => $close,
+                'nse_volume' => 1000,
+            ]);
+        }
+
+        $this->getJson('/api/v1/market/isin/INE000000001')
+            ->assertOk()
+            ->assertJsonCount(2, 'data.price_history')
+            ->assertJsonPath('data.price_history.0.traded_date', '2026-10-13')
+            ->assertJsonPath('data.price_history.0.nse_close', 125)
+            ->assertJsonPath('data.price_history.1.traded_date', '2026-10-10');
+    }
 }
