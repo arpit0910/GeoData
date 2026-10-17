@@ -153,7 +153,30 @@ class CronLoggingTest extends TestCase
             ->assertOk()
             ->assertSee('exchange-calendar:sync')
             ->assertSee('Healthy')
-            ->assertSee('scheduled');
+            ->assertSee('scheduled')
+            ->assertSee('class="cron-table', false)
+            ->assertSee('data-label="Last execution"', false)
+            ->assertSee('aria-label="Command is running"', false)
+            ->assertSee('id="modal-elapsed"', false);
+    }
+
+    public function test_cron_dashboard_shows_progress_for_an_unfinished_run(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $this->setJobs(['test:running-cron']);
+        CronLog::create([
+            'title' => 'test:running-cron',
+            'source' => 'manual',
+            'status' => false,
+            'started_at' => now(),
+            'finished_at' => null,
+            'ran_at' => now(),
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.crons.index'))
+            ->assertOk()
+            ->assertSee('Running')
+            ->assertSee('aria-label="Cron job is running"', false);
     }
 
     private function setJobs(array $commands): void

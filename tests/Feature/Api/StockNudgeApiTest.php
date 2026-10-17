@@ -28,15 +28,18 @@ class StockNudgeApiTest extends TestCase
     public function test_nudges_can_be_fetched_by_isin(): void
     {
         $this->nudge('INE000000001', 'daily_gain', '2026-10-12');
+        $this->nudge('INE000000001', 'volume_spike', '2026-10-12');
         $this->nudge('INE000000002', 'daily_drop', '2026-10-12');
 
         $this->getJson('/api/v1/nudges/isin/ine000000001')
             ->assertOk()
             ->assertJsonPath('isin', 'INE000000001')
-            ->assertJsonPath('pagination.total', 1)
-            ->assertJsonPath('data.0.category', 'growth')
+            ->assertJsonPath('pagination.total', 2)
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.category', 'volume')
             ->assertJsonPath('data.0.isin', 'INE000000001')
-            ->assertJsonPath('data.0.observed_at', '2026-10-12T15:30:00+05:30');
+            ->assertJsonPath('data.0.observed_at', '2026-10-12T15:30:00+05:30')
+            ->assertJsonPath('data.1.category', 'growth');
     }
 
     public function test_fresh_nudges_include_the_last_seven_calendar_days(): void
