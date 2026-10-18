@@ -141,6 +141,7 @@ class SyncUpstoxNewsCommand extends Command
         $duplicates = 0;
         $failedBatches = 0;
         $successfulBatches = 0;
+        $checkedInstruments = 0;
         $seenArticles = [];
 
         $batches = $instruments->chunk($batchSize)->values();
@@ -155,6 +156,7 @@ class SyncUpstoxNewsCommand extends Command
             try {
                 $articles = $upstox->news($batchKeys);
                 $successfulBatches++;
+                $checkedInstruments += count($batchKeys);
                 $totalFetched += count($articles);
 
                 foreach ($articles as $article) {
@@ -255,12 +257,8 @@ class SyncUpstoxNewsCommand extends Command
             }
         }
 
-        $this->info("News sync complete: {$totalFetched} fetched, {$uniqueFetched} unique, {$duplicates} duplicate; {$created} created, {$updated} updated, {$unchanged} unchanged; {$failedBatches} batches failed.");
+        $this->info("News sync complete: {$checkedInstruments}/{$instruments->count()} instruments checked across {$successfulBatches}/{$batches->count()} batches; {$totalFetched} fetched, {$uniqueFetched} unique, {$duplicates} duplicate; {$created} created, {$updated} updated, {$unchanged} unchanged; {$failedBatches} batches failed.");
 
-        // Preserve successful work, but fail when the provider could not sync
-        // any batch so monitoring can alert while the cursor retains the retry.
-        return $failedBatches > 0 && $successfulBatches === 0
-            ? self::FAILURE
-            : self::SUCCESS;
+        return $failedBatches > 0 ? self::FAILURE : self::SUCCESS;
     }
 }

@@ -118,7 +118,7 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --max-batches=20 --delay=250')
+        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --all --delay=250')
             ->hourly()
             ->timezone('Asia/Kolkata')
             ->between('07:00', '23:00')
@@ -127,7 +127,7 @@ class Kernel extends ConsoleKernel
             ->createMutexNameUsing('market-news-sync'), 'market:sync-upstox-news');
 
         $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --all --delay=250')
-            ->cron('30 6,18 * * *')
+            ->dailyAt('06:30')
             ->timezone('Asia/Kolkata')
             ->runInBackground()
             ->withoutOverlapping(360)

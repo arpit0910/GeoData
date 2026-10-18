@@ -409,7 +409,7 @@ class UpstoxNewsSyncTest extends TestCase
 
         $this->artisan('market:sync-upstox-news', ['--max-batches' => 2])
             ->expectsOutputToContain('This batch will be retried on the next run')
-            ->assertExitCode(0);
+            ->assertExitCode(1);
         $this->assertCount(30, Cache::get('market_news_sync:retry_equity_ids'));
 
         $this->artisan('market:sync-upstox-news', ['--max-batches' => 2])
