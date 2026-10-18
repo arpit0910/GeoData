@@ -830,6 +830,18 @@ class GenerateSalesPostmanCollectionCommand extends Command
             return 'Get Complete Company Fundamentals';
         }
 
+        if ($segments === ['market', 'ipos']) {
+            return 'List IPOs';
+        }
+
+        if ($segments === ['market', 'ipos', '{slug}']) {
+            return 'Get IPO Details';
+        }
+
+        if ($segments === ['market', 'institutional-activity']) {
+            return 'Get FII/DII Activity';
+        }
+
         if ($segments === ['nudges', 'fresh']) {
             return 'List Recent Stock Nudges';
         }

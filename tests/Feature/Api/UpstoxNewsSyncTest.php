@@ -22,6 +22,23 @@ class UpstoxNewsSyncTest extends TestCase
         Cache::forget('market_news_sync:retry_equity_ids');
     }
 
+    public function test_news_sync_fails_before_querying_instruments_without_a_token(): void
+    {
+        config([
+            'market_data.upstox.analytics_token' => null,
+            'market_data.upstox.access_token' => null,
+            'market_data.upstox.client_id' => null,
+            'market_data.upstox.client_secret' => null,
+        ]);
+        Http::fake();
+
+        $this->artisan('market:sync-upstox-news')
+            ->expectsOutputToContain('No active Upstox token is available')
+            ->assertExitCode(1);
+
+        Http::assertNothingSent();
+    }
+
     public function test_news_sync_stores_thumbnail_locally_and_api_returns_its_accessible_url(): void
     {
         Storage::fake('public');
@@ -80,7 +97,8 @@ class UpstoxNewsSyncTest extends TestCase
 
         $this->getJson('/api/v1/market/news')
             ->assertOk()
-            ->assertJsonPath('data.0.thumbnail', $thumbnailUrl);
+            ->assertJsonPath('data.0.thumbnail', $thumbnailUrl)
+            ->assertJsonPath('data.0.article_url', route('market.news.show', $news));
         $this->get($thumbnailUrl)
             ->assertOk()
             ->assertHeader('Cache-Control', 'immutable, max-age=2592000, public');
@@ -239,6 +257,51 @@ class UpstoxNewsSyncTest extends TestCase
             ['News page 1', 'News page 2', 'News page 3'],
             DB::table('market_news')->orderBy('id')->pluck('original_title')->all()
         );
+    }
+
+    public function test_news_sync_continues_when_live_pagination_totals_change(): void
+    {
+        config([
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.news_url' => 'https://provider.test/v2/news',
+        ]);
+        $isin = 'INE002A01018';
+        DB::table('equities')->insert([
+            'isin' => $isin,
+            'company_name' => 'Reliance Industries',
+            'nse_symbol' => 'RELIANCE',
+            'upstox_nse_instrument_key' => 'NSE_EQ|'.$isin,
+            'series' => 'EQ',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Http::fake(function (Request $request) use ($isin) {
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+            $page = (int) ($query['page_number'] ?? 1);
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['NSE_EQ|'.$isin => [[
+                    'heading' => "Changing feed page {$page}",
+                    'summary' => "Summary {$page}",
+                    'article_link' => "https://provider.test/news/changing-{$page}",
+                    'published_time' => now()->getTimestampMs(),
+                ]]],
+                'metadata' => ['page' => [
+                    'page_number' => $page,
+                    'page_size' => 100,
+                    'total_records' => $page === 1 ? 2 : 3,
+                    'total_pages' => 2,
+                ]],
+            ]);
+        });
+
+        $this->artisan('market:sync-upstox-news', ['--delay' => 0])
+            ->assertExitCode(0);
+
+        $this->assertDatabaseCount('market_news', 2);
     }
 
     public function test_news_sync_stops_remaining_batches_after_an_unauthorized_response(): void

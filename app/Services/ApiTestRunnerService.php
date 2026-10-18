@@ -10,6 +10,7 @@ use App\Models\Country;
 use App\Models\CurrencyConversion;
 use App\Models\Equity;
 use App\Models\Index;
+use App\Models\Ipo;
 use App\Models\MfMaster;
 use App\Models\Pincode;
 use App\Models\Plan;
@@ -397,6 +398,7 @@ class ApiTestRunnerService
             '{cap}' => 'large-cap',
             '{index_code}' => $sampleData['index_code'],
             '{indexCode}' => $sampleData['index_code'],
+            '{slug}' => $sampleData['ipo_slug'],
         ];
 
         foreach ($replacements as $token => $value) {
@@ -642,6 +644,12 @@ class ApiTestRunnerService
             case 'api/v1/market/company-fundamentals/{isin}':
                 $query = ['dataset' => 'profile,key_ratios'];
                 break;
+            case 'api/v1/market/ipos':
+                $query = ['status' => 'open', 'per_page' => 10];
+                break;
+            case 'api/v1/market/institutional-activity':
+                $query = ['investor_type' => 'fii', 'interval' => '1D', 'per_page' => 10];
+                break;
             case 'api/v1/market-calendar/holidays':
                 $query = ['exchange' => 'all', 'type' => 'holiday'];
                 break;
@@ -693,6 +701,9 @@ class ApiTestRunnerService
         $index = Index::query()->orderBy('index_code')->first();
         $mf = MfMaster::query()->where('is_active', true)->orderBy('scheme_name')->first();
         $mfTwo = MfMaster::query()->where('is_active', true)->where('isin', '!=', $mf?->isin)->orderBy('scheme_name')->first();
+        $ipo = Schema::hasTable('ipos')
+            ? Ipo::query()->orderByDesc('bidding_start_date')->first()
+            : null;
 
         $lat1 = $city?->latitude ?? $pincode?->latitude ?? 28.6139;
         $lng1 = $city?->longitude ?? $pincode?->longitude ?? 77.2090;
@@ -728,6 +739,7 @@ class ApiTestRunnerService
             'mf_isin' => $mf?->isin ?? 'INF000000001',
             'mf2_isin' => $mfTwo?->isin ?? 'INF000000002',
             'mf_search' => $mf?->scheme_name ? Str::words($mf->scheme_name, 2, '') : 'SBI',
+            'ipo_slug' => $ipo?->slug ?? 'example-ipo',
             'lat1' => $lat1,
             'lng1' => $lng1,
             'lat2' => $lat2,

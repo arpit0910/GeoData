@@ -96,6 +96,11 @@ class MarketNews extends Model
             : null;
     }
 
+    public function getArticleUrlAttribute(?string $value): ?string
+    {
+        return $this->exists ? route('market.news.show', $this) : null;
+    }
+
     public function thumbnailPath(?string $value = null): ?string
     {
         $value ??= $this->getRawOriginal('thumbnail');

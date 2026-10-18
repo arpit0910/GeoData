@@ -29,5 +29,8 @@ return [
         'corporate_actions_url' => env('UPSTOX_CORPORATE_ACTIONS_URL', 'https://api.upstox.com/v2/fundamentals'),
         'news_url' => env('UPSTOX_NEWS_URL', 'https://api.upstox.com/v2/news'),
         'news_max_batches' => (int) env('UPSTOX_NEWS_MAX_BATCHES', 20),
+        'ipos_url' => env('UPSTOX_IPOS_URL', 'https://api.upstox.com/v2/ipos'),
+        'fii_url' => env('UPSTOX_FII_URL', 'https://api.upstox.com/v2/market/fii'),
+        'dii_url' => env('UPSTOX_DII_URL', 'https://api.upstox.com/v2/market/dii'),
     ],
 ];

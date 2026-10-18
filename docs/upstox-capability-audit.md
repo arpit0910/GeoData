@@ -1,6 +1,6 @@
 # Upstox capability audit
 
-Reviewed on 13 October 2026 against the official Upstox developer documentation.
+Reviewed on 17 October 2026 against the official Upstox developer documentation.
 
 ## Already integrated
 
@@ -10,6 +10,7 @@ Reviewed on 13 October 2026 against the official Upstox developer documentation.
 - Company profile, balance sheet, cash flow, income statement, share holdings,
   key ratios, corporate actions, and competitors.
 - Market/stock news and corporate actions.
+- IPO listings/details and FII/DII institutional activity.
 
 ## Index constituents and allocation
 
@@ -43,9 +44,8 @@ Official references:
    the current requirement.
 3. **Option chain and Greeks** — useful for an F&O analytics module; not needed
    by the current stock/index pages.
-4. **Market-information datasets** — FII activity, DII activity, open interest,
-   change in OI, max pain, and put-call ratio are useful additions for market
-   breadth/sentiment pages.
+4. **Remaining market-information datasets** — open interest, change in OI,
+   max pain, and put-call ratio are useful additions for derivatives pages.
 5. **Expired futures/options and their candles** — useful for derivatives
    backtesting and requires the Upstox Plus entitlement.
 6. **Instrument Search API** — useful for on-demand lookup. The daily complete
@@ -55,8 +55,12 @@ Official references:
    and should only be added if SetuGeo is intended to connect end-user brokerage
    accounts; they are not public market datasets.
 
-Official references:
+Official references for the integrated additions and remaining capabilities:
 
+- https://upstox.com/developer/api-documentation/get-ipos/
+- https://upstox.com/developer/api-documentation/get-ipo-details/
+- https://upstox.com/developer/api-documentation/get-fii-data/
+- https://upstox.com/developer/api-documentation/get-dii-data/
 - https://upstox.com/developer/api-documentation/v3/get-historical-candle-data/
 - https://upstox.com/developer/api-documentation/v3/get-intra-day-candle-data/
 - https://upstox.com/developer/api-documentation/get-market-data-feed/

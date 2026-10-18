@@ -74,6 +74,9 @@ Route::get('/market/heatmap', [MarketApiController::class, 'heatmap']);
 Route::get('/market/breadth', [MarketApiController::class, 'breadth']);
 Route::get('/market/global-instruments', [MarketDatasetController::class, 'globalInstruments']);
 Route::get('/market/company-fundamentals/{isin}', [MarketDatasetController::class, 'companyFundamentals']);
+Route::get('/market/ipos', [MarketDatasetController::class, 'ipos']);
+Route::get('/market/ipos/{slug}', [MarketDatasetController::class, 'ipo']);
+Route::get('/market/institutional-activity', [MarketDatasetController::class, 'institutionalActivity']);
 
 Route::get('/market-calendar/holidays', [ExchangeCalendarController::class, 'index']);
 Route::get('/market-calendar/check', [ExchangeCalendarController::class, 'check']);

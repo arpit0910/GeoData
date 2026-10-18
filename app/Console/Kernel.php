@@ -58,6 +58,12 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:sync-company-fundamentals --dataset=profile --missing-profile --limit=250 --delay=200')
             ->dailyAt('02:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
+        $this->markScheduled($schedule->command('market:sync-upstox-insights')
+            ->dailyAt('20:15')
+            ->timezone('Asia/Kolkata')
+            ->runInBackground()
+            ->withoutOverlapping(180));
+
         // Refresh previously validated indices first so unsupported index keys
         // cannot delay the one-minute live quote path.
         $this->markScheduled($schedule->command('market:sync-upstox-index-quotes --quoted-only')
@@ -112,18 +118,20 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->withoutOverlapping(120));
 
-        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --max-batches=20')
+        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --max-batches=20 --delay=250')
             ->hourly()
             ->timezone('Asia/Kolkata')
             ->between('07:00', '23:00')
             ->runInBackground()
-            ->withoutOverlapping(120), 'market:sync-upstox-news');
+            ->withoutOverlapping(120)
+            ->createMutexNameUsing('market-news-sync'), 'market:sync-upstox-news');
 
-        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --all')
+        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --all --delay=250')
             ->cron('30 6,18 * * *')
             ->timezone('Asia/Kolkata')
             ->runInBackground()
-            ->withoutOverlapping(360), 'market:sync-upstox-news --all');
+            ->withoutOverlapping(360)
+            ->createMutexNameUsing('market-news-sync'), 'market:sync-upstox-news --all');
 
         // Upstox exposes every corporate-action type through a per-ISIN endpoint.
         // A bounded hourly rotation avoids provider throttling while eventually

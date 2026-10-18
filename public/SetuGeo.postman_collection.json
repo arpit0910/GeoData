@@ -1,8 +1,8 @@
 {
     "info": {
-        "_postman_id": "975055c8-8dd8-4c00-9b66-4e082305377e",
+        "_postman_id": "aacf3c6c-851b-4020-95a2-77f9092bd06e",
         "name": "SetuGeo API - Demo & Sales Collection",
-        "description": "Generated on 2026-10-16 13:31:01 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
+        "description": "Generated on 2026-10-17 20:15:30 from the current Laravel route catalog.\n\nUse this collection for product demos, sales walkthroughs, and production smoke checks. The token request saves the bearer token automatically for the rest of the collection.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "auth": {
@@ -1607,7 +1607,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-10-16+13%3A31%3A01&from=UTC&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezones/convert?datetime=2026-10-17+20%3A15%3A29&from=UTC&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1618,7 +1618,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-10-16 13:31:01"
+                                            "value": "2026-10-17 20:15:29"
                                         },
                                         {
                                             "key": "from",
@@ -1681,7 +1681,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-10-16+13%3A31%3A01&from=UTC&to=Asia%2FKolkata",
+                                    "raw": "{{baseUrl}}/timezone/convert?datetime=2026-10-17+20%3A15%3A29&from=UTC&to=Asia%2FKolkata",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1692,7 +1692,7 @@
                                     "query": [
                                         {
                                             "key": "datetime",
-                                            "value": "2026-10-16 13:31:01"
+                                            "value": "2026-10-17 20:15:29"
                                         },
                                         {
                                             "key": "from",
@@ -4081,7 +4081,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/indices/BHARATBOND-APR30/history?start_date=2026-09-16&end_date=2026-10-16",
+                                    "raw": "{{baseUrl}}/indices/BHARATBOND-APR30/history?start_date=2026-09-17&end_date=2026-10-17",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -4093,11 +4093,11 @@
                                     "query": [
                                         {
                                             "key": "start_date",
-                                            "value": "2026-09-16"
+                                            "value": "2026-09-17"
                                         },
                                         {
                                             "key": "end_date",
-                                            "value": "2026-10-16"
+                                            "value": "2026-10-17"
                                         }
                                     ]
                                 },
@@ -4697,7 +4697,7 @@
                     "name": "Market",
                     "item": [
                         {
-                            "name": "Get Splits",
+                            "name": "List Market Mutual Funds",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -4707,15 +4707,20 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/splits",
+                                    "raw": "{{baseUrl}}/market/mf?per_page=10",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "splits"
+                                        "mf"
                                     ],
-                                    "query": []
+                                    "query": [
+                                        {
+                                            "key": "per_page",
+                                            "value": "10"
+                                        }
+                                    ]
                                 },
                                 "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
                             },
@@ -4725,12 +4730,12 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/splits\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"type\": \"mutual_funds\",\n    \"data\": [\n        {\n            \"isin\": \"INF109K01VQ0\",\n            \"scheme_code\": \"120503\",\n            \"scheme_name\": \"Axis Bluechip Fund - Growth\",\n            \"amc_name\": \"Axis Mutual Fund\",\n            \"category\": \"Equity\",\n            \"nav\": 54.32,\n            \"nav_date\": \"2026-10-07\",\n            \"chg_1d\": 0.42,\n            \"chg_1y\": 18.74\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 10,\n        \"total\": 1\n    },\n    \"provider\": \"AMFI Official Mutual Fund Feeds with public instrument-data fallback\",\n    \"sources\": {\n        \"primary\": \"AMFI\",\n        \"fallback\": \"Public mutual-fund instrument data\"\n    }\n}"
                                 }
                             ]
                         },
                         {
-                            "name": "Get Market Quote by Symbol",
+                            "name": "List Market Mutual Funds",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -4740,16 +4745,20 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/quote/{symbol}",
+                                    "raw": "{{baseUrl}}/market/mutual-funds?per_page=10",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "quote",
-                                        "{symbol}"
+                                        "mutual-funds"
                                     ],
-                                    "query": []
+                                    "query": [
+                                        {
+                                            "key": "per_page",
+                                            "value": "10"
+                                        }
+                                    ]
                                 },
                                 "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
                             },
@@ -4759,19 +4768,12 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/quote/{symbol}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
-                                },
-                                {
-                                    "name": "Resource Not Found",
-                                    "status": "Not Found",
-                                    "code": 404,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
+                                    "body": "{\n    \"success\": true,\n    \"type\": \"mutual_funds\",\n    \"data\": [\n        {\n            \"isin\": \"INF109K01VQ0\",\n            \"scheme_code\": \"120503\",\n            \"scheme_name\": \"Axis Bluechip Fund - Growth\",\n            \"amc_name\": \"Axis Mutual Fund\",\n            \"category\": \"Equity\",\n            \"nav\": 54.32,\n            \"nav_date\": \"2026-10-07\",\n            \"chg_1d\": 0.42,\n            \"chg_1y\": 18.74\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 10,\n        \"total\": 1\n    },\n    \"provider\": \"AMFI Official Mutual Fund Feeds with public instrument-data fallback\",\n    \"sources\": {\n        \"primary\": \"AMFI\",\n        \"fallback\": \"Public mutual-fund instrument data\"\n    }\n}"
                                 }
                             ]
                         },
                         {
-                            "name": "Get Market Snapshot",
+                            "name": "List Nudges by Index",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -4781,17 +4783,27 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/snapshot",
+                                    "raw": "{{baseUrl}}/nudges/index/BHARATBOND-APR30?per_page=25&date={{marketDate}}",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
-                                        "market",
-                                        "snapshot"
+                                        "nudges",
+                                        "index",
+                                        "BHARATBOND-APR30"
                                     ],
-                                    "query": []
+                                    "query": [
+                                        {
+                                            "key": "per_page",
+                                            "value": "25"
+                                        },
+                                        {
+                                            "key": "date",
+                                            "value": "{{marketDate}}"
+                                        }
+                                    ]
                                 },
-                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                                "description": "Requires bearer token. Set marketDate to YYYY-MM-DD for an exact date, or leave it blank for the latest available data. Sample request is aligned with the in-app company API tester."
                             },
                             "response": [
                                 {
@@ -4799,7 +4811,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/snapshot\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"date\": \"2026-10-12\",\n    \"index_code\": \"NIFTY_50\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"isin\": null,\n            \"exchange\": \"NSE\",\n            \"source\": \"index_price\",\n            \"category\": \"growth\",\n            \"rule\": \"daily_gain\",\n            \"severity\": \"info\",\n            \"title\": \"NIFTY 50 daily move\",\n            \"message\": \"The stock closed 4.25% higher for the day.\",\n            \"observed_price\": \"3012.7500\",\n            \"metrics\": {\n                \"change_percent\": 4.25\n            },\n            \"trading_date\": \"2026-10-12\",\n            \"observed_at\": \"2026-10-12T10:00:00+05:30\",\n            \"expires_at\": null,\n            \"index_code\": \"NIFTY_50\",\n            \"instrument_type\": \"index\"\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 25,\n        \"total\": 1\n    }\n}"
                                 },
                                 {
                                     "name": "Unauthenticated",
@@ -4828,6 +4840,13 @@
                                     "code": 403,
                                     "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
                                 }
                             ]
                         },
@@ -4902,7 +4921,7 @@
                             ]
                         },
                         {
-                            "name": "Get Market News Feed",
+                            "name": "List Market Stocks",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -4912,17 +4931,21 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/news?limit=10",
+                                    "raw": "{{baseUrl}}/market/stocks?instrument_type=stocks&per_page=10",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "news"
+                                        "stocks"
                                     ],
                                     "query": [
                                         {
-                                            "key": "limit",
+                                            "key": "instrument_type",
+                                            "value": "stocks"
+                                        },
+                                        {
+                                            "key": "per_page",
                                             "value": "10"
                                         }
                                     ]
@@ -4935,7 +4958,7 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/news\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"type\": \"stocks\",\n    \"data\": [\n        {\n            \"isin\": \"INE002A01018\",\n            \"company_name\": \"RELIANCE INDUSTRIES LTD\",\n            \"short_name\": \"Reliance\",\n            \"nse_symbol\": \"RELIANCE\",\n            \"bse_symbol\": \"500325\",\n            \"series\": \"EQ\",\n            \"security_type\": \"NORMAL\",\n            \"industry\": \"Oil & Gas\",\n            \"market_lot\": 1,\n            \"qty_multiplier\": 1,\n            \"mtf_enabled\": true,\n            \"mtf_bracket\": 26.5,\n            \"cas_eligible\": true,\n            \"intraday_margin\": 20,\n            \"intraday_leverage\": 5,\n            \"live_price\": 1450.25,\n            \"change\": 12.25,\n            \"change_percent\": 0.85,\n            \"tick_size\": {\n                \"nse\": 5,\n                \"bse\": 5\n            },\n            \"freeze_quantity\": {\n                \"nse\": 100000,\n                \"bse\": null\n            }\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 10,\n        \"total\": 1\n    }\n}"
                                 }
                             ]
                         },
@@ -4979,84 +5002,6 @@
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": true,\n    \"date\": \"2026-10-12\",\n    \"category\": \"growth\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"isin\": \"INE002A01018\",\n            \"exchange\": \"NSE\",\n            \"source\": \"price\",\n            \"category\": \"growth\",\n            \"rule\": \"daily_gain\",\n            \"severity\": \"info\",\n            \"title\": \"Strong daily gain\",\n            \"message\": \"The stock closed 4.25% higher for the day.\",\n            \"observed_price\": \"3012.7500\",\n            \"metrics\": {\n                \"change_percent\": 4.25\n            },\n            \"trading_date\": \"2026-10-12\",\n            \"observed_at\": \"2026-10-12T10:00:00+05:30\",\n            \"expires_at\": null\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 25,\n        \"total\": 1\n    }\n}"
-                                },
-                                {
-                                    "name": "Unauthenticated",
-                                    "status": "Unauthorized",
-                                    "code": 401,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
-                                },
-                                {
-                                    "name": "No Active Subscription",
-                                    "status": "Payment Required",
-                                    "code": 402,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
-                                },
-                                {
-                                    "name": "Credits Exhausted",
-                                    "status": "Payment Required",
-                                    "code": 402,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
-                                },
-                                {
-                                    "name": "Access Denied",
-                                    "status": "Forbidden",
-                                    "code": 403,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
-                                },
-                                {
-                                    "name": "Resource Not Found",
-                                    "status": "Not Found",
-                                    "code": 404,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
-                                }
-                            ]
-                        },
-                        {
-                            "name": "List Nudges by Index",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Accept",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/nudges/index/BHARATBOND-APR30?per_page=25&date={{marketDate}}",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "nudges",
-                                        "index",
-                                        "BHARATBOND-APR30"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "per_page",
-                                            "value": "25"
-                                        },
-                                        {
-                                            "key": "date",
-                                            "value": "{{marketDate}}"
-                                        }
-                                    ]
-                                },
-                                "description": "Requires bearer token. Set marketDate to YYYY-MM-DD for an exact date, or leave it blank for the latest available data. Sample request is aligned with the in-app company API tester."
-                            },
-                            "response": [
-                                {
-                                    "name": "Success",
-                                    "status": "OK",
-                                    "code": 200,
-                                    "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"date\": \"2026-10-12\",\n    \"index_code\": \"NIFTY_50\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"isin\": null,\n            \"exchange\": \"NSE\",\n            \"source\": \"index_price\",\n            \"category\": \"growth\",\n            \"rule\": \"daily_gain\",\n            \"severity\": \"info\",\n            \"title\": \"NIFTY 50 daily move\",\n            \"message\": \"The stock closed 4.25% higher for the day.\",\n            \"observed_price\": \"3012.7500\",\n            \"metrics\": {\n                \"change_percent\": 4.25\n            },\n            \"trading_date\": \"2026-10-12\",\n            \"observed_at\": \"2026-10-12T10:00:00+05:30\",\n            \"expires_at\": null,\n            \"index_code\": \"NIFTY_50\",\n            \"instrument_type\": \"index\"\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 25,\n        \"total\": 1\n    }\n}"
                                 },
                                 {
                                     "name": "Unauthenticated",
@@ -5162,7 +5107,7 @@
                             ]
                         },
                         {
-                            "name": "List Market Indices",
+                            "name": "Get Market Snapshot",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -5172,17 +5117,17 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/indices",
+                                    "raw": "{{baseUrl}}/market/snapshot",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "indices"
+                                        "snapshot"
                                     ],
                                     "query": []
                                 },
-                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
                             },
                             "response": [
                                 {
@@ -5190,7 +5135,35 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/indices\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/snapshot\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
                                 }
                             ]
                         },
@@ -5456,7 +5429,7 @@
                             ]
                         },
                         {
-                            "name": "List Market Stocks",
+                            "name": "Get Market News Feed",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -5466,21 +5439,17 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/stocks?instrument_type=stocks&per_page=10",
+                                    "raw": "{{baseUrl}}/market/news?limit=10",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "stocks"
+                                        "news"
                                     ],
                                     "query": [
                                         {
-                                            "key": "instrument_type",
-                                            "value": "stocks"
-                                        },
-                                        {
-                                            "key": "per_page",
+                                            "key": "limit",
                                             "value": "10"
                                         }
                                     ]
@@ -5493,12 +5462,12 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"type\": \"stocks\",\n    \"data\": [\n        {\n            \"isin\": \"INE002A01018\",\n            \"company_name\": \"RELIANCE INDUSTRIES LTD\",\n            \"short_name\": \"Reliance\",\n            \"nse_symbol\": \"RELIANCE\",\n            \"bse_symbol\": \"500325\",\n            \"series\": \"EQ\",\n            \"security_type\": \"NORMAL\",\n            \"industry\": \"Oil & Gas\",\n            \"market_lot\": 1,\n            \"qty_multiplier\": 1,\n            \"mtf_enabled\": true,\n            \"mtf_bracket\": 26.5,\n            \"cas_eligible\": true,\n            \"intraday_margin\": 20,\n            \"intraday_leverage\": 5,\n            \"live_price\": 1450.25,\n            \"change\": 12.25,\n            \"change_percent\": 0.85,\n            \"tick_size\": {\n                \"nse\": 5,\n                \"bse\": 5\n            },\n            \"freeze_quantity\": {\n                \"nse\": 100000,\n                \"bse\": null\n            }\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 10,\n        \"total\": 1\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/news\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 }
                             ]
                         },
                         {
-                            "name": "Get Market Data by ISIN",
+                            "name": "List Market Indices",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -5508,21 +5477,15 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/isin/IN2920250163?live=1",
+                                    "raw": "{{baseUrl}}/market/indices",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "isin",
-                                        "IN2920250163"
+                                        "indices"
                                     ],
-                                    "query": [
-                                        {
-                                            "key": "live",
-                                            "value": "1"
-                                        }
-                                    ]
+                                    "query": []
                                 },
                                 "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
                             },
@@ -5532,7 +5495,41 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"type\": \"equity\",\n    \"isin\": \"INE002A01018\",\n    \"data\": {\n        \"company\": {\n            \"name\": \"RELIANCE INDUSTRIES LTD\",\n            \"short_name\": \"Reliance\",\n            \"logo_url\": \"https://setugeo.com/assets/equity-icons/INE002A01018.svg\",\n            \"nse_symbol\": \"RELIANCE\",\n            \"bse_symbol\": \"500325\",\n            \"series\": \"EQ\",\n            \"security_type\": \"NORMAL\",\n            \"industry\": \"Oil & Gas\",\n            \"market_lot\": 1,\n            \"qty_multiplier\": 1,\n            \"mtf_enabled\": true,\n            \"mtf_bracket\": 26.5,\n            \"cas_eligible\": true,\n            \"intraday_margin\": 20,\n            \"intraday_leverage\": 5,\n            \"tick_size\": {\n                \"nse\": 5,\n                \"bse\": 5\n            },\n            \"freeze_quantity\": {\n                \"nse\": 100000,\n                \"bse\": null\n            }\n        },\n        \"live_quote\": {\n            \"price\": 1450.25,\n            \"change\": 12.25,\n            \"change_percent\": 0.85\n        },\n        \"fundamentals\": {\n            \"market_cap\": null,\n            \"pe_ratio\": null\n        },\n        \"price_history\": [\n            {\n                \"traded_date\": \"2026-10-12\",\n                \"nse_open\": 1438,\n                \"nse_high\": 1455,\n                \"nse_low\": 1432.5,\n                \"nse_close\": 1450.25,\n                \"nse_prev_close\": 1438,\n                \"nse_volume\": 1250000,\n                \"bse_open\": 1437.8,\n                \"bse_high\": 1454.9,\n                \"bse_low\": 1432.25,\n                \"bse_close\": 1450.1,\n                \"bse_prev_close\": 1437.9,\n                \"bse_volume\": 185000\n            }\n        ],\n        \"corporate_actions\": [],\n        \"news\": []\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/indices\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Market Quote by Symbol",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/quote/{symbol}",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "quote",
+                                        "{symbol}"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/quote/{symbol}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
                                 },
                                 {
                                     "name": "Resource Not Found",
@@ -5540,6 +5537,183 @@
                                     "code": 404,
                                     "_postman_previewlanguage": "json",
                                     "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get FII/DII Activity",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/institutional-activity?investor_type=fii&interval=1D&per_page=10",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "institutional-activity"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "investor_type",
+                                            "value": "fii"
+                                        },
+                                        {
+                                            "key": "interval",
+                                            "value": "1D"
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "10"
+                                        }
+                                    ]
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/institutional-activity\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Splits",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/splits",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "splits"
+                                    ],
+                                    "query": []
+                                },
+                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/splits\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "List IPOs",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/market/ipos?status=open&per_page=10",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "market",
+                                        "ipos"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "status",
+                                            "value": "open"
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "10"
+                                        }
+                                    ]
+                                },
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
+                            },
+                            "response": [
+                                {
+                                    "name": "Success",
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/ipos\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
                                 }
                             ]
                         },
@@ -5582,7 +5756,7 @@
                             ]
                         },
                         {
-                            "name": "List Market Mutual Funds",
+                            "name": "Get IPO Details",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -5592,22 +5766,18 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/mf?per_page=10",
+                                    "raw": "{{baseUrl}}/market/ipos/example-ipo",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "mf"
+                                        "ipos",
+                                        "example-ipo"
                                     ],
-                                    "query": [
-                                        {
-                                            "key": "per_page",
-                                            "value": "10"
-                                        }
-                                    ]
+                                    "query": []
                                 },
-                                "description": "Does not require bearer token. Sample request is aligned with the in-app company API tester."
+                                "description": "Requires bearer token. Sample request is aligned with the in-app company API tester."
                             },
                             "response": [
                                 {
@@ -5615,7 +5785,42 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"type\": \"mutual_funds\",\n    \"data\": [\n        {\n            \"isin\": \"INF109K01VQ0\",\n            \"scheme_code\": \"120503\",\n            \"scheme_name\": \"Axis Bluechip Fund - Growth\",\n            \"amc_name\": \"Axis Mutual Fund\",\n            \"category\": \"Equity\",\n            \"nav\": 54.32,\n            \"nav_date\": \"2026-10-07\",\n            \"chg_1d\": 0.42,\n            \"chg_1y\": 18.74\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 10,\n        \"total\": 1\n    },\n    \"provider\": \"AMFI Official Mutual Fund Feeds with public instrument-data fallback\",\n    \"sources\": {\n        \"primary\": \"AMFI\",\n        \"fallback\": \"Public mutual-fund instrument data\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"message\": \"Request completed successfully.\",\n    \"data\": {\n        \"endpoint\": \"api/v1/market/ipos/{slug}\",\n        \"method\": \"GET\",\n        \"sample\": \"Example response payload for demo purposes.\"\n    }\n}"
+                                },
+                                {
+                                    "name": "Unauthenticated",
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Unauthenticated.\"\n}"
+                                },
+                                {
+                                    "name": "No Active Subscription",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"Payment Required. You do not have an active subscription.\"\n}"
+                                },
+                                {
+                                    "name": "Credits Exhausted",
+                                    "status": "Payment Required",
+                                    "code": 402,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"status\": false,\n    \"message\": \"API credits exhausted. Please upgrade your plan or wait for the next month for credit refresh.\"\n}"
+                                },
+                                {
+                                    "name": "Access Denied",
+                                    "status": "Forbidden",
+                                    "code": 403,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Your current plan does not include this API category.\",\n    \"data\": null\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
                                 }
                             ]
                         },
@@ -5690,7 +5895,7 @@
                             ]
                         },
                         {
-                            "name": "List Market Mutual Funds",
+                            "name": "Get Market Data by ISIN",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -5700,18 +5905,19 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market/mutual-funds?per_page=10",
+                                    "raw": "{{baseUrl}}/market/isin/IN2920250163?live=1",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "market",
-                                        "mutual-funds"
+                                        "isin",
+                                        "IN2920250163"
                                     ],
                                     "query": [
                                         {
-                                            "key": "per_page",
-                                            "value": "10"
+                                            "key": "live",
+                                            "value": "1"
                                         }
                                     ]
                                 },
@@ -5723,7 +5929,14 @@
                                     "status": "OK",
                                     "code": 200,
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n    \"success\": true,\n    \"type\": \"mutual_funds\",\n    \"data\": [\n        {\n            \"isin\": \"INF109K01VQ0\",\n            \"scheme_code\": \"120503\",\n            \"scheme_name\": \"Axis Bluechip Fund - Growth\",\n            \"amc_name\": \"Axis Mutual Fund\",\n            \"category\": \"Equity\",\n            \"nav\": 54.32,\n            \"nav_date\": \"2026-10-07\",\n            \"chg_1d\": 0.42,\n            \"chg_1y\": 18.74\n        }\n    ],\n    \"pagination\": {\n        \"current_page\": 1,\n        \"last_page\": 1,\n        \"per_page\": 10,\n        \"total\": 1\n    },\n    \"provider\": \"AMFI Official Mutual Fund Feeds with public instrument-data fallback\",\n    \"sources\": {\n        \"primary\": \"AMFI\",\n        \"fallback\": \"Public mutual-fund instrument data\"\n    }\n}"
+                                    "body": "{\n    \"success\": true,\n    \"type\": \"equity\",\n    \"isin\": \"INE002A01018\",\n    \"data\": {\n        \"company\": {\n            \"name\": \"RELIANCE INDUSTRIES LTD\",\n            \"short_name\": \"Reliance\",\n            \"logo_url\": \"https://setugeo.com/assets/equity-icons/INE002A01018.svg\",\n            \"nse_symbol\": \"RELIANCE\",\n            \"bse_symbol\": \"500325\",\n            \"series\": \"EQ\",\n            \"security_type\": \"NORMAL\",\n            \"industry\": \"Oil & Gas\",\n            \"market_lot\": 1,\n            \"qty_multiplier\": 1,\n            \"mtf_enabled\": true,\n            \"mtf_bracket\": 26.5,\n            \"cas_eligible\": true,\n            \"intraday_margin\": 20,\n            \"intraday_leverage\": 5,\n            \"tick_size\": {\n                \"nse\": 5,\n                \"bse\": 5\n            },\n            \"freeze_quantity\": {\n                \"nse\": 100000,\n                \"bse\": null\n            }\n        },\n        \"live_quote\": {\n            \"price\": 1450.25,\n            \"change\": 12.25,\n            \"change_percent\": 0.85\n        },\n        \"fundamentals\": {\n            \"market_cap\": null,\n            \"pe_ratio\": null\n        },\n        \"price_history\": [\n            {\n                \"traded_date\": \"2026-10-12\",\n                \"nse_open\": 1438,\n                \"nse_high\": 1455,\n                \"nse_low\": 1432.5,\n                \"nse_close\": 1450.25,\n                \"nse_prev_close\": 1438,\n                \"nse_volume\": 1250000,\n                \"bse_open\": 1437.8,\n                \"bse_high\": 1454.9,\n                \"bse_low\": 1432.25,\n                \"bse_close\": 1450.1,\n                \"bse_prev_close\": 1437.9,\n                \"bse_volume\": 185000\n            }\n        ],\n        \"corporate_actions\": [],\n        \"news\": []\n    }\n}"
+                                },
+                                {
+                                    "name": "Resource Not Found",
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n    \"success\": false,\n    \"message\": \"Requested resource was not found.\",\n    \"data\": null\n}"
                                 }
                             ]
                         },
@@ -7261,7 +7474,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/market-calendar/check?date=2026-10-16&exchange=all",
+                                    "raw": "{{baseUrl}}/market-calendar/check?date=2026-10-17&exchange=all",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -7272,7 +7485,7 @@
                                     "query": [
                                         {
                                             "key": "date",
-                                            "value": "2026-10-16"
+                                            "value": "2026-10-17"
                                         },
                                         {
                                             "key": "exchange",

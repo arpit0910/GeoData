@@ -5,6 +5,8 @@ namespace Tests\Feature\Api;
 use App\Models\CompanyFundamental;
 use App\Models\Equity;
 use App\Models\GlobalInstrument;
+use App\Models\InstitutionalActivity;
+use App\Models\Ipo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -81,5 +83,56 @@ class MarketDatasetApiTest extends TestCase
     {
         $this->getJson('/api/v1/market/company-fundamentals/bad')->assertStatus(422);
         $this->getJson('/api/v1/market/company-fundamentals/INE002A01018?dataset=unknown')->assertStatus(422);
+    }
+
+    public function test_ipo_list_and_details_are_available(): void
+    {
+        Ipo::create([
+            'slug' => 'example-ipo',
+            'symbol' => 'EXAMPLE',
+            'name' => 'Example IPO',
+            'status' => 'open',
+            'issue_type' => 'regular',
+            'minimum_price' => 100,
+            'maximum_price' => 110,
+            'total_subscription' => 2.5,
+            'details' => ['lot_size' => 100, 'timeline' => ['listing_date' => '2026-10-26']],
+            'synced_at' => now(),
+        ]);
+
+        $this->getJson('/api/v1/market/ipos?status=open')
+            ->assertOk()
+            ->assertJsonPath('data.0.slug', 'example-ipo')
+            ->assertJsonPath('pagination.total', 1)
+            ->assertJsonMissingPath('data.0.details');
+
+        $this->getJson('/api/v1/market/ipos/example-ipo')
+            ->assertOk()
+            ->assertJsonPath('data.details.lot_size', 100)
+            ->assertJsonPath('data.details.timeline.listing_date', '2026-10-26');
+
+        $this->getJson('/api/v1/market/ipos?status=invalid')->assertStatus(422);
+    }
+
+    public function test_institutional_activity_supports_filters_and_calculates_net_amount(): void
+    {
+        InstitutionalActivity::create([
+            'investor_type' => 'fii',
+            'data_type' => 'NSE_EQ|CASH',
+            'interval' => '1D',
+            'activity_at' => '2026-10-16 00:00:00',
+            'buy_amount' => 1500,
+            'sell_amount' => 1200,
+            'synced_at' => now(),
+        ]);
+
+        $this->getJson('/api/v1/market/institutional-activity?investor_type=fii&interval=1D')
+            ->assertOk()
+            ->assertJsonPath('data.0.investor_type', 'FII')
+            ->assertJsonPath('data.0.net_amount', 300)
+            ->assertJsonPath('pagination.total', 1);
+
+        $this->getJson('/api/v1/market/institutional-activity?investor_type=invalid')->assertStatus(422);
+        $this->getJson('/api/v1/market/institutional-activity?from=17-10-2026')->assertStatus(422);
     }
 }

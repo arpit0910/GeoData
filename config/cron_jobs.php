@@ -140,6 +140,15 @@ return [
             'overlap' => true,
         ],
         [
+            'title' => 'market:sync-upstox-insights',
+            'command' => 'market:sync-upstox-insights',
+            'args' => [],
+            'description' => 'Synchronizes public IPO listings/details and FII/DII institutional activity.',
+            'schedule' => 'Daily at 20:15',
+            'timezone' => 'Asia/Kolkata',
+            'overlap' => false,
+        ],
+        [
             'title' => 'market:sync-upstox-index-quotes (Live)',
             'command' => 'market:sync-upstox-index-quotes',
             'args' => ['--quoted-only' => true],
@@ -178,8 +187,8 @@ return [
         [
             'title' => 'market:sync-upstox-news',
             'command' => 'market:sync-upstox-news',
-            'args' => ['--batch-size' => 30, '--max-batches' => 20],
-            'description' => 'Rotates through active Upstox equities and checks every configured market index on each run.',
+            'args' => ['--batch-size' => 30, '--max-batches' => 20, '--delay' => 250],
+            'description' => 'Rotates through active Upstox equities and indices with paced provider requests and shared overlap protection.',
             'schedule' => 'Hourly from 07:00 to 23:00 IST',
             'timezone' => 'Asia/Kolkata',
             'overlap' => false,
@@ -187,8 +196,8 @@ return [
         [
             'title' => 'market:sync-upstox-news --all',
             'command' => 'market:sync-upstox-news',
-            'args' => ['--batch-size' => 30, '--all' => true],
-            'description' => 'Runs complete pre-market and post-market passes across every eligible equity and index.',
+            'args' => ['--batch-size' => 30, '--all' => true, '--delay' => 250],
+            'description' => 'Runs paced complete pre-market and post-market passes without overlapping the hourly news fetch.',
             'schedule' => 'Daily at 06:30 and 18:30 IST',
             'timezone' => 'Asia/Kolkata',
             'overlap' => false,

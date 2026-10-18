@@ -230,6 +230,74 @@ class UpstoxMarketDataService
         return $body['data'];
     }
 
+    /** @return array{data: array<int, array<string, mixed>>, total_pages: int} */
+    public function ipos(string $status, int $page = 1): array
+    {
+        if (!in_array($status, ['upcoming', 'open', 'closed', 'listed'], true)) {
+            throw new RuntimeException("Unsupported IPO status: {$status}.");
+        }
+
+        $body = $this->getProviderJson(config('market_data.upstox.ipos_url'), [
+            'status' => $status,
+            'page_number' => max(1, $page),
+            'records' => 30,
+        ], 'IPO list');
+
+        return [
+            'data' => array_values($body['data']),
+            'total_pages' => max(1, (int) data_get($body, 'meta_data.page.total_pages', 1)),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function ipoDetails(string $slug): array
+    {
+        $slug = trim($slug);
+        if ($slug === '' || preg_match('/^[a-z0-9-]+$/', $slug) !== 1) {
+            throw new RuntimeException('A valid IPO identifier is required.');
+        }
+
+        $body = $this->getProviderJson(
+            rtrim(config('market_data.upstox.ipos_url'), '/').'/'.rawurlencode($slug),
+            [],
+            'IPO details'
+        );
+
+        return $body['data'];
+    }
+
+    /** @return array<string, array<int, array<string, mixed>>> */
+    public function institutionalActivity(string $investorType, array $dataTypes, string $interval): array
+    {
+        $investorType = strtolower(trim($investorType));
+        $allowedTypes = [
+            'fii' => [
+                'NSE_FO|INDEX_FUTURES', 'NSE_FO|STOCK_FUTURES',
+                'NSE_FO|INDEX_OPTIONS', 'NSE_FO|STOCK_OPTIONS', 'NSE_EQ|CASH',
+            ],
+            'dii' => ['NSE_EQ|CASH'],
+        ];
+
+        if (!isset($allowedTypes[$investorType])) {
+            throw new RuntimeException("Unsupported investor type: {$investorType}.");
+        }
+        if (!in_array($interval, ['1D', '1M'], true)) {
+            throw new RuntimeException("Unsupported institutional activity interval: {$interval}.");
+        }
+
+        $dataTypes = array_values(array_unique(array_intersect($allowedTypes[$investorType], $dataTypes)));
+        if ($dataTypes === []) {
+            throw new RuntimeException("At least one valid {$investorType} data type is required.");
+        }
+
+        $body = $this->getProviderJson(config("market_data.upstox.{$investorType}_url"), [
+            'data_type' => implode(',', $dataTypes),
+            'interval' => $interval,
+        ], strtoupper($investorType).' activity');
+
+        return $body['data'];
+    }
+
     /**
      * Fetch corporate actions (splits, bonuses, dividends, rights, etc.) for a company by ISIN.
      *
@@ -354,7 +422,6 @@ class UpstoxMarketDataService
 
         $articles = [];
         $pageNumber = 1;
-        $expectedTotalRecords = null;
 
         do {
             $body = $this->newsPage($url, $token, $verify, $instrumentKeys, $pageNumber);
@@ -397,16 +464,8 @@ class UpstoxMarketDataService
 
             $totalPages = (int) data_get($body, 'metadata.page.total_pages', 1);
             $reportedPageNumber = (int) data_get($body, 'metadata.page.page_number', $pageNumber);
-            $reportedTotalRecords = data_get($body, 'metadata.page.total_records');
             if ($reportedPageNumber !== $pageNumber) {
                 throw new RuntimeException('Upstox returned an unexpected news page number.');
-            }
-            if (is_numeric($reportedTotalRecords)) {
-                $reportedTotalRecords = (int) $reportedTotalRecords;
-                if ($expectedTotalRecords !== null && $expectedTotalRecords !== $reportedTotalRecords) {
-                    throw new RuntimeException('Upstox changed the total news count during pagination.');
-                }
-                $expectedTotalRecords = $reportedTotalRecords;
             }
             if ($totalPages < 1 || $totalPages > self::MAX_NEWS_PAGES) {
                 throw new RuntimeException('Upstox returned invalid news pagination metadata.');
@@ -449,7 +508,10 @@ class UpstoxMarketDataService
                 break;
             }
             if ($attempt < 3) {
-                usleep($attempt * 250000);
+                $retryAfter = $response->status() === 429
+                    ? max(1, min(10, (int) $response->header('Retry-After')))
+                    : 0;
+                usleep(($retryAfter > 0 ? $retryAfter * 1000000 : $attempt * 250000));
             }
         }
 
@@ -593,5 +655,27 @@ class UpstoxMarketDataService
 
         return 'Upstox request failed with HTTP '.$response->status().
             ($message ? ': '.$message : '.');
+    }
+
+    /** @return array{status: string, data: array, meta_data?: array} */
+    private function getProviderJson(string $url, array $query, string $dataset): array
+    {
+        $response = Http::acceptJson()
+            ->withToken($this->token())
+            ->withOptions(['verify' => TlsCaBundle::resolve(config('market_data.ca_bundle'))])
+            ->connectTimeout(10)
+            ->timeout(45)
+            ->get($url, $query);
+
+        if (!$response->successful()) {
+            throw new RuntimeException($this->errorMessage($response));
+        }
+
+        $body = $response->json();
+        if (($body['status'] ?? null) !== 'success' || !is_array($body['data'] ?? null)) {
+            throw new RuntimeException("Upstox returned an invalid {$dataset} response.");
+        }
+
+        return $body;
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Index as MarketIndex;
 use App\Models\MarketNews;
 use App\Services\MarketNewsThumbnailService;
 use App\Services\UpstoxMarketDataService;
+use App\Services\UpstoxTokenManager;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -17,6 +18,7 @@ class SyncUpstoxNewsCommand extends Command
     protected $signature = 'market:sync-upstox-news
         {--batch-size=30 : Instrument keys per Upstox news request (max 30)}
         {--max-batches= : Maximum batches in a normal rotating run}
+        {--delay=250 : Delay in milliseconds between Upstox requests}
         {--limit= : Optional maximum instruments to query; bounded rotating coverage when omitted}
         {--all : Scan every eligible equity and index in one run}
         {--isin=* : Specific ISINs to fetch news for}
@@ -24,14 +26,26 @@ class SyncUpstoxNewsCommand extends Command
 
     protected $description = 'Sync latest market and stock news from Upstox API';
 
-    public function handle(UpstoxMarketDataService $upstox, MarketNewsThumbnailService $thumbnails): int
+    public function handle(
+        UpstoxMarketDataService $upstox,
+        MarketNewsThumbnailService $thumbnails,
+        UpstoxTokenManager $tokens
+    ): int
     {
         $batchSize = min(30, max(1, (int) $this->option('batch-size')));
         $maxBatches = min(100, max(1, (int) ($this->option('max-batches')
             ?: config('market_data.upstox.news_max_batches', 20))));
+        $delayMs = min(5000, max(0, (int) $this->option('delay')));
         $limit = $this->option('limit') !== null
             ? max(1, (int) $this->option('limit'))
             : null;
+
+        try {
+            $tokens->accessToken();
+        } catch (Throwable $exception) {
+            $this->error('Upstox news synchronization stopped: '.$exception->getMessage());
+            return self::FAILURE;
+        }
 
         $query = Equity::query()
             ->where('is_active', true)
@@ -131,6 +145,10 @@ class SyncUpstoxNewsCommand extends Command
 
         $batches = $instruments->chunk($batchSize)->values();
         foreach ($batches as $batchIndex => $batch) {
+            if ($batchIndex > 0 && $delayMs > 0) {
+                usleep($delayMs * 1000);
+            }
+
             $batchKeys = $batch->map(
                 fn ($equity) => $equity->upstox_nse_instrument_key ?: $equity->upstox_bse_instrument_key
             )->filter()->unique()->values()->all();

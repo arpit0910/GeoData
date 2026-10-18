@@ -3515,6 +3515,30 @@ curl -X POST "https://setugeo.com/api/v1/market/sync" \
                                         </div>
                                     </div>
 
+                                    <!-- 9. IPO Data -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/ipos</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Returns upcoming, open, closed, and listed mainboard or SME IPOs with price bands, bidding dates, issue size, and subscription figures.</p>
+                                            <p><code class="text-amber-500">status</code>, <code class="text-amber-500">issue_type</code>, <code class="text-amber-500">search</code>, and <code class="text-amber-500">per_page</code> are optional. Use <code class="text-white">/market/ipos/{slug}</code> for the full timeline, lot size, listing data, prospectus links, and registrar details.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- 10. Institutional Activity -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/institutional-activity</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Returns normalized FII/DII buy, sell, net flow, contract, open-interest, and long/short activity.</p>
+                                            <p>Filter with <code class="text-amber-500">investor_type=fii|dii</code>, <code class="text-amber-500">interval=1D|1M</code>, <code class="text-amber-500">data_type</code>, <code class="text-amber-500">from</code>, <code class="text-amber-500">to</code>, and <code class="text-amber-500">per_page</code>.</p>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </section>
 

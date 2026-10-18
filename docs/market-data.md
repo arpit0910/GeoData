@@ -235,6 +235,18 @@ The existing `GET /api/v1/indices/snapshot` endpoint now overlays these live
 prices and marks each row with `source: live`; it falls back to EOD data when a
 live quote is unavailable.
 
+### IPO and institutional activity
+
+`market:sync-upstox-insights` runs daily at 20:15 IST and stores public IPO
+listings/details plus daily and monthly FII/DII activity. It does not access IPO
+applications or other account-specific portfolio data.
+
+- `GET /api/v1/market/ipos` supports `status`, `issue_type`, `search`, and
+  `per_page`.
+- `GET /api/v1/market/ipos/{slug}` returns full saved IPO details.
+- `GET /api/v1/market/institutional-activity` supports `investor_type` (`fii` or
+  `dii`), `data_type`, `interval` (`1D` or `1M`), `from`, `to`, and `per_page`.
+
 ### Stock nudges
 
 Stock and mutual-fund detail endpoints accept an optional `date=YYYY-MM-DD`

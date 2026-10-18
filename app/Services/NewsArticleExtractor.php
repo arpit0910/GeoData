@@ -18,7 +18,7 @@ class NewsArticleExtractor
             return $news->original_content;
         }
 
-        $url = trim((string) $news->article_url);
+        $url = trim((string) $news->getRawOriginal('article_url'));
         $host = strtolower((string) parse_url($url, PHP_URL_HOST));
         if (parse_url($url, PHP_URL_SCHEME) !== 'https'
             || ($host !== 'upstox.com' && ! str_ends_with($host, '.upstox.com'))) {
