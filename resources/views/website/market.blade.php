@@ -103,6 +103,55 @@
         </section>
 
         <div class="space-y-9 sm:space-y-11">
+            <section aria-labelledby="market-insights-heading">
+                <header class="mb-5 sm:mb-6">
+                    <p class="market-kicker">Primary & institutional markets</p>
+                    <h2 id="market-insights-heading" class="mt-1.5 text-2xl sm:text-3xl font-black tracking-tight text-white">IPOs and FII/DII activity</h2>
+                    <p class="mt-2 text-sm leading-6 market-muted">Current public issues and the latest daily institutional cash-market flows.</p>
+                </header>
+
+                <div class="grid gap-4 lg:grid-cols-2">
+                    <div class="market-panel overflow-hidden">
+                        <div class="flex items-center justify-between border-b border-white/[.07] px-5 py-4">
+                            <h3 class="font-extrabold text-white"><i class="fas fa-building-columns mr-2 text-amber-400"></i>IPO calendar</h3>
+                            <span class="market-chip">{{ $ipos->count() }} latest</span>
+                        </div>
+                        <div class="divide-y divide-white/[.06]">
+                            @forelse($ipos as $ipo)
+                                <article class="flex items-center justify-between gap-4 px-5 py-4">
+                                    <div class="min-w-0"><div class="truncate font-bold text-white">{{ $ipo->name }}</div><div class="mt-1 text-xs market-muted">{{ $ipo->bidding_start_date?->format('d M') ?: 'TBA' }} – {{ $ipo->bidding_end_date?->format('d M Y') ?: 'TBA' }}{{ $ipo->issue_type ? ' · '.$ipo->issue_type : '' }}</div></div>
+                                    <div class="shrink-0 text-right"><span class="market-chip uppercase">{{ $ipo->status }}</span><div class="mt-2 text-xs font-bold text-slate-300">{{ $ipo->minimum_price !== null ? '₹'.number_format($ipo->minimum_price, 0) : 'Price TBA' }}{{ $ipo->maximum_price !== null ? ' – ₹'.number_format($ipo->maximum_price, 0) : '' }}</div></div>
+                                </article>
+                            @empty
+                                <div class="px-5 py-12 text-center text-sm market-muted">IPO data will appear after the next synchronization.</div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="market-panel overflow-hidden">
+                        <div class="flex items-center justify-between border-b border-white/[.07] px-5 py-4">
+                            <h3 class="font-extrabold text-white"><i class="fas fa-scale-balanced mr-2 text-amber-400"></i>Institutional flows</h3>
+                            <span class="market-chip">Cash market · ₹ Cr</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[480px] text-left text-sm">
+                                <thead class="text-[10px] uppercase tracking-wider text-slate-500"><tr><th class="px-5 py-3">Date</th><th class="px-3 py-3">Investor</th><th class="px-3 py-3 text-right">Buy</th><th class="px-5 py-3 text-right">Net</th></tr></thead>
+                                <tbody class="divide-y divide-white/[.06]">
+                                    @forelse($institutionalActivity as $row)
+                                        @php
+                                            $net = ($row->buy_amount ?? 0) - ($row->sell_amount ?? 0);
+                                        @endphp
+                                        <tr><td class="px-5 py-3 text-slate-300">{{ $row->activity_at?->timezone('Asia/Kolkata')->format('d M Y') }}</td><td class="px-3 py-3 font-extrabold uppercase text-white">{{ $row->investor_type }}</td><td class="px-3 py-3 text-right text-slate-300">{{ number_format((float) $row->buy_amount, 2) }}</td><td class="px-5 py-3 text-right font-mono font-bold {{ $net >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">{{ $net >= 0 ? '+' : '' }}{{ number_format($net, 2) }}</td></tr>
+                                    @empty
+                                        <tr><td colspan="4" class="px-5 py-12 text-center market-muted">FII/DII data will appear after the next synchronization.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section aria-labelledby="latest-news-heading" class="min-w-0 w-full">
                 <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5 sm:mb-6">
                     <div>

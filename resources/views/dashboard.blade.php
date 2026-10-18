@@ -14,6 +14,10 @@
                 ->latest('observed_at')
                 ->limit(6)
                 ->get();
+            $latestIpos = \App\Models\Ipo::query()->orderByDesc('bidding_start_date')->limit(5)->get();
+            $latestInstitutionalActivity = \App\Models\InstitutionalActivity::query()
+                ->where('data_type', 'NSE_EQ|CASH')->where('interval', '1D')
+                ->orderByDesc('activity_at')->limit(6)->get();
         @endphp
         <div
             class="bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-200 dark:border-white/5 p-6 md:p-8 transition-all duration-500">
@@ -204,6 +208,18 @@
                                     'color' => 'rose',
                                 ],
                                 [
+                                    'label' => 'IPOs',
+                                    'count' => \App\Models\Ipo::count(),
+                                    'icon' => 'fa-building-columns',
+                                    'color' => 'amber',
+                                ],
+                                [
+                                    'label' => 'FII/DII Records',
+                                    'count' => \App\Models\InstitutionalActivity::count(),
+                                    'icon' => 'fa-scale-balanced',
+                                    'color' => 'emerald',
+                                ],
+                                [
                                     'label' => 'Banks',
                                     'count' => \App\Models\Bank::count(),
                                     'icon' => 'fa-university',
@@ -263,6 +279,39 @@
                             <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter">Corporate Actions</p>
                             <h5 class="text-lg font-black text-gray-900 dark:text-white mt-0.5">{{ number_format(\App\Models\CorporateAction::count()) }}</h5>
                         </a>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-gray-100 bg-gray-50/70 p-5 dark:border-white/5 dark:bg-white/[0.02]">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div><h4 class="text-sm font-black text-gray-900 dark:text-white">Market data sync</h4><p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Run the same guarded jobs used by the scheduler.</p></div>
+                        <div class="flex flex-wrap gap-2">
+                            <x-admin-sync-button title="equities:sync" label="Equities" class="bg-blue-600 hover:bg-blue-700 text-white" />
+                            <x-admin-sync-button title="mf:sync-and-calculate" label="Mutual Funds" class="bg-violet-600 hover:bg-violet-700 text-white" />
+                            <x-admin-sync-button title="market:sync-upstox-news" label="News" />
+                            <x-admin-sync-button title="market:sync-upstox-events" label="Corporate Actions" class="bg-rose-600 hover:bg-rose-700 text-white" />
+                            <x-admin-sync-button title="market:sync-upstox-insights" label="IPO & FII/DII" class="bg-emerald-600 hover:bg-emerald-700 text-white" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid gap-6 xl:grid-cols-2">
+                    <div>
+                        <div class="mb-4 flex items-center justify-between gap-3"><h4 class="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500"><i class="fas fa-building-columns mr-2 text-amber-500"></i>Latest IPOs</h4><a href="{{ route('admin.market-datasets.insights') }}" class="text-xs font-black text-amber-600">View all</a></div>
+                        <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/5"><table class="w-full min-w-[540px] text-left text-sm"><thead class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-400 dark:bg-white/[0.02]"><tr><th class="p-3">Company</th><th class="p-3">Status</th><th class="p-3">Dates</th><th class="p-3 text-right">Price</th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-white/5">@forelse($latestIpos as $ipo)<tr><td class="p-3"><div class="font-bold text-gray-900 dark:text-white">{{ $ipo->name }}</div><div class="text-[10px] text-gray-400">{{ $ipo->symbol ?: $ipo->isin ?: '—' }}</div></td><td class="p-3 text-xs font-black uppercase text-amber-600">{{ $ipo->status }}</td><td class="p-3 text-xs text-gray-600 dark:text-gray-300">{{ $ipo->bidding_start_date?->format('d M') ?: 'TBA' }} – {{ $ipo->bidding_end_date?->format('d M Y') ?: 'TBA' }}</td><td class="p-3 text-right text-xs font-bold text-gray-900 dark:text-white">{{ $ipo->minimum_price !== null ? '₹'.number_format($ipo->minimum_price, 0) : '—' }}{{ $ipo->maximum_price !== null ? ' – ₹'.number_format($ipo->maximum_price, 0) : '' }}</td></tr>@empty<tr><td colspan="4" class="p-6 text-center text-gray-400">No IPO data stored yet.</td></tr>@endforelse</tbody></table></div>
+                    </div>
+                    <div>
+                        <div class="mb-4 flex items-center justify-between gap-3"><h4 class="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500"><i class="fas fa-scale-balanced mr-2 text-emerald-500"></i>FII/DII Cash Activity</h4><a href="{{ route('admin.market-datasets.insights') }}" class="text-xs font-black text-amber-600">View all</a></div>
+                        <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/5"><table class="w-full min-w-[500px] text-left text-sm"><thead class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-400 dark:bg-white/[0.02]"><tr><th class="p-3">Date</th><th class="p-3">Investor</th><th class="p-3 text-right">Buy</th><th class="p-3 text-right">Net</th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-white/5">
+                            @forelse($latestInstitutionalActivity as $row)
+                                @php
+                                    $net = ($row->buy_amount ?? 0) - ($row->sell_amount ?? 0);
+                                @endphp
+                                <tr><td class="p-3 text-xs text-gray-600 dark:text-gray-300">{{ $row->activity_at?->timezone($dashboardTimezone)->format('d M Y') }}</td><td class="p-3 text-xs font-black uppercase text-gray-900 dark:text-white">{{ $row->investor_type }}</td><td class="p-3 text-right text-xs text-gray-600 dark:text-gray-300">₹{{ number_format((float) $row->buy_amount, 2) }} Cr</td><td class="p-3 text-right text-xs font-black {{ $net >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ $net >= 0 ? '+' : '' }}₹{{ number_format($net, 2) }} Cr</td></tr>
+                            @empty
+                                <tr><td colspan="4" class="p-6 text-center text-gray-400">No institutional activity stored yet.</td></tr>
+                            @endforelse
+                        </tbody></table></div>
                     </div>
                 </div>
 

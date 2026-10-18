@@ -8,9 +8,12 @@
         <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">NSE &amp; BSE Calendar</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">View and manage exchange holidays and Muhurat sessions.</p>
     </div>
-    <a href="{{ route('admin.exchange-calendar.create') }}" class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold rounded-xl shadow-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors">
-        <i class="fas fa-plus mr-2"></i>Add Event
-    </a>
+    <div class="flex flex-wrap gap-2">
+        <x-admin-sync-button title="exchange-calendar:sync" label="Sync Calendar" />
+        <a href="{{ route('admin.exchange-calendar.create') }}" class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold rounded-xl shadow-lg text-white bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Add Event
+        </a>
+    </div>
 </div>
 
 <form method="GET" action="{{ route('admin.exchange-calendar.index') }}" class="mb-6 grid grid-cols-1 md:grid-cols-5 gap-3 bg-white dark:bg-richdark-surface border border-gray-200 dark:border-white/5 rounded-2xl p-5">

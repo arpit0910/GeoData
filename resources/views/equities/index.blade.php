@@ -8,6 +8,7 @@
                 database.</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
+            <x-admin-sync-button title="equities:sync" label="Sync Equities" />
             <a href="{{ route('equities.export') }}"
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-gray-50 transition-all">
                 <i class="fas fa-download mr-2 text-amber-500"></i> Export CSV

@@ -6,12 +6,40 @@ use App\Http\Controllers\Controller;
 use App\Models\CompanyFundamental;
 use App\Models\Equity;
 use App\Models\GlobalInstrument;
+use App\Models\InstitutionalActivity;
+use App\Models\Ipo;
 use App\Services\CompanyFundamentalsSyncService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class MarketDatasetController extends Controller
 {
+    public function insights(Request $request): View
+    {
+        $ipos = Ipo::query()
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->orderByDesc('bidding_start_date')
+            ->paginate(15, ['*'], 'ipo_page')
+            ->withQueryString();
+
+        $activity = InstitutionalActivity::query()
+            ->where('data_type', 'NSE_EQ|CASH')
+            ->where('interval', '1D')
+            ->orderByDesc('activity_at')
+            ->paginate(20, ['*'], 'activity_page')
+            ->withQueryString();
+
+        return view('admin.market-datasets.insights', compact('ipos', 'activity') + [
+            'summary' => [
+                'ipos' => Ipo::count(),
+                'open_ipos' => Ipo::where('status', 'open')->count(),
+                'activity_records' => InstitutionalActivity::count(),
+                'last_sync' => max(Ipo::max('synced_at') ?? '', InstitutionalActivity::max('synced_at') ?? '') ?: null,
+            ],
+            'statuses' => Ipo::query()->distinct()->orderBy('status')->pluck('status'),
+        ]);
+    }
+
     public function globalInstruments(Request $request): View
     {
         $query = GlobalInstrument::query();

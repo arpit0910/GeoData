@@ -4,9 +4,12 @@
 
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6">
-    <div>
-        <h1 class="text-3xl font-black text-gray-900 dark:text-white">Complete Company Fundamentals</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Browse the latest stored company datasets synchronized from the market-data provider.</p>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white">Complete Company Fundamentals</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Browse the latest stored company datasets synchronized from the market-data provider.</p>
+        </div>
+        <x-admin-sync-button title="market:sync-company-fundamentals" label="Sync Fundamentals" />
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

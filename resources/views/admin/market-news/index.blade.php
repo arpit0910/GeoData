@@ -9,9 +9,13 @@
             <h1 class="text-3xl font-black text-gray-900 dark:text-white">Market News</h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Compare source and regenerated copy, regenerate drafts, and control publication.</p>
         </div>
-        <a href="{{ route('market.news') }}" target="_blank" rel="noopener" class="rounded-xl bg-amber-600 px-5 py-3 text-center text-sm font-black text-white hover:bg-amber-700">
-            <i class="fas fa-arrow-up-right-from-square mr-2"></i>View Public News
-        </a>
+        <div class="flex flex-wrap gap-2">
+            <x-admin-sync-button title="market:sync-upstox-news" label="Fetch News" />
+            <x-admin-sync-button title="market:rewrite-news" label="Process Pending" class="bg-blue-600 hover:bg-blue-700 text-white" icon="fa-wand-magic-sparkles" />
+            <a href="{{ route('market.news') }}" target="_blank" rel="noopener" class="rounded-xl bg-gray-900 px-5 py-3 text-center text-sm font-black text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900">
+                <i class="fas fa-arrow-up-right-from-square mr-2"></i>View Public News
+            </a>
+        </div>
     </div>
 
     @if(session('success') || session('error'))

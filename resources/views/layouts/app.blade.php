@@ -202,6 +202,10 @@
                             <i class="fas fa-chevron-down text-[10px] ml-2 transition-transform duration-200 opacity-70" :class="open ? 'rotate-180' : ''"></i>
                         </button>
                         <div x-show="open" x-cloak class="mt-1 space-y-1 pl-3 ml-5 border-l border-amber-400/30 dark:border-white/10">
+                            <a href="{{ route('admin.market-datasets.insights') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.market-datasets.insights') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-datasets.insights') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
+                                <span class="truncate">IPO & FII/DII</span>
+                            </a>
                             <a href="{{ route('equities.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('equities.index') || request()->routeIs('equities.show') || request()->routeIs('equities.edit') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('equities.index') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
                                 <span class="truncate">All Equities</span>

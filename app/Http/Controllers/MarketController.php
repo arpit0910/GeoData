@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\CorporateAction;
 use App\Models\CompanyFundamental;
+use App\Models\InstitutionalActivity;
+use App\Models\Ipo;
 use App\Models\MarketNews;
 use App\Models\StockNudge;
 use App\Models\Index as MarketIndex;
@@ -35,9 +37,16 @@ class MarketController extends Controller
                     ->where(function ($query) {
                         $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()->toDateString());
                     })->orderBy('expiry_date')->limit(5)->get(),
+                'ipos' => Ipo::query()
+                    ->orderByRaw("CASE status WHEN 'open' THEN 0 WHEN 'upcoming' THEN 1 ELSE 2 END")
+                    ->orderByDesc('bidding_start_date')->limit(6)->get(),
+                'institutionalActivity' => InstitutionalActivity::query()
+                    ->where('data_type', 'NSE_EQ|CASH')->where('interval', '1D')
+                    ->orderByDesc('activity_at')->limit(8)->get(),
             ];
         });
-        ['stats' => $stats, 'latestNews' => $latestNews, 'upcomingActions' => $upcomingActions] = $overview;
+        $overview += ['ipos' => collect(), 'institutionalActivity' => collect()];
+        ['stats' => $stats, 'latestNews' => $latestNews, 'upcomingActions' => $upcomingActions, 'ipos' => $ipos, 'institutionalActivity' => $institutionalActivity] = $overview;
 
         $indices = Cache::remember('website.market.overview-indices.v1', now()->addSeconds(30), function () {
             return DB::table('indices')
@@ -56,7 +65,7 @@ class MarketController extends Controller
                 ->get();
         });
 
-        return view('website.market', compact('marketStatus', 'stats', 'indices', 'latestNews', 'upcomingActions'));
+        return view('website.market', compact('marketStatus', 'stats', 'indices', 'latestNews', 'upcomingActions', 'ipos', 'institutionalActivity'));
     }
 
     public function stocks(Request $request)

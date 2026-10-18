@@ -6,7 +6,8 @@
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Mutual Funds</h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">Browse all AMFI-listed mutual fund schemes with latest NAV.</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <x-admin-sync-button title="mf:sync-and-calculate" label="Sync NAVs" />
             <a href="{{ route('mutual-funds.prices') }}"
                 class="inline-flex items-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]">
                 <i class="fas fa-chart-pie mr-2"></i> NAV Price Records

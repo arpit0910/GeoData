@@ -285,6 +285,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     Route::prefix('admin/market-datasets')->name('admin.market-datasets.')->group(function () {
+        Route::get('/insights', [MarketDatasetController::class, 'insights'])->name('insights');
         Route::get('/global-instruments', [MarketDatasetController::class, 'globalInstruments'])->name('global-instruments');
         Route::post('/global-instruments/sync', [MarketDatasetController::class, 'syncGlobalInstruments'])->name('global-instruments.sync');
         Route::get('/company-fundamentals', [MarketDatasetController::class, 'companyFundamentals'])->name('company-fundamentals');
