@@ -49,7 +49,7 @@ class MutualFundDetailsService
 
         $latestNavQuery = DB::table('mutual_fund_prices')->where('isin', $priceIsin);
         if ($date !== null) {
-            $latestNavQuery->whereDate('nav_date', $date);
+            $latestNavQuery->whereDate('nav_date', '<=', $date);
         }
         $latestNav = $latestNavQuery->orderByDesc('nav_date')->orderByDesc('id')->first();
 

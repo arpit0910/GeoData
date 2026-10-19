@@ -309,14 +309,14 @@ class EquityApiController extends Controller
 
         $priceQuery = EquityPrice::where('equity_id', $equity->id);
         if (isset($validated['date'])) {
-            $priceQuery->whereDate('traded_date', $validated['date']);
+            $priceQuery->whereDate('traded_date', '<=', $validated['date']);
         }
         $price = $priceQuery->orderByDesc('traded_date')->orderByDesc('id')->first();
 
         if (isset($validated['date']) && !$price) {
             return response()->json([
                 'success' => false,
-                'message' => "No stock data found for {$isin} on {$validated['date']}.",
+                'message' => "No stock data found for {$isin} on or before {$validated['date']}.",
             ], 404);
         }
 

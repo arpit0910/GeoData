@@ -129,10 +129,12 @@ class MfApiController extends Controller
         if (! $scheme) {
             return response()->json(['success' => false, 'message' => 'Scheme not found.'], 404);
         }
-        if ($date !== null && $scheme['latest_nav_date'] !== $date) {
+        if ($scheme['latest_nav_date'] === null) {
             return response()->json([
                 'success' => false,
-                'message' => "No mutual fund data found for {$isin} on {$date}.",
+                'message' => $date === null
+                    ? "No mutual fund data found for {$isin}."
+                    : "No mutual fund data found for {$isin} on or before {$date}.",
             ], 404);
         }
 

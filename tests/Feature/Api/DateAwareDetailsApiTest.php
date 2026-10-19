@@ -58,7 +58,11 @@ class DateAwareDetailsApiTest extends TestCase
             ->assertJsonPath('data.price_history.0.traded_date', '2026-06-12')
             ->assertJsonPath('data.price_history.2.traded_date', '2026-10-10');
 
-        $this->getJson('/api/v1/equity/INE000000001?date=2026-10-11')->assertNotFound();
+        $this->getJson('/api/v1/equity/INE000000001?date=2026-10-11')
+            ->assertOk()
+            ->assertJsonPath('date', '2026-10-10')
+            ->assertJsonPath('data.price.nse_close', '100.00');
+        $this->getJson('/api/v1/equity/INE000000001?date=2026-06-11')->assertNotFound();
         $this->getJson('/api/v1/equity/INE000000001?date=10-10-2026')->assertStatus(422);
     }
 
@@ -94,7 +98,11 @@ class DateAwareDetailsApiTest extends TestCase
             ->assertJsonPath('data.latest_nav', 20)
             ->assertJsonPath('data.nav_history.last_date', '2026-10-10');
 
-        $this->getJson('/api/v1/mf/details/INF000000001?date=2026-10-11')->assertNotFound();
+        $this->getJson('/api/v1/mf/details/INF000000001?date=2026-10-11')
+            ->assertOk()
+            ->assertJsonPath('date', '2026-10-10')
+            ->assertJsonPath('data.latest_nav', 20);
+        $this->getJson('/api/v1/mf/details/INF000000001?date=2026-10-09')->assertNotFound();
         $this->getJson('/api/v1/mf/details/INF000000001?date=10-10-2026')->assertStatus(422);
     }
 
