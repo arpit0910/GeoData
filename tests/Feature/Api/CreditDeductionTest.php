@@ -48,6 +48,29 @@ class CreditDeductionTest extends TestCase
     }
 
     /** @test */
+    public function a_log_storage_failure_does_not_break_a_successful_api_response()
+    {
+        ApiLog::creating(function () {
+            throw new \RuntimeException('Audit storage unavailable');
+        });
+
+        $this->getJson('/api/v1/regions', $this->headers)
+            ->assertOk()
+            ->assertJson(['success' => true]);
+    }
+
+    /** @test */
+    public function it_redacts_secrets_from_the_api_log()
+    {
+        $this->getJson('/api/v1/regions?api_key=secret&access_token=private', $this->headers);
+
+        $payload = ApiLog::latest()->firstOrFail()->request_payload;
+
+        $this->assertSame('[REDACTED]', $payload['api_key']);
+        $this->assertSame('[REDACTED]', $payload['access_token']);
+    }
+
+    /** @test */
     public function it_returns_402_when_credits_exhausted()
     {
         // Exhaust all credits

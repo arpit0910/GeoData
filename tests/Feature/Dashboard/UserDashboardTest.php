@@ -5,6 +5,7 @@ namespace Tests\Feature\Dashboard;
 use Tests\TestCase;
 use Tests\Traits\CreatesTestData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\ApiLog;
 
 class UserDashboardTest extends TestCase
 {
@@ -24,8 +25,19 @@ class UserDashboardTest extends TestCase
     /** @test */
     public function subscribed_user_can_access_dashboard()
     {
+        ApiLog::create([
+            'user_id' => $this->user->id,
+            'endpoint' => 'api/v1/countries',
+            'method' => 'GET',
+            'status_code' => 502,
+            'credit_deducted' => false,
+        ]);
+
         $response = $this->actingAs($this->user)->get('/dashboard');
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertSee('Recent API Requests')
+            ->assertSee('api/v1/countries')
+            ->assertSee('502');
     }
 
     /** @test */

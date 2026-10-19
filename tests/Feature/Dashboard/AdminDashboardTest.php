@@ -13,6 +13,7 @@ use App\Models\City;
 use App\Models\Plan;
 use App\Models\Bank;
 use App\Models\Subscription;
+use App\Models\ApiLog;
 
 class AdminDashboardTest extends TestCase
 {
@@ -26,6 +27,26 @@ class AdminDashboardTest extends TestCase
         parent::setUp();
         $this->admin = $this->createAdminUser();
         $this->geoData = $this->createGeoHierarchy();
+    }
+
+    /** @test */
+    public function admin_dashboard_displays_recent_api_logs_for_all_users()
+    {
+        $user = $this->createUser(['name' => 'API Customer']);
+        ApiLog::create([
+            'user_id' => $user->id,
+            'endpoint' => 'api/v1/states',
+            'method' => 'GET',
+            'status_code' => 500,
+            'credit_deducted' => false,
+        ]);
+
+        $this->actingAs($this->admin)->get('/dashboard')
+            ->assertOk()
+            ->assertSee('Recent API Requests')
+            ->assertSee('API Customer')
+            ->assertSee('api/v1/states')
+            ->assertSee('500');
     }
 
     // ─── USER MANAGEMENT ──────────────────────────────────────────────

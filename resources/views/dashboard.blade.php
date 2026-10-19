@@ -6,6 +6,12 @@
     @php
         $dashboardTimezone = 'Asia/Kolkata';
         $dashboardNow = now($dashboardTimezone);
+        $recentApiLogs = \App\Models\ApiLog::query()
+            ->with('user:id,name')
+            ->when(!auth()->user()->is_admin, fn ($query) => $query->where('user_id', auth()->id()))
+            ->latest()
+            ->limit(10)
+            ->get();
     @endphp
     @if (auth()->user()->is_admin)
         @php
@@ -616,6 +622,60 @@
             </div>
         </div>
     @endif
+
+    <div class="mt-8 bg-white dark:bg-[#161e2d] rounded-2xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+                <h3 class="text-lg font-black text-gray-900 dark:text-white flex items-center gap-3">
+                    <i class="fas fa-history text-amber-600 dark:text-amber-500"></i>
+                    Recent API Requests
+                </h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {{ auth()->user()->is_admin ? 'Latest requests across all users.' : 'Your latest API requests and their status.' }}
+                </p>
+            </div>
+            <a href="{{ route('api-logs.index') }}" class="text-sm font-bold text-amber-600 hover:text-amber-700 dark:text-amber-500">
+                View all logs <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-white/5">
+                <thead class="bg-gray-50 dark:bg-white/[0.02]">
+                    <tr>
+                        @if(auth()->user()->is_admin)
+                            <th class="px-6 py-3 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">User</th>
+                        @endif
+                        <th class="px-6 py-3 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Endpoint</th>
+                        <th class="px-6 py-3 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Method</th>
+                        <th class="px-6 py-3 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Status</th>
+                        <th class="px-6 py-3 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Time</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+                    @forelse($recentApiLogs as $apiLog)
+                        @php
+                            $statusColor = $apiLog->status_code >= 500 ? 'red' : ($apiLog->status_code >= 400 ? 'amber' : 'emerald');
+                        @endphp
+                        <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                            @if(auth()->user()->is_admin)
+                                <td class="px-6 py-4 text-sm font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $apiLog->user?->name ?? 'Deleted user' }}</td>
+                            @endif
+                            <td class="px-6 py-4"><code class="text-xs text-gray-700 dark:text-gray-300 break-all">/{{ $apiLog->endpoint }}</code></td>
+                            <td class="px-6 py-4 text-xs font-black text-gray-600 dark:text-gray-400">{{ $apiLog->method }}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex px-2.5 py-1 rounded-full bg-{{ $statusColor }}-500/10 text-{{ $statusColor }}-700 dark:text-{{ $statusColor }}-400 text-xs font-black">{{ $apiLog->status_code }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ auth()->user()->formatDate($apiLog->created_at) }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="{{ auth()->user()->is_admin ? 5 : 4 }}" class="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">No API requests have been recorded yet.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')

@@ -8,6 +8,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use App\Models\ApiLog;
 use App\Services\SubscriptionAccessService;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
 
 class CheckApiCredits
 {
@@ -70,7 +72,17 @@ class CheckApiCredits
         }
 
         // Process request
-        $response = $next($request);
+        try {
+            $response = $next($request);
+        } catch (Throwable $exception) {
+            $statusCode = $exception instanceof HttpExceptionInterface
+                ? $exception->getStatusCode()
+                : 500;
+
+            $this->recordApiLog($request, $user->id, $subscription->id, $statusCode, false);
+
+            throw $exception;
+        }
 
         // Deduct only on success (200 OK) and if NOT unlimited
         $success = $response->status() == 200;
@@ -83,19 +95,43 @@ class CheckApiCredits
             ])->save();
         }
 
-        // Trace and record explicitly keeping permanent historical snapshots
-        ApiLog::create([
-            'user_id' => $user->id,
-            'subscription_id' => $subscription->id,
-            'endpoint' => $request->path(),
-            'method' => $request->method(),
-            'status_code' => $response->status(),
-            'ip_address' => $request->ip(),
-            'request_payload' => $this->sanitizePayload($request->all()),
-            'credit_deducted' => $success, // Explicit boolean flags exactly recording the physical debit
-        ]);
+        $this->recordApiLog(
+            $request,
+            $user->id,
+            $subscription->id,
+            $response->status(),
+            $success && !$isUnlimited
+        );
 
         return $response;
+    }
+
+    private function recordApiLog(
+        Request $request,
+        int $userId,
+        int $subscriptionId,
+        int $statusCode,
+        bool $creditDeducted
+    ): void {
+        try {
+            ApiLog::create([
+                'user_id' => $userId,
+                'subscription_id' => $subscriptionId,
+                'endpoint' => $request->path(),
+                'method' => $request->method(),
+                'status_code' => $statusCode,
+                'ip_address' => $request->ip(),
+                'request_payload' => $this->sanitizePayload($request->all()),
+                'credit_deducted' => $creditDeducted,
+            ]);
+        } catch (Throwable $exception) {
+            // Audit storage must never turn a completed API response into a 5xx.
+            try {
+                report($exception);
+            } catch (Throwable) {
+                // The application logger may share the same failed storage backend.
+            }
+        }
     }
 
     private function sanitizePayload(mixed $value): mixed
@@ -109,7 +145,15 @@ class CheckApiCredits
         }
 
         if (is_array($value)) {
-            return array_map(fn ($item) => $this->sanitizePayload($item), $value);
+            $sanitized = [];
+
+            foreach ($value as $key => $item) {
+                $sanitized[$key] = is_string($key) && preg_match('/api.?key|token|password|secret/i', $key)
+                    ? '[REDACTED]'
+                    : $this->sanitizePayload($item);
+            }
+
+            return $sanitized;
         }
 
         return $value;
