@@ -2,9 +2,11 @@
 
 namespace App\Console;
 
+use App\Services\CronExecutionLogger;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\File;
 
 class Kernel extends ConsoleKernel
 {
@@ -161,14 +163,26 @@ class Kernel extends ConsoleKernel
 
     private function markScheduled(Event $event, ?string $title = null): void
     {
+        preg_match('/[\'\"]artisan[\'\"]\s+([^\s]+)/', $event->command, $matches);
+        $command = $matches[1] ?? null;
+        $definition = collect(config('cron_jobs.jobs', []))->firstWhere('command', $command);
+        $logTitle = $title ?: ($definition['title'] ?? $command);
+        $outputDirectory = storage_path('logs/cron-output');
+        File::ensureDirectoryExists($outputDirectory);
+        $outputPath = $outputDirectory.'/'.hash('sha256', (string) $logTitle).'.log';
+
         $event
-            ->before(function () use ($title) {
+            ->sendOutputTo($outputPath)
+            ->before(function () use ($logTitle) {
                 putenv('SETUGEO_CRON_SOURCE=scheduled');
-                if ($title) {
-                    putenv("SETUGEO_CRON_TITLE={$title}");
+                if ($logTitle) {
+                    putenv("SETUGEO_CRON_TITLE={$logTitle}");
                 }
             })
-            ->after(function () {
+            ->after(function () use ($logTitle, $outputPath) {
+                if ($logTitle && File::exists($outputPath)) {
+                    app(CronExecutionLogger::class)->storeOutput($logTitle, File::get($outputPath));
+                }
                 putenv('SETUGEO_CRON_SOURCE');
                 putenv('SETUGEO_CRON_TITLE');
             });

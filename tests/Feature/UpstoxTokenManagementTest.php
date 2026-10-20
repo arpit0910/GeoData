@@ -154,6 +154,19 @@ class UpstoxTokenManagementTest extends TestCase
         $this->assertDatabaseCount('upstox_access_tokens', 0);
     }
 
+    public function test_an_expired_configured_jwt_is_rejected_before_an_api_request(): void
+    {
+        $payload = rtrim(strtr(base64_encode(json_encode([
+            'exp' => now()->subMinute()->timestamp,
+        ])), '+/', '-_'), '=');
+        config(['market_data.upstox.access_token' => 'header.'.$payload.'.signature']);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('UPSTOX_ACCESS_TOKEN/UPSTOX_TOKEN expired at');
+
+        app(UpstoxTokenManager::class)->accessToken();
+    }
+
     public function test_http_401_invalidates_the_token_and_requests_one_replacement(): void
     {
         UpstoxAccessToken::create([

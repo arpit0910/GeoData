@@ -281,6 +281,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('crons')->name('admin.crons.')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\CronController::class, 'index'])->name('index');
         Route::post('/run', [App\Http\Controllers\Admin\CronController::class, 'run'])->name('run');
+        Route::post('/upstox-token', [App\Http\Controllers\Admin\CronController::class, 'requestUpstoxToken'])->name('upstox-token');
         Route::get('/logs', [App\Http\Controllers\Admin\CronController::class, 'logs'])->name('logs');
     });
 

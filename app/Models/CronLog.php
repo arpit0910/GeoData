@@ -12,6 +12,7 @@ class CronLog extends Model
         'source',
         'status',
         'exit_code',
+        'output',
         'started_at',
         'finished_at',
         'ran_at',

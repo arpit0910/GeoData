@@ -30,7 +30,7 @@ class UpstoxTokenManager
     {
         $analyticsToken = trim((string) config('market_data.upstox.analytics_token'));
         if ($analyticsToken !== '') {
-            return $analyticsToken;
+            return $this->rejectExpiredJwt($analyticsToken, 'UPSTOX_ANALYTICS_TOKEN');
         }
 
         if ($current = $this->current()) {
@@ -53,7 +53,7 @@ class UpstoxTokenManager
             throw new RuntimeException('No active Upstox token is available. Approve the pending Upstox token request.');
         }
 
-        return $token;
+        return $this->rejectExpiredJwt($token, 'UPSTOX_ACCESS_TOKEN/UPSTOX_TOKEN');
     }
 
     /** @return array{requested: bool, authorization_expires_at: ?Carbon, notifier_url: ?string} */
@@ -184,5 +184,30 @@ class UpstoxTokenManager
     private function lifetimeYears(): int
     {
         return max(1, (int) config('market_data.upstox.token_lifetime_years', 10));
+    }
+
+    private function rejectExpiredJwt(string $token, string $configuration): string
+    {
+        $parts = explode('.', $token);
+        if (count($parts) !== 3) {
+            return $token;
+        }
+
+        $payload = strtr($parts[1], '-_', '+/');
+        $payload .= str_repeat('=', (4 - strlen($payload) % 4) % 4);
+        $claims = json_decode((string) base64_decode($payload, true), true);
+        if (! is_array($claims) || ! is_numeric($claims['exp'] ?? null)) {
+            return $token;
+        }
+
+        $expiresAt = Carbon::createFromTimestampUTC((int) $claims['exp']);
+        if ($expiresAt->isPast()) {
+            throw new RuntimeException(
+                $configuration.' expired at '.$expiresAt->setTimezone(config('app.timezone'))->toIso8601String().
+                '. Replace it with a current Upstox token.'
+            );
+        }
+
+        return $token;
     }
 }

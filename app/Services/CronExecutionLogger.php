@@ -7,6 +7,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Throwable;
 
 class CronExecutionLogger
@@ -77,6 +78,28 @@ class CronExecutionLogger
                     $execution['ip']
                 );
             }
+        }
+    }
+
+    public function storeOutput(string $title, string $output): void
+    {
+        try {
+            if (! Schema::hasColumn('cron_logs', 'output')) {
+                return;
+            }
+
+            $output = trim((string) preg_replace('/\e\[[\d;]*m/', '', $output));
+            if ($output === '') {
+                return;
+            }
+
+            CronLog::query()
+                ->where('title', $title)
+                ->latest('id')
+                ->first()
+                ?->update(['output' => Str::limit($output, 20000, "\n...[output truncated]")]);
+        } catch (Throwable $exception) {
+            report($exception);
         }
     }
 

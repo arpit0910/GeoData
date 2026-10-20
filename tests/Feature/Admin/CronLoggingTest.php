@@ -3,9 +3,12 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\CronLog;
+use App\Models\UpstoxAccessToken;
 use App\Models\User;
+use App\Services\CronExecutionLogger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class CronLoggingTest extends TestCase
@@ -54,21 +57,84 @@ class CronLoggingTest extends TestCase
 
     public function test_admin_run_is_logged_once_as_manual_even_when_command_fails(): void
     {
-        Artisan::command('test:failing-cron', fn () => 1);
-        $this->setJobs(['test:failing-cron']);
+        config([
+            'market_data.upstox.analytics_token' => null,
+            'market_data.upstox.access_token' => null,
+        ]);
+        $this->setJobs(['market:sync-upstox-news']);
         $admin = User::factory()->create(['is_admin' => true]);
 
         $this->actingAs($admin)->postJson(route('admin.crons.run'), [
-            'title' => 'test:failing-cron',
-        ])->assertStatus(500);
+            'title' => 'market:sync-upstox-news',
+        ])->assertStatus(500)
+            ->assertJsonPath('message', 'Command `market:sync-upstox-news` exited with code 1.');
 
         $this->assertDatabaseCount('cron_logs', 1);
         $this->assertDatabaseHas('cron_logs', [
-            'title' => 'test:failing-cron',
+            'title' => 'market:sync-upstox-news',
             'source' => 'manual',
             'status' => false,
             'exit_code' => 1,
+            'output' => 'Command exited with code 1 without console output.',
         ]);
+    }
+
+    public function test_cron_output_is_persisted_for_failure_diagnostics(): void
+    {
+        CronLog::create([
+            'title' => 'test:failing-cron',
+            'source' => 'scheduled',
+            'status' => false,
+            'exit_code' => 1,
+            'started_at' => now()->subSecond(),
+            'finished_at' => now(),
+            'ran_at' => now(),
+        ]);
+
+        app(CronExecutionLogger::class)->storeOutput(
+            'test:failing-cron',
+            "Provider rejected the request with HTTP 401.\n"
+        );
+
+        $this->assertDatabaseHas('cron_logs', [
+            'title' => 'test:failing-cron',
+            'output' => 'Provider rejected the request with HTTP 401.',
+        ]);
+    }
+
+    public function test_token_request_keeps_the_current_token_active_until_approval(): void
+    {
+        config([
+            'market_data.upstox.client_id' => 'client-123',
+            'market_data.upstox.client_secret' => 'secret-456',
+            'market_data.upstox.token_request_url' => 'https://provider.test/v3/login/auth/token/request',
+        ]);
+        UpstoxAccessToken::create([
+            'client_id' => 'client-123',
+            'access_token' => 'current-token',
+            'status' => 'active',
+            'issued_at' => now()->subHour(),
+            'expires_at' => now()->addHours(6),
+        ]);
+        Http::fake(['https://provider.test/*' => Http::response([
+            'status' => 'success',
+            'data' => [
+                'authorization_expiry' => (string) now()->addHour()->getTimestampMs(),
+                'notifier_url' => 'https://example.test/upstox/notifier',
+            ],
+        ])]);
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.crons.upstox-token'))
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $token = UpstoxAccessToken::firstOrFail();
+        $this->assertSame('active', $token->status);
+        $this->assertSame('current-token', $token->access_token);
+        $this->assertNotNull($token->authorization_expires_at);
+        Http::assertSentCount(1);
     }
 
     public function test_scheduler_marker_records_scheduled_source(): void
@@ -157,7 +223,8 @@ class CronLoggingTest extends TestCase
             ->assertSee('class="cron-table', false)
             ->assertSee('data-label="Last execution"', false)
             ->assertSee('aria-label="Command is running"', false)
-            ->assertSee('id="modal-elapsed"', false);
+            ->assertSee('id="modal-elapsed"', false)
+            ->assertSee('Generate Setu Token');
     }
 
     public function test_cron_dashboard_shows_progress_for_an_unfinished_run(): void

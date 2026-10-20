@@ -61,9 +61,34 @@
             <h1 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white sm:text-3xl">Scheduled Cron Jobs</h1>
             <p class="mt-2 text-sm font-medium text-gray-500 dark:text-gray-400">View scheduled tasks, trigger them manually, and inspect the latest execution output.</p>
         </div>
-        <a href="{{ route('admin.crons.logs') }}" class="inline-flex w-full items-center justify-center rounded-2xl bg-amber-600 px-6 py-3 text-sm font-black text-white shadow-xl transition-all hover:scale-[1.02] hover:bg-amber-700 active:scale-[0.98] md:w-auto">
-            <i class="fas fa-list-alt mr-2 text-xs"></i> View All Logs
-        </a>
+        <div class="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
+            <button id="request-upstox-token" onclick="requestUpstoxToken(this)" class="inline-flex items-center justify-center rounded-2xl border border-amber-600 bg-white px-6 py-3 text-sm font-black text-amber-700 shadow-lg transition-all hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-richdark-surface dark:text-amber-400 dark:hover:bg-white/5">
+                <i class="fas fa-key mr-2 text-xs"></i> Generate Setu Token
+            </button>
+            <a href="{{ route('admin.crons.logs') }}" class="inline-flex items-center justify-center rounded-2xl bg-amber-600 px-6 py-3 text-sm font-black text-white shadow-xl transition-all hover:scale-[1.02] hover:bg-amber-700 active:scale-[0.98]">
+                <i class="fas fa-list-alt mr-2 text-xs"></i> View All Logs
+            </a>
+        </div>
+    </div>
+
+    @php
+        $tokenIsActive = $upstoxToken?->status === 'active' && $upstoxToken?->expires_at?->isFuture();
+        $tokenIsPending = $upstoxToken?->authorization_expires_at?->isFuture();
+    @endphp
+    <div class="mb-6 flex flex-col gap-2 rounded-2xl border px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between {{ $tokenIsActive ? 'border-green-200 bg-green-50 text-green-800 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-300' : ($tokenIsPending ? 'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300' : 'border-red-200 bg-red-50 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300') }}">
+        <div class="font-bold">
+            <i class="fas {{ $tokenIsActive ? 'fa-check-circle' : ($tokenIsPending ? 'fa-clock' : 'fa-exclamation-circle') }} mr-2"></i>
+            Upstox token: {{ $tokenIsActive ? 'Active' : ($tokenIsPending ? 'Awaiting approval' : 'Unavailable') }}
+        </div>
+        <div class="text-xs font-semibold opacity-80">
+            @if($tokenIsActive)
+                Expires {{ $upstoxToken->expires_at->timezone('Asia/Kolkata')->format('d M Y, H:i') }} IST
+            @elseif($tokenIsPending)
+                Approve before {{ $upstoxToken->authorization_expires_at->timezone('Asia/Kolkata')->format('d M Y, H:i') }} IST
+            @else
+                Generate a request, then approve it in Upstox.
+            @endif
+        </div>
     </div>
 
     <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl dark:border-white/5 dark:bg-richdark-surface">
@@ -146,6 +171,12 @@
                                     <div class="cron-progress-bar h-full rounded-full bg-blue-500"></div>
                                 </div>
                             @endif
+                            @if(!$isRunning && !$lastRun->status && filled($lastRun->output))
+                                <details class="mt-3 max-w-md text-left">
+                                    <summary class="cursor-pointer text-xs font-black text-red-600 dark:text-red-400">Show failure reason</summary>
+                                    <pre class="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-gray-900 p-3 text-[11px] leading-relaxed text-red-300">{{ $lastRun->output }}</pre>
+                                </details>
+                            @endif
                         @else
                             <span class="text-xs italic text-gray-400 dark:text-gray-600">No run recorded</span>
                         @endif
@@ -219,9 +250,33 @@
 @push('scripts')
 <script>
 const RUN_URL = "{{ route('admin.crons.run') }}";
+const TOKEN_URL = "{{ route('admin.crons.upstox-token') }}";
 const CSRF = "{{ csrf_token() }}";
 let cronElapsedTimer = null;
 let activeRunButton = null;
+
+function requestUpstoxToken(button) {
+    if (button.disabled) return;
+
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2 text-xs"></i> Requesting';
+
+    $.ajax({
+        url: TOKEN_URL,
+        type: 'POST',
+        data: { _token: CSRF },
+        success: function (res) {
+            toastr.success(res.message);
+            setTimeout(() => location.reload(), 1500);
+        },
+        error: function (xhr) {
+            const err = xhr.responseJSON ?? {};
+            toastr.error(err.message || 'The Upstox token request could not be created.');
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-key mr-2 text-xs"></i> Generate Setu Token';
+        }
+    });
+}
 
 function runCron(title, button) {
     if (activeRunButton) return;

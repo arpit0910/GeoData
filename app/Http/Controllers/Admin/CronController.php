@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CronLog;
+use App\Models\UpstoxAccessToken;
+use App\Services\CronExecutionLogger;
+use App\Services\UpstoxTokenManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Throwable;
 
 class CronController extends Controller
 {
@@ -36,7 +40,11 @@ class CronController extends Controller
             $cron['total_runs'] = (int) ($totalRuns[$cron['title']] ?? 0);
         }
 
-        return view('admin.crons.index', compact('crons'));
+        $upstoxToken = UpstoxAccessToken::query()
+            ->where('client_id', trim((string) config('market_data.upstox.client_id')))
+            ->first();
+
+        return view('admin.crons.index', compact('crons', 'upstoxToken'));
     }
 
     public function run(Request $request)
@@ -63,6 +71,10 @@ class CronController extends Controller
         try {
             $exitCode = Artisan::call($cron['command'], $cron['args']);
             $output = Artisan::output();
+            if ($exitCode !== 0 && trim($output) === '') {
+                $output = "Command exited with code {$exitCode} without console output.";
+            }
+            app(CronExecutionLogger::class)->storeOutput($cron['title'], $output);
 
             return response()->json([
                 'success' => $exitCode === 0,
@@ -73,6 +85,8 @@ class CronController extends Controller
                 'exit_code' => $exitCode,
             ], $exitCode === 0 ? 200 : 500);
         } catch (\Throwable $exception) {
+            app(CronExecutionLogger::class)->storeOutput($cron['title'], $exception->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => $exception->getMessage(),
@@ -81,6 +95,26 @@ class CronController extends Controller
             ], 500);
         } finally {
             putenv('SETUGEO_CRON_TITLE');
+        }
+    }
+
+    public function requestUpstoxToken(UpstoxTokenManager $tokens)
+    {
+        try {
+            $result = $tokens->requestRenewal(true);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Upstox token request created. Approve it in the Upstox app; the approved token will be used automatically.',
+                'authorization_expires_at' => $result['authorization_expires_at']?->toIso8601String(),
+            ]);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ], 500);
         }
     }
 
@@ -98,14 +132,15 @@ class CronController extends Controller
                 $query->where(function ($query) use ($search) {
                     $query->where('title', 'like', "%{$search}%")
                         ->orWhere('ip', 'like', "%{$search}%")
-                        ->orWhere('source', 'like', "%{$search}%");
+                            ->orWhere('source', 'like', "%{$search}%")
+                            ->orWhere('output', 'like', "%{$search}%");
                 });
             }
 
             $total = $query->count();
             $limit = (int) ($request->length ?? 25);
             $start = (int) ($request->start ?? 0);
-            $orderColumns = ['id', 'title', 'source', 'ip', 'status', 'ran_at', 'finished_at'];
+            $orderColumns = ['id', 'title', 'source', 'ip', 'status', 'output', 'ran_at', 'finished_at'];
             $orderCol = $orderColumns[$request->input('order.0.column', 0)] ?? 'id';
             $orderDir = $request->input('order.0.dir', 'desc') === 'asc' ? 'asc' : 'desc';
 
