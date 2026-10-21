@@ -33,6 +33,9 @@ class SyncUpstoxIndexQuotesCommand extends Command
             return self::INVALID;
         }
 
+        // Keep newly configured sector indices eligible for their first live quote.
+        app(\App\Services\UpstoxInstrumentSyncService::class)->ensureIndexInstrumentKeys();
+
         $quotedOnly = (bool) $this->option('quoted-only');
         $hasQuotedIndices = Index::query()->whereHas('quote')->exists();
         if ($quotedOnly && ! $hasQuotedIndices) {
@@ -44,7 +47,14 @@ class SyncUpstoxIndexQuotesCommand extends Command
             ->where('upstox_instrument_key', '<>', '');
 
         if ($quotedOnly && $hasQuotedIndices) {
-            $indexQuery->whereHas('quote');
+            $configuredBenchmarks = array_values(array_unique([
+                (string) config('stock_nudges.market_benchmark'),
+                ...array_values(config('stock_nudges.sector_indices', [])),
+            ]));
+            $indexQuery->where(function ($query) use ($configuredBenchmarks) {
+                $query->whereHas('quote')
+                    ->orWhereIn('index_code', $configuredBenchmarks);
+            });
         }
 
         $indices = $indexQuery->get(['index_code', 'upstox_instrument_key']);

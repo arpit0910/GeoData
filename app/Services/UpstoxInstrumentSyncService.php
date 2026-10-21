@@ -256,6 +256,14 @@ class UpstoxInstrumentSyncService
             'aliases' => ['NIFTY COMMODITIES', 'NIFTYCOMMODITIES'],
         ],
         [
+            'index_code' => 'NIFTY_CEMENT',
+            'index_name' => 'Nifty Cement',
+            'exchange' => 'NSE',
+            'category' => 'Sectoral',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Cement',
+            'aliases' => ['NIFTY CEMENT', 'NIFTYCEMENT'],
+        ],
+        [
             'index_code' => 'NIFTY_INDIA_MFG',
             'index_name' => 'Nifty India Manufacturing',
             'exchange' => 'NSE',

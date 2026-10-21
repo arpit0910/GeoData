@@ -2,6 +2,7 @@
 
 return [
     'daily_move_percent' => (float) env('STOCK_NUDGE_DAILY_MOVE_PERCENT', 5),
+    'mf_daily_move_percent' => (float) env('MF_NUDGE_DAILY_MOVE_PERCENT', 3),
     'comparison_move_percent' => (float) env('STOCK_NUDGE_COMPARISON_MOVE_PERCENT', 5),
     'volume_spike_multiple' => (float) env('STOCK_NUDGE_VOLUME_SPIKE_MULTIPLE', 2),
     'max_quote_age_minutes' => (int) env('STOCK_NUDGE_MAX_QUOTE_AGE_MINUTES', 15),
@@ -34,5 +35,7 @@ return [
         'realty' => 'NIFTY_REALTY',
         'infrastructure' => 'NIFTY_INFRA',
         'industrial' => 'NIFTY_INDIA_MFG',
+        'cement & cement products' => 'NIFTY_CEMENT',
+        'cement' => 'NIFTY_CEMENT',
     ],
 ];

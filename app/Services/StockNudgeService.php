@@ -20,7 +20,7 @@ class StockNudgeService
                     ->orWhere('q.bse_fetched_at', '>=', $freshAfter);
             })
             ->orderBy('q.id')
-            ->select('q.*', 'e.id as equity_id', 'e.company_name', 'e.sector');
+            ->select('q.*', 'e.id as equity_id', 'e.company_name', 'e.sector', 'e.industry', 'e.basic_industry');
 
         if ($limit !== null) {
             $query->limit($limit);
@@ -260,7 +260,11 @@ class StockNudgeService
     private function stockBenchmarkCodes(object $stock): array
     {
         $codes = [(string) config('stock_nudges.market_benchmark')];
-        $sector = strtolower(trim((string) ($stock->sector ?? '')));
+        $sector = strtolower(implode(' ', array_filter([
+            trim((string) ($stock->sector ?? '')),
+            trim((string) ($stock->industry ?? '')),
+            trim((string) ($stock->basic_industry ?? '')),
+        ])));
 
         foreach (config('stock_nudges.sector_indices', []) as $sectorName => $indexCode) {
             if ($sector !== '' && str_contains($sector, strtolower($sectorName))) {

@@ -30,6 +30,7 @@ class MutualFundNudgeService
             ->where('nav_date', '>=', $date->copy()->subYear()->toDateString())
             ->groupBy('isin')
             ->select('isin')
+            ->where('nav', '>', 0)
             ->selectRaw('MAX(CASE WHEN nav_date >= ? THEN nav END) as month_high', [$date->copy()->subMonth()->toDateString()])
             ->selectRaw('MIN(CASE WHEN nav_date >= ? THEN nav END) as month_low', [$date->copy()->subMonth()->toDateString()])
             ->selectRaw('MAX(nav) as year_high')
@@ -41,7 +42,7 @@ class MutualFundNudgeService
         foreach ($rows as $row) {
             $nav = (float) $row->nav;
             $changePercent = is_numeric($row->chg_1d) ? (float) $row->chg_1d : null;
-            if ($changePercent !== null && abs($changePercent) >= (float) config('stock_nudges.daily_move_percent')) {
+            if ($changePercent !== null && abs($changePercent) >= (float) config('stock_nudges.mf_daily_move_percent')) {
                 $direction = $changePercent > 0 ? 'gain' : 'drop';
                 $previousNav = is_numeric($row->val_1d) ? (float) $row->val_1d : $nav / (1 + ($changePercent / 100));
                 $created += $this->store(
@@ -61,13 +62,16 @@ class MutualFundNudgeService
                     continue;
                 }
                 [$rule, $previousLevel, $label] = $record;
+                $difference = $nav - $previousLevel;
+                $differencePercent = ($difference / $previousLevel) * 100;
+                $movement = $side === 'high' ? 'above' : 'below';
                 $created += $this->store(
                     $row,
                     $rule,
                     str_starts_with($rule, 'year_') ? 'significant' : 'notable',
                     sprintf('%s reached %s', $row->scheme_name, $label),
-                    sprintf('%s NAV reached ₹%s versus the previous %s of ₹%s.', $row->scheme_name, number_format($nav, 4), str_replace('_', '-', $rule), number_format($previousLevel, 4)),
-                    ['previous_level' => $previousLevel, 'difference_percent' => round((($nav - $previousLevel) / $previousLevel) * 100, 2)],
+                    sprintf('%s NAV set %s at ₹%s, ₹%s (%.2f%%) %s its previous %s of ₹%s.', $row->scheme_name, $label, number_format($nav, 4), number_format(abs($difference), 4), abs($differencePercent), $movement, str_replace('_', '-', $rule), number_format($previousLevel, 4)),
+                    ['previous_level' => $previousLevel, 'difference' => round($difference, 4), 'difference_percent' => round($differencePercent, 2)],
                     $date
                 );
             }
@@ -83,8 +87,8 @@ class MutualFundNudgeService
         }
 
         $comparison = $side === 'high'
-            ? fn (float $level) => $nav >= $level
-            : fn (float $level) => $nav <= $level;
+            ? fn (float $level) => $nav > $level
+            : fn (float $level) => $nav < $level;
         foreach ([['year_'.$side, 'a new 52-week '.$side], ['month_'.$side, 'a new one-month '.$side]] as [$rule, $label]) {
             $level = is_numeric($history->{$rule}) ? (float) $history->{$rule} : 0;
             if ($level > 0 && $comparison($level)) {
