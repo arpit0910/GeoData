@@ -646,24 +646,31 @@ class EquitySyncHistoryCommand extends Command
 
             if ($historyByDate) {
                 foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'] as $period) {
-                    // Walk the window (center-first) and use the first date this equity has data for
-                    $prev = null;
+                    // Exchanges may have different trading histories for a stock.
+                    $nsePrevious = null;
+                    $bsePrevious = null;
                     foreach ($dateWindowMap[$period] ?? [] as $wd) {
                         $candidate = $historyByDate->get($wd);
-                        if ($candidate) {
-                            $prev = $candidate;
+                        if (! $candidate) {
+                            continue;
+                        }
+                        if (! $nsePrevious && $nse_close > 0 && $candidate->nse_close > 0) {
+                            $nsePrevious = $candidate->nse_close;
+                        }
+                        if (! $bsePrevious && $bse_close > 0 && $candidate->bse_close > 0) {
+                            $bsePrevious = $candidate->bse_close;
+                        }
+                        if (($nse_close <= 0 || $nsePrevious) && ($bse_close <= 0 || $bsePrevious)) {
                             break;
                         }
                     }
-                    if ($prev) {
-                        if ($prev->nse_close && (float)$prev->nse_close > 0) {
-                            $record["nse_val_{$period}"] = $prev->nse_close;
-                            if ($nse_close) $record["nse_chg_{$period}"] = (($nse_close - $prev->nse_close) / $prev->nse_close) * 100;
-                        }
-                        if ($prev->bse_close && (float)$prev->bse_close > 0) {
-                            $record["bse_val_{$period}"] = $prev->bse_close;
-                            if ($bse_close) $record["bse_chg_{$period}"] = (($bse_close - $prev->bse_close) / $prev->bse_close) * 100;
-                        }
+                    if ($nsePrevious) {
+                        $record["nse_val_{$period}"] = $nsePrevious;
+                        $record["nse_chg_{$period}"] = (($nse_close - $nsePrevious) / $nsePrevious) * 100;
+                    }
+                    if ($bsePrevious) {
+                        $record["bse_val_{$period}"] = $bsePrevious;
+                        $record["bse_chg_{$period}"] = (($bse_close - $bsePrevious) / $bsePrevious) * 100;
                     }
                 }
             }

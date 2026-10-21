@@ -310,16 +310,23 @@ class EquitySyncCommand extends Command
             $historyByDate = $history->keyBy('traded_date');
             foreach (['1d', '3d', '7d', '1m', '3m', '6m', '9m', '1y', '3y'] as $period) {
                 foreach ($windowMap[$period] ?? [] as $wd) {
-                    if ($prev = $historyByDate->get($wd)) {
-                        if (isset($prev->nse_close) && $prev->nse_close > 0 && $nse_close > 0) {
-                            $record["nse_chg_{$period}"] = (($nse_close - $prev->nse_close) / $prev->nse_close) * 100;
-                            $record["nse_val_{$period}"] = $prev->nse_close;
-                        }
-                        if (isset($prev->bse_close) && $prev->bse_close > 0 && $bse_close > 0) {
-                            $record["bse_chg_{$period}"] = (($bse_close - $prev->bse_close) / $prev->bse_close) * 100;
-                            $record["bse_val_{$period}"] = $prev->bse_close;
-                        }
-                        break; // Stop at the closest available date in the window
+                    $prev = $historyByDate->get($wd);
+                    if (! $prev) {
+                        continue;
+                    }
+
+                    if ($record["nse_val_{$period}"] === null && $nse_close > 0 && $prev->nse_close > 0) {
+                        $record["nse_chg_{$period}"] = (($nse_close - $prev->nse_close) / $prev->nse_close) * 100;
+                        $record["nse_val_{$period}"] = $prev->nse_close;
+                    }
+                    if ($record["bse_val_{$period}"] === null && $bse_close > 0 && $prev->bse_close > 0) {
+                        $record["bse_chg_{$period}"] = (($bse_close - $prev->bse_close) / $prev->bse_close) * 100;
+                        $record["bse_val_{$period}"] = $prev->bse_close;
+                    }
+
+                    if (($nse_close <= 0 || $record["nse_val_{$period}"] !== null)
+                        && ($bse_close <= 0 || $record["bse_val_{$period}"] !== null)) {
+                        break;
                     }
                 }
             }

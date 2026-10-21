@@ -181,23 +181,30 @@ class RepairMarketPerformanceCommand extends Command
                 }
 
                 foreach ($windowMap as $period => $candidateDates) {
+                    $nseFound = false;
+                    $bseFound = false;
                     foreach ($candidateDates as $candidateDate) {
                         $pastPrice = $historyByDate->get($candidateDate);
                         if (! $pastPrice) {
                             continue;
                         }
 
-                        if ($period !== '1d' && $pastPrice->nse_close > 0 && $price->nse_close > 0) {
+                        if ($period !== '1d' && ! $nseFound && $pastPrice->nse_close > 0 && $price->nse_close > 0) {
                             $update["nse_chg_{$period}"] = (($price->nse_close - $pastPrice->nse_close) / $pastPrice->nse_close) * 100;
                             $update["nse_val_{$period}"] = $pastPrice->nse_close;
+                            $nseFound = true;
                         }
 
-                        if ($period !== '1d' && $pastPrice->bse_close > 0 && $price->bse_close > 0) {
+                        if ($period !== '1d' && ! $bseFound && $pastPrice->bse_close > 0 && $price->bse_close > 0) {
                             $update["bse_chg_{$period}"] = (($price->bse_close - $pastPrice->bse_close) / $pastPrice->bse_close) * 100;
                             $update["bse_val_{$period}"] = $pastPrice->bse_close;
+                            $bseFound = true;
                         }
 
-                        break;
+                        if (($price->nse_close <= 0 || $nseFound)
+                            && ($price->bse_close <= 0 || $bseFound)) {
+                            break;
+                        }
                     }
                 }
 
