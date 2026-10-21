@@ -22,10 +22,9 @@ class DailyMarketSyncScheduleTest extends TestCase
         $this->assertSame(2, substr_count($schedule, 'mf:sync-and-calculate'));
         $this->assertStringNotContainsString('sync:mf-daily --force --skip-returns', $schedule);
         $this->assertStringContainsString('market:sync-upstox-news --batch-size=30 --all --delay=250', $schedule);
-        $this->assertSame(2, substr_count($schedule, 'market:sync-upstox-news --batch-size=30 --all --delay=250'));
+        $this->assertSame(1, substr_count($schedule, 'market:sync-upstox-news --batch-size=30 --all --delay=250'));
         $this->assertStringContainsString('market:sync-upstox-insights', $schedule);
-        $this->assertStringContainsString('30   6', $schedule);
-        $this->assertStringNotContainsString('30   6,18', $schedule);
+        $this->assertStringNotContainsString('30   6', $schedule);
         $this->assertStringContainsString('market:rewrite-news --limit=20 --retry', $schedule);
     }
 }

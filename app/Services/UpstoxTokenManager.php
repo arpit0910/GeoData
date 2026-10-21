@@ -122,7 +122,9 @@ class UpstoxTokenManager
             ->where('status', 'active')
             ->update(['status' => 'unauthorized']);
 
-        return $this->requestRenewal();
+        // A provider 401 is authoritative even when a previous approval
+        // request is still pending: request a fresh authorization each time.
+        return $this->requestRenewal(force: true);
     }
 
     public function storeNotifierToken(array $payload): UpstoxAccessToken

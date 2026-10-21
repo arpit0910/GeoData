@@ -206,4 +206,22 @@ class UpstoxTokenManagementTest extends TestCase
         $this->assertDatabaseCount('upstox_access_tokens', 1);
         Http::assertSentCount(2);
     }
+
+    public function test_each_unauthorized_token_requests_a_fresh_replacement_even_while_pending(): void
+    {
+        Http::fake(['https://provider.test/*' => Http::response([
+            'status' => 'success',
+            'data' => [
+                'authorization_expiry' => (string) now()->addHour()->getTimestampMs(),
+                'notifier_url' => 'https://example.test/upstox/notifier',
+            ],
+        ])]);
+
+        $manager = app(UpstoxTokenManager::class);
+        $manager->handleUnauthorized();
+        $manager->handleUnauthorized();
+
+        Http::assertSentCount(2);
+        $this->assertDatabaseHas('upstox_access_tokens', ['client_id' => 'client-123', 'status' => 'pending']);
+    }
 }

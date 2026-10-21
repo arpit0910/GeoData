@@ -128,13 +128,6 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping(120)
             ->createMutexNameUsing('market-news-sync'), 'market:sync-upstox-news');
 
-        $this->markScheduled($schedule->command('market:sync-upstox-news --batch-size=30 --all --delay=250')
-            ->dailyAt('06:30')
-            ->timezone('Asia/Kolkata')
-            ->runInBackground()
-            ->withoutOverlapping(360)
-            ->createMutexNameUsing('market-news-sync'), 'market:sync-upstox-news --all');
-
         // Upstox exposes every corporate-action type through a per-ISIN endpoint.
         // A bounded hourly rotation avoids provider throttling while eventually
         // covering every active equity and prioritising never-checked companies.
@@ -147,6 +140,7 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:rewrite-news --limit=20 --retry')
             ->cron('5,35 * * * *')
             ->timezone('Asia/Kolkata')
+            ->between('07:00', '23:00')
             ->runInBackground()
             ->withoutOverlapping(30));
 
