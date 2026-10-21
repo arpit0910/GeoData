@@ -3535,7 +3535,19 @@ curl -X POST "https://setugeo.com/api/v1/market/sync" \
                                         </div>
                                         <div class="p-6 text-gray-400">
                                             <p class="mb-4">Returns normalized FII/DII buy, sell, net flow, contract, open-interest, and long/short activity.</p>
-                                            <p>Filter with <code class="text-amber-500">investor_type=fii|dii</code>, <code class="text-amber-500">interval=1D|1M</code>, <code class="text-amber-500">data_type</code>, <code class="text-amber-500">from</code>, <code class="text-amber-500">to</code>, and <code class="text-amber-500">per_page</code>.</p>
+                                            <p>Filter with <code class="text-amber-500">investor_type=fii|dii</code>, <code class="text-amber-500">interval=1D|1M</code>, <code class="text-amber-500">data_type</code>, <code class="text-amber-500">from</code>, <code class="text-amber-500">to</code>, and <code class="text-amber-500">per_page</code>. Use <code class="text-white">/market/fii</code> or <code class="text-white">/market/dii</code> for investor-specific feeds.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- 11. IPO and Institutional Nudges -->
+                                    <div class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex items-center justify-between">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/nudges</h3>
+                                            <span class="bg-amber-600/20 text-amber-500 text-[10px] uppercase font-black px-3 py-1 rounded-full border border-amber-600/30"><i class="fas fa-coins mr-1 text-amber-400"></i>Credits</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Returns open IPO alerts and daily FII/DII cash-market net buying or selling nudges.</p>
+                                            <p>Filter with <code class="text-amber-500">type=ipo|fii|dii</code>, <code class="text-amber-500">from</code>, <code class="text-amber-500">to</code>, and <code class="text-amber-500">per_page</code>.</p>
                                         </div>
                                     </div>
 

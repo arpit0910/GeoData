@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\UpstoxInsightsSyncService;
+use App\Services\MarketNudgeService;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -14,7 +15,7 @@ class SyncUpstoxInsightsCommand extends Command
 
     protected $description = 'Synchronize public IPO and FII/DII activity data from Upstox';
 
-    public function handle(UpstoxInsightsSyncService $syncService): int
+    public function handle(UpstoxInsightsSyncService $syncService, MarketNudgeService $nudgeService): int
     {
         $only = strtolower(trim((string) $this->option('only')));
         if (!in_array($only, ['', 'ipos', 'activity'], true)) {
@@ -32,6 +33,12 @@ class SyncUpstoxInsightsCommand extends Command
                 $stats = $syncService->syncInstitutionalActivity();
                 $this->info("Institutional activity synchronized. Received: {$stats['received']}; saved: {$stats['saved']}.");
             }
+            $created = match ($only) {
+                'ipos' => $nudgeService->generateOpenIpoNudges(),
+                'activity' => $nudgeService->generateInstitutionalNudges(),
+                default => $nudgeService->generateAll(),
+            };
+            $this->info("Market nudges generated. Created: {$created}.");
         } catch (Throwable $exception) {
             $this->error('Upstox insights synchronization failed: '.$exception->getMessage());
 

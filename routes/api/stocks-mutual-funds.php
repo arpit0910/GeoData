@@ -77,6 +77,9 @@ Route::get('/market/company-fundamentals/{isin}', [MarketDatasetController::clas
 Route::get('/market/ipos', [MarketDatasetController::class, 'ipos']);
 Route::get('/market/ipos/{slug}', [MarketDatasetController::class, 'ipo']);
 Route::get('/market/institutional-activity', [MarketDatasetController::class, 'institutionalActivity']);
+Route::get('/market/fii', [MarketDatasetController::class, 'fiiActivity']);
+Route::get('/market/dii', [MarketDatasetController::class, 'diiActivity']);
+Route::get('/market/nudges', [MarketDatasetController::class, 'nudges']);
 
 Route::get('/market-calendar/holidays', [ExchangeCalendarController::class, 'index']);
 Route::get('/market-calendar/check', [ExchangeCalendarController::class, 'check']);

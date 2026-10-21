@@ -8,12 +8,61 @@ use App\Models\Equity;
 use App\Models\GlobalInstrument;
 use App\Models\InstitutionalActivity;
 use App\Models\Ipo;
+use App\Models\MarketNudge;
 use App\Services\CompanyFundamentalsSyncService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MarketDatasetController extends Controller
 {
+    public function nudges(Request $request): JsonResponse
+    {
+        $type = strtolower(trim((string) $request->input('type', '')));
+        if ($type !== '' && !in_array($type, ['ipo', 'fii', 'dii'], true)) {
+            return response()->json(['success' => false, 'message' => 'type must be ipo, fii, or dii.'], 422);
+        }
+        foreach (['from', 'to'] as $dateField) {
+            if ($request->filled($dateField) && !$this->validDate((string) $request->input($dateField))) {
+                return response()->json(['success' => false, 'message' => "{$dateField} must use YYYY-MM-DD format."], 422);
+            }
+        }
+
+        $dateTo = $request->input('to', now('Asia/Kolkata')->toDateString());
+        $dateFrom = $request->input('from', now('Asia/Kolkata')->subDays(29)->toDateString());
+        $query = MarketNudge::query()
+            ->when($type !== '', fn ($query) => $query->where('source', $type))
+            ->whereDate('event_at', '>=', $dateFrom)
+            ->whereDate('event_at', '<=', $dateTo)
+            ->latest('event_at');
+
+        $perPage = min(max((int) $request->input('per_page', 25), 1), 100);
+        $nudges = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'data' => collect($nudges->items())->map(fn (MarketNudge $nudge) => [
+                'id' => $nudge->id,
+                'type' => $nudge->source,
+                'source_key' => $nudge->source_key,
+                'rule' => $nudge->rule,
+                'severity' => $nudge->severity,
+                'title' => $nudge->title,
+                'message' => $nudge->message,
+                'metrics' => $nudge->metrics,
+                'event_at' => $nudge->event_at?->toIso8601String(),
+            ])->all(),
+            'pagination' => [
+                'current_page' => $nudges->currentPage(),
+                'last_page' => $nudges->lastPage(),
+                'per_page' => $nudges->perPage(),
+                'total' => $nudges->total(),
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
     public function ipos(Request $request): JsonResponse
     {
         $status = strtolower(trim((string) $request->input('status', '')));
@@ -70,9 +119,24 @@ class MarketDatasetController extends Controller
 
     public function institutionalActivity(Request $request): JsonResponse
     {
-        $investorType = strtolower(trim((string) $request->input('investor_type', '')));
+        return $this->institutionalActivityFor($request, null);
+    }
+
+    public function fiiActivity(Request $request): JsonResponse
+    {
+        return $this->institutionalActivityFor($request, 'fii');
+    }
+
+    public function diiActivity(Request $request): JsonResponse
+    {
+        return $this->institutionalActivityFor($request, 'dii');
+    }
+
+    private function institutionalActivityFor(Request $request, ?string $fixedInvestorType): JsonResponse
+    {
+        $investorType = $fixedInvestorType ?? strtolower(trim((string) $request->input('investor_type', '')));
         $interval = strtoupper(trim((string) $request->input('interval', '1D')));
-        if ($investorType !== '' && !in_array($investorType, ['fii', 'dii'], true)) {
+        if ($fixedInvestorType === null && $investorType !== '' && !in_array($investorType, ['fii', 'dii'], true)) {
             return response()->json(['success' => false, 'message' => 'investor_type must be fii or dii.'], 422);
         }
         if (!in_array($interval, ['1D', '1M'], true)) {

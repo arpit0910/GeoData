@@ -842,6 +842,18 @@ class GenerateSalesPostmanCollectionCommand extends Command
             return 'Get FII/DII Activity';
         }
 
+        if ($segments === ['market', 'fii']) {
+            return 'Get FII Activity';
+        }
+
+        if ($segments === ['market', 'dii']) {
+            return 'Get DII Activity';
+        }
+
+        if ($segments === ['market', 'nudges']) {
+            return 'Get IPO and FII/DII Nudges';
+        }
+
         if ($segments === ['nudges', 'fresh']) {
             return 'List Recent Stock Nudges';
         }
