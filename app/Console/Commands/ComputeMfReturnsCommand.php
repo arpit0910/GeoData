@@ -11,6 +11,8 @@ class ComputeMfReturnsCommand extends Command
 {
     protected $signature = 'compute:mf-returns
                             {--isin=     : Single ISIN to process}
+                            {--from=     : Recalculate NAV dates from YYYY-MM-DD}
+                            {--to=       : Recalculate NAV dates through YYYY-MM-DD}
                             {--force     : Re-calculate even if returns already exist}
                             {--isin-batch=50 : ISINs fetched per SQL batch}
                             {--write-chunk=2000 : Rows per upsert call}';
@@ -53,6 +55,20 @@ class ComputeMfReturnsCommand extends Command
         $isinBatch  = max(1, (int) ($this->option('isin-batch')  ?: 50));
         $writeChunk = max(1, (int) ($this->option('write-chunk') ?: 2000));
         $startedAt  = microtime(true);
+        try {
+            $from = $this->option('from') ? Carbon::createFromFormat('!Y-m-d', $this->option('from')) : null;
+            $to = $this->option('to') ? Carbon::createFromFormat('!Y-m-d', $this->option('to')) : null;
+            if (($this->option('from') && (! $from || $from->format('Y-m-d') !== $this->option('from')))
+                || ($this->option('to') && (! $to || $to->format('Y-m-d') !== $this->option('to')))
+                || ($from && $to && $from->gt($to))) {
+                throw new \InvalidArgumentException();
+            }
+        } catch (\Throwable) {
+            $this->error('The --from and --to values must use YYYY-MM-DD format, with --from no later than --to.');
+            return Command::INVALID;
+        }
+        $fromDate = $from?->toDateString();
+        $toDate = $to?->toDateString();
 
         Log::info('[compute:mf-returns] started', [
             'isin'        => $isinArg,
@@ -92,7 +108,7 @@ class ComputeMfReturnsCommand extends Command
             }
 
             $t = microtime(true);
-            [$batchRows, $batchFailed] = $this->processBatch($batch->all(), $force);
+            [$batchRows, $batchFailed] = $this->processBatch($batch->all(), $force, $fromDate, $toDate);
             $computeMs = round((microtime(true) - $t) * 1000);
 
             if (!empty($batchRows)) {
@@ -149,7 +165,7 @@ class ComputeMfReturnsCommand extends Command
 
     // ── Core ──────────────────────────────────────────────────────────────────
 
-    private function processBatch(array $isins, bool $force): array
+    private function processBatch(array $isins, bool $force, ?string $from, ?string $to): array
     {
         // One SELECT for the entire ISIN batch
         $grouped = DB::table('mutual_fund_prices')
@@ -172,6 +188,8 @@ class ComputeMfReturnsCommand extends Command
             $allTimestamps = array_map('strtotime', $allDates);
 
             foreach ($prices as $i => $row) {
+                $navDate = substr((string) $row->nav_date, 0, 10);
+                if (($from && $navDate < $from) || ($to && $navDate > $to)) continue;
                 if (!$force && $row->chg_1d !== null) continue;
 
                 $currentNav = (float) $row->nav;
@@ -185,7 +203,7 @@ class ComputeMfReturnsCommand extends Command
                 $hasData = false;
                 foreach (self::PERIODS as $p => [$method, $val]) {
                     $targetTs = $this->targetTs($row->nav_date, $method, $val);
-                    $idx      = $this->closestIdx($allTimestamps, $i, $targetTs, self::WINDOW_DAYS);
+                    $idx      = $this->closestIdx($allTimestamps, $allNavs, $i, $targetTs, self::WINDOW_DAYS);
 
                     if ($idx !== null && (float) $allNavs[$idx] > 0) {
                         $refNav                = (float) $allNavs[$idx];
@@ -236,32 +254,29 @@ class ComputeMfReturnsCommand extends Command
         return $c->timestamp;
     }
 
-    private function closestIdx(array $timestamps, int $maxIdx, int $targetTs, int $windowDays): ?int
+    private function closestIdx(array $timestamps, array $navs, int $maxIdx, int $targetTs, int $windowDays): ?int
     {
         if ($maxIdx === 0) return null;
 
         $windowSec = $windowDays * 86400;
         $lo = 0;
         $hi = $maxIdx - 1;
+        if ($timestamps[$lo] > $targetTs) return null;
 
         while ($lo < $hi) {
-            $mid = ($lo + $hi) >> 1;
-            if ($timestamps[$mid] < $targetTs) $lo = $mid + 1;
-            else $hi = $mid;
+            $mid = ($lo + $hi + 1) >> 1;
+            if ($timestamps[$mid] <= $targetTs) $lo = $mid;
+            else $hi = $mid - 1;
         }
 
-        $best     = null;
-        $bestDiff = PHP_INT_MAX;
-
-        foreach ([$lo - 1, $lo] as $idx) {
-            if ($idx < 0 || $idx >= $maxIdx) continue;
-            $diff = abs($timestamps[$idx] - $targetTs);
-            if ($diff <= $windowSec && $diff < $bestDiff) {
-                $bestDiff = $diff;
-                $best     = $idx;
-            }
+        $idx = $lo;
+        while ($idx >= 0) {
+            $diff = $targetTs - $timestamps[$idx];
+            if ($diff > $windowSec) return null;
+            if ((float) $navs[$idx] > 0) return $idx;
+            $idx--;
         }
 
-        return $best;
+        return null;
     }
 }

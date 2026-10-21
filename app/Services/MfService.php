@@ -111,7 +111,7 @@ class MfService
             ];
 
             foreach ($this->buildPeriodTargets($row->nav_date) as $label => $targetTs) {
-                $idx = $this->closestPrecedingIdx($allTimestamps, $i, $targetTs);
+                $idx = $this->closestPrecedingIdx($allTimestamps, $allNavs, $i, $targetTs);
 
                 if ($idx !== null && (float) $allNavs[$idx] > 0) {
                     $refNav                     = (float) $allNavs[$idx];
@@ -212,7 +212,7 @@ class MfService
             if ($rowTs > $targetTs) break; // rows are sorted ASC; nothing ahead can match
 
             $diff = $targetTs - $rowTs; // always >= 0 (only preceding dates)
-            if ($diff <= $windowSec && $diff < $bestDiff) {
+            if ((float) $row->nav > 0 && $diff <= $windowSec && $diff < $bestDiff) {
                 $bestDiff = $diff;
                 $best     = (float) $row->nav;
             }
@@ -229,7 +229,7 @@ class MfService
      * @param  int   $currentIdx  Upper bound (exclusive) — the row we are computing for
      * @param  int   $targetTs    Unix timestamp to search for
      */
-    private function closestPrecedingIdx(array $timestamps, int $currentIdx, int $targetTs): ?int
+    private function closestPrecedingIdx(array $timestamps, array $navs, int $currentIdx, int $targetTs): ?int
     {
         if ($currentIdx === 0) return null;
 
@@ -244,9 +244,13 @@ class MfService
             else $hi = $mid - 1;
         }
 
-        if ($timestamps[$lo] > $targetTs) return null;
+        while ($lo >= 0 && $timestamps[$lo] <= $targetTs) {
+            $diff = $targetTs - $timestamps[$lo];
+            if ($diff > $windowSec) return null;
+            if ((float) $navs[$lo] > 0) return $lo;
+            $lo--;
+        }
 
-        $diff = $targetTs - $timestamps[$lo]; // always >= 0
-        return $diff <= $windowSec ? $lo : null;
+        return null;
     }
 }

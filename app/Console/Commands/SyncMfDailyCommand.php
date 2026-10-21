@@ -524,7 +524,11 @@ class SyncMfDailyCommand extends Command
         $bestDiff  = PHP_INT_MAX;
 
         foreach ($rows as $row) {
-            $diff = abs(strtotime($row->nav_date) - $targetTs);
+            $rowTs = strtotime($row->nav_date);
+            if ($rowTs > $targetTs || (float) $row->nav <= 0) {
+                continue;
+            }
+            $diff = $targetTs - $rowTs;
             if ($diff <= $windowSec && $diff < $bestDiff) {
                 $bestDiff = $diff;
                 $best     = $row;
