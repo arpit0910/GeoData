@@ -9,6 +9,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class NudgeController extends Controller
 {
@@ -22,7 +23,13 @@ class NudgeController extends Controller
             ], 422);
         }
 
-        return $this->respond($request, StockNudge::query()->where('isin', $isin), ['isin' => $isin]);
+        return $this->respond(
+            $request,
+            StockNudge::query()->where('isin', $isin),
+            ['isin' => $isin],
+            all: true,
+            createdAt: true
+        );
     }
 
     public function byIndex(Request $request, string $indexCode): JsonResponse
@@ -117,24 +124,50 @@ class NudgeController extends Controller
         ]);
     }
 
-    private function respond(Request $request, Builder $query, array $context = []): JsonResponse
+    private function respond(Request $request, Builder $query, array $context = [], bool $all = false, bool $createdAt = false): JsonResponse
     {
         $validated = $request->validate([
             'date' => ['nullable', 'date_format:Y-m-d'],
         ]);
         if (isset($validated['date'])) {
             $dateFrom = $dateTo = $validated['date'];
-            $query->whereDate('trading_date', $validated['date']);
+            if ($createdAt) {
+                $start = Carbon::parse($validated['date'], 'Asia/Kolkata')->startOfDay()->utc();
+                $query->where('created_at', '>=', $start)
+                    ->where('created_at', '<', $start->copy()->addDay());
+            } else {
+                $query->whereDate('trading_date', $validated['date']);
+            }
         } else {
             $dateTo = now('Asia/Kolkata')->toDateString();
             $dateFrom = now('Asia/Kolkata')->subDays(6)->toDateString();
-            $query->whereDate('trading_date', '>=', $dateFrom)
-                ->whereDate('trading_date', '<=', $dateTo);
+            if ($createdAt) {
+                $start = now('Asia/Kolkata')->subDays(6)->startOfDay()->utc();
+                $end = now('Asia/Kolkata')->addDay()->startOfDay()->utc();
+                $query->where('created_at', '>=', $start)
+                    ->where('created_at', '<', $end);
+            } else {
+                $query->whereDate('trading_date', '>=', $dateFrom)
+                    ->whereDate('trading_date', '<=', $dateTo);
+            }
         }
 
         $perPage = min(max((int) $request->input('per_page', 25), 1), 100);
-        $nudges = $query->latest('observed_at')->latest('id')->paginate($perPage);
-        $nudges->setCollection($nudges->getCollection()->map(fn (StockNudge $nudge) => [
+        $query->latest('observed_at')->latest('id');
+        if ($all) {
+            $rows = $query->get();
+            $pagination = [
+                'current_page' => 1,
+                'last_page' => 1,
+                'per_page' => $rows->count(),
+                'total' => $rows->count(),
+            ];
+        } else {
+            $paginator = $query->paginate($perPage);
+            $rows = $paginator->getCollection();
+            $pagination = $this->pagination($paginator);
+        }
+        $data = $rows->map(fn (StockNudge $nudge) => [
             'id' => $nudge->id,
             'isin' => $nudge->isin,
             'index_code' => $nudge->index_code,
@@ -151,7 +184,8 @@ class NudgeController extends Controller
             'trading_date' => $nudge->trading_date?->toDateString(),
             'observed_at' => $nudge->observed_at?->copy()->timezone('Asia/Kolkata')->toIso8601String(),
             'expires_at' => $nudge->expires_at?->copy()->timezone('Asia/Kolkata')->toIso8601String(),
-        ]));
+            'created_at' => $nudge->created_at?->copy()->timezone('Asia/Kolkata')->toIso8601String(),
+        ])->values();
 
         return response()->json(array_merge([
             'success' => true,
@@ -159,8 +193,8 @@ class NudgeController extends Controller
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
         ], $context, [
-            'data' => $nudges->items(),
-            'pagination' => $this->pagination($nudges),
+            'data' => $data,
+            'pagination' => $pagination,
         ]));
     }
 

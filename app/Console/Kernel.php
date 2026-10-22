@@ -30,6 +30,11 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('mf:sync-upstox-daily')
             ->dailyAt('06:10')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
+        // Upstox daily access tokens expire at 03:30 IST. Request the next
+        // token automatically; the account holder approves it in Upstox.
+        $this->markScheduled($schedule->command('market:ensure-upstox-token')
+            ->dailyAt('03:35')->timezone('Asia/Kolkata')->withoutOverlapping(10));
+
         // Repair any dates missed in the preceding two weeks. The command is
         // idempotent, so existing ISIN/date rows are updated without duplicates.
         $this->markScheduled($schedule->command('mf:backfill', [

@@ -13,6 +13,11 @@ class EnsureUpstoxTokenCommand extends Command
 
     public function handle(UpstoxTokenManager $tokens): int
     {
+        if (trim((string) config('market_data.upstox.analytics_token')) !== '') {
+            $this->info('The configured Upstox Analytics Token is active.');
+            return self::SUCCESS;
+        }
+
         $current = $tokens->current();
         if ($current && ! $this->option('force')) {
             $this->info('The stored Upstox token is active until '.$current->expires_at->toIso8601String().'.');

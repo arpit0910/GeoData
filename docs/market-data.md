@@ -28,6 +28,23 @@ request before the notifier updates the existing row. Never commit credentials.
 If configuration is cached, rebuild it after updating the environment. If PHP reports cURL error 60, set
 `MARKET_DATA_CA_BUNDLE` to a trusted CA bundle. TLS verification stays enabled.
 
+`market:ensure-upstox-token` runs daily at 03:35 IST, after the daily token
+expires. It requests a replacement and the Upstox account holder approves the
+request in the Upstox app or website; the notifier stores the approved token.
+An HTTP 401 also requests a replacement immediately.
+
+### List equities
+
+```http
+GET /api/v1/equities?page=1
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+The Stocks & Mutual Funds subscription API returns all equity rows, with all
+public equity fields and 100 records per page. Provider identifiers and sync
+internals remain hidden. Optional `industry`, `market_cap`, and `symbol`
+parameters filter the list.
+
 ### News rewriting workflow
 
 Upstox news is stored as private source material. The scheduled
@@ -269,9 +286,12 @@ GET /api/v1/equity/INE002A01018?date=2026-10-12
 GET /api/v1/mf/details/INF109K01VQ0?date=2026-10-07
 ```
 
-The stock and mutual-fund subscription exposes these paginated nudge endpoints:
+The stock and mutual-fund subscription exposes these nudge endpoints:
 
-- `GET /api/v1/nudges/isin/{isin}` returns nudges for one ISIN.
+- `GET /api/v1/nudges/isin/{isin}` returns every nudge for one ISIN in a single
+  `data` array. By default it includes nudges created during the last seven
+  calendar days in Asia/Kolkata, including today. Each item includes `created_at`.
+  An optional `date=YYYY-MM-DD` filters by creation date; `per_page` is ignored.
 - `GET /api/v1/nudges/index/{index_code}` returns index and benchmark-comparison nudges.
 - `GET /api/v1/stock/nudges` returns stock and index nudges from the last seven calendar days.
   `GET /api/v1/nudges/fresh` remains available as a backward-compatible alias.
@@ -285,13 +305,14 @@ The stock and mutual-fund subscription exposes these paginated nudge endpoints:
   generated once after the daily NAV sync and returns calculation; they never
   include Nifty or other index comparisons.
 
-All nudge endpoints accept `date=YYYY-MM-DD` and `per_page` (default 25,
+Paginated nudge endpoints accept `date=YYYY-MM-DD` and `per_page` (default 25,
 maximum 100). When `date` is omitted, they return the current seven-calendar-day
-window and expose `date_from` and `date_to` in the response.
+window and expose `date_from` and `date_to` in the response. The ISIN endpoint
+returns all matching rows and ignores `per_page`.
 
 ```text
 GET /api/v1/stock/nudges?date=2026-10-12&per_page=25
-GET /api/v1/nudges/isin/INE002A01018?date=2026-10-12&per_page=25
+GET /api/v1/nudges/isin/INE002A01018
 GET /api/v1/nudges/index/NIFTY_50?date=2026-10-12&per_page=25
 GET /api/v1/nudges/category/growth?date=2026-10-12&per_page=25
 GET /api/v1/mf/nudges?isin=INF109K01VQ0&per_page=25

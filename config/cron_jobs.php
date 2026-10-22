@@ -21,6 +21,15 @@ return [
             'overlap' => true,
         ],
         [
+            'title' => 'market:ensure-upstox-token',
+            'command' => 'market:ensure-upstox-token',
+            'args' => [],
+            'description' => 'Requests an Upstox access token after the previous daily token expires; account holder approval is required.',
+            'schedule' => 'Daily at 03:35',
+            'timezone' => 'Asia/Kolkata',
+            'overlap' => true,
+        ],
+        [
             'title' => 'indices:sync',
             'command' => 'indices:sync',
             'args' => [],
