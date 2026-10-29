@@ -17,6 +17,12 @@ class SyncUpstoxInsightsCommand extends Command
 
     public function handle(UpstoxInsightsSyncService $syncService, MarketNudgeService $nudgeService): int
     {
+        if (! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()) {
+            $this->info('Skipped: No active Upstox token is available.');
+
+            return self::SUCCESS;
+        }
+
         $only = strtolower(trim((string) $this->option('only')));
         if (!in_array($only, ['', 'ipos', 'activity'], true)) {
             $this->error('The --only option must be either ipos or activity.');

@@ -29,6 +29,50 @@ class UpstoxTokenManagementTest extends TestCase
         ]);
     }
 
+    public function test_expired_token_is_renewed_automatically_and_pending_request_is_reused(): void
+    {
+        UpstoxAccessToken::create([
+            'client_id' => 'client-123',
+            'access_token' => 'expired-token',
+            'status' => 'active',
+            'issued_at' => now()->subDay(),
+            'expires_at' => now()->subMinute(),
+        ]);
+        Http::fake(['https://provider.test/*' => Http::response([
+            'status' => 'success',
+            'data' => [
+                'authorization_expiry' => (string) now()->addHour()->getTimestampMs(),
+                'notifier_url' => 'https://example.test/notifier',
+            ],
+        ])]);
+
+        $schedule = new \Illuminate\Console\Scheduling\Schedule();
+        $method = new \ReflectionMethod(\App\Console\Kernel::class, 'schedule');
+        $method->setAccessible(true);
+        $method->invoke(app(\Illuminate\Contracts\Console\Kernel::class), $schedule);
+        $renewal = collect($schedule->events())->first(fn ($event) => str_contains($event->command, 'market:ensure-upstox-token'));
+        $this->assertSame('* * * * *', $renewal->expression);
+        $this->assertTrue($renewal->filtersPass(app()));
+        $news = collect($schedule->events())->first(fn ($event) => str_contains($event->command, 'market:sync-upstox-news'));
+        $this->assertFalse($news->filtersPass(app()));
+
+        $this->artisan('market:ensure-upstox-token')->assertExitCode(0);
+        $this->artisan('market:ensure-upstox-token')->assertExitCode(0);
+        Http::assertSentCount(1);
+        $this->assertFalse(app(UpstoxTokenManager::class)->hasActiveToken());
+    }
+
+    public function test_dependent_commands_skip_without_calling_the_provider(): void
+    {
+        Http::fake();
+        foreach (UpstoxTokenManager::DEPENDENT_COMMANDS as $command) {
+            $this->artisan($command)
+                ->expectsOutputToContain('Skipped: No active Upstox token is available.')
+                ->assertExitCode(0);
+        }
+        Http::assertNothingSent();
+    }
+
     public function test_it_requests_a_replacement_only_once_while_approval_is_pending(): void
     {
         $expires = now()->addHours(3)->getTimestampMs();

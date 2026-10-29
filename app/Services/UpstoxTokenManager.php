@@ -11,6 +11,26 @@ use RuntimeException;
 
 class UpstoxTokenManager
 {
+    public const DEPENDENT_COMMANDS = [
+        'market:sync-upstox-quotes',
+        'market:sync-upstox-index-quotes',
+        'market:sync-upstox-news',
+        'market:sync-upstox-events',
+        'market:sync-upstox-insights',
+        'market:sync-upstox-splits',
+        'market:sync-upstox-bonuses',
+        'market:sync-company-fundamentals',
+    ];
+
+    public function hasActiveToken(): bool
+    {
+        try {
+            return trim($this->accessToken()) !== '';
+        } catch (RuntimeException $exception) {
+            return false;
+        }
+    }
+
     public function current(): ?UpstoxAccessToken
     {
         $lifetimeYears = $this->lifetimeYears();
@@ -30,7 +50,11 @@ class UpstoxTokenManager
     {
         $analyticsToken = trim((string) config('market_data.upstox.analytics_token'));
         if ($analyticsToken !== '') {
-            return $this->rejectExpiredJwt($analyticsToken, 'UPSTOX_ANALYTICS_TOKEN');
+            try {
+                return $this->rejectExpiredJwt($analyticsToken, 'UPSTOX_ANALYTICS_TOKEN');
+            } catch (RuntimeException $exception) {
+                // An expired configured token must not hide an approved replacement.
+            }
         }
 
         if ($current = $this->current()) {
@@ -108,12 +132,18 @@ class UpstoxTokenManager
     /** Reject the current database token and request one replacement. */
     public function handleUnauthorized(): array
     {
-        if (trim((string) config('market_data.upstox.analytics_token')) !== '') {
-            return [
-                'requested' => false,
-                'authorization_expires_at' => null,
-                'notifier_url' => null,
-            ];
+        $analyticsToken = trim((string) config('market_data.upstox.analytics_token'));
+        if ($analyticsToken !== '') {
+            try {
+                $this->rejectExpiredJwt($analyticsToken, 'UPSTOX_ANALYTICS_TOKEN');
+                return [
+                    'requested' => false,
+                    'authorization_expires_at' => null,
+                    'notifier_url' => null,
+                ];
+            } catch (RuntimeException $exception) {
+                // Continue renewal for the replacement database token.
+            }
         }
 
         $clientId = trim((string) config('market_data.upstox.client_id'));

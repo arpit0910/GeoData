@@ -22,6 +22,12 @@ class SyncCompanyFundamentalsCommand extends Command
 
     public function handle(CompanyFundamentalsSyncService $syncService, UpstoxTokenManager $tokens): int
     {
+        if (! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()) {
+            $this->info('Skipped: No active Upstox token is available.');
+
+            return self::SUCCESS;
+        }
+
         try {
             $tokens->accessToken();
         } catch (\Throwable $exception) {

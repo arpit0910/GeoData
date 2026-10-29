@@ -12,6 +12,10 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule)
     {
+        $this->markScheduled($schedule->command('market:sync-daily-masters')
+            ->dailyAt('00:00')->timezone('Asia/Kolkata')
+            ->runInBackground()->withoutOverlapping(1440));
+
         $this->markScheduled($schedule->command('currency:fetch-rates')
             ->dailyAt('20:30')->timezone('Asia/Kolkata')->withoutOverlapping(120));
 
@@ -26,14 +30,11 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('mf:sync-and-calculate')
             ->dailyAt('21:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        // Independent morning recovery from Upstox's daily MF instrument file.
-        $this->markScheduled($schedule->command('mf:sync-upstox-daily')
-            ->dailyAt('06:10')->timezone('Asia/Kolkata')->withoutOverlapping(120));
-
         // Upstox daily access tokens expire at 03:30 IST. Request the next
         // token automatically; the account holder approves it in Upstox.
         $this->markScheduled($schedule->command('market:ensure-upstox-token')
-            ->dailyAt('03:35')->timezone('Asia/Kolkata')->withoutOverlapping(10));
+            ->everyMinute()->timezone('Asia/Kolkata')->withoutOverlapping(10)
+            ->when(fn () => ! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()));
 
         // Repair any dates missed in the preceding two weeks. The command is
         // idempotent, so existing ISIN/date rows are updated without duplicates.
@@ -42,22 +43,8 @@ class Kernel extends ConsoleKernel
             '--to' => now('Asia/Kolkata')->subDay()->toDateString(),
         ])->dailyAt('06:45')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        $this->markScheduled($schedule->command('mf:sync-and-calculate')
-            ->dailyAt('23:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
-
-        $this->markScheduled($schedule->command('equities:sync-metadata')
-            ->dailyAt('08:00')->timezone('Asia/Kolkata')->withoutOverlapping(60));
-
         $this->markScheduled($schedule->command('equities:sync-fundamentals')
             ->dailyAt('20:00')->timezone('Asia/Kolkata')->withoutOverlapping(120));
-
-        $this->markScheduled($schedule->command('market:sync-global-instruments')
-            ->dailyAt('06:30')->timezone('Asia/Kolkata')->withoutOverlapping(30));
-
-        // Upstox refreshes its instrument masters around 06:00 IST. This also
-        // fills newly listed stocks and all provider metadata available for them.
-        $this->markScheduled($schedule->command('equities:sync-upstox-instruments')
-            ->dailyAt('06:15')->timezone('Asia/Kolkata')->withoutOverlapping(60));
 
         $this->markScheduled($schedule->command('market:sync-company-fundamentals --limit=25 --delay=250')
             ->dailyAt('02:00')->timezone('Asia/Kolkata')->withoutOverlapping(180));
@@ -164,6 +151,9 @@ class Kernel extends ConsoleKernel
     {
         preg_match('/[\'\"]artisan[\'\"]\s+([^\s]+)/', $event->command, $matches);
         $command = $matches[1] ?? null;
+        if (in_array($command, \App\Services\UpstoxTokenManager::DEPENDENT_COMMANDS, true)) {
+            $event->when(fn () => app(\App\Services\UpstoxTokenManager::class)->hasActiveToken());
+        }
         $definition = collect(config('cron_jobs.jobs', []))->firstWhere('command', $command);
         $logTitle = $title ?: ($definition['title'] ?? $command);
         $outputDirectory = storage_path('logs/cron-output');

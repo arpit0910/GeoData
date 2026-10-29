@@ -55,7 +55,7 @@ class CronLoggingTest extends TestCase
         $this->assertNotNull(CronLog::firstOrFail()->finished_at);
     }
 
-    public function test_admin_run_is_logged_once_as_manual_even_when_command_fails(): void
+    public function test_admin_skips_upstox_without_a_token_or_error_log(): void
     {
         config([
             'market_data.upstox.analytics_token' => null,
@@ -63,20 +63,14 @@ class CronLoggingTest extends TestCase
         ]);
         $this->setJobs(['market:sync-upstox-news']);
         $admin = User::factory()->create(['is_admin' => true]);
+        Http::fake();
 
         $this->actingAs($admin)->postJson(route('admin.crons.run'), [
             'title' => 'market:sync-upstox-news',
-        ])->assertStatus(500)
-            ->assertJsonPath('message', 'Command `market:sync-upstox-news` exited with code 1.');
+        ])->assertOk()->assertJsonPath('skipped', true);
 
-        $this->assertDatabaseCount('cron_logs', 1);
-        $this->assertDatabaseHas('cron_logs', [
-            'title' => 'market:sync-upstox-news',
-            'source' => 'manual',
-            'status' => false,
-            'exit_code' => 1,
-            'output' => 'Command exited with code 1 without console output.',
-        ]);
+        $this->assertDatabaseCount('cron_logs', 0);
+        Http::assertNothingSent();
     }
 
     public function test_cron_output_is_persisted_for_failure_diagnostics(): void

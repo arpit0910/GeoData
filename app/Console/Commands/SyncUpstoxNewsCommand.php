@@ -32,6 +32,12 @@ class SyncUpstoxNewsCommand extends Command
         UpstoxTokenManager $tokens
     ): int
     {
+        if (! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()) {
+            $this->info('Skipped: No active Upstox token is available.');
+
+            return self::SUCCESS;
+        }
+
         $batchSize = min(30, max(1, (int) $this->option('batch-size')));
         $maxBatches = min(100, max(1, (int) ($this->option('max-batches')
             ?: config('market_data.upstox.news_max_batches', 20))));

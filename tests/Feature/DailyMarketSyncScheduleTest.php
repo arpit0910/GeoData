@@ -19,12 +19,14 @@ class DailyMarketSyncScheduleTest extends TestCase
         $this->assertSame(2, substr_count($schedule, 'market:sync-upstox-index-quotes'));
         $this->assertStringContainsString('stock-nudges:generate market', $schedule);
         $this->assertSame('15 9,12,15 * * 1-5', config('stock_nudges.market_schedule'));
-        $this->assertSame(2, substr_count($schedule, 'mf:sync-and-calculate'));
+        $this->assertSame(1, substr_count($schedule, 'mf:sync-and-calculate'));
+        $this->assertSame(1, substr_count($schedule, 'market:sync-daily-masters'));
         $this->assertStringNotContainsString('sync:mf-daily --force --skip-returns', $schedule);
         $this->assertStringContainsString('market:sync-upstox-news --batch-size=30 --all --delay=250', $schedule);
         $this->assertSame(1, substr_count($schedule, 'market:sync-upstox-news --batch-size=30 --all --delay=250'));
         $this->assertStringContainsString('market:sync-upstox-insights', $schedule);
-        $this->assertStringNotContainsString('30   6', $schedule);
+        $this->assertStringNotContainsString('equities:sync-upstox-instruments', $schedule);
+        $this->assertStringNotContainsString('mf:sync-upstox-daily', $schedule);
         $this->assertStringContainsString('market:rewrite-news --limit=20 --retry', $schedule);
     }
 }

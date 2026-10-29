@@ -66,6 +66,17 @@ class CronController extends Controller
             ], 422);
         }
 
+        if (in_array($cron['command'], UpstoxTokenManager::DEPENDENT_COMMANDS, true)
+            && ! app(UpstoxTokenManager::class)->hasActiveToken()) {
+            return response()->json([
+                'success' => true,
+                'skipped' => true,
+                'message' => 'Skipped: no active Upstox token is available. Token renewal runs automatically; approve the request in Upstox.',
+                'exit_code' => 0,
+                'output' => '',
+            ]);
+        }
+
         putenv("SETUGEO_CRON_TITLE={$cron['title']}");
 
         try {

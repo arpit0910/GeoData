@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Orchestrator command scheduled at 21:30 and 23:30 IST.
+ * Orchestrator run at 21:30 IST and by the midnight master sync.
  *
  * Step 1 — Sync: delegates to sync:mf-daily (downloads AMFI NAVAll.txt,
  *           upserts mutual_funds and mutual_fund_prices).

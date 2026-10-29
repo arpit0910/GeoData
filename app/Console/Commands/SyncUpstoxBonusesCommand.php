@@ -16,6 +16,12 @@ class SyncUpstoxBonusesCommand extends Command
 
     public function handle(UpstoxCorporateActionSyncService $syncService): int
     {
+        if (! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()) {
+            $this->info('Skipped: No active Upstox token is available.');
+
+            return self::SUCCESS;
+        }
+
         $limit = max(1, (int) $this->option('limit'));
 
         $query = Equity::query()

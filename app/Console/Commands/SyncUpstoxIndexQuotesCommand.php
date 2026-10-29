@@ -22,6 +22,12 @@ class SyncUpstoxIndexQuotesCommand extends Command
 
     public function handle(UpstoxMarketDataService $upstox, UpstoxTokenManager $tokens, IndexQuoteService $quoteStore): int
     {
+        if (! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()) {
+            $this->info('Skipped: No active Upstox token is available.');
+
+            return self::SUCCESS;
+        }
+
         $batchSize = (int) $this->option('batch-size');
         if ($batchSize < 1 || $batchSize > UpstoxMarketDataService::MAX_INSTRUMENTS) {
             $this->error('The --batch-size value must be between 1 and 500.');
