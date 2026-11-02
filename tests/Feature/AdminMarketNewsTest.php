@@ -357,6 +357,49 @@ class AdminMarketNewsTest extends TestCase
         $this->assertTrue($news->is_published);
     }
 
+    public function test_failed_batch_does_not_starve_later_stories(): void
+    {
+        $first = MarketNews::create([
+            'title' => 'First failed story',
+            'editorial_status' => MarketNews::STATUS_FAILED,
+        ]);
+        $second = MarketNews::create([
+            'title' => 'Later failed story',
+            'editorial_status' => MarketNews::STATUS_FAILED,
+        ]);
+        DB::table('market_news')->update(['updated_at' => now()->subHour()]);
+        $attempted = [];
+        $this->mock(NvidiaNewsRewriter::class)->shouldReceive('rewrite')->twice()
+            ->andReturnUsing(function (MarketNews $story) use (&$attempted) {
+                $attempted[] = $story->id;
+                throw new \RuntimeException('Provider unavailable');
+            });
+
+        $this->artisan('market:rewrite-news', ['--limit' => 1])->assertFailed();
+        $this->artisan('market:rewrite-news', ['--limit' => 1])->assertFailed();
+
+        $this->assertSame([$first->id, $second->id], $attempted);
+    }
+
+    public function test_ready_stories_publish_before_pending_stories_use_provider_quota(): void
+    {
+        MarketNews::create([
+            'title' => 'Pending story',
+            'editorial_status' => MarketNews::STATUS_PENDING,
+        ]);
+        $ready = MarketNews::create([
+            'title' => 'Verified story',
+            'summary' => 'Verified content.',
+            'editorial_status' => MarketNews::STATUS_READY,
+            'rewritten_at' => now(),
+        ]);
+        $this->mock(NvidiaNewsRewriter::class)->shouldNotReceive('rewrite');
+
+        $this->artisan('market:rewrite-news', ['--limit' => 1])->assertSuccessful();
+
+        $this->assertSame(MarketNews::STATUS_PUBLISHED, $ready->fresh()->editorial_status);
+    }
+
     public function test_non_admin_cannot_view_market_news_monitor(): void
     {
         $this->actingAs(User::factory()->create(['is_admin' => false]))

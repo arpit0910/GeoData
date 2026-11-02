@@ -34,7 +34,7 @@ class UpstoxNewsSyncTest extends TestCase
 
         $this->artisan('market:sync-upstox-news')
             ->expectsOutputToContain('No active Upstox token is available')
-            ->assertExitCode(0);
+            ->assertExitCode(1);
 
         Http::assertNothingSent();
     }

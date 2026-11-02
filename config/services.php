@@ -65,11 +65,11 @@ return [
 
     'nvidia' => [
         'api_key' => env('NVIDIA_API_KEY'),
-        'model' => env('NVIDIA_NEWS_MODEL', 'openai/gpt-oss-20b'),
-        'fallback_models' => env('NVIDIA_NEWS_FALLBACK_MODELS', 'nvidia/nemotron-3-super-120b-a12b'),
-        'verification_models' => env('NVIDIA_NEWS_VERIFICATION_MODELS', 'openai/gpt-oss-20b'),
+        'model' => env('NVIDIA_NEWS_MODEL', 'nvidia/nemotron-3.5-lightning-30b-a3b'),
+        'fallback_models' => env('NVIDIA_NEWS_FALLBACK_MODELS', 'openai/gpt-oss-20b'),
+        'verification_models' => env('NVIDIA_NEWS_VERIFICATION_MODELS', 'nvidia/nemotron-3.5-lightning-30b-a3b,openai/gpt-oss-20b'),
         'strict_json_models' => env('NVIDIA_NEWS_STRICT_JSON_MODELS', ''),
-        'model_strategy' => env('NVIDIA_NEWS_MODEL_STRATEGY', 'round_robin'),
+        'model_strategy' => env('NVIDIA_NEWS_MODEL_STRATEGY', 'primary'),
         'endpoint' => env('NVIDIA_API_ENDPOINT', 'https://integrate.api.nvidia.com/v1/chat/completions'),
         'temperature' => (float) env('NVIDIA_NEWS_TEMPERATURE', 0.1),
         'timeout' => (int) env('NVIDIA_API_TIMEOUT', 45),

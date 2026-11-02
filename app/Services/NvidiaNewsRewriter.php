@@ -17,10 +17,15 @@ class NvidiaNewsRewriter extends GroqNewsRewriter
 
         // Reuse the mature editorial validation and retry pipeline while
         // selecting NVIDIA NIM as the actual provider for every model call.
+        $previousSettings = config('services.groq');
         config(['services.groq' => array_merge($settings, [
             'provider' => 'NVIDIA',
         ])]);
 
-        return parent::rewrite($news);
+        try {
+            return parent::rewrite($news);
+        } finally {
+            config(['services.groq' => $previousSettings]);
+        }
     }
 }

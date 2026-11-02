@@ -51,7 +51,10 @@ class RewriteMarketNewsCommand extends Command
                 $query->whereNull('rewrite_retry_at')
                     ->orWhere('rewrite_retry_at', '<=', now());
             })
-            ->orderByRaw("CASE WHEN editorial_status = 'pending' THEN 0 ELSE 1 END")
+            // Publish verified drafts before spending provider quota, and rotate
+            // failed stories so one broken batch cannot block the whole backlog.
+            ->orderByRaw("CASE WHEN editorial_status = 'ready' THEN 0 WHEN editorial_status = 'pending' THEN 1 ELSE 2 END")
+            ->orderBy('updated_at')
             ->orderBy('id')
             ->limit(max(1, min(100, (int) $this->option('limit'))))
             ->get();
@@ -83,6 +86,7 @@ class RewriteMarketNewsCommand extends Command
                 break;
             } catch (Throwable $exception) {
                 $failed++;
+                $news->touch();
                 $this->warn("News #{$news->id}: {$exception->getMessage()}");
             }
         }

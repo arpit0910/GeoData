@@ -597,6 +597,11 @@ class GroqNewsRewriter
             if (! str_starts_with($model, 'openai/gpt-oss-')) {
                 unset($payload['reasoning_effort']);
             }
+            if ($model === 'nvidia/nemotron-3.5-lightning-30b-a3b') {
+                // Keep the output budget for the article/verification JSON.
+                // This model uses a template flag rather than GPT-OSS effort.
+                $payload['chat_template_kwargs'] = ['enable_thinking' => false];
+            }
 
             $lastMessage = count($payload['messages']) - 1;
             if ($lastMessage >= 0 && data_get($payload, "messages.{$lastMessage}.role") === 'user') {

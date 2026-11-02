@@ -33,9 +33,9 @@ class SyncUpstoxNewsCommand extends Command
     ): int
     {
         if (! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()) {
-            $this->info('Skipped: No active Upstox token is available.');
+            $this->error('News synchronization blocked: No active Upstox token is available. Renew or approve the Upstox token in the admin cron settings.');
 
-            return self::SUCCESS;
+            return self::FAILURE;
         }
 
         $batchSize = min(30, max(1, (int) $this->option('batch-size')));

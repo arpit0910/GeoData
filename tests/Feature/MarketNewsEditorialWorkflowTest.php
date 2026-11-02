@@ -65,7 +65,9 @@ class MarketNewsEditorialWorkflowTest extends TestCase
         });
 
         $news = $this->createNews($sourceBody);
+        $originalGroqSettings = config('services.groq');
         app(NvidiaNewsRewriter::class)->rewrite($news);
+        $this->assertSame($originalGroqSettings, config('services.groq'));
 
         $this->assertSame('openai/gpt-oss-120b', $news->fresh()->rewrite_model);
         Http::assertSent(function (Request $request): bool {
@@ -93,6 +95,50 @@ class MarketNewsEditorialWorkflowTest extends TestCase
                 'independent financial-news fact checker'
             )
             && data_get($request->data(), 'max_tokens') === 256
+        );
+    }
+
+    public function test_nvidia_failure_restores_the_other_provider_configuration(): void
+    {
+        config(['services.nvidia.api_key' => 'test-nvidia-key']);
+        $originalGroqSettings = config('services.groq');
+        $extractor = $this->mock(\App\Services\NewsArticleExtractor::class);
+        $extractor->shouldReceive('extract')->once()->andThrow(new RuntimeException('Source unavailable'));
+        $news = $this->createNews('Source content');
+
+        try {
+            app(NvidiaNewsRewriter::class)->rewrite($news);
+            $this->fail('Source extraction should fail.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Source unavailable', $exception->getMessage());
+        }
+
+        $this->assertSame($originalGroqSettings, config('services.groq'));
+    }
+
+    public function test_nvidia_lightning_disables_thinking_to_preserve_the_json_output_budget(): void
+    {
+        config([
+            'services.nvidia.api_key' => 'test-nvidia-key',
+            'services.nvidia.model' => 'nvidia/nemotron-3.5-lightning-30b-a3b',
+            'services.nvidia.fallback_models' => '',
+        ]);
+        Http::fake(fn () => Http::response(['error' => ['message' => 'Unavailable']], 404));
+        $source = 'The company reported quarterly revenue of Rs 100 crore, unchanged from the previous period. Management said demand remained stable across its main business segments. Operating conditions were also broadly consistent with the preceding quarter, according to the company update.';
+        $news = $this->createNews($source);
+        $news->forceFill(['original_content' => $source])->save();
+
+        try {
+            app(NvidiaNewsRewriter::class)->rewrite($news);
+            $this->fail('The simulated unavailable model should fail.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('HTTP 404', $exception->getMessage());
+        }
+
+        Http::assertSent(fn (Request $request) =>
+            data_get($request->data(), 'model') === 'nvidia/nemotron-3.5-lightning-30b-a3b'
+            && data_get($request->data(), 'chat_template_kwargs.enable_thinking') === false
+            && data_get($request->data(), 'reasoning_effort') === null
         );
     }
 
