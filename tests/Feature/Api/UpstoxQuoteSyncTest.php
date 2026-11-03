@@ -84,7 +84,7 @@ class UpstoxQuoteSyncTest extends TestCase
 
         $this->artisan('market:sync-upstox-quotes')
             ->expectsOutputToContain('No active Upstox token is available.')
-            ->assertExitCode(0);
+            ->assertExitCode(1);
         Http::assertNothingSent();
         $this->assertSame(0, DB::table('equity_quotes')->count());
     }

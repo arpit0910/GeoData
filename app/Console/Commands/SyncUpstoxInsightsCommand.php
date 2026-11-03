@@ -17,10 +17,11 @@ class SyncUpstoxInsightsCommand extends Command
 
     public function handle(UpstoxInsightsSyncService $syncService, MarketNudgeService $nudgeService): int
     {
-        if (! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()) {
-            $this->info('Skipped: No active Upstox token is available.');
-
-            return self::SUCCESS;
+        try {
+            app(\App\Services\UpstoxTokenManager::class)->accessToken();
+        } catch (Throwable $exception) {
+            $this->error('Upstox insights synchronization blocked: '.$exception->getMessage());
+            return self::FAILURE;
         }
 
         $only = strtolower(trim((string) $this->option('only')));

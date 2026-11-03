@@ -52,11 +52,19 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:sync-company-fundamentals --dataset=profile --missing-profile --limit=250 --delay=200')
             ->dailyAt('02:30')->timezone('Asia/Kolkata')->withoutOverlapping(180));
 
-        $this->markScheduled($schedule->command('market:sync-upstox-insights')
+        $this->markScheduled($schedule->command('market:sync-upstox-insights --only=ipos')
             ->dailyAt('20:15')
             ->timezone('Asia/Kolkata')
             ->runInBackground()
             ->withoutOverlapping(180));
+
+        // Institutional flows are published after the trading session. Keep
+        // their run independent so IPO endpoint failures cannot block them.
+        $this->markScheduled($schedule->command('market:sync-upstox-insights --only=activity')
+            ->dailyAt('20:30')
+            ->timezone('Asia/Kolkata')
+            ->runInBackground()
+            ->withoutOverlapping(120), 'market:sync-upstox-insights (FII/DII)');
 
         // Refresh previously validated indices first so unsupported index keys
         // cannot delay the one-minute live quote path.
@@ -151,7 +159,10 @@ class Kernel extends ConsoleKernel
     {
         preg_match('/[\'\"]artisan[\'\"]\s+([^\s]+)/', $event->command, $matches);
         $command = $matches[1] ?? null;
-        if (in_array($command, \App\Services\UpstoxTokenManager::DEPENDENT_COMMANDS, true)) {
+        // Live quote runs must log an actionable failure when authorization
+        // expires, rather than disappearing from the cron history.
+        if (in_array($command, \App\Services\UpstoxTokenManager::DEPENDENT_COMMANDS, true)
+            && ! in_array($command, ['market:sync-upstox-quotes', 'market:sync-upstox-index-quotes', 'market:sync-upstox-insights'], true)) {
             $event->when(fn () => app(\App\Services\UpstoxTokenManager::class)->hasActiveToken());
         }
         $definition = collect(config('cron_jobs.jobs', []))->firstWhere('command', $command);

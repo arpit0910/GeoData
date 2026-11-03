@@ -22,10 +22,11 @@ class SyncUpstoxIndexQuotesCommand extends Command
 
     public function handle(UpstoxMarketDataService $upstox, UpstoxTokenManager $tokens, IndexQuoteService $quoteStore): int
     {
-        if (! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()) {
-            $this->info('Skipped: No active Upstox token is available.');
-
-            return self::SUCCESS;
+        try {
+            $tokens->accessToken();
+        } catch (Throwable $exception) {
+            $this->error('Index synchronization blocked: '.$exception->getMessage());
+            return self::FAILURE;
         }
 
         $batchSize = (int) $this->option('batch-size');

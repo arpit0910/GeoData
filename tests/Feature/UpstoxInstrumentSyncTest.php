@@ -18,6 +18,38 @@ class UpstoxInstrumentSyncTest extends TestCase
     use CreatesTestData;
     use RefreshDatabase;
 
+    public function test_default_index_setup_preserves_an_existing_key_with_different_capitalization(): void
+    {
+        DB::table('indices')->insert([
+            'index_code' => 'NIFTY_OIL_GAS_LEGACY',
+            'index_name' => 'Nifty Oil And Gas',
+            'exchange' => 'NSE',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Oil And Gas',
+        ]);
+
+        $service = app(UpstoxInstrumentSyncService::class);
+        $firstCount = $service->ensureIndexInstrumentKeys();
+        $this->assertSame($firstCount, $service->ensureIndexInstrumentKeys());
+        $this->assertDatabaseHas('indices', [
+            'index_code' => 'NIFTY_OIL_GAS_LEGACY',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Oil And Gas',
+        ]);
+        $this->assertDatabaseMissing('indices', ['index_code' => 'NIFTY_OIL_AND_GAS']);
+    }
+
+    public function test_key_assignment_does_not_reuse_an_existing_key_with_different_case(): void
+    {
+        DB::table('indices')->insert([
+            ['index_code' => 'LEGACY_OIL_GAS', 'index_name' => 'Oil and Gas', 'exchange' => 'NSE', 'upstox_instrument_key' => 'NSE_INDEX|Nifty Oil And Gas'],
+            ['index_code' => 'NIFTY_OIL_AND_GAS', 'index_name' => 'Nifty Oil and Gas', 'exchange' => 'NSE', 'upstox_instrument_key' => null],
+        ]);
+
+        app(UpstoxInstrumentSyncService::class)->ensureIndexInstrumentKeys();
+
+        $this->assertDatabaseHas('indices', ['index_code' => 'NIFTY_OIL_AND_GAS', 'upstox_instrument_key' => null]);
+        $this->assertDatabaseHas('indices', ['index_code' => 'LEGACY_OIL_GAS', 'upstox_instrument_key' => 'NSE_INDEX|Nifty Oil And Gas']);
+    }
+
     public function test_it_syncs_both_exchange_keys_and_adds_missing_instruments(): void
     {
         Equity::create([

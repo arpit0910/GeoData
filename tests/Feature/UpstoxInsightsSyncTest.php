@@ -11,6 +11,39 @@ class UpstoxInsightsSyncTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_dedicated_activity_cron_runs_without_contacting_the_ipo_endpoint(): void
+    {
+        config([
+            'market_data.upstox.analytics_token' => null,
+            'market_data.upstox.access_token' => 'test-token',
+            'market_data.upstox.fii_url' => 'https://provider.test/v2/market/fii',
+            'market_data.upstox.dii_url' => 'https://provider.test/v2/market/dii',
+        ]);
+        Http::fake(function (Request $request) {
+            $this->assertStringNotContainsString('/ipos', $request->url());
+            return Http::response(['status' => 'success', 'data' => [
+                'NSE_EQ|CASH' => [[
+                    'time_stamp' => 1792175400000,
+                    'buy_amount' => 1200.5,
+                    'sell_amount' => 1000.25,
+                ]],
+            ]]);
+        });
+
+        $definition = collect(config('cron_jobs.jobs'))->firstWhere('title', 'market:sync-upstox-insights (FII/DII)');
+        $this->assertNotNull($definition);
+        $this->assertSame(['--only' => 'activity'], $definition['args']);
+        $this->artisan($definition['command'], $definition['args'])
+            ->expectsOutputToContain('Institutional activity synchronized. Received: 4; saved: 4')
+            ->assertSuccessful();
+        $this->artisan($definition['command'], $definition['args'])->assertSuccessful();
+
+        $this->assertDatabaseCount('institutional_activities', 4);
+        $this->assertDatabaseHas('institutional_activities', ['investor_type' => 'fii', 'interval' => '1D']);
+        $this->assertDatabaseHas('institutional_activities', ['investor_type' => 'dii', 'interval' => '1D']);
+        Http::assertSentCount(8);
+    }
+
     public function test_public_ipo_and_institutional_activity_are_synchronized(): void
     {
         config([

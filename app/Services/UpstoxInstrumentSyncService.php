@@ -855,6 +855,9 @@ class UpstoxInstrumentSyncService
             ->whereNotNull('upstox_instrument_key')
             ->where('upstox_instrument_key', '<>', '')
             ->pluck('upstox_instrument_key')
+            // MySQL's unique key is case-insensitive. Match that comparison
+            // here, including aliases imported with different capitalization.
+            ->map(fn ($key) => strtolower(rtrim((string) $key)))
             ->flip()
             ->all();
 
@@ -895,7 +898,8 @@ class UpstoxInstrumentSyncService
                 }
             }
 
-            if ($candidateKey && !isset($usedKeys[$candidateKey])) {
+            $keyIdentity = strtolower(rtrim((string) $candidateKey));
+            if ($candidateKey && !isset($usedKeys[$keyIdentity])) {
                 DB::table('indices')
                     ->where('index_code', $row->index_code)
                     ->update([
@@ -904,7 +908,7 @@ class UpstoxInstrumentSyncService
                         'updated_at' => $now,
                     ]);
 
-                $usedKeys[$candidateKey] = true;
+                $usedKeys[$keyIdentity] = true;
             }
         }
 
@@ -916,7 +920,8 @@ class UpstoxInstrumentSyncService
             $code = $def['index_code'];
             $key = $def['upstox_instrument_key'];
 
-            if (isset($existingCodes[$code]) || isset($usedKeys[$key])) {
+            $keyIdentity = strtolower(rtrim($key));
+            if (isset($existingCodes[$code]) || isset($usedKeys[$keyIdentity])) {
                 continue;
             }
 
@@ -931,11 +936,13 @@ class UpstoxInstrumentSyncService
             ];
 
             $existingCodes[$code] = true;
-            $usedKeys[$key] = true;
+            $usedKeys[$keyIdentity] = true;
         }
 
         if ($toInsert !== []) {
-            DB::table('indices')->insert($toInsert);
+            // Another live/EOD/admin worker may have added the same default
+            // since our snapshot. Preserve its row and attached quote history.
+            DB::table('indices')->insertOrIgnore($toInsert);
         }
 
         return DB::table('indices')

@@ -55,7 +55,7 @@ class CronLoggingTest extends TestCase
         $this->assertNotNull(CronLog::firstOrFail()->finished_at);
     }
 
-    public function test_admin_skips_upstox_without_a_token_or_error_log(): void
+    public function test_admin_logs_blocked_news_sync_as_a_failure_without_calling_the_provider(): void
     {
         config([
             'market_data.upstox.analytics_token' => null,
@@ -67,9 +67,9 @@ class CronLoggingTest extends TestCase
 
         $this->actingAs($admin)->postJson(route('admin.crons.run'), [
             'title' => 'market:sync-upstox-news',
-        ])->assertOk()->assertJsonPath('skipped', true);
+        ])->assertStatus(500)->assertJsonPath('success', false)->assertJsonPath('exit_code', 1);
 
-        $this->assertDatabaseCount('cron_logs', 0);
+        $this->assertDatabaseHas('cron_logs', ['title' => 'market:sync-upstox-news', 'status' => false, 'exit_code' => 1]);
         Http::assertNothingSent();
     }
 
@@ -238,6 +238,29 @@ class CronLoggingTest extends TestCase
             ->assertOk()
             ->assertSee('Running')
             ->assertSee('aria-label="Cron job is running"', false);
+    }
+
+    public function test_fii_dii_cron_is_visible_and_records_its_own_failure(): void
+    {
+        config([
+            'market_data.upstox.analytics_token' => null,
+            'market_data.upstox.access_token' => null,
+        ]);
+        $admin = User::factory()->create(['is_admin' => true]);
+        Http::fake();
+
+        $this->actingAs($admin)->get(route('admin.crons.index'))
+            ->assertOk()->assertSee('market:sync-upstox-insights (FII/DII)');
+        $this->actingAs($admin)->postJson(route('admin.crons.run'), [
+            'title' => 'market:sync-upstox-insights (FII/DII)',
+        ])->assertStatus(500)->assertJsonPath('success', false);
+
+        $this->assertDatabaseHas('cron_logs', [
+            'title' => 'market:sync-upstox-insights (FII/DII)',
+            'exit_code' => 1,
+            'status' => false,
+        ]);
+        Http::assertNothingSent();
     }
 
     private function setJobs(array $commands): void

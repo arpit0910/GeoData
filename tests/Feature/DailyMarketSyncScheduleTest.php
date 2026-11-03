@@ -25,6 +25,13 @@ class DailyMarketSyncScheduleTest extends TestCase
         $this->assertStringContainsString('market:sync-upstox-news --batch-size=30 --all --delay=250', $schedule);
         $this->assertSame(1, substr_count($schedule, 'market:sync-upstox-news --batch-size=30 --all --delay=250'));
         $this->assertStringContainsString('market:sync-upstox-insights', $schedule);
+        $this->assertStringContainsString('market:sync-upstox-insights --only=ipos', $schedule);
+        $this->assertStringContainsString('market:sync-upstox-insights --only=activity', $schedule);
+        $events = app(\Illuminate\Console\Scheduling\Schedule::class)->events();
+        $activity = collect($events)->first(fn ($event) => str_contains($event->command, '--only=activity'));
+        $this->assertNotNull($activity);
+        $this->assertSame('30 20 * * *', $activity->expression);
+        $this->assertSame('Asia/Kolkata', $activity->timezone);
         $this->assertStringNotContainsString('equities:sync-upstox-instruments', $schedule);
         $this->assertStringNotContainsString('mf:sync-upstox-daily', $schedule);
         $this->assertStringContainsString('market:rewrite-news --limit=20 --retry', $schedule);

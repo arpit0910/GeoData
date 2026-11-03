@@ -55,6 +55,18 @@ class UpstoxTokenManagementTest extends TestCase
         $this->assertTrue($renewal->filtersPass(app()));
         $news = collect($schedule->events())->first(fn ($event) => str_contains($event->command, 'market:sync-upstox-news'));
         $this->assertFalse($news->filtersPass(app()));
+        foreach (['market:sync-upstox-index-quotes', 'market:sync-upstox-quotes'] as $command) {
+            $quoteRun = collect($schedule->events())->first(fn ($event) => str_contains($event->command, $command));
+            $this->assertSame('* * * * 1-5', $quoteRun->expression);
+            // Evaluate during the trading window so the token check is the
+            // only potential blocker. Missing authorization must reach logging.
+            Carbon::setTestNow(Carbon::parse('2026-11-03 11:00:00', 'Asia/Kolkata'));
+            try {
+                $this->assertTrue($quoteRun->filtersPass(app()));
+            } finally {
+                Carbon::setTestNow();
+            }
+        }
 
         $this->artisan('market:ensure-upstox-token')->assertExitCode(0);
         $this->artisan('market:ensure-upstox-token')->assertExitCode(0);
@@ -66,9 +78,10 @@ class UpstoxTokenManagementTest extends TestCase
     {
         Http::fake();
         foreach (UpstoxTokenManager::DEPENDENT_COMMANDS as $command) {
+            $blocked = in_array($command, ['market:sync-upstox-quotes', 'market:sync-upstox-index-quotes', 'market:sync-upstox-news', 'market:sync-upstox-insights'], true);
             $this->artisan($command)
-                ->expectsOutputToContain('Skipped: No active Upstox token is available.')
-                ->assertExitCode(0);
+                ->expectsOutputToContain('No active Upstox token is available.')
+                ->assertExitCode($blocked ? 1 : 0);
         }
         Http::assertNothingSent();
     }

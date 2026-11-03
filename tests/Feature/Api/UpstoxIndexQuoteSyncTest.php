@@ -12,8 +12,54 @@ class UpstoxIndexQuoteSyncTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_live_refresh_preserves_the_existing_oil_and_gas_key_owner(): void
+    {
+        config([
+            'cache.default' => 'array',
+            'market_data.upstox.analytics_token' => null,
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.ltp_url' => 'https://api.upstox.test/v3/market-quote/ltp',
+        ]);
+        DB::table('indices')->insert([
+            'index_code' => 'NIFTY_OIL_GAS',
+            'index_name' => 'Nifty Oil And Gas',
+            'exchange' => 'NSE',
+            'upstox_instrument_key' => 'NSE_INDEX|Nifty Oil And Gas',
+        ]);
+        DB::table('index_quotes')->insert([
+            'index_code' => 'NIFTY_OIL_GAS',
+            'price' => 11000,
+            'quoted_at' => now()->subMinute()->utc()->format('Y-m-d H:i:s'),
+            'fetched_at' => now()->subMinute()->utc()->format('Y-m-d H:i:s'),
+        ]);
+        Http::fake(['*' => Http::response([
+            'status' => 'success',
+            'data' => ['NSE_INDEX:Nifty Oil And Gas' => [
+                'last_price' => 11200,
+                'cp' => 11000,
+            ]],
+        ])]);
+
+        // Exercise the production live command with the real default setup.
+        $this->artisan('market:sync-upstox-index-quotes', ['--quoted-only' => true])->assertSuccessful();
+        $this->artisan('market:sync-upstox-index-quotes', ['--quoted-only' => true])->assertSuccessful();
+
+        $this->assertDatabaseMissing('indices', ['index_code' => 'NIFTY_OIL_AND_GAS']);
+        $this->assertDatabaseHas('index_quotes', ['index_code' => 'NIFTY_OIL_GAS', 'price' => 11200]);
+        $this->assertSame(1, DB::table('index_quotes')->where('index_code', 'NIFTY_OIL_GAS')->count());
+    }
+
+    private function keepConfiguredIndexCatalog(): void
+    {
+        // These quote-path fixtures deliberately supply a small catalog.
+        // Default setup and alias collisions are covered by InstrumentSyncTest.
+        $this->mock(\App\Services\UpstoxInstrumentSyncService::class)
+            ->shouldReceive('ensureIndexInstrumentKeys')->andReturnUsing(fn () => DB::table('indices')->count());
+    }
+
     public function test_command_fetches_and_stores_live_index_quotes(): void
     {
+        $this->keepConfiguredIndexCatalog();
         config([
             'cache.default' => 'array',
             'market_data.upstox.access_token' => 'test-access-token',
@@ -88,7 +134,6 @@ class UpstoxIndexQuoteSyncTest extends TestCase
 
         // Command auto-bootstraps keys instead of failing with missing keys error
         $this->artisan('market:sync-upstox-index-quotes')
-            ->expectsOutputToContain('Initializing index instrument keys...')
             ->assertExitCode(0);
 
         $this->assertGreaterThan(0, DB::table('indices')->whereNotNull('upstox_instrument_key')->count());
@@ -104,6 +149,7 @@ class UpstoxIndexQuoteSyncTest extends TestCase
 
     public function test_invalid_index_key_does_not_block_valid_quotes_in_the_same_batch(): void
     {
+        $this->keepConfiguredIndexCatalog();
         config([
             'cache.default' => 'array',
             'market_data.upstox.access_token' => 'test-access-token',
@@ -158,6 +204,7 @@ class UpstoxIndexQuoteSyncTest extends TestCase
 
     public function test_minute_refresh_requests_only_indices_with_a_valid_stored_quote(): void
     {
+        $this->keepConfiguredIndexCatalog();
         config([
             'cache.default' => 'array',
             'market_data.upstox.access_token' => 'test-access-token',

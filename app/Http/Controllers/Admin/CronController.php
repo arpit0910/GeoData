@@ -67,6 +67,7 @@ class CronController extends Controller
         }
 
         if (in_array($cron['command'], UpstoxTokenManager::DEPENDENT_COMMANDS, true)
+            && ! in_array($cron['command'], ['market:sync-upstox-quotes', 'market:sync-upstox-index-quotes', 'market:sync-upstox-news', 'market:sync-upstox-insights'], true)
             && ! app(UpstoxTokenManager::class)->hasActiveToken()) {
             return response()->json([
                 'success' => true,
