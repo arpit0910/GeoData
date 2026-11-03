@@ -38,4 +38,14 @@ class Amc extends Model
     {
         return $this->hasMany(MfMaster::class, 'amc_name', 'name');
     }
+
+    public function getWebsiteUrlAttribute(): ?string
+    {
+        $url = trim((string) $this->website);
+        if ($url !== '' && ! preg_match('~^[a-z][a-z0-9+.-]*:~i', $url)) {
+            $url = 'https://'.$url;
+        }
+        return filter_var($url, FILTER_VALIDATE_URL) && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true)
+            ? $url : null;
+    }
 }

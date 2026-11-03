@@ -251,7 +251,7 @@
 
                     {{-- Mutual Funds Dropdown --}}
                     @php
-                        $isMfActive = request()->routeIs('mutual-funds.*');
+                        $isMfActive = request()->routeIs('mutual-funds.*') || request()->routeIs('admin.amcs.*');
                     @endphp
                     <div x-data="{ open: {{ $isMfActive ? 'true' : 'false' }} }">
                         <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-lg {{ $isMfActive ? 'text-white bg-amber-700/60 dark:bg-amber-500/10 dark:text-amber-400 font-semibold' : 'text-amber-100 dark:text-gray-400 hover:bg-amber-500/80 dark:hover:bg-white/5 hover:text-white dark:hover:text-white' }} transition-all duration-200">
@@ -269,6 +269,10 @@
                             <a href="{{ route('mutual-funds.prices') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('mutual-funds.prices*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('mutual-funds.prices*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
                                 <span class="truncate">MF NAV Prices</span>
+                            </a>
+                            <a href="{{ route('admin.amcs.index') }}" @if(request()->routeIs('admin.amcs.*')) aria-current="page" @endif class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.amcs.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current opacity-40"></span>
+                                <span class="truncate">AMCs</span>
                             </a>
                         </div>
                     </div>

@@ -277,6 +277,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{isin}', [App\Http\Controllers\Admin\MfController::class, 'show'])->name('show');
     });
 
+    Route::get('admin/amcs', [App\Http\Controllers\Admin\AmcController::class, 'index'])->name('admin.amcs.index');
+    Route::get('admin/amcs/{amc}', [App\Http\Controllers\Admin\AmcController::class, 'show'])->name('admin.amcs.show');
+
     // Cron Management
     Route::prefix('crons')->name('admin.crons.')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\CronController::class, 'index'])->name('index');
