@@ -95,6 +95,7 @@ class MutualFundDetailsService
             }
         }
 
+        $amc = \App\Models\Amc::where('name', $scheme->amc_name)->first();
         return [
             'id' => (int) $scheme->id,
             'requested_isin' => $isin,
@@ -103,6 +104,8 @@ class MutualFundDetailsService
             'isin_reinvest' => $scheme->isin_reinvest,
             'scheme_name' => $scheme->scheme_name,
             'amc_name' => $scheme->amc_name,
+            'amc' => $amc?->toArray(),
+            'amc_icon_url' => $amc?->icon_url,
             'category' => $scheme->category,
             'sub_category' => $scheme->sub_category,
             'type' => $scheme->type,

@@ -36,6 +36,11 @@ class MfMaster extends Model
         return $this->hasMany(MfNavHistory::class, 'isin', 'isin');
     }
 
+    public function amc()
+    {
+        return $this->belongsTo(Amc::class, 'amc_name', 'name');
+    }
+
     public function latestNav()
     {
         return $this->hasOne(MfNavHistory::class, 'isin', 'isin')

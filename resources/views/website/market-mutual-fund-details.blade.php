@@ -46,6 +46,7 @@
                 <section class="market-panel p-5 sm:p-6 lg:col-span-2" aria-labelledby="mf-scheme-heading">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0">
+                            @if($fund['amc_icon_url'])<img src="{{ $fund['amc_icon_url'] }}" alt="{{ $fund['amc_name'] }}" width="48" height="48" class="mb-3 h-12 w-12 rounded bg-white object-contain p-1">@endif
                             <p class="market-kicker">{{ $fund['category'] ?: 'Mutual fund' }}</p>
                             <h2 id="mf-scheme-heading" class="mt-2 break-words text-xl font-extrabold leading-tight text-white sm:text-2xl">{{ $fund['scheme_name'] }}</h2>
                             <p class="mt-2 break-words text-sm market-muted">{{ $fund['amc_name'] ?: 'AMC unavailable' }}</p>

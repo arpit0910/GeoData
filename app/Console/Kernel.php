@@ -12,6 +12,9 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule)
     {
+        $this->markScheduled($schedule->command('amcs:sync-icons')
+            ->monthlyOn(1, '05:30')->timezone('Asia/Kolkata')
+            ->runInBackground()->withoutOverlapping(120));
         $this->markScheduled($schedule->command('market:sync-daily-masters')
             ->dailyAt('00:00')->timezone('Asia/Kolkata')
             ->runInBackground()->withoutOverlapping(1440));

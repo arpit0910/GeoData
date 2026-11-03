@@ -9,6 +9,13 @@ return [
         'url' => env('EQUITY_ICON_URL', 'https://company-logo.shareperks.in/logo/{isin}/icon.svg'),
     ],
 
+    'amc_icons' => [
+        // Official AMC source where AMFI does not yet publish an icon.
+        'sources' => [
+            91 => 'https://carnelianmf.com/_files/media/01a0c7ec-70f3-7059-a143-544f8e604e61/carnelian-logo-mf-linear-bold.svg',
+        ],
+    ],
+
     'upstox' => [
         'analytics_token' => env('UPSTOX_ANALYTICS_TOKEN'),
         'access_token' => env('UPSTOX_ACCESS_TOKEN') ?: env('UPSTOX_TOKEN'),

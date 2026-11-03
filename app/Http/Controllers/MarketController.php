@@ -548,11 +548,13 @@ class MarketController extends Controller
                 $join->on('mutual_funds.isin', '=', 'latest_mfp.isin');
             })
             ->leftJoin('mutual_fund_prices', 'latest_mfp.latest_mf_price_id', '=', 'mutual_fund_prices.id')
+            ->leftJoin('amcs', 'mutual_funds.amc_name', '=', 'amcs.name')
             ->select([
                 'mutual_funds.isin',
                 'mutual_funds.scheme_code',
                 'mutual_funds.scheme_name',
                 'mutual_funds.amc_name',
+                'amcs.logo_path as amc_icon_path',
                 'mutual_funds.category',
                 'mutual_funds.sub_category',
                 'mutual_funds.type',

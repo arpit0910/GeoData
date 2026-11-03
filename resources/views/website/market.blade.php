@@ -118,9 +118,24 @@
                         </div>
                         <div class="divide-y divide-white/[.06]">
                             @forelse($ipos as $ipo)
-                                <article class="flex items-center justify-between gap-4 px-5 py-4">
-                                    <div class="min-w-0"><div class="truncate font-bold text-white">{{ $ipo->name }}</div><div class="mt-1 text-xs market-muted">{{ $ipo->bidding_start_date?->format('d M') ?: 'TBA' }} – {{ $ipo->bidding_end_date?->format('d M Y') ?: 'TBA' }}{{ $ipo->issue_type ? ' · '.$ipo->issue_type : '' }}</div></div>
-                                    <div class="shrink-0 text-right"><span class="market-chip uppercase">{{ $ipo->status }}</span><div class="mt-2 text-xs font-bold text-slate-300">{{ $ipo->minimum_price !== null ? '₹'.number_format($ipo->minimum_price, 0) : 'Price TBA' }}{{ $ipo->maximum_price !== null ? ' – ₹'.number_format($ipo->maximum_price, 0) : '' }}</div></div>
+                                <article class="min-w-0 px-5 py-5">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="min-w-0">
+                                            <h4 class="break-words font-bold leading-6 text-white">{{ $ipo->name }}</h4>
+                                            <p class="mt-1 text-xs leading-5 market-muted">Bidding: {{ $ipo->bidding_start_date?->format('d M Y') ?: 'TBA' }} &ndash; {{ $ipo->bidding_end_date?->format('d M Y') ?: 'TBA' }}</p>
+                                        </div>
+                                        <span class="market-chip shrink-0 uppercase">{{ $ipo->status }}</span>
+                                    </div>
+                                    <div class="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                                        <div><span class="block text-xs text-slate-400">Price band</span><span class="mt-1 block font-semibold text-white">{{ $ipo->minimum_price !== null ? '₹'.number_format($ipo->minimum_price, 2) : 'TBA' }}{{ $ipo->maximum_price !== null ? ' – ₹'.number_format($ipo->maximum_price, 2) : '' }}</span></div>
+                                        @if($ipo->total_subscription !== null)<div><span class="block text-xs text-slate-400">Subscription</span><span class="mt-1 block font-semibold text-white">{{ number_format($ipo->total_subscription, 2) }}&times;</span></div>@endif
+                                        @if(data_get($ipo->details, 'lot_size') !== null)<div><span class="block text-xs text-slate-400">Lot size</span><span class="mt-1 block font-semibold text-white">{{ data_get($ipo->details, 'lot_size') }}</span></div>@endif
+                                    </div>
+                                    <details class="mt-4 border-t border-slate-700 pt-3">
+                                        <summary class="cursor-pointer rounded text-sm font-bold text-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300">All details for {{ $ipo->symbol ?: $ipo->name }}</summary>
+                                        <div class="mt-4">@include('website.partials.ipo-fields', ['fields' => $ipo->calendarDetails()])</div>
+                                        @if($ipo->synced_at)<p class="mt-4 text-xs text-slate-400">Synced {{ $ipo->synced_at->timezone('Asia/Kolkata')->format('d M Y, H:i') }} IST</p>@endif
+                                    </details>
                                 </article>
                             @empty
                                 <div class="px-5 py-12 text-center text-sm market-muted">IPO data will appear after the next synchronization.</div>

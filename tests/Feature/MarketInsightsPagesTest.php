@@ -44,6 +44,31 @@ class MarketInsightsPagesTest extends TestCase
             ->assertSee('Example Industries IPO');
     }
 
+    public function test_ipo_calendar_displays_all_stored_details_and_escapes_provider_content(): void
+    {
+        $this->seedInsights();
+        Ipo::firstOrFail()->update([
+            'isin' => 'INE000000001', 'industry' => 'Manufacturing', 'issue_size' => 500,
+            'total_subscription' => 2.5,
+            'details' => [
+                'lot_size' => 100,
+                'timeline' => ['allotment_date' => '2026-10-22', 'listing_date' => '2026-10-26'],
+                'subscription' => ['retail' => 1.25, 'qib' => 3.5],
+                'documents' => ['prospectus' => 'https://example.test/prospectus.pdf'],
+                'purchase_allowed' => false, 'reserved_shares' => 0,
+                'description' => '<script>alert("provider")</script>',
+            ],
+        ]);
+        cache()->forget('website.market.overview');
+        $this->get(route('market.index'))->assertOk()
+            ->assertSee('INE000000001')->assertSee('Manufacturing')->assertSee('500')
+            ->assertSee('Lot size')->assertSee('100')->assertSee('2.50')
+            ->assertSee('Allotment Date')->assertSee('2026-10-22')->assertSee('2026-10-26')
+            ->assertSee('Retail')->assertSee('1.25')->assertSee('https://example.test/prospectus.pdf')
+            ->assertSee('No')->assertSee('Reserved Shares')
+            ->assertSee('&lt;script&gt;', false)->assertDontSee('<script>alert("provider")</script>', false);
+    }
+
     private function seedInsights(): void
     {
         Ipo::create([

@@ -36,6 +36,7 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/ocr/health', [OcrController::class, 'health']);
     Route::prefix('market')->group(function () {
+        Route::get('/amcs', [\App\Http\Controllers\Api\AmcController::class, 'index']);
         Route::get('/stocks', [MarketDataController::class, 'stocks']);
         Route::get('/mutual-funds', [MarketDataController::class, 'mutualFunds']);
         Route::get('/mf', [MarketDataController::class, 'mutualFunds']);

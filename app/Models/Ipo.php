@@ -25,4 +25,23 @@ class Ipo extends Model
         'details' => 'array',
         'synced_at' => 'datetime',
     ];
+
+    public function calendarDetails(): array
+    {
+        $details = $this->only([
+            'symbol', 'isin', 'issue_type', 'issue_size', 'industry',
+            'minimum_price', 'maximum_price', 'bidding_start_date',
+            'bidding_end_date', 'total_subscription',
+        ]);
+        foreach ($details as $key => $value) {
+            if ($value instanceof \DateTimeInterface) {
+                $details[$key] = $value->format('d M Y');
+            }
+        }
+        // Preserve every extra provider field, including nested schedules,
+        // subscription categories, offer documents and listing information.
+        $details = array_replace($this->details ?? [], array_filter($details, fn ($value) => $value !== null));
+        unset($details['id'], $details['name'], $details['status']);
+        return array_filter($details, fn ($value) => $value !== null && $value !== '' && $value !== []);
+    }
 }

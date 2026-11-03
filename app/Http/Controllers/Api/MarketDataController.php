@@ -244,11 +244,13 @@ class MarketDataController extends Controller
                 $join->on('mutual_funds.isin', '=', 'latest_mfp.isin');
             })
             ->leftJoin('mutual_fund_prices', 'latest_mfp.latest_mf_price_id', '=', 'mutual_fund_prices.id')
+            ->leftJoin('amcs', 'mutual_funds.amc_name', '=', 'amcs.name')
             ->select([
                 'mutual_funds.isin',
                 'mutual_funds.scheme_code',
                 'mutual_funds.scheme_name',
                 'mutual_funds.amc_name',
+                'amcs.logo_path as amc_icon_path',
                 'mutual_funds.category',
                 'mutual_funds.sub_category',
                 'mutual_funds.type',
@@ -299,6 +301,11 @@ class MarketDataController extends Controller
         $perPage = min(max((int) $request->input('per_page', 50), 10), 1000);
         $page = max((int) $request->input('page', 1), 1);
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $paginator->getCollection()->transform(function ($fund) {
+            $fund->amc_icon_url = $fund->amc_icon_path ? asset($fund->amc_icon_path) : null;
+            unset($fund->amc_icon_path);
+            return $fund;
+        });
 
         return response()->json([
             'success' => true,
