@@ -1,5 +1,7 @@
 # Latest equity quotes
 
+For the public AMC directory and locally saved favicons, see [AMC list API](amc-api.md) (`GET /api/v1/market/amcs`). The website documentation includes the endpoint at `/docs#amc-list`.
+
 `market:sync-upstox-quotes` reads every active mapped record from `equities`,
 selects the NSE Upstox instrument key when available (otherwise BSE), and saves
 one latest snapshot per ISIN in `equity_quotes`. Every run processes the full

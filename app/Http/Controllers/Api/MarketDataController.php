@@ -303,6 +303,7 @@ class MarketDataController extends Controller
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
         $paginator->getCollection()->transform(function ($fund) {
             $fund->amc_icon_url = $fund->amc_icon_path ? asset($fund->amc_icon_path) : null;
+            $fund->amc_favicon_url = $fund->amc_icon_url;
             unset($fund->amc_icon_path);
             return $fund;
         });

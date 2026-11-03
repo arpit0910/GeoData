@@ -12,7 +12,7 @@ return [
     'amc_icons' => [
         // Official AMC source where AMFI does not yet publish an icon.
         'sources' => [
-            91 => 'https://carnelianmf.com/_files/media/01a0c7ec-70f3-7059-a143-544f8e604e61/carnelian-logo-mf-linear-bold.svg',
+            91 => 'https://carnelianmf.com/_files/media/01a0c7ec-70f3-7059-a143-544f8e604e61/carnelian-favicon.ico',
         ],
     ],
 

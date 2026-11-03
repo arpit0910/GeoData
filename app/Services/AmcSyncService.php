@@ -41,17 +41,24 @@ class AmcSyncService
                 if (! str_starts_with($source, 'https://www.amfiindia.com/uploads/') && $source !== $override) {
                     throw new RuntimeException('Unexpected AMC icon source.');
                 }
-                if (! $force && $amc->logo_source_url === $source && $amc->logo_path && File::isFile(public_path($amc->logo_path))) {
+                if (! $force && $amc->logo_path && str_starts_with($amc->logo_path, 'assets/amc-favicons/') && File::isFile(public_path($amc->logo_path))
+                    && ($amc->logo_source_url === $source || ! str_starts_with((string) $amc->logo_source_url, 'https://www.amfiindia.com/uploads/'))) {
                     $stats['existing']++;
                     continue;
                 }
                 $body = $this->request()->get($source)->throw()->body();
+                // AMFI's square icon is already favicon-sized. Where its
+                // "icon" is actually a wide wordmark, use the AMC site's
+                // real favicon instead of saving a full corporate logo.
+                if ($this->isWideImage($body)) {
+                    [$source, $body] = $this->websiteFavicon($member);
+                }
                 // CorelDRAW/Illustrator exports include an external SVG DTD.
                 // Remove that declaration; never load it or allow entities.
                 $body = preg_replace('/<!DOCTYPE\s+svg\s+(?:PUBLIC\s+"[^"]*"\s+"[^"]*"|SYSTEM\s+"[^"]*")\s*>/i', '', $body);
                 $extension = $this->imageExtension($body);
-                $path = 'assets/amc-icons/'.$amc->amfi_id.'-'.substr(hash('sha256', $body), 0, 16).'.'.$extension;
-                File::ensureDirectoryExists(public_path('assets/amc-icons'));
+                $path = 'assets/amc-favicons/'.$amc->amfi_id.'-'.substr(hash('sha256', $body), 0, 16).'.'.$extension;
+                File::ensureDirectoryExists(public_path('assets/amc-favicons'));
                 File::put(public_path($path), $body);
                 $amc->update(['logo_path' => $path, 'logo_source_url' => $source, 'icon_synced_at' => now()]);
                 $stats['downloaded']++;
@@ -119,10 +126,65 @@ class AmcSyncService
             }
             return 'svg';
         }
+        if (strlen($body) >= 22 && substr($body, 0, 4) === "\x00\x00\x01\x00") {
+            return 'ico';
+        }
         $mime = (@getimagesizefromstring($body))['mime'] ?? null;
         return match ($mime) {
             'image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp', 'image/gif' => 'gif',
             default => throw new RuntimeException('AMFI did not return a supported image.'),
         };
+    }
+
+    private function isWideImage(string $body): bool
+    {
+        if (preg_match('/viewBox=["\']\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)\s*["\']/i', $body, $box)) {
+            return (float) $box[4] > 0 && (float) $box[3] / (float) $box[4] > 1.5;
+        }
+        $image = @getimagesizefromstring($body);
+        return $image && $image[1] > 0 && $image[0] / $image[1] > 1.5;
+    }
+
+    private function websiteFavicon(array $member): array
+    {
+        $website = trim((string) ($member['amc_website'] ?? ''));
+        if ($website !== '' && ! preg_match('~^https?://~i', $website)) {
+            $website = 'https://'.$website;
+        }
+        $host = parse_url($website, PHP_URL_HOST);
+        if (! $host || ! str_contains($host, '.') || ! in_array(parse_url($website, PHP_URL_SCHEME), ['http', 'https'], true)) {
+            throw new RuntimeException('No official website is available for favicon discovery.');
+        }
+        $response = $this->request()->get($website)->throw();
+        $website = (string) ($response->effectiveUri() ?: $website);
+        $html = $response->body();
+        $dom = new \DOMDocument();
+        @$dom->loadHTML($html, LIBXML_NONET);
+        $base = $dom->getElementsByTagName('base')->item(0)?->getAttribute('href');
+        if ($base) {
+            $website = (string) \GuzzleHttp\Psr7\UriResolver::resolve(new \GuzzleHttp\Psr7\Uri($website), new \GuzzleHttp\Psr7\Uri($base));
+        }
+        $candidates = [];
+        foreach ($dom->getElementsByTagName('link') as $link) {
+            if (preg_match('/(?:^|\s)(?:icon|apple-touch-icon)(?:\s|$)/i', $link->getAttribute('rel'))) {
+                $candidates[] = (string) \GuzzleHttp\Psr7\UriResolver::resolve(new \GuzzleHttp\Psr7\Uri($website), new \GuzzleHttp\Psr7\Uri($link->getAttribute('href')));
+            }
+        }
+        $candidates[] = parse_url($website, PHP_URL_SCHEME).'://'.$host.'/favicon.ico';
+        foreach (array_unique($candidates) as $url) {
+            if (! in_array(parse_url($url, PHP_URL_SCHEME), ['http', 'https'], true)) {
+                continue;
+            }
+            try {
+                $body = $this->request()->get($url)->throw()->body();
+                $this->imageExtension(preg_replace('/<!DOCTYPE[^>]*>/i', '', $body));
+                if (! $this->isWideImage($body)) {
+                    return [$url, $body];
+                }
+            } catch (Throwable) {
+                // Try the next published favicon; never substitute a wordmark.
+            }
+        }
+        throw new RuntimeException('The official AMC website did not provide a usable favicon.');
     }
 }

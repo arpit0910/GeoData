@@ -55,6 +55,11 @@ class MfApiController extends Controller
         if ($amc  = $request->amc_name)   $query->where('m.amc_name', $amc);
 
         $paginated = $query->orderBy('m.scheme_name')->paginate($perPage);
+        $amcs = \App\Models\Amc::whereIn('name', $paginated->getCollection()->pluck('amc_name'))->get()->keyBy('name');
+        $paginated->getCollection()->transform(function ($fund) use ($amcs) {
+            $fund->amc_favicon_url = $amcs->get($fund->amc_name)?->favicon_url;
+            return $fund;
+        });
 
         return response()->json([
             'success' => true,
@@ -366,6 +371,10 @@ class MfApiController extends Controller
         if ($category) $query->where('m.category', $category);
 
         $data = $query->limit($limit)->get();
+        $amcs = \App\Models\Amc::whereIn('name', $data->pluck('amc_name'))->get()->keyBy('name');
+        $data->each(function ($row) use ($amcs) {
+            $row->amc_favicon_url = $amcs->get($row->amc_name)?->favicon_url;
+        });
 
         return response()->json(['success' => true, 'period' => $period, 'nav_date' => $latestDate, 'data' => $data]);
     }

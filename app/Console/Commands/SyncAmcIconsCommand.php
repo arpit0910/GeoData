@@ -9,7 +9,7 @@ use Throwable;
 class SyncAmcIconsCommand extends Command
 {
     protected $signature = 'amcs:sync-icons {--force : Download existing AMC icons again}';
-    protected $description = 'Sync all AMC details and save their icons locally from the AMFI directory';
+    protected $description = 'Sync all AMC details and save small favicons locally from AMFI or official AMC websites';
 
     public function handle(AmcSyncService $service): int
     {
@@ -19,7 +19,7 @@ class SyncAmcIconsCommand extends Command
             foreach ($stats['errors'] as $error) {
                 $this->warn($error);
             }
-            $this->info("AMC sync: {$stats['saved']} saved, {$stats['downloaded']} icons downloaded, {$stats['existing']} already present, ".count($stats['errors']).' failed.');
+            $this->info("AMC sync: {$stats['saved']} saved, {$stats['downloaded']} favicons downloaded, {$stats['existing']} already present, ".count($stats['errors']).' failed.');
             return $stats['errors'] === [] ? self::SUCCESS : self::FAILURE;
         } catch (Throwable $exception) {
             $this->error('AMC sync failed: '.$exception->getMessage());

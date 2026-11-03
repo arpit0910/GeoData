@@ -106,6 +106,7 @@ class MutualFundDetailsService
             'amc_name' => $scheme->amc_name,
             'amc' => $amc?->toArray(),
             'amc_icon_url' => $amc?->icon_url,
+            'amc_favicon_url' => $amc?->favicon_url,
             'category' => $scheme->category,
             'sub_category' => $scheme->sub_category,
             'type' => $scheme->type,

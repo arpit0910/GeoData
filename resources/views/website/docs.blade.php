@@ -87,6 +87,8 @@
                                 <li><a href="#market-sync-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Market
                                         Data &amp; Real-Time Sync</a></li>
+                                <li><a href="#amc-list"
+                                        class="text-sm font-medium hover:text-amber-500 transition-colors">AMC List &amp; Favicons</a></li>
                                 <li><a href="#country-economic-api"
                                         class="text-sm font-medium hover:text-amber-500 transition-colors">Country
                                         Economic Data</a></li>
@@ -3113,6 +3115,43 @@ curl -X GET "https://setugeo.com/api/v1/market/stocks?instrument_type=stocks&per
     <span class="text-blue-400">"to"</span>: <span class="text-blue-400">50</span>
   }
 }</pre></div>
+                                        </div>
+                                    </div>
+
+                                    <div id="amc-list" class="bg-gray-900/40 rounded-xl border border-gray-800 overflow-hidden scroll-mt-24">
+                                        <div class="px-6 py-4 bg-gray-900/60 border-b border-gray-800 flex flex-wrap items-center justify-between gap-3">
+                                            <h3 class="text-base sm:text-lg font-bold text-white"><span class="text-blue-400 mr-2">GET</span> /market/amcs</h3>
+                                            <span class="text-xs font-semibold text-green-400">Public &middot; No authentication required</span>
+                                        </div>
+                                        <div class="p-6 text-gray-400">
+                                            <p class="mb-4">Returns every saved asset management company (AMC), sorted alphabetically by name, with company details, website, and its locally saved favicon. No query parameters or pagination are required.</p>
+                                            <h4 class="mb-2 font-bold text-white">Request</h4>
+                                            <pre class="mb-6 overflow-x-auto rounded-lg bg-gray-950 p-4 text-xs text-amber-400">curl "https://setugeo.com/api/v1/market/amcs"</pre>
+                                            <h4 class="mb-2 font-bold text-white">Response fields</h4>
+                                            <dl class="mb-6 space-y-3 text-sm">
+                                                <div><dt class="font-mono text-amber-400">success</dt><dd>Boolean indicating a successful request.</dd></div>
+                                                <div><dt class="font-mono text-amber-400">data</dt><dd>Array of AMC records. Returns an empty array when no AMCs have been synchronized.</dd></div>
+                                                <div><dt class="font-mono text-amber-400">id, amfi_id, name, company_name, website</dt><dd>Local ID, AMFI member ID, fund house name, asset management company name, and official website.</dd></div>
+                                                <div><dt class="font-mono text-amber-400">favicon_url</dt><dd>Absolute URL of the locally saved favicon, or <code class="text-white">null</code> when unavailable. <code class="text-white">icon_url</code> is an alias for this URL. The saved path and original source are available as <code class="text-white">favicon_path</code> and <code class="text-white">favicon_source_url</code>.</dd></div>
+                                                <div><dt class="font-mono text-amber-400">details</dt><dd>Additional AMC information saved from the AMFI directory.</dd></div>
+                                                <div><dt class="font-mono text-amber-400">synced_at, icon_synced_at, created_at, updated_at</dt><dd>Details synchronization, favicon synchronization, and record timestamps. Unsynchronized timestamps may be null.</dd></div>
+                                            </dl>
+                                            <h4 class="mb-2 font-bold text-white">Example response (abbreviated)</h4>
+                                            <pre class="overflow-x-auto rounded-lg bg-gray-950 p-4 text-xs text-slate-200">{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "amfi_id": 53,
+      "name": "Axis Mutual Fund",
+      "company_name": "Axis Asset Management Co. Ltd.",
+      "website": "https://www.axismf.com",
+      "favicon_url": "https://setugeo.com/assets/amc-favicons/53-example.svg",
+      "details": {},
+      "synced_at": "2026-11-03T06:00:00.000000Z"
+    }
+  ]
+}</pre>
                                         </div>
                                     </div>
 

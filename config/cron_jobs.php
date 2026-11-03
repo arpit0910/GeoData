@@ -6,7 +6,7 @@ return [
             'title' => 'amcs:sync-icons',
             'command' => 'amcs:sync-icons',
             'args' => [],
-            'description' => 'Saves AMC details and icons from the AMFI directory; existing local icons are reused.',
+            'description' => 'Saves AMC details and small favicons from AMFI or official AMC websites; existing favicons are reused.',
             'schedule' => 'Monthly on day 1 at 05:30 IST',
             'timezone' => 'Asia/Kolkata',
             'overlap' => false,

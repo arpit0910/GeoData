@@ -10,11 +10,28 @@ class Amc extends Model
 
     protected $casts = ['details' => 'array', 'synced_at' => 'datetime', 'icon_synced_at' => 'datetime'];
 
-    protected $appends = ['icon_url'];
+    protected $appends = ['favicon_url', 'favicon_path', 'favicon_source_url', 'icon_url'];
+
+    protected $hidden = ['logo_path', 'logo_source_url'];
+
+    public function getFaviconPathAttribute(): ?string
+    {
+        return $this->logo_path;
+    }
+
+    public function getFaviconSourceUrlAttribute(): ?string
+    {
+        return $this->logo_source_url;
+    }
+
+    public function getFaviconUrlAttribute(): ?string
+    {
+        return $this->logo_path ? asset($this->logo_path) : null;
+    }
 
     public function getIconUrlAttribute(): ?string
     {
-        return $this->logo_path ? asset($this->logo_path) : null;
+        return $this->favicon_url;
     }
 
     public function funds()
