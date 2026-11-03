@@ -35,7 +35,7 @@ return [
             'command' => 'market:ensure-upstox-token',
             'args' => [],
             'description' => 'Requests an Upstox access token after the previous daily token expires; account holder approval is required.',
-            'schedule' => 'Every minute when no active token is available',
+            'schedule' => 'Hourly when no active token is available',
             'timezone' => 'Asia/Kolkata',
             'overlap' => true,
         ],

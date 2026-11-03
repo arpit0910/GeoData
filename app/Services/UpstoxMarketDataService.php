@@ -463,12 +463,19 @@ class UpstoxMarketDataService
             }
 
             $totalPages = (int) data_get($body, 'metadata.page.total_pages', 1);
+            // A successful empty result can have zero pages. It is not a
+            // failed batch and must not be placed back on the retry queue.
+            $hasNewsItems = collect($body['data'])->contains(fn ($items) => is_array($items) && $items !== []);
+            if ($totalPages === 0 && ! $hasNewsItems
+                && (int) data_get($body, 'metadata.page.total_records', 0) === 0) {
+                break;
+            }
             $reportedPageNumber = (int) data_get($body, 'metadata.page.page_number', $pageNumber);
             if ($reportedPageNumber !== $pageNumber) {
                 throw new RuntimeException('Upstox returned an unexpected news page number.');
             }
             if ($totalPages < 1 || $totalPages > self::MAX_NEWS_PAGES) {
-                throw new RuntimeException('Upstox returned invalid news pagination metadata.');
+                throw new RuntimeException("Upstox returned invalid news pagination metadata (total_pages={$totalPages}, page_number={$reportedPageNumber}).");
             }
             $pageNumber++;
         } while ($pageNumber <= $totalPages);

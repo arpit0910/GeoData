@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
         // Upstox daily access tokens expire at 03:30 IST. Request the next
         // token automatically; the account holder approves it in Upstox.
         $this->markScheduled($schedule->command('market:ensure-upstox-token')
-            ->everyMinute()->timezone('Asia/Kolkata')->withoutOverlapping(10)
+            ->hourly()->timezone('Asia/Kolkata')->withoutOverlapping(10)
             ->when(fn () => ! app(\App\Services\UpstoxTokenManager::class)->hasActiveToken()));
 
         // Repair any dates missed in the preceding two weeks. The command is

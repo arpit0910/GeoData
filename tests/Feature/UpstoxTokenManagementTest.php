@@ -51,7 +51,7 @@ class UpstoxTokenManagementTest extends TestCase
         $method->setAccessible(true);
         $method->invoke(app(\Illuminate\Contracts\Console\Kernel::class), $schedule);
         $renewal = collect($schedule->events())->first(fn ($event) => str_contains($event->command, 'market:ensure-upstox-token'));
-        $this->assertSame('* * * * *', $renewal->expression);
+        $this->assertSame('0 * * * *', $renewal->expression);
         $this->assertTrue($renewal->filtersPass(app()));
         $news = collect($schedule->events())->first(fn ($event) => str_contains($event->command, 'market:sync-upstox-news'));
         $this->assertFalse($news->filtersPass(app()));

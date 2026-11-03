@@ -22,6 +22,49 @@ class UpstoxNewsSyncTest extends TestCase
         Cache::forget('market_news_sync:retry_equity_ids');
     }
 
+    public function test_zero_pages_for_empty_news_is_a_successful_batch(): void
+    {
+        config([
+            'market_data.upstox.analytics_token' => null,
+            'market_data.upstox.access_token' => 'test-access-token',
+            'market_data.upstox.news_url' => 'https://provider.test/v2/news',
+        ]);
+        DB::table('equities')->insert([
+            'isin' => 'INE002A01018', 'company_name' => 'Reliance Industries',
+            'series' => 'EQ', 'is_active' => true,
+            'upstox_nse_instrument_key' => 'NSE_EQ|INE002A01018',
+        ]);
+        foreach ([[], ['NSE_EQ|INE002A01018' => []]] as $data) {
+            Http::fake(['*' => Http::response([
+                'status' => 'success', 'data' => $data,
+                'metadata' => ['page' => ['page_number' => 1, 'total_records' => 0, 'total_pages' => 0]],
+            ])]);
+
+            $this->artisan('market:sync-upstox-news', ['--delay' => 0])
+                ->expectsOutputToContain('0 batches failed')->assertSuccessful();
+            Http::assertSentCount(1);
+            $this->assertSame([], Cache::get('market_news_sync:retry_equity_ids', []));
+        }
+        $this->assertDatabaseCount('market_news', 0);
+    }
+
+    public function test_zero_pages_with_news_is_still_rejected(): void
+    {
+        config([
+            'market_data.upstox.analytics_token' => null,
+            'market_data.upstox.access_token' => 'test-access-token',
+        ]);
+        Http::fake(['*' => Http::response([
+            'status' => 'success',
+            'data' => ['NSE_EQ|INE002A01018' => [['heading' => 'A real news item']]],
+            'metadata' => ['page' => ['page_number' => 1, 'total_records' => 1, 'total_pages' => 0]],
+        ])]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('invalid news pagination metadata (total_pages=0');
+        app(\App\Services\UpstoxMarketDataService::class)->news(['NSE_EQ|INE002A01018']);
+    }
+
     public function test_news_sync_fails_before_querying_instruments_without_a_token(): void
     {
         config([
