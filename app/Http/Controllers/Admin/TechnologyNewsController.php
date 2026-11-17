@@ -101,7 +101,8 @@ class TechnologyNewsController extends Controller
     {
         $data = $r->validate(['name' => 'required|string|max:255', 'feed_url' => 'nullable|url|max:2048', 'is_active' => 'required|boolean',
             'sync_interval_minutes' => 'required|integer|min:60|max:10080|multiple_of:60', 'display_mode' => 'required|in:disabled,headline,excerpt',
-            'permission_reference' => 'nullable|url|max:2048', 'permission_notes' => 'nullable|string|max:4000', 'permissions_confirmed' => 'sometimes|accepted', 'allow_ai_rewrite' => 'sometimes|boolean', 'allow_feed_content' => 'sometimes|boolean']);
+            'permission_reference' => 'nullable|url|max:2048', 'permission_notes' => 'nullable|string|max:4000', 'permissions_confirmed' => 'sometimes|accepted', 'allow_ai_rewrite' => 'sometimes|boolean', 'allow_feed_content' => 'sometimes|boolean',
+            'feed_content_field' => 'sometimes|in:content,description', 'license_name' => 'nullable|string|max:120', 'license_url' => 'nullable|url|starts_with:https://|max:2048']);
         if ($source->source_type === 'rss') {
             $r->validate(['feed_url' => 'required|url']);
             try { $http->validateUrl($data['feed_url']); } catch (\Throwable $e) { throw \Illuminate\Validation\ValidationException::withMessages(['feed_url' => $e->getMessage()]); }
@@ -112,7 +113,8 @@ class TechnologyNewsController extends Controller
         } else { $data['permissions_verified_at'] = null; }
         unset($data['permissions_confirmed']);
         $data['base_url'] = $source->base_url ?: 'https://'.parse_url($data['feed_url'], PHP_URL_HOST);
-        if (($data['feed_url'] ?? null) !== $source->feed_url || ($data['allow_ai_rewrite'] ?? false) != $source->allow_ai_rewrite || ($data['allow_feed_content'] ?? false) != $source->allow_feed_content) { $data['etag'] = null; $data['last_modified'] = null; }
+        if (($data['feed_url'] ?? null) !== $source->feed_url || ($data['allow_ai_rewrite'] ?? false) != $source->allow_ai_rewrite || ($data['allow_feed_content'] ?? false) != $source->allow_feed_content
+            || ($data['feed_content_field'] ?? $source->feed_content_field) !== $source->feed_content_field) { $data['etag'] = null; $data['last_modified'] = null; }
         $source->fill($data)->save(); NewsCache::invalidate();
         return $this->reply($r, 'News source saved.');
     }

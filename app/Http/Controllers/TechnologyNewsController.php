@@ -18,7 +18,7 @@ class TechnologyNewsController extends Controller
     }
     public static function query(array $f, bool $public = true)
     {
-        $q = NewsArticle::with(['source:id,name,display_mode,permission_reference,permission_notes', 'category:id,name,slug']);
+        $q = NewsArticle::with(['source:id,name,display_mode,permission_reference,permission_notes,license_name,license_url', 'category:id,name,slug']);
         if ($public) { $q->published(); }
         if (!empty($f['q'])) {
             $search = '%'.addcslashes($f['q'], '%_\\').'%';
@@ -44,6 +44,8 @@ class TechnologyNewsController extends Controller
             'category' => $article->category, 'tags' => $article->ai_tags, 'source' => ['id' => $article->source_id, 'name' => $article->source->name],
             'editorial_note' => 'AI-assisted report, fact-checked against permitted source material.',
             'permission_reference' => $article->source->permission_reference,
+            'license' => ['name' => $article->source->license_name, 'url' => $article->source->license_url,
+                'changes' => 'AI-assisted paraphrasing and editing.'],
             'source_score' => $article->source_score];
     }
     public function index(Request $request)

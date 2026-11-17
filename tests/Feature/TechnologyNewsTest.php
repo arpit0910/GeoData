@@ -276,4 +276,31 @@ class TechnologyNewsTest extends TestCase
         $this->assertNotSame($oldHash, $a->content_hash);
         $this->assertSame('pending', $a->editorial_status);
     }
+    public function test_new_reviewed_sources_install_with_full_text_and_license_settings(): void
+    {
+        $names = ['Fedora Magazine', 'Electronic Frontier Foundation', 'The Document Foundation'];
+        $this->assertSame(3, NewsSource::whereIn('name', $names)->count());
+        foreach (NewsSource::whereIn('name', $names)->get() as $source) {
+            $this->assertTrue($source->allow_ai_rewrite); $this->assertTrue($source->allow_feed_content);
+            $this->assertNotNull($source->permissions_verified_at); $this->assertNotEmpty($source->license_name);
+            $this->assertStringStartsWith('https://creativecommons.org/licenses/', $source->license_url);
+        }
+        $eff = NewsSource::where('name', 'Electronic Frontier Foundation')->firstOrFail();
+        $this->assertSame('description', $eff->feed_content_field);
+        $this->artisan('news:install')->assertExitCode(0);
+        $this->assertSame(3, NewsSource::whereIn('name', $names)->count());
+        // setUp deactivated all sources; the installer must preserve that choice.
+        $this->assertFalse($eff->fresh()->is_active);
+    }
+    public function test_description_full_text_format_is_explicit_and_deduplicated(): void
+    {
+        $s = $this->source('rss'); $s->update(['allow_feed_content' => true, 'feed_content_field' => 'description']);
+        $xml = '<rss><channel><item><guid>eff-one</guid><title>Cybersecurity policy update</title><link>https://publisher.example/policy</link><pubDate>Mon, 16 Nov 2026 10:00:00 GMT</pubDate><description><![CDATA[<p>First full article paragraph.</p><p>Second full article paragraph.</p>]]></description></item></channel></rss>';
+        $this->fake(['*' => Http::response($xml)]); $this->assertSame('success', $this->sync($s));
+        $a = NewsArticle::firstOrFail(); $id = $a->id;
+        $this->assertSame("First full article paragraph.\n\nSecond full article paragraph.", $a->content);
+        $this->assertSame('success', $this->sync($s)); $this->assertSame(1, NewsArticle::count());
+        $this->assertSame($id, NewsArticle::first()->id);
+        $s->update(['allow_feed_content' => false]); $this->sync($s); $this->assertNull($a->fresh()->content);
+    }
 }

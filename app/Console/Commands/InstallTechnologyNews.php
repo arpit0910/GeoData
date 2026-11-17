@@ -20,16 +20,31 @@ class InstallTechnologyNews extends Command
             ['BBC News', 'rss', 'https://www.bbc.com', 'https://feeds.bbci.co.uk/news/technology/rss.xml', null, 'https://www.bbc.com/usingthebbc/terms/', 'Business RSS usage requires permission. Disabled pending a suitable licence.'],
             ['TechCrunch', 'rss', 'https://techcrunch.com', 'https://techcrunch.com/feed/', null, 'https://techcrunch.com/terms-of-service/', 'No commercial syndication permission verified. Disabled.'],
             ['The Verge', 'rss', 'https://www.theverge.com', 'https://www.theverge.com/rss/index.xml', null, 'https://www.voxmedia.com/legal/terms-of-use', 'No commercial syndication permission verified. Disabled.'],
-            ['NASA Technology', 'rss', 'https://www.nasa.gov', 'https://www.nasa.gov/technology/feed/', null, 'https://www.nasa.gov/nasa-brand-center/images-and-media/', 'Headline and source link only, factual editorial use, NASA attribution; no endorsement, third-party text, images, or logos.'],
-            ['Mozilla Blog', 'rss', 'https://blog.mozilla.org', 'https://blog.mozilla.org/en/feed/', null, 'https://www.mozilla.org/en-US/foundation/licensing/website-content/', 'Attributed headlines under CC BY-SA 3.0 or later, unless otherwise indicated. No excerpts, images or trademarks. Source text remains under its original licence.'],
+            ['NASA Technology', 'rss', 'https://www.nasa.gov', 'https://www.nasa.gov/technology/feed/', null, 'https://www.nasa.gov/nasa-brand-center/images-and-media/', 'Original NASA feed text for factual editorial adaptations with attribution. No endorsement, third-party text, images or logos.'],
+            ['Mozilla Blog', 'rss', 'https://blog.mozilla.org', 'https://blog.mozilla.org/en/feed/', null, 'https://www.mozilla.org/en-US/foundation/licensing/website-content/', 'Original feed text and adaptations under CC BY-SA 3.0 or later, unless otherwise indicated. Attribute Mozilla and author, link the original and licence, mark changes and retain ShareAlike. No images or trademarks.'],
+            ['Fedora Magazine', 'rss', 'https://fedoramagazine.org', 'https://fedoramagazine.org/feed/', null, 'https://fedoramagazine.org/terms-and-conditions/', 'Original text under CC BY-SA 4.0 unless marked otherwise. Attribute By [author] from Fedora Magazine, link the original and licence, indicate adaptations and retain ShareAlike. No images, logos or separately restricted content.'],
+            ['Electronic Frontier Foundation', 'rss', 'https://www.eff.org', 'https://www.eff.org/rss/updates.xml', null, 'https://www.eff.org/copyright', 'Original EFF text under CC BY 4.0 unless marked otherwise. Attribute EFF and author, link original and licence, and mark adaptations. Full article text is supplied in RSS description. No images or third-party restricted material.'],
+            ['The Document Foundation', 'rss', 'https://blog.documentfoundation.org', 'https://blog.documentfoundation.org/feed/', null, 'https://blog.documentfoundation.org/#copyright', 'Original blog text under CC BY-SA 3.0 unless marked otherwise. Attribute The Document Foundation and author, link original and licence, mark adaptations and retain ShareAlike. No images, trademarks or separately restricted content.'],
         ];
+        $licenses = [
+            'NASA Technology' => ['NASA editorial-use guidelines', 'https://www.nasa.gov/nasa-brand-center/images-and-media/'],
+            'Mozilla Blog' => ['CC BY-SA 3.0 or later', 'https://creativecommons.org/licenses/by-sa/3.0/'],
+            'Fedora Magazine' => ['CC BY-SA 4.0', 'https://creativecommons.org/licenses/by-sa/4.0/'],
+            'Electronic Frontier Foundation' => ['CC BY 4.0', 'https://creativecommons.org/licenses/by/4.0/'],
+            'The Document Foundation' => ['CC BY-SA 3.0', 'https://creativecommons.org/licenses/by-sa/3.0/'],
+        ];
+        $created = 0;
         foreach ($sources as [$name, $type, $base, $feed, $api, $reference, $notes]) {
-            $enabled = in_array($name, ['NASA Technology', 'Mozilla Blog'], true);
-            NewsSource::firstOrCreate(['name' => $name], ['source_type' => $type, 'base_url' => $base, 'feed_url' => $feed, 'api_endpoint' => $api,
+            $enabled = isset($licenses[$name]);
+            $source = NewsSource::firstOrCreate(['name' => $name], ['source_type' => $type, 'base_url' => $base, 'feed_url' => $feed, 'api_endpoint' => $api,
                 'permission_reference' => $reference, 'permission_notes' => $notes, 'display_mode' => $enabled ? 'headline' : 'disabled',
-                'permissions_verified_at' => $enabled ? now('UTC') : null, 'is_active' => $enabled, 'allow_ai_rewrite' => $enabled, 'allow_feed_content' => $enabled]);
+                'permissions_verified_at' => $enabled ? now('UTC') : null, 'is_active' => $enabled, 'allow_ai_rewrite' => $enabled, 'allow_feed_content' => $enabled,
+                'feed_content_field' => $name === 'Electronic Frontier Foundation' ? 'description' : 'content',
+                'license_name' => $licenses[$name][0] ?? null, 'license_url' => $licenses[$name][1] ?? null]);
+            if ($source->wasRecentlyCreated) { $created++; }
         }
-        $this->info('Categories and sources installed. Existing administrator choices were preserved.');
+        \App\Services\TechnologyNews\NewsCache::invalidate();
+        $this->info('Categories installed; '.$created.' new sources added. Existing administrator choices were preserved.');
         return 0;
     }
 }

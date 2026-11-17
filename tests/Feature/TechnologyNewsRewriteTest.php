@@ -187,6 +187,17 @@ class TechnologyNewsRewriteTest extends TestCase
         $this->get('/technology-news/'.$a->slug)->assertNotFound();
         $this->getJson('/api/news')->assertJsonPath('meta.total', 0);
     }
+    public function test_original_author_and_license_are_kept_on_local_reports(): void
+    {
+        $a = $this->article(['author_name' => 'Original Author', 'editorial_status' => 'published', 'rewrite_version' => 2,
+            'ai_title' => 'Verified local report', 'ai_summary' => 'Verified preview', 'ai_content' => 'Verified complete report.',
+            'rewritten_at' => now('UTC'), 'rewrite_source_hash' => hash('sha256', 'source')]);
+        $a->source->update(['name' => 'Fedora Magazine', 'license_name' => 'CC BY-SA 4.0', 'license_url' => 'https://creativecommons.org/licenses/by-sa/4.0/']);
+        $this->get('/technology-news/'.$a->slug)->assertOk()->assertHeaderMissing('Location')
+            ->assertSee('By Original Author from Fedora Magazine')->assertSee('CC BY-SA 4.0')->assertSee('AI-assisted paraphrasing and editing.');
+        $this->getJson('/api/news/'.$a->slug)->assertJsonPath('data.license.name', 'CC BY-SA 4.0')
+            ->assertJsonPath('data.license.url', 'https://creativecommons.org/licenses/by-sa/4.0/');
+    }
     public function test_admin_index_is_simple_and_advanced_tools_have_separate_pages(): void
     {
         $a = $this->article(); $admin = User::factory()->create(['is_admin' => true]);

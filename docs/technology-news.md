@@ -1,5 +1,32 @@
 # Technology news operations
 
+## Additional reviewed sources (17 November 2026)
+
+Three independent publishers have been added to the default source installer, expanding the permitted defaults from two to five:
+
+| Source | Coverage | Feed | Reuse basis | Full-text field |
+| --- | --- | --- | --- | --- |
+| Fedora Magazine | Linux, desktop software, development and infrastructure | https://fedoramagazine.org/feed/ | CC BY-SA 4.0, https://fedoramagazine.org/terms-and-conditions/ | content:encoded |
+| Electronic Frontier Foundation | Security, privacy, AI policy and digital rights | https://www.eff.org/rss/updates.xml | CC BY 4.0 for original material, https://www.eff.org/copyright | description |
+| The Document Foundation | LibreOffice, office software, interoperability and open source | https://blog.documentfoundation.org/feed/ | CC BY-SA 3.0, copyright section at https://blog.documentfoundation.org/ | content:encoded |
+
+These are publisher-authored releases, analysis and project reporting, not fabricated records or a claim of comprehensive independent gadget/startup coverage. They are supplied free, without extra API keys. The policies exclude separately restricted third-party material; source licences, original authors, original links and adaptation notices are retained, and images/logos are not imported. Fedora's required “By [author] from Fedora Magazine” attribution is rendered on its reports. ShareAlike adaptations explicitly retain their source licence. Existing NASA/Mozilla source licences are also stored explicitly.
+
+EFF places full text in RSS description; the new `feed_content_field` setting makes that explicit. Description is never automatically treated as a complete article for other feeds. New `license_name` / `license_url` fields support licence-specific attribution on local reports and in the public API. Administrators can adjust these fields under Sources without editing code.
+
+Deploy the changes, then run:
+
+```sh
+php artisan migrate --path=database/migrations/2026_11_17_000005_add_feed_format_and_licensing_to_news_sources.php --force
+php artisan news:install
+php artisan config:cache
+php artisan news:sync --force
+```
+
+New sources are installed active with verified full-feed adaptation permissions. Existing source settings are preserved, including deliberate deactivation. No new environment variables are required. `news:install` now reports how many new sources it created, making an unchanged/inactive installation easier to diagnose.
+
+Verification: all three live feeds returned HTTP 200 and imported **50 real full-text articles** (10 Fedora, 30 EFF, 10 TDF). Repeating every source sync created **zero duplicates**. **94 tests / 552 assertions passed**, including explicit full-description parsing, permission gating, installer idempotence/preservation, author and licence attribution, and existing market-news regressions. These imported stories enter the existing AI verification/auto-publication pipeline; import is not a claim that all 50 have already been approved or published.
+
 ## Full reading on SetuGeo and simplified administration
 
 All primary article links open the full verified report on SetuGeo; the reader route returns HTTP 200 and never redirects to the publisher. The article footer no longer contains a “Read original” call to action. Small source/licence references remain for attribution and open in a new tab; local related-story and browse links keep the main reading flow on SetuGeo. A report must have approved full source text, verified AI content and rewrite version 2 or later before it is public. Legacy summary-only drafts and sources without full-text permission are not published as full news.
@@ -77,7 +104,28 @@ An admin must record permission evidence and confirm it when activating or chang
 
 ## Deployment
 
-Requirements: PHP extensions curl, openssl, mbstring, SimpleXML, libxml, PDO; writable storage/bootstrap cache; HTTPS egress and DNS; PHP with a trusted CA bundle. No API keys required.
+Requirements: PHP extensions curl, openssl, mbstring, SimpleXML, libxml, PDO; writable storage/bootstrap cache; HTTPS egress and DNS; PHP with a trusted CA bundle. Free feed access needs no news-provider API key, but AI rewriting and publication require the existing NVIDIA_API_KEY used for Market News.
+
+### Production troubleshooting
+
+Technology News reuses all existing NVIDIA_* settings from Market News. The only module-specific environment settings are NEWS_USER_AGENT (optional, has a default) and NEWS_CA_BUNDLE (optional when PHP's normal CA trust works). Example:
+
+```dotenv
+APP_URL=https://your-production-domain.example
+NVIDIA_API_KEY=your-existing-nvidia-key
+NEWS_USER_AGENT="SetuGeo-News/1.0 (+https://your-production-domain.example)"
+NEWS_CA_BUNDLE=
+```
+
+Do not replace an existing NVIDIA_API_KEY with this placeholder. Do not deploy the local `D:/xampp/.../news-ca.pem` value to Linux. If a CA file is needed, set NEWS_CA_BUNDLE to a readable, trusted CA bundle on the production server. NVIDIA_CA_BUNDLE may also be set for the AI endpoint; its value must resolve on that server. Never disable certificate verification.
+
+Apply all five technology-news migrations listed below, then run `php artisan news:install` and `php artisan config:cache`. Existing source rows are preserved by the installer; use the Sources screen to check active state, verified permissions, AI adaptations and full-feed-content permission. A source must actually return full article text for AI generation to proceed.
+
+Run `php artisan news:sync --force` and `php artisan news:health` directly in production to distinguish a command failure from a scheduler failure. CLI sync performs rewriting inline; QUEUE_CONNECTION and a worker are not prerequisites for this command. The named technology-news queue worker is needed only for queued source-sync requests. The PHP CLI must have curl, openssl, mbstring, SimpleXML and the PDO driver, and direct outbound HTTPS/DNS/public IPv4 access. News fetching refuses redirects and proxies and caps responses at 2 MiB; environment variables cannot bypass these validation rules.
+
+Output interpretation: `not_due` is the source interval check; `deferred` is a persisted provider cooldown; `success` with zero fetched records can be an unchanged-feed HTTP 304. `--force` bypasses source intervals but deliberately does not bypass provider Retry-After or AI retry windows. Successful fetching followed by failed/deferred rewrites usually requires checking NVIDIA configuration/quota or the article's rewrite_error in admin, not adding another news API key. Verification failures remain unpublished by design.
+
+If manual sync works but automatic execution does not, check the OS Laravel scheduler separately. The application defines hourly fetching and five-minute rewrite retries; registration on the cron page alone does not start an OS scheduler. The local Windows SYSTEM task installation was cancelled, and no production scheduler state has been inspected from this workspace.
 
 1. Back up the database. Deploy code and run the **specific** new migration (unrelated pending migrations need their own review):
 
@@ -86,6 +134,7 @@ Requirements: PHP extensions curl, openssl, mbstring, SimpleXML, libxml, PDO; wr
    php artisan migrate --path=database/migrations/2026_11_17_000002_add_ai_rewrite_fields_to_news_articles.php --force
    php artisan migrate --path=database/migrations/2026_11_17_000003_enable_technology_news_rewrite_workflow.php --force
    php artisan migrate --path=database/migrations/2026_11_17_000004_add_feed_content_permission_to_news_sources.php --force
+   php artisan migrate --path=database/migrations/2026_11_17_000005_add_feed_format_and_licensing_to_news_sources.php --force
    php artisan news:install
    php artisan config:cache
    php artisan news:sync --force

@@ -28,7 +28,8 @@
                 <footer class="mt-8 border-t border-white/10 pt-5 text-sm leading-6 market-muted">
                     <p>AI-assisted report checked against the available source material. The publisher retains rights to its original reporting.</p>
                     <p class="mt-3 text-xs">Source: <a href="{{ $technologyNews->original_url }}" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">{{ $technologyNews->source->name }}</a> &middot; <a href="{{ $technologyNews->source->permission_reference }}" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">Source licence & attribution</a></p>
-                    @if($technologyNews->source->name === 'Mozilla Blog')<p class="mt-3">Adapted Mozilla text remains available under CC BY-SA 3.0 or later. Changes: AI-assisted paraphrasing and editing.</p>@endif
+                    @if($technologyNews->author_name)<p class="mt-3 text-xs">By {{ $technologyNews->author_name }} from {{ $technologyNews->source->name }}. Adaptation by SetuGeo.</p>@endif
+                    @if($technologyNews->source->license_name && $technologyNews->source->license_url)<p class="mt-3 text-xs">Adapted text is available under <a href="{{ $technologyNews->source->license_url }}" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4">{{ $technologyNews->source->license_name }}</a>. Changes: AI-assisted paraphrasing and editing.</p>@endif
                 </footer>
             </div>
         </div>
