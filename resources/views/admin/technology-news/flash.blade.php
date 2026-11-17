@@ -1,0 +1,2 @@
+@if(session('success') || session('error'))<div role="status" class="rounded-xl border px-4 py-3 text-sm {{ session('error') ? 'border-red-300 text-red-700 dark:text-red-300' : 'border-green-300 text-green-700 dark:text-green-300' }}">{{ session('error') ?: session('success') }}</div>@endif
+@if($errors->any())<div role="alert" class="rounded-xl border border-red-300 px-4 py-3 text-sm text-red-700 dark:text-red-300">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif

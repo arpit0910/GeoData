@@ -48,6 +48,7 @@ class Normalizer
         return ['source_article_id' => hash('sha256', (string) $row['id']), 'title' => $title,
             'original_url' => $url, 'canonical_url' => $url, 'url_hash' => hash('sha256', $url),
             'description' => $this->text($row['description'] ?? null, 400) ?: null,
+            'content' => $this->articleText($row['content'] ?? null),
             'author_name' => $this->text($row['author'] ?? null, 255) ?: null,
             'published_at' => $date, 'tags' => $tags,
             'title_hash' => hash('sha256', mb_strtolower(preg_replace('/[^\pL\pN]+/u', ' ', $title))),
@@ -66,5 +67,14 @@ class Normalizer
         }
         arsort($scores);
         return array_key_first($scores) ?: 'general-technology';
+    }
+
+    private function articleText($html): ?string
+    {
+        if (!is_string($html)) { return null; }
+        $html = preg_replace('#<(script|style)\b[^>]*>.*?</\1>#is', '', $html);
+        $html = preg_replace('#</(?:p|div|h[1-6]|li)>|<br\s*/?>#i', "\n\n", $html);
+        $paragraphs = array_filter(array_map(fn ($text) => $this->text($text, 20000), preg_split('/\n\s*\n/', $html) ?: []));
+        return mb_substr(implode("\n\n", $paragraphs), 0, 20000) ?: null;
     }
 }

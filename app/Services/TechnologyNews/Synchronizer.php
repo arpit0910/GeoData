@@ -53,9 +53,10 @@ class Synchronizer
                 try {
                     $article = $this->normalizer->article($row);
                     if ($source->display_mode !== 'excerpt' && !$source->rewritePermitted()) { $article['description'] = null; }
+                    if (!$source->rewritePermitted() || !$source->allow_feed_content) { $article['content'] = null; }
                     // Track the permitted rewrite inputs, including excerpt/tag changes.
                     $article['content_hash'] = hash('sha256', json_encode([
-                        $article['title'], $article['description'], $article['tags'],
+                        $article['title'], $article['description'], $article['content'], $article['tags'],
                         $article['author_name'], $article['canonical_url'],
                         $article['published_at']->toIso8601String(),
                     ], JSON_THROW_ON_ERROR));

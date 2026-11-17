@@ -27,7 +27,7 @@ class Providers
         $headers = array_filter(['If-None-Match' => $source->etag, 'If-Modified-Since' => $source->last_modified]);
         $response = $this->http->get($source->feed_url, $headers);
         if ($response->status() === 304) { return ['items' => []]; }
-        return ['items' => $this->parseFeed($response->body()), 'etag' => $response->header('ETag'), 'last_modified' => $response->header('Last-Modified')];
+        return ['items' => $this->parseFeed($response->body(), $source->rewritePermitted() && $source->allow_feed_content), 'etag' => $response->header('ETag'), 'last_modified' => $response->header('Last-Modified')];
     }
 
     private function hackerNews(NewsSource $source): array
@@ -51,7 +51,7 @@ class Providers
         return ['items' => $items];
     }
 
-    public function parseFeed(string $xml): array
+    public function parseFeed(string $xml, bool $includeContent = false): array
     {
         if (preg_match('/<!DOCTYPE|<!ENTITY/i', $xml)) { throw new RuntimeException('XML declarations and entities are forbidden.'); }
         $previous = libxml_use_internal_errors(true);
@@ -73,7 +73,8 @@ class Providers
                 foreach ($node->xpath('./*[local-name()="category"]') ?: [] as $category) { $tags[] = (string) ($category['term'] ?? $category); }
                 $result[] = ['id' => $get('guid') ?: $get('id') ?: $url, 'title' => $get('title'), 'url' => $url,
                     'published_at' => $get('pubDate') ?: $get('published') ?: $get('date'),
-                    'description' => $get('description') ?: $get('summary'), 'author' => $author ?: null, 'tags' => $tags];
+                    'description' => $get('description') ?: $get('summary'), 'author' => $author ?: null, 'tags' => $tags,
+                    'content' => $includeContent ? ($get('encoded') ?: $get('content')) : null];
             }
             return $result;
         } finally { libxml_clear_errors(); libxml_use_internal_errors($previous); }

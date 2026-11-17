@@ -10,6 +10,8 @@ class TechnologyNewsController extends Controller
 {
     public static function filters(Request $request): array
     {
+        // Match market news's search parameter while preserving the existing API alias.
+        if (!$request->filled('q') && $request->filled('search')) { $request->merge(['q' => $request->input('search')]); }
         return $request->validate(['q' => 'nullable|string|max:150', 'category' => 'nullable|integer|exists:news_categories,id',
             'source' => 'nullable|integer|exists:news_sources,id', 'from' => 'nullable|date_format:Y-m-d',
             'to' => 'nullable|date_format:Y-m-d|after_or_equal:from', 'page' => 'nullable|integer|min:1|max:10000', 'per_page' => 'nullable|integer|min:1|max:50']);
@@ -29,16 +31,18 @@ class TechnologyNewsController extends Controller
     }
     public static function sources()
     {
-        return NewsSource::where('is_active', true)->whereNotNull('permissions_verified_at')->whereIn('display_mode', ['headline', 'excerpt'])->get(['id', 'name']);
+        return NewsSource::where('is_active', true)->where('allow_ai_rewrite', true)->where('allow_feed_content', true)
+            ->whereNotNull('permissions_verified_at')->whereIn('display_mode', ['headline', 'excerpt'])->get(['id', 'name']);
     }
     public static function publicArticle(NewsArticle $article): array
     {
         return ['id' => $article->id, 'slug' => $article->slug, 'title' => $article->ai_title,
             'description' => $article->ai_summary, 'content' => $article->ai_content,
             'original_url' => $article->original_url, 'publisher_name' => $article->publisher_name,
+            'article_url' => route('technology-news.show', $article->slug),
             'author_name' => $article->author_name, 'published_at' => $article->published_at->utc()->toIso8601String(),
             'category' => $article->category, 'tags' => $article->ai_tags, 'source' => ['id' => $article->source_id, 'name' => $article->source->name],
-            'editorial_note' => 'AI-assisted summary, fact-checked against source metadata.',
+            'editorial_note' => 'AI-assisted report, fact-checked against permitted source material.',
             'permission_reference' => $article->source->permission_reference,
             'source_score' => $article->source_score];
     }
@@ -49,8 +53,6 @@ class TechnologyNewsController extends Controller
         return view('website.technology-news', [
             'news' => $news, 'categories' => NewsCache::remember('categories', 3600, fn () => NewsCategory::where('is_active', true)->orderBy('sort_order')->get()),
             'sources' => self::sources(),
-            'featured' => NewsCache::remember('featured', 300, fn () => NewsArticle::published()->with(['source', 'category'])->where('is_featured', true)->latest('published_at')->first()),
-            'trending' => $this->trendingArticles(),
         ]);
     }
     private function trendingArticles()
@@ -72,7 +74,9 @@ class TechnologyNewsController extends Controller
     public function show(string $slug)
     {
         $article = NewsArticle::published()->with(['source', 'category'])->where('slug', $slug)->firstOrFail();
-        // No thin local article pages: provide metadata in API and direct readers to the publisher.
-        return request()->expectsJson() ? response()->json(['success' => true, 'data' => self::publicArticle($article)]) : redirect()->away($article->original_url);
+        if (request()->expectsJson() || request()->is('api/*')) { return response()->json(['success' => true, 'data' => self::publicArticle($article)]); }
+        return view('website.technology-news-show', ['technologyNews' => $article,
+            'related' => NewsArticle::published()->where('id', '<>', $article->id)->where('category_id', $article->category_id)
+                ->latest('published_at')->limit(3)->get(['id', 'slug', 'ai_title', 'published_at'])]);
     }
 }

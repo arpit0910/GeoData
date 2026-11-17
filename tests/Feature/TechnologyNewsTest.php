@@ -38,7 +38,9 @@ class TechnologyNewsTest extends TestCase
     private function publishFixtures(): void
     {
         foreach (NewsArticle::all() as $article) {
+            $article->source->update(['allow_feed_content' => true]);
             $article->update(['ai_title' => $article->title, 'ai_summary' => $article->description ?: $article->title,
+                'ai_content' => $article->description ?: $article->title, 'rewrite_version' => 2,
                 'editorial_status' => NewsArticle::STATUS_PUBLISHED, 'rewrite_source_hash' => $article->content_hash, 'rewritten_at' => now('UTC')]);
         }
         \App\Services\TechnologyNews\NewsCache::invalidate();
@@ -165,11 +167,12 @@ class TechnologyNewsTest extends TestCase
     {
         $s = $this->source(); $this->fake(['*' => Http::response(array_map(fn ($id) => $this->row($id), range(1, 25)))]); $this->sync($s);
         $this->publishFixtures();
-        $this->get('/technology-news')->assertOk()->assertSee('Read original');
+        $this->get('/technology-news')->assertOk()->assertSee('View details');
         $this->getJson('/api/news?per_page=10&page=2')->assertOk()->assertJsonPath('meta.total', 25)->assertJsonCount(10, 'data');
         $this->getJson('/api/news/search?q=tools%2025')->assertOk()->assertJsonPath('meta.total', 1);
         $this->getJson('/api/news?page=-1')->assertUnprocessable();
-        $admin = User::factory()->create(['is_admin' => true]); $this->actingAs($admin)->get('/admin/technology-news')->assertOk()->assertSee('Synchronization logs');
+        $admin = User::factory()->create(['is_admin' => true]); $this->actingAs($admin)->get('/admin/technology-news')->assertOk()->assertSee('Source title')->assertSee('Regenerated title');
+        $this->get('/admin/technology-news/sync-logs')->assertOk()->assertSee('Synchronization logs');
     }
     public function test_cache_invalidated_by_sync_and_source_deactivation(): void
     {
@@ -262,5 +265,15 @@ class TechnologyNewsTest extends TestCase
         $a['title'] = 'First publisher headline'; $b['title'] = 'Different wording for the second headline';
         $this->fake(['*' => Http::response([$a, $b])]); $this->sync($s);
         $this->assertSame(2, NewsArticle::count()); $this->assertSame(1, DB::table('news_duplicate_candidates')->count());
+    }
+    public function test_full_feed_text_is_imported_only_with_explicit_permission(): void
+    {
+        $xml = '<rss xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><item><guid>full</guid><title>Python developer release</title><link>https://publisher.example/full</link><pubDate>Mon, 16 Nov 2026 10:00:00 GMT</pubDate><description>Short excerpt.</description><content:encoded><![CDATA[<p>First licensed paragraph.</p><script>unsafe()</script><p>Second licensed paragraph.</p>]]></content:encoded></item></channel></rss>';
+        $s = $this->source('rss'); $this->fake(['*' => Http::response($xml)]); $this->sync($s);
+        $a = NewsArticle::firstOrFail(); $this->assertNull($a->content); $oldHash = $a->content_hash;
+        $s->update(['allow_feed_content' => true]); $this->sync($s); $a->refresh();
+        $this->assertSame("First licensed paragraph.\n\nSecond licensed paragraph.", $a->content);
+        $this->assertNotSame($oldHash, $a->content_hash);
+        $this->assertSame('pending', $a->editorial_status);
     }
 }

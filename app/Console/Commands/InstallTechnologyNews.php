@@ -27,7 +27,7 @@ class InstallTechnologyNews extends Command
             $enabled = in_array($name, ['NASA Technology', 'Mozilla Blog'], true);
             NewsSource::firstOrCreate(['name' => $name], ['source_type' => $type, 'base_url' => $base, 'feed_url' => $feed, 'api_endpoint' => $api,
                 'permission_reference' => $reference, 'permission_notes' => $notes, 'display_mode' => $enabled ? 'headline' : 'disabled',
-                'permissions_verified_at' => $enabled ? now('UTC') : null, 'is_active' => $enabled, 'allow_ai_rewrite' => $enabled]);
+                'permissions_verified_at' => $enabled ? now('UTC') : null, 'is_active' => $enabled, 'allow_ai_rewrite' => $enabled, 'allow_feed_content' => $enabled]);
         }
         $this->info('Categories and sources installed. Existing administrator choices were preserved.');
         return 0;

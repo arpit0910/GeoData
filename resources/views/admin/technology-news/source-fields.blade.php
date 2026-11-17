@@ -6,4 +6,5 @@
 <label class="text-sm">Permission notes<textarea name="permission_notes" maxlength="4000" class="mt-2 block w-full rounded-lg border border-gray-400 bg-white p-3 dark:bg-gray-900">{{ $source->permission_notes }}</textarea></label>
 <input type="hidden" name="is_active" value="0"><label class="text-sm"><input type="checkbox" name="is_active" value="1" @checked($source->is_active)> Active</label>
 <input type="hidden" name="allow_ai_rewrite" value="0"><label class="text-sm"><input type="checkbox" name="allow_ai_rewrite" value="1" @checked($source->allow_ai_rewrite)> Source licence permits AI adaptations with attribution.</label>
+<input type="hidden" name="allow_feed_content" value="0"><label class="text-sm"><input type="checkbox" name="allow_feed_content" value="1" @checked($source->allow_feed_content)> Source licence permits storing and rewriting article text supplied in the feed.</label>
 <label class="text-sm"><input type="checkbox" name="permissions_confirmed" value="1"> I verified the terms permit the selected display and adaptations, if enabled, and recorded the basis above.</label>

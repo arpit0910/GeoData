@@ -9,6 +9,7 @@ use App\Jobs\SyncTechnologyNews;
 use App\Services\TechnologyNews\{NewsCache, SafeHttp};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 
 class TechnologyNewsController extends Controller
 {
@@ -19,18 +20,65 @@ class TechnologyNewsController extends Controller
     public function index(Request $request)
     {
         $f = PublicNews::filters($request);
-        $request->validate(['status' => 'nullable|in:published,hidden', 'editorial_status' => 'nullable|in:pending,processing,ready,published,failed']);
-        $articles = PublicNews::query($f, false)->when($request->status, fn ($q) => $q->where('status', $request->status))
-            ->when($request->editorial_status, fn ($q) => $q->where('editorial_status', $request->editorial_status))->paginate(20)->withQueryString();
-        $summary = ['Stored' => NewsArticle::count(), 'Published' => NewsArticle::published()->count(), 'Added in 24h' => NewsArticle::where('created_at', '>=', now('UTC')->subDay())->count(),
-            'Active sources' => NewsSource::where('is_active', true)->count(), 'Failed syncs' => NewsSyncLog::whereIn('status', ['failed', 'partial'])->count(), 'Duplicates observed' => NewsSyncLog::sum('duplicate_count')];
-        $summary['Awaiting AI'] = NewsArticle::whereIn('editorial_status', ['pending', 'processing'])->count();
-        $summary['AI failures'] = NewsArticle::where('editorial_status', 'failed')->count();
+        $request->validate(['status' => 'nullable|in:pending,processing,ready,published,failed,hidden', 'editorial_status' => 'nullable|in:pending,processing,ready,published,failed']);
+        $query = PublicNews::query($f, false);
+        if ($request->status === 'published') { $query->published(); }
+        elseif ($request->status === 'hidden') { $query->where('status', 'hidden'); }
+        elseif ($request->filled('status')) { $query->where('editorial_status', $request->status)->where('status', '<>', 'hidden'); }
+        $articles = $query->when($request->editorial_status, fn ($q) => $q->where('editorial_status', $request->editorial_status))->paginate(25)->withQueryString();
+        $summary = ['Total' => NewsArticle::count(), 'Published' => NewsArticle::published()->count(),
+            'Pending' => NewsArticle::where('editorial_status', 'pending')->count(),
+            'Processing' => NewsArticle::where('editorial_status', 'processing')->count(),
+            'Failed' => NewsArticle::where('editorial_status', 'failed')->count(),
+            'Hidden' => NewsArticle::where('status', 'hidden')->count()];
         if ($request->expectsJson()) { return response()->json(['success' => true, 'data' => $articles, 'summary' => $summary]); }
-        return view('admin.technology-news.index', ['articles' => $articles, 'sources' => NewsSource::all(), 'categories' => NewsCategory::orderBy('sort_order')->get(),
-            'logs' => NewsSyncLog::with('source')->latest('id')->paginate(15, ['*'], 'logs_page'), 'summary' => $summary,
-            'lastSuccess' => NewsSource::max('last_success_at'),
-            'duplicates' => DB::table('news_duplicate_candidates as d')->join('news_articles as a', 'a.id', '=', 'd.article_id')->join('news_articles as b', 'b.id', '=', 'd.candidate_id')->where('d.status', 'pending')->limit(20)->get(['d.*', 'a.title', 'b.title as candidate_title'])]);
+        return view('admin.technology-news.index', compact('articles', 'summary'));
+    }
+    public function show(int $id)
+    {
+        return view('admin.technology-news.show', ['article' => NewsArticle::with(['source', 'category'])->findOrFail($id),
+            'categories' => NewsCategory::orderBy('sort_order')->get()]);
+    }
+    public function manageSources()
+    {
+        return view('admin.technology-news.sources', ['sources' => NewsSource::orderBy('id')->get()]);
+    }
+    public function syncLogs()
+    {
+        return view('admin.technology-news.logs', ['logs' => NewsSyncLog::with('source')->latest('id')->paginate(25)]);
+    }
+    public function duplicateCandidates()
+    {
+        $duplicates = DB::table('news_duplicate_candidates as d')->join('news_articles as a', 'a.id', '=', 'd.article_id')
+            ->join('news_articles as b', 'b.id', '=', 'd.candidate_id')->where('d.status', 'pending')
+            ->select('d.*', 'a.title', 'b.title as candidate_title')->paginate(25);
+        return view('admin.technology-news.duplicates', compact('duplicates'));
+    }
+    public function regenerate(Request $request, int $id)
+    {
+        set_time_limit(0);
+        $article = NewsArticle::with('source')->findOrFail($id);
+        if (!$article->source->rewritePermitted() || !$article->source->allow_feed_content || !$article->content) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['article' => 'Fetch the full article from an active, permission-approved source before generating.']);
+        }
+        if ($article->rewrite_retry_at?->isFuture() && str_starts_with((string) $article->rewrite_error, 'AI quota')) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['article' => 'The AI provider is cooling down. Retry after '.$article->rewrite_retry_at.' UTC.']);
+        }
+        $claimed = DB::transaction(function () use ($id) {
+            $current = NewsArticle::lockForUpdate()->findOrFail($id);
+            if ($current->editorial_status === 'processing' && $current->updated_at->gt(now('UTC')->subMinutes(30))) { return false; }
+            $current->update(['editorial_status' => 'pending', 'rewrite_retry_at' => null, 'rewrite_error' => null]);
+            return true;
+        });
+        if (!$claimed) { throw \Illuminate\Validation\ValidationException::withMessages(['article' => 'This story is already being processed.']); }
+        NewsCache::invalidate();
+        Artisan::call('news:rewrite', ['--id' => [$id], '--limit' => 1]);
+        $article->refresh();
+        $success = $article->editorial_status === 'published' && $article->rewrite_source_hash === $article->content_hash;
+        $message = $success ? 'Article generated, verified and automatically approved.'.($article->status === 'hidden' ? ' It remains hidden.' : '')
+            : ($article->rewrite_error ?: 'No verified article was produced. Check the source and retry.');
+        if ($request->expectsJson()) { return response()->json(['success' => $success, 'message' => $message], $success ? 200 : 422); }
+        return back()->with($success ? 'success' : 'error', $message);
     }
     private function reply(Request $r, string $message)
     {
@@ -53,7 +101,7 @@ class TechnologyNewsController extends Controller
     {
         $data = $r->validate(['name' => 'required|string|max:255', 'feed_url' => 'nullable|url|max:2048', 'is_active' => 'required|boolean',
             'sync_interval_minutes' => 'required|integer|min:60|max:10080|multiple_of:60', 'display_mode' => 'required|in:disabled,headline,excerpt',
-            'permission_reference' => 'nullable|url|max:2048', 'permission_notes' => 'nullable|string|max:4000', 'permissions_confirmed' => 'sometimes|accepted', 'allow_ai_rewrite' => 'sometimes|boolean']);
+            'permission_reference' => 'nullable|url|max:2048', 'permission_notes' => 'nullable|string|max:4000', 'permissions_confirmed' => 'sometimes|accepted', 'allow_ai_rewrite' => 'sometimes|boolean', 'allow_feed_content' => 'sometimes|boolean']);
         if ($source->source_type === 'rss') {
             $r->validate(['feed_url' => 'required|url']);
             try { $http->validateUrl($data['feed_url']); } catch (\Throwable $e) { throw \Illuminate\Validation\ValidationException::withMessages(['feed_url' => $e->getMessage()]); }
@@ -64,7 +112,7 @@ class TechnologyNewsController extends Controller
         } else { $data['permissions_verified_at'] = null; }
         unset($data['permissions_confirmed']);
         $data['base_url'] = $source->base_url ?: 'https://'.parse_url($data['feed_url'], PHP_URL_HOST);
-        if (($data['feed_url'] ?? null) !== $source->feed_url || ($data['allow_ai_rewrite'] ?? false) != $source->allow_ai_rewrite) { $data['etag'] = null; $data['last_modified'] = null; }
+        if (($data['feed_url'] ?? null) !== $source->feed_url || ($data['allow_ai_rewrite'] ?? false) != $source->allow_ai_rewrite || ($data['allow_feed_content'] ?? false) != $source->allow_feed_content) { $data['etag'] = null; $data['last_modified'] = null; }
         $source->fill($data)->save(); NewsCache::invalidate();
         return $this->reply($r, 'News source saved.');
     }

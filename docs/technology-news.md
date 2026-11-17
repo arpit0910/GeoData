@@ -1,5 +1,32 @@
 # Technology news operations
 
+## Full reading on SetuGeo and simplified administration
+
+All primary article links open the full verified report on SetuGeo; the reader route returns HTTP 200 and never redirects to the publisher. The article footer no longer contains a “Read original” call to action. Small source/licence references remain for attribution and open in a new tab; local related-story and browse links keep the main reading flow on SetuGeo. A report must have approved full source text, verified AI content and rewrite version 2 or later before it is public. Legacy summary-only drafts and sources without full-text permission are not published as full news.
+
+The admin articles page now mirrors Market News: Fetch News / Process Pending / View Public News, six compact status counters, a search/status filter, and a source-title versus regenerated-title table with View Details, Generate/Regenerate and Unpublish/Publish actions. Source forms, full sync tables and duplicate review are removed from this daily-work screen and have separate links/pages:
+
+* `/admin/technology-news/{id}` — original and generated full articles side by side, retry/errors, category and feature settings.
+* `/admin/technology-news/sources` — source permissions and configuration.
+* `/admin/technology-news/sync-logs` — paginated fetch diagnostics.
+* `/admin/technology-news/duplicates` — potential duplicate review.
+
+Per-story generation uses `POST /admin/technology-news/{id}/regenerate`, the same verified pipeline as the cron, with existing admin/CSRF protection and a three-per-minute limit. Processing locks prevent concurrent regeneration, provider quota cooldowns remain respected, and hidden stories stay hidden. Normal Fetch News and Process Pending actions reuse the existing cron-page execution/progress component, so administrators do not need to understand queue configuration for those buttons.
+
+Latest verification: **91 tests, 516 assertions passed**. Tests explicitly check no Location redirect header on public article responses, summary-only exclusion, admin list/detail/source/log/duplicate rendering, status filters, generation authorization, auto-publication and unpublishing. PHP syntax, Blade compilation and diff checks passed; the UI detector returned no findings for the changed pages. Visual screenshot verification remains outstanding following the earlier computer-use policy stop.
+
+## Market-news presentation parity
+
+Technology News now follows the same SetuGeo Market News presentation: shared market CSS, the same responsive preview-card grid, category/date metadata, a short preview and **View details** link, followed by a local article page at `/technology-news/{slug}`. The detail page uses the market-news reading width, typography, paragraph layout and back navigation, while retaining original-source attribution and licence links. Unlicensed imagery is not imported; the listing uses the same news-icon fallback as Market News. Market pages retain their existing appearance because their unchanged CSS was extracted into `website/partials/market-styles.blade.php` and reused by both sections.
+
+Rewrite version 2 produces three independent fields: `ai_title`, `ai_summary` (card preview), and `ai_content` (complete report). Longer permitted source texts produce multi-paragraph reports; short sources remain brief. The same numerical checks, model retries/quota cooldowns and independent factual verification gate automatic publication. RSS/Atom full article text is imported only when both AI adaptation permission and the new `news_sources.allow_feed_content` permission are enabled. Sources without permission continue using permitted metadata/excerpts; publisher pages are never scraped. Body changes participate in the source hash and requeue stale rewrites.
+
+Generation uses Market News's numbered-paragraph structured-output pattern, joining the verified paragraphs into the stored article body. Correctable length/fact-check failures receive a bounded replacement-draft attempt using verifier feedback. Unverified drafts are never substituted for successful reports to fill the feed.
+
+Parity verification: **87 tests, 474 assertions passed**, including existing market-news regressions. A live full-report generation produced a verified 472-word, six-paragraph technology report with a separate preview; both listing and local detail returned HTTP 200. The latest migration was applied, changed PHP syntax checks passed, and Blade templates compiled successfully. The UI detector reported only the pre-existing decorative grid helper moved unchanged into the shared market stylesheet; Technology News does not use that helper. Visual browser inspection remains unavailable because computer use was previously stopped by policy.
+
+Migration `2026_11_17_000004_add_feed_content_permission_to_news_sources.php` adds this permission and enables it only for the reviewed NASA/Mozilla feed URLs. New/custom feeds default to false; admins must explicitly confirm suitable rights before enabling it. Source licence rules still apply to adaptations, including CC BY-SA for Mozilla text. Short detail pages remain `noindex, follow`. Public API metadata now includes `article_url` for the local report alongside `original_url`.
+
 ## Current AI publication workflow
 
 Technology news now follows **fetch → pending AI rewrite → independent factual verification → automatic approval/publication**. The public page and API show `ai_title` and `ai_summary` only when editorial_status is published, rewritten_at is present, the rewrite_source_hash matches current source input, and source/category permissions and editorial visibility still allow publication. Raw pending/failed/stale drafts do not appear publicly. Admin-hidden stories stay hidden after auto-approval.
@@ -27,7 +54,7 @@ Laravel 9 / Blade / Eloquent, existing MySQL connection (SQLite in tests), exist
 
 Storage: news_sources, news_categories, news_articles, news_article_references, news_duplicate_candidates, news_sync_logs, news_sync_locks, and news_jobs. All module timestamps are UTC even though the application timezone is Asia/Kolkata. Public dates display IST; date filters explicitly use UTC. Indexes cover publication, categories, canonical URL hashes, source IDs, and stable slugs.
 
-Sync stages: fetch, validate, normalize, enforce display permission, canonical URL/provider-ID deduplication, rules classification, transactional storage. Equal/similar headlines within 24 hours become review candidates; they are never merged automatically. Provider metadata and local category/status/feature overrides remain separate. Full article text and images are never fetched or published. No scraping or browser-triggered synchronization occurs.
+Sync stages: fetch, validate, normalize, enforce display permission, canonical URL/provider-ID deduplication, rules classification, transactional storage. Equal/similar headlines within 24 hours become review candidates; they are never merged automatically. Provider metadata and local category/status/feature overrides remain separate. Full feed text is imported only with explicit source permission and is never exposed as raw public content; the AI-generated report is published after verification. Images are not imported. No scraping or browser-triggered synchronization occurs.
 
 ## Provider review (17 November 2026)
 
@@ -56,6 +83,9 @@ Requirements: PHP extensions curl, openssl, mbstring, SimpleXML, libxml, PDO; wr
 
    ```sh
    php artisan migrate --path=database/migrations/2026_11_17_000001_create_technology_news_tables.php --force
+   php artisan migrate --path=database/migrations/2026_11_17_000002_add_ai_rewrite_fields_to_news_articles.php --force
+   php artisan migrate --path=database/migrations/2026_11_17_000003_enable_technology_news_rewrite_workflow.php --force
+   php artisan migrate --path=database/migrations/2026_11_17_000004_add_feed_content_permission_to_news_sources.php --force
    php artisan news:install
    php artisan config:cache
    php artisan news:sync --force
@@ -103,7 +133,7 @@ Workflow metadata follows MarketNews naming: `editorial_status` (pending by defa
 Apply with `php artisan migrate --path=database/migrations/2026_11_17_000002_add_ai_rewrite_fields_to_news_articles.php --force`, then the workflow migration described above. AI drafts and rewrite internals remain hidden from default model serialization; the public API explicitly returns approved AI title/summary/content and attribution, never processing errors or unapproved drafts.
 
 * GET /technology-news: filters q, category ID, source ID, from/to UTC dates; server pagination. Public desktop/mobile nav links and sitemap entry included. Filtered pages are noindex, pagination has distinct canonical URLs. Shared layout supplies Open Graph and metadata. No NewsArticle schema or thin local article pages.
-* GET /technology-news/{slug}: direct redirect to the publisher.
+* GET /technology-news/{slug}: SetuGeo's verified rewritten article, with original publisher and licence links. Short reports remain noindex.
 * GET /api/news, /api/news/latest, /api/news/search, /api/news/trending, /api/news/categories, /api/news/sources, /api/news/{slug}. Article metadata uses an explicit allowlist. Search/list return data plus pagination meta. Trending is labelled Hacker News score, and remains empty while HN is disabled.
 * Admin UI: /admin/technology-news. Existing admin session is required; controller authorization returns 403 for non-admins. Source configuration, queueing, source health, publication/category/feature edits, duplicate decisions and paginated logs are available.
 * Sanctum admin API: GET /api/admin/news, GET/POST /api/admin/news/sources, PATCH /api/admin/news/sources/{id}, POST /api/admin/news/sync, POST /api/admin/news/sources/{id}/sync, PATCH /api/admin/news/articles/{id}, GET /api/admin/news/sync-logs. JSON bodies use the same validated fields as UI forms. Source PATCH currently requires the complete source configuration, including a new permission confirmation if active/displayed.

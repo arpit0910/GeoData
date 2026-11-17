@@ -9,6 +9,11 @@ Route::get('/technology-news/{slug}', [TechnologyNewsController::class, 'show'])
 
 Route::middleware(['auth', 'throttle:30,1,technology-news-admin'])->prefix('admin/technology-news')->name('admin.technology-news.')->group(function () {
     Route::get('/', [AdminNews::class, 'index'])->name('index');
+    Route::get('/sources', [AdminNews::class, 'manageSources'])->name('sources.index');
+    Route::get('/sync-logs', [AdminNews::class, 'syncLogs'])->name('logs');
+    Route::get('/duplicates', [AdminNews::class, 'duplicateCandidates'])->name('duplicates.index');
+    Route::get('/{id}', [AdminNews::class, 'show'])->name('show')->whereNumber('id');
+    Route::post('/{id}/regenerate', [AdminNews::class, 'regenerate'])->name('regenerate')->whereNumber('id')->middleware('throttle:3,1,technology-news-generation');
     Route::post('/sync', [AdminNews::class, 'sync'])->name('sync')->middleware('throttle:3,1,technology-news-sync');
     Route::post('/sources', [AdminNews::class, 'storeSource'])->name('sources.store');
     Route::patch('/sources/{id}', [AdminNews::class, 'updateSource'])->name('sources.update')->whereNumber('id');

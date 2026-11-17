@@ -33,8 +33,9 @@ class NewsArticle extends Model
     {
         return $query->where('status', 'published')->where('editorial_status', self::STATUS_PUBLISHED)
             ->whereNotNull('rewritten_at')->whereNotNull('ai_title')->whereNotNull('ai_summary')
+            ->whereNotNull('ai_content')->where('rewrite_version', '>=', 2)
             ->whereColumn('rewrite_source_hash', 'content_hash')->where('published_at', '<=', now('UTC'))
             ->whereHas('category', fn ($q) => $q->where('is_active', true))
-            ->whereHas('source', fn ($q) => $q->where('is_active', true)->where('allow_ai_rewrite', true)->whereNotNull('permissions_verified_at')->whereNotNull('permission_reference')->whereIn('display_mode', ['headline', 'excerpt']));
+            ->whereHas('source', fn ($q) => $q->where('is_active', true)->where('allow_ai_rewrite', true)->where('allow_feed_content', true)->whereNotNull('permissions_verified_at')->whereNotNull('permission_reference')->whereIn('display_mode', ['headline', 'excerpt']));
     }
 }

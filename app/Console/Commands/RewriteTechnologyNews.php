@@ -37,7 +37,8 @@ class RewriteTechnologyNews extends Command
             if (!$claimed) { continue; }
             try {
                 $draft = $rewriter->generateDraft($article);
-                if (trim((string) ($draft['ai_title'] ?? '')) === '' || trim((string) ($draft['ai_summary'] ?? '')) === '') {
+                if (trim((string) ($draft['ai_title'] ?? '')) === '' || trim((string) ($draft['ai_summary'] ?? '')) === ''
+                    || trim((string) ($draft['ai_content'] ?? '')) === '' || (int) ($draft['rewrite_version'] ?? 0) < 2) {
                     throw new \RuntimeException('No verified draft was returned.');
                 }
                 DB::transaction(function () use ($article, $hash, $draft, &$published) {
@@ -53,7 +54,7 @@ class RewriteTechnologyNews extends Command
                 $failed++;
                 $retryAt = now('UTC')->addSeconds($e instanceof GroqRateLimitException ? $e->retryAfterSeconds : 1800);
                 $safeError = $e instanceof GroqRateLimitException ? 'AI quota cooldown; automatic retry scheduled.'
-                    : (preg_match('/^(Technology news draft|The model returned|The draft expands|NVIDIA_API_KEY|This source|No verified draft)/', $e->getMessage())
+                    : (preg_match('/^(Technology news draft|The model returned|The draft|Full licensed|NVIDIA_API_KEY|This source|No verified draft)/', $e->getMessage())
                         ? mb_substr($e->getMessage(), 0, 700)
                         : 'AI rewrite or factual verification failed ('.class_basename($e).').');
                 NewsArticle::whereKey($article->id)->where('content_hash', $hash)->where('editorial_status', NewsArticle::STATUS_PROCESSING)
