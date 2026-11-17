@@ -1,0 +1,17 @@
+[Unit]
+Description=SetuGeo technology news queue worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/setugeo
+ExecStart=/usr/bin/php /var/www/setugeo/artisan queue:work technology-news --queue=technology-news --sleep=3 --timeout=1800 --tries=1 --max-time=3600
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=1850
+
+[Install]
+WantedBy=multi-user.target

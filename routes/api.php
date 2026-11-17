@@ -10,6 +10,25 @@ use App\Http\Controllers\SubscriptionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::prefix('news')->withoutMiddleware([\App\Http\Middleware\SanitizeProviderResponse::class, \App\Http\Middleware\ApiPriorityMiddleware::class])->middleware('throttle:60,1,technology-news-public')->group(function () {
+    Route::get('/', [\App\Http\Controllers\TechnologyNewsController::class, 'api']);
+    foreach (['latest', 'trending', 'categories', 'sources', 'search'] as $action) {
+        Route::get('/'.$action, [\App\Http\Controllers\TechnologyNewsController::class, 'api'])->defaults('action', $action);
+    }
+    Route::get('/{slug}', [\App\Http\Controllers\TechnologyNewsController::class, 'show']);
+});
+Route::prefix('admin/news')->withoutMiddleware([\App\Http\Middleware\SanitizeProviderResponse::class, \App\Http\Middleware\ApiPriorityMiddleware::class])->middleware(['auth:sanctum', 'throttle:30,1,technology-news-admin'])->group(function () {
+    $controller = \App\Http\Controllers\Admin\TechnologyNewsController::class;
+    Route::get('/', [$controller, 'index']);
+    Route::get('/sources', [$controller, 'sources']);
+    Route::post('/sources', [$controller, 'storeSource']);
+    Route::patch('/sources/{id}', [$controller, 'updateSource'])->whereNumber('id');
+    Route::post('/sync', [$controller, 'sync'])->middleware('throttle:3,1,technology-news-sync');
+    Route::post('/sources/{id}/sync', [$controller, 'sync'])->whereNumber('id')->middleware('throttle:3,1,technology-news-sync');
+    Route::patch('/articles/{id}', [$controller, 'updateArticle'])->whereNumber('id');
+    Route::get('/sync-logs', [$controller, 'logs']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | API Routes

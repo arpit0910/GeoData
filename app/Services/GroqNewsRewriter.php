@@ -204,7 +204,7 @@ class GroqNewsRewriter
         }
     }
 
-    private function assertNumericalFactsPreserved(string $source, string $draft): void
+    protected function assertNumericalFactsPreserved(string $source, string $draft): void
     {
         $numbers = static function (string $text): array {
             preg_match_all('/(?<![\pL\pN])\d[\d,.]*(?![\pL\pN])/u', $text, $matches);
@@ -386,7 +386,7 @@ class GroqNewsRewriter
     }
 
     /** @return array{0: Response, 1: string} */
-    private function generate(mixed $request, string $endpoint, array $models, array $payload, string $operation): array
+    protected function generate(mixed $request, string $endpoint, array $models, array $payload, string $operation): array
     {
         $response = null;
         $usedModel = '';
@@ -673,7 +673,7 @@ class GroqNewsRewriter
     }
 
     /** @return array<string, mixed> */
-    private function structuredJson(Response $response): array
+    protected function structuredJson(Response $response): array
     {
         $content = data_get($response->json(), 'choices.0.message.content');
         if (is_string($content)) {
@@ -695,7 +695,7 @@ class GroqNewsRewriter
     }
 
     /** @param array<string, mixed> $schema */
-    private function responseFormat(string $name, array $schema): array
+    protected function responseFormat(string $name, array $schema): array
     {
         return [
             'type' => 'json_schema',

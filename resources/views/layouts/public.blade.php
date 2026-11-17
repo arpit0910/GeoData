@@ -125,6 +125,7 @@
                             <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
                             Live Market
                         </a>
+                        <a href="{{ route('technology-news.index') }}" class="inline-flex items-center px-1 pt-1 text-sm font-semibold text-gray-300 hover:text-amber-400">Technology News</a>
                     </div>
                 </div>
                 
@@ -174,6 +175,7 @@
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
                     Live Market
                 </a>
+                <a href="{{ route('technology-news.index') }}" class="block px-4 py-3 text-base font-semibold text-gray-300 hover:text-amber-400">Technology News</a>
             </div>
             <div class="pt-4 pb-4 border-t border-white/10 px-4 space-y-3">
                 @auth

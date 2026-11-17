@@ -29,6 +29,14 @@ return [
     */
 
     'connections' => [
+        'technology-news' => [
+            'driver' => 'database',
+            'connection' => null,
+            'table' => 'news_jobs',
+            'queue' => 'technology-news',
+            'retry_after' => 1900,
+            'after_commit' => true,
+        ],
 
         'sync' => [
             'driver' => 'sync',

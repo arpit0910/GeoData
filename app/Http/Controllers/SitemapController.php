@@ -9,6 +9,7 @@ class SitemapController extends Controller
     public function __invoke(): Response
     {
         $pages = [
+            ['route' => 'technology-news.index', 'changefreq' => 'hourly', 'priority' => '0.8'],
             ['route' => 'home', 'changefreq' => 'weekly', 'priority' => '1.0'],
             ['route' => 'pricing', 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['route' => 'about', 'changefreq' => 'monthly', 'priority' => '0.8'],

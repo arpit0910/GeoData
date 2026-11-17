@@ -294,6 +294,7 @@
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.market-news.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
                                 <span class="truncate">Market News</span>
                             </a>
+                            <a href="{{ route('admin.technology-news.index') }}" class="flex items-center px-3 py-2 text-xs font-medium text-amber-100 dark:text-gray-300 hover:underline">Technology News</a>
                             <a href="{{ route('admin.nudges.index') }}" class="flex items-center px-3 py-1.5 text-xs font-medium rounded-md {{ request()->routeIs('admin.nudges.*') ? 'bg-amber-700 dark:bg-amber-600/25 text-white dark:text-amber-400 font-semibold' : 'text-amber-100/80 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-amber-500/50 dark:hover:bg-white/5' }} transition-colors">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2 {{ request()->routeIs('admin.nudges.*') ? 'bg-amber-300 dark:bg-amber-400' : 'bg-current opacity-40' }}"></span>
                                 <span class="truncate">Market Nudges</span>

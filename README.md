@@ -63,6 +63,10 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
+## Technology news
+
+The attributed technology news feed is at `/technology-news`; administrators manage it at `/admin/technology-news`. See [technology news operations](docs/technology-news.md) for the migration, source permissions, hourly scheduler and persistent worker configuration, API routes, tests, and rollback.
+
 ## SetuGeo OCR Microservice Integration
 
 This Laravel app can proxy OCR requests to the sibling Python project at `D:\xampp\htdocs\setuGeoOCR`.

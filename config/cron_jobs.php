@@ -3,6 +3,16 @@
 return [
     'jobs' => [
         [
+            'title' => 'news:sync', 'command' => 'news:sync', 'args' => [],
+            'description' => 'Fetch permitted technology news, then AI rewrite, fact-check and auto-publish successful drafts.',
+            'schedule' => 'Hourly at minute 0 (UTC)', 'timezone' => 'UTC', 'overlap' => false,
+        ],
+        [
+            'title' => 'news:rewrite', 'command' => 'news:rewrite', 'args' => [],
+            'description' => 'Process pending technology stories and retry eligible failed AI drafts; auto-approve only after factual verification.',
+            'schedule' => 'Every 5 minutes (UTC)', 'timezone' => 'UTC', 'overlap' => false,
+        ],
+        [
             'title' => 'amcs:sync-icons',
             'command' => 'amcs:sync-icons',
             'args' => [],
