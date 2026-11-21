@@ -212,7 +212,9 @@ class TechnologyNewsTest extends TestCase
     {
         $s = $this->source(); $this->fake(['*' => Http::response(array_map(fn ($id) => $this->row($id), range(1, 25)))]); $this->sync($s);
         $this->publishFixtures();
-        $this->get('/technology-news')->assertOk()->assertSee('View details');
+        $this->get('/technology-news')->assertOk()->assertSee('Latest stories')->assertSee('Apply filters');
+        $this->get('/technology-news?q=tools%2025')->assertOk()->assertSee('Search results')->assertSee('Clear filters');
+        $this->get('/technology-news?q=no-matching-story')->assertOk()->assertSee('No matching stories');
         $this->getJson('/api/news?per_page=10&page=2')->assertOk()->assertJsonPath('meta.total', 25)->assertJsonCount(10, 'data');
         $this->getJson('/api/news/search?q=tools%2025')->assertOk()->assertJsonPath('meta.total', 1);
         $this->getJson('/api/news?page=-1')->assertUnprocessable();

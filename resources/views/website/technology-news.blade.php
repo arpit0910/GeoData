@@ -4,32 +4,100 @@
 @section('robots', count(request()->except('page')) ? 'noindex, follow' : 'index, follow')
 @section('canonical_url', route('technology-news.index').(request('page', 1) > 1 ? '?page='.request('page') : ''))
 @section('content')
-<div class="market-shell">@include('website.partials.technology-news-nav')
-<div class="market-wrap py-5 sm:py-8"><div class="mx-auto max-w-6xl">
-    <form method="GET" class="market-panel p-4 mb-7" x-data="{ submitting: false }" @submit="submitting = true" :aria-busy="submitting">
-        <div class="flex flex-col sm:flex-row gap-3"><input class="market-input flex-1" type="search" name="search" value="{{ request('search', request('q')) }}" maxlength="150" placeholder="Search news by title, summary or topic" aria-label="Search news"><button class="market-button sm:w-auto disabled:opacity-60" type="submit" :disabled="submitting"><i class="fas fa-search mr-2" aria-hidden="true"></i><span x-text="submitting ? 'Searching…' : 'Search news'">Search news</span></button></div>
-        <details class="mt-4" @if(request('category') || request('source') || request('from') || request('to')) open @endif><summary class="cursor-pointer text-sm font-semibold text-slate-300">Filter by category, source or date</summary><div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <label class="text-xs market-muted">Category<select name="category" class="market-input mt-2"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(request('category') == $category->id)>{{ $category->name }}</option>@endforeach</select></label>
-            <label class="text-xs market-muted">Source<select name="source" class="market-input mt-2"><option value="">All sources</option>@foreach($sources as $source)<option value="{{ $source->id }}" @selected(request('source') == $source->id)>{{ $source->name }}</option>@endforeach</select></label>
-            <label class="text-xs market-muted">From (UTC)<input type="date" name="from" value="{{ request('from') }}" class="market-input mt-2"></label><label class="text-xs market-muted">To (UTC)<input type="date" name="to" value="{{ request('to') }}" class="market-input mt-2"></label>
-        </div></details>
-        @if(count(request()->except('page')))<a href="{{ route('technology-news.index') }}" class="mt-4 inline-block text-sm text-amber-400 underline underline-offset-4">Clear filters</a>@endif
-    </form>
-    @if($errors->any())<div role="alert" class="market-panel mb-5 p-4 text-red-300">{{ $errors->first() }}</div>@endif
-    <div class="flex items-center justify-between mb-5"><p class="text-sm market-muted"><strong class="text-white">{{ number_format($news->total()) }}</strong> stories</p><span class="text-xs market-muted">Newest first</span></div>
-    <div class="space-y-4">
-        @forelse($news as $story)
-            <article class="market-panel overflow-hidden sm:grid sm:grid-cols-[200px_minmax(0,1fr)] sm:items-stretch">
-                <div class="h-40 overflow-hidden border-b border-white/[.07] bg-slate-900 sm:h-auto sm:min-h-[205px] sm:border-b-0 sm:border-r"><div class="grid h-full place-items-center bg-slate-950 text-slate-700"><i class="far fa-newspaper text-3xl" aria-hidden="true"></i></div></div>
-                <div class="p-5 sm:p-6 min-w-0 flex flex-col">
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3"><span class="market-chip">{{ $story->category->name }}</span><time class="text-xs market-muted" datetime="{{ $story->published_at->toIso8601String() }}">{{ $story->published_at->copy()->timezone('Asia/Kolkata')->format('d M Y') }} &middot; {{ $story->published_at->copy()->timezone('Asia/Kolkata')->format('h:i A') }} IST</time></div>
-                    <h2 class="market-clamp-2 font-extrabold text-lg sm:text-xl text-white leading-snug"><a href="{{ route('technology-news.show', $story->slug) }}" class="hover:text-amber-300 transition-colors">{{ $story->ai_title }}</a></h2>
-                    <p class="market-clamp-2 text-sm text-slate-300 leading-6 mt-3 break-words">{{ \Illuminate\Support\Str::limit(preg_replace('/\s+/u', ' ', trim(strip_tags((string) $story->ai_summary))), 200) }}</p>
-                    <p class="mt-3 text-xs market-muted">Adapted from {{ $story->publisher_name }}</p>
-                    <div class="mt-auto pt-4"><a href="{{ route('technology-news.show', $story->slug) }}" class="market-button inline-flex w-auto items-center px-4 py-2 text-sm" aria-label="Read full story: {{ $story->ai_title }}">View details <i class="fas fa-arrow-right ml-2 text-xs" aria-hidden="true"></i></a></div>
+<div class="market-shell">
+    @include('website.partials.technology-news-nav')
+    <div class="market-wrap">
+        <div class="mx-auto max-w-5xl py-6 sm:py-8">
+            @php
+                $search = request('q', request('search'));
+                $filterCount = (int) request()->filled('category') + (int) request()->filled('source')
+                    + (int) (request()->filled('from') || request()->filled('to'));
+                $hasFilters = filled($search) || $filterCount > 0;
+            @endphp
+            <form method="GET" action="{{ route('technology-news.index') }}" role="search" aria-label="Technology news"
+                  class="market-panel mb-6 p-4 sm:p-5" x-data="{ submitting: false }"
+                  @submit="submitting = true" @pageshow.window="submitting = false" :aria-busy="submitting">
+                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-stretch gap-2 sm:gap-3">
+                    <input class="market-input" type="search" name="q" value="{{ $search }}" maxlength="150"
+                           placeholder="Search stories" aria-label="Search technology news">
+                    <button class="market-button min-h-[44px] disabled:opacity-60" type="submit" :disabled="submitting">
+                        <span x-text="submitting ? 'Searching…' : 'Search'">Search</span>
+                    </button>
                 </div>
-            </article>
-        @empty<div class="market-panel p-12 text-center market-muted"><i class="far fa-newspaper text-3xl mb-3 block" aria-hidden="true"></i>No news stories match your search. New stories appear after AI verification.</div>@endforelse
-    </div><div class="market-pagination mt-7">{{ $news->links() }}</div>
-</div></div></div>
+                <details class="mt-3" @if($filterCount || $errors->any()) open @endif>
+                    <summary class="min-h-[44px] w-fit cursor-pointer py-3 text-sm font-semibold text-slate-200">
+                        {{ $filterCount ? "Filters ({$filterCount})" : 'Filters' }}
+                    </summary>
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <label class="min-w-0 text-sm market-muted">Category
+                            <select name="category" class="market-input mt-1">
+                                <option value="">All categories</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" @selected(request('category') == $category->id)>{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="min-w-0 text-sm market-muted">Source
+                            <select name="source" class="market-input mt-1">
+                                <option value="">All sources</option>
+                                @foreach($sources as $source)
+                                    <option value="{{ $source->id }}" @selected(request('source') == $source->id)>{{ $source->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="min-w-0 text-sm market-muted">From (UTC)
+                            <input type="date" name="from" value="{{ request('from') }}" class="market-input mt-1 [color-scheme:dark]">
+                        </label>
+                        <label class="min-w-0 text-sm market-muted">To (UTC)
+                            <input type="date" name="to" value="{{ request('to') }}" class="market-input mt-1 [color-scheme:dark]">
+                        </label>
+                    </div>
+                    <button class="market-button mt-4 min-h-[44px] disabled:opacity-60" type="submit" :disabled="submitting">Apply filters</button>
+                </details>
+            </form>
+
+            @if($errors->any())
+                <p role="alert" class="market-panel mb-5 p-4 text-red-300">{{ $errors->first() }}</p>
+            @endif
+
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <h2 class="text-xl font-bold text-white">{{ $hasFilters ? 'Search results' : 'Latest stories' }}</h2>
+                <div class="flex items-center gap-4 text-sm market-muted">
+                    <span>{{ number_format($news->total()) }} {{ Str::plural('story', $news->total()) }}</span>
+                    @if($hasFilters)
+                        <a href="{{ route('technology-news.index') }}" class="inline-flex min-h-[44px] items-center text-amber-400 underline underline-offset-4">Clear filters</a>
+                    @endif
+                </div>
+            </div>
+
+            <div class="divide-y divide-white/10">
+                @forelse($news as $story)
+                    @php($publishedAt = $story->published_at->copy()->timezone('Asia/Kolkata'))
+                    <article class="min-w-0 py-5 sm:py-6">
+                        <div class="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                            <span class="font-semibold text-amber-300">{{ $story->category?->name ?? 'Technology' }}</span>
+                            <time class="market-muted" datetime="{{ $publishedAt->toIso8601String() }}">{{ $publishedAt->format('j M Y, g:i A') }} IST</time>
+                        </div>
+                        <h3 class="break-words text-lg font-bold leading-snug text-white sm:text-xl">
+                            <a href="{{ route('technology-news.show', $story->slug) }}" class="rounded-sm decoration-amber-400 underline-offset-4 hover:text-amber-300 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400">
+                                {{ $story->ai_title }}
+                            </a>
+                        </h3>
+                        <p class="mt-2 max-w-[72ch] break-words text-sm leading-6 text-slate-300">{{ preg_replace('/\s+/u', ' ', trim(strip_tags((string) $story->ai_summary))) }}</p>
+                        <p class="mt-2 text-xs market-muted">{{ $story->publisher_name }}</p>
+                    </article>
+                @empty
+                    <div class="py-12">
+                        <h3 class="text-lg font-bold text-white">{{ $hasFilters ? 'No matching stories' : 'No stories on this page' }}</h3>
+                        <p class="mt-2 text-sm market-muted">{{ $hasFilters ? 'Try a different search or clear your filters.' : 'Browse the latest technology news.' }}</p>
+                        <a href="{{ route('technology-news.index') }}" class="market-button mt-4 min-h-[44px]">{{ $hasFilters ? 'Clear filters' : 'Browse latest stories' }}</a>
+                    </div>
+                @endforelse
+            </div>
+            @if($news->hasPages())
+                <div class="market-pagination mt-5 border-t border-white/10 pt-5">{{ $news->onEachSide(1)->links() }}</div>
+            @endif
+        </div>
+    </div>
+</div>
 @endsection

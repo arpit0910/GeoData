@@ -59,7 +59,7 @@ class TechnologyNewsRewriteTest extends TestCase
         $this->assertSame('published', $a->editorial_status); $this->assertSame($a->content_hash, $a->rewrite_source_hash);
         $this->assertSame('Python ships a new developer tool', $a->title); $this->assertSame('test-model', $a->rewrite_model);
         $this->getJson('/api/news')->assertJsonPath('meta.total', 1)->assertJsonPath('data.0.title', $this->draft()['title']);
-        $this->get('/technology-news')->assertOk()->assertSee($this->draft()['summary'])->assertSee('View details');
+        $this->get('/technology-news')->assertOk()->assertSee($this->draft()['summary'])->assertSee('Latest stories');
         $this->get('/technology-news/'.$a->slug)->assertOk()->assertHeaderMissing('Location')->assertSee($this->draft()['content'])->assertSee('More technology news')->assertDontSee('Read original');
         $this->artisan('news:rewrite')->assertExitCode(0); Http::assertSentCount(2);
     }
@@ -149,7 +149,8 @@ class TechnologyNewsRewriteTest extends TestCase
         $this->artisan('news:rewrite')->assertExitCode(0); $a->refresh();
         $this->assertSame(2, $a->rewrite_version); $this->assertNotSame($a->ai_summary, $a->ai_content);
         $this->assertCount(3, explode("\n\n", $a->ai_content));
-        $this->get('/technology-news/'.$a->slug)->assertOk()->assertSee('Back to technology news')->assertSee('Source licence');
+        $this->get('/technology-news/'.$a->slug)->assertOk()->assertSee('Back to technology news')
+            ->assertSee('Source credits')->assertDontSee('AI-assisted report checked')->assertDontSee('Source licence & attribution');
         Http::assertSent(fn ($request) => str_contains($request['messages'][1]['content'] ?? '', 'maintain reliable software'));
     }
     public function test_article_detail_hides_pending_hidden_and_stale_drafts(): void
@@ -194,7 +195,7 @@ class TechnologyNewsRewriteTest extends TestCase
             'rewritten_at' => now('UTC'), 'rewrite_source_hash' => hash('sha256', 'source')]);
         $a->source->update(['name' => 'Fedora Magazine', 'license_name' => 'CC BY-SA 4.0', 'license_url' => 'https://creativecommons.org/licenses/by-sa/4.0/']);
         $this->get('/technology-news/'.$a->slug)->assertOk()->assertHeaderMissing('Location')
-            ->assertSee('By Original Author from Fedora Magazine')->assertSee('CC BY-SA 4.0')->assertSee('AI-assisted paraphrasing and editing.');
+            ->assertSeeText('By Original Author from Fedora Magazine')->assertSee('CC BY-SA 4.0')->assertSee('Edited by SetuGeo.');
         $this->getJson('/api/news/'.$a->slug)->assertJsonPath('data.license.name', 'CC BY-SA 4.0')
             ->assertJsonPath('data.license.url', 'https://creativecommons.org/licenses/by-sa/4.0/');
     }
