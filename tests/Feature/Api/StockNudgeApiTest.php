@@ -166,7 +166,7 @@ class StockNudgeApiTest extends TestCase
 
     private function nudge(string $isin, string $rule, string $date): StockNudge
     {
-        return StockNudge::create([
+        $nudge = new StockNudge([
             'isin' => $isin,
             'exchange' => 'NSE',
             'type' => 'eod',
@@ -180,5 +180,9 @@ class StockNudgeApiTest extends TestCase
             'observed_at' => Carbon::parse("{$date} 15:30:00", 'Asia/Kolkata'),
             'fingerprint' => hash('sha256', "{$isin}|{$rule}|{$date}"),
         ]);
+        $nudge->created_at = $nudge->observed_at->copy()->utc();
+        $nudge->save();
+
+        return $nudge;
     }
 }

@@ -35,6 +35,7 @@
         <option value="">All event types</option>
         <option value="holiday" @selected(($filters['type'] ?? '') === 'holiday')>Full-day holidays</option>
         <option value="muhurat" @selected(($filters['type'] ?? '') === 'muhurat')>Muhurat sessions</option>
+        <option value="special_session" @selected(($filters['type'] ?? '') === 'special_session')>Special trading sessions</option>
         <option value="weekend" @selected(($filters['type'] ?? '') === 'weekend')>Weekends</option>
     </select>
     <div class="md:col-span-5 flex justify-end gap-3">
@@ -66,7 +67,7 @@
                         <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-lg text-xs font-black {{ $event->exchange === 'NSE' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300' : ($event->exchange === 'BSE' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300') }}">{{ $event->exchange === 'NSE_BSE' ? 'NSE & BSE' : $event->exchange }}</span></td>
                         <td class="px-6 py-4"><div class="font-bold text-gray-900 dark:text-white">{{ $event->name }}</div><div class="text-xs text-gray-500 uppercase">{{ $event->segment }}</div></td>
                         <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
-                            <span class="font-bold {{ $event->event_type === 'muhurat' ? 'text-amber-600' : '' }}">{{ $event->event_type === 'muhurat' ? 'Muhurat trading' : ($event->event_type === 'weekend' ? 'Weekend' : 'Holiday') }}</span>
+                            <span class="font-bold {{ $event->hasSpecialSession() ? 'text-amber-600' : '' }}">{{ $event->event_type === 'muhurat' ? 'Muhurat trading' : ($event->hasSpecialSession() ? 'Special trading session' : ($event->event_type === 'weekend' ? 'Weekend' : 'Holiday')) }}</span>
                             @if($event->session_start || $event->session_end)
                                 <div class="text-xs text-gray-500">{{ $event->session_start ? substr($event->session_start, 0, 5) : 'TBA' }} – {{ $event->session_end ? substr($event->session_end, 0, 5) : 'TBA' }}</div>
                             @endif

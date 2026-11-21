@@ -9,8 +9,8 @@ return [
     'market_expiry_minutes' => (int) env('STOCK_NUDGE_MARKET_EXPIRY_MINUTES', 30),
     'repeat_cooldown_days' => (int) env('STOCK_NUDGE_REPEAT_COOLDOWN_DAYS', 5),
     'record_extension_percent' => (float) env('STOCK_NUDGE_RECORD_EXTENSION_PERCENT', 1),
-    'market_schedule' => env('STOCK_NUDGE_MARKET_SCHEDULE', '15 9,12,15 * * 1-5'),
-    'eod_schedule' => env('STOCK_NUDGE_EOD_SCHEDULE', '15 18 * * 1-5'),
+    'market_schedule' => env('STOCK_NUDGE_MARKET_SCHEDULE', '15 9,12,15 * * *'),
+    'eod_schedule' => env('STOCK_NUDGE_EOD_SCHEDULE', '15 20 * * *'),
     'market_benchmark' => env('STOCK_NUDGE_MARKET_BENCHMARK', 'NIFTY_50'),
     'sector_indices' => [
         'psu bank' => 'NIFTY_PSU_BANK',

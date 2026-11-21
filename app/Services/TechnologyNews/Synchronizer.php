@@ -52,6 +52,10 @@ class Synchronizer
                 $log->fetched_count++;
                 try {
                     $article = $this->normalizer->article($row);
+                    if ($source->source_type === 'newsapi') {
+                        $article['publisher_name'] = $this->normalizer->text($row['publisher_name'] ?? null, 255)
+                            ?: parse_url($article['original_url'], PHP_URL_HOST);
+                    }
                     if ($source->display_mode !== 'excerpt' && !$source->rewritePermitted()) { $article['description'] = null; }
                     if (!$source->rewritePermitted() || !$source->allow_feed_content) { $article['content'] = null; }
                     // Track the permitted rewrite inputs, including excerpt/tag changes.
@@ -71,6 +75,7 @@ class Synchronizer
                     Log::error('technology_news.article_failed', ['source_id' => $source->id, 'exception' => get_class($e)]);
                 }
             }
+            $log->error_message ??= $payload['warning'] ?? null;
             $status = $log->failed_count ? 'partial' : 'success';
             $source->update(array_merge([
                 'last_success_at' => $status === 'success' ? now('UTC') : $source->last_success_at,
@@ -111,7 +116,16 @@ class Synchronizer
                     : NewsArticle::where('url_hash', $data['url_hash'])->lockForUpdate()->first();
                 if ($existing) {
                     $existing->last_seen_at = now('UTC');
-                    // Cross-source observations never overwrite the original publisher's metadata.
+                    // Prefer the licensed publisher when discovery saw its URL first.
+                    if ($source->allow_feed_content && $source->rewritePermitted() && $data['content'] !== null
+                        && $existing->source?->source_type === 'newsapi') {
+                        $existing->fill([
+                            'source_id' => $source->id,
+                            'source_article_id' => $data['source_article_id'],
+                            'publisher_name' => $source->name,
+                        ]);
+                    }
+                    // Other cross-source observations leave the original publisher's metadata intact.
                     if ($existing->source_id === $source->id && $existing->source_article_id === $data['source_article_id']) {
                         $updates = $data;
                         // Keep the original URL identity stable if providers later change their canonical URL.
@@ -128,11 +142,14 @@ class Synchronizer
                     DB::table('news_article_references')->updateOrInsert(['source_id' => $source->id, 'source_article_id' => $data['source_article_id']], ['article_id' => $existing->id, 'last_seen_at' => now('UTC')]);
                     return 'updated';
                 }
-                $article = NewsArticle::create(array_merge($data, ['source_id' => $source->id,
+                $article = NewsArticle::create($data + ['source_id' => $source->id,
                     'publisher_name' => $source->source_type === 'hackernews' ? parse_url($data['original_url'], PHP_URL_HOST) : $source->name,
                     'category_id' => $this->categoryId($data), 'slug' => Str::limit(Str::slug($data['title']), 120, '').'-'.Str::lower(Str::random(12)),
-                    'fetched_at' => now('UTC'), 'last_seen_at' => now('UTC'), 'status' => 'published']));
+                    'fetched_at' => now('UTC'), 'last_seen_at' => now('UTC'), 'status' => 'published']);
                 DB::table('news_article_references')->insert(['source_id' => $source->id, 'source_article_id' => $data['source_article_id'], 'article_id' => $article->id, 'last_seen_at' => now('UTC')]);
+                if ($source->source_type === 'newsapi') {
+                    return 'inserted';
+                }
                 // Similar headlines are review candidates, never automatic merges.
                 $nearby = NewsArticle::where('id', '<>', $article->id)->whereBetween('published_at', [$article->published_at->copy()->subDay(), $article->published_at->copy()->addDay()])->orderByDesc('published_at')->limit(100)->get(['id', 'title', 'title_hash', 'description']);
                 foreach ($nearby as $candidate) {

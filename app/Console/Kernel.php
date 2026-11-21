@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Services\CronExecutionLogger;
+use App\Services\EquityTradingSession;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -78,17 +79,23 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('market:sync-upstox-index-quotes --quoted-only')
             ->everyMinute()
             ->timezone('Asia/Kolkata')
-            ->weekdays()
-            ->between('09:15', '15:30')
+            ->when(fn () => app(EquityTradingSession::class)->isOpen(now()))
             ->runInBackground()
             ->withoutOverlapping(2), 'market:sync-upstox-index-quotes (Live)');
+
+        // Discover additional valid quotes while the exchanges are open.
+        $this->markScheduled($schedule->command('market:sync-upstox-index-quotes --catalog-only')
+            ->everyThirtyMinutes()
+            ->timezone('Asia/Kolkata')
+            ->when(fn () => app(EquityTradingSession::class)->isOpen(now(), '09:30', '15:00'))
+            ->runInBackground()
+            ->withoutOverlapping(25), 'market:sync-upstox-index-quotes (Catalog)');
 
         // 1. Equities / Stocks: Constantly synced every minute during active trading hours (09:15 to 15:30 IST)
         $this->markScheduled($schedule->command('market:sync-upstox-quotes --type=stocks --mode=ltp')
             ->everyMinute()
             ->timezone('Asia/Kolkata')
-            ->weekdays()
-            ->between('09:15', '15:30')
+            ->when(fn () => app(EquityTradingSession::class)->isOpen(now()))
             ->runInBackground()
             ->withoutOverlapping(2));
 
@@ -109,8 +116,7 @@ class Kernel extends ConsoleKernel
         $this->markScheduled($schedule->command('stock-nudges:generate market')
             ->cron(config('stock_nudges.market_schedule'))
             ->timezone('Asia/Kolkata')
-            ->weekdays()
-            ->between('09:15', '15:30')
+            ->when(fn () => app(EquityTradingSession::class)->isOpen(now()))
             ->runInBackground()
             ->withoutOverlapping(10));
 

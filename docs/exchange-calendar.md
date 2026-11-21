@@ -30,6 +30,13 @@ The scheduler runs the full command every day at 06:00 Asia/Kolkata. The URLs
 can be overridden with `NSE_HOLIDAY_URL` and `BSE_HOLIDAY_URL`. TLS verification
 is enabled by default; configure the host trust store instead of disabling it.
 
+Live equity and index quote jobs check the calendar every day. An ordinary
+weekend or recorded holiday is closed. For a special weekend opening, edit
+the date under `/admin/exchange-calendar`, choose **Special trading session**,
+and enter the start and end times in IST. For an existing Muhurat entry, add
+the published session times to enable quotes during that window. The quote
+jobs can run when either NSE or BSE is open.
+
 ## API
 
 These endpoints use the same authentication, subscription and credit middleware

@@ -12,7 +12,15 @@ class ExchangeCalendarEvent extends Model
     public const EXCHANGE_BOTH = 'NSE_BSE';
     public const TYPE_HOLIDAY = 'holiday';
     public const TYPE_MUHURAT = 'muhurat';
+    public const TYPE_SPECIAL_SESSION = 'special_session';
     public const TYPE_WEEKEND = 'weekend';
+
+    public const TYPES = [self::TYPE_HOLIDAY, self::TYPE_MUHURAT, self::TYPE_SPECIAL_SESSION, self::TYPE_WEEKEND];
+
+    public function hasSpecialSession(): bool
+    {
+        return in_array($this->event_type, [self::TYPE_MUHURAT, self::TYPE_SPECIAL_SESSION], true);
+    }
 
     protected $fillable = [
         'exchange',

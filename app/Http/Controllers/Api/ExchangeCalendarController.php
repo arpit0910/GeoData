@@ -19,7 +19,7 @@ class ExchangeCalendarController extends Controller
             'year' => ['nullable', 'integer', 'between:2000,2100'],
             'from' => ['nullable', 'date_format:Y-m-d'],
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
-            'type' => ['nullable', Rule::in(['holiday', 'muhurat', 'weekend'])],
+            'type' => ['nullable', Rule::in(ExchangeCalendarEvent::TYPES)],
         ]);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
@@ -86,7 +86,7 @@ class ExchangeCalendarController extends Controller
                 ?? $events->firstWhere('exchange', ExchangeCalendarEvent::EXCHANGE_BOTH);
             $calendarAvailable = $coverage->has($exchange)
                 || $coverage->has(ExchangeCalendarEvent::EXCHANGE_BOTH);
-            $hasSpecialSession = $event?->event_type === ExchangeCalendarEvent::TYPE_MUHURAT;
+            $hasSpecialSession = $event?->hasSpecialSession() ?? false;
             $isFullDayHoliday = in_array($event?->event_type, [
                 ExchangeCalendarEvent::TYPE_HOLIDAY,
                 ExchangeCalendarEvent::TYPE_WEEKEND,
@@ -95,7 +95,7 @@ class ExchangeCalendarController extends Controller
                 ? true
                 : (($isWeekend || $isFullDayHoliday) ? false : ($calendarAvailable ? true : null));
             $status = $hasSpecialSession
-                ? 'muhurat'
+                ? $event->event_type
                 : (($isWeekend || $isFullDayHoliday) ? 'closed' : ($calendarAvailable ? 'open' : 'unknown'));
 
             return [

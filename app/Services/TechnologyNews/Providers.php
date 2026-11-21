@@ -12,6 +12,7 @@ class Providers
 
     public function fetch(NewsSource $source): array
     {
+        if ($source->source_type === 'newsapi') { return $this->newsApi($source); }
         if ($source->source_type === 'hackernews') { return $this->hackerNews($source); }
         if ($source->source_type === 'dev') {
             $rows = $this->http->get($source->api_endpoint)->json();
@@ -28,6 +29,57 @@ class Providers
         $response = $this->http->get($source->feed_url, $headers);
         if ($response->status() === 304) { return ['items' => []]; }
         return ['items' => $this->parseFeed($response->body(), $source->rewritePermitted() && $source->allow_feed_content, $source->feed_content_field ?: 'content'), 'etag' => $response->header('ETag'), 'last_modified' => $response->header('Last-Modified')];
+    }
+
+    private function newsApi(NewsSource $source): array
+    {
+        $key = trim((string) config('technology_news.newsapi.key'));
+        if ($key === '') {
+            throw new RuntimeException('TECH_NEWS_API_KEY is missing.');
+        }
+
+        $end = now('UTC');
+        $start = $source->last_success_at?->copy()->utc()->subMinutes(30) ?? $end->copy()->subMinutes(90);
+        $start = $start->max($end->copy()->subDay());
+        $maxPages = max(1, min(50, (int) config('technology_news.newsapi.max_pages')));
+        $query = [
+            'q' => config('technology_news.newsapi.query'),
+            'from' => $start->toIso8601String(),
+            'to' => $end->toIso8601String(),
+            'sortBy' => 'publishedAt',
+            'pageSize' => 100,
+        ];
+        $items = [];
+        $total = 0;
+
+        for ($page = 1; $page <= $maxPages; $page++) {
+            // The credential is sent only to the provider's fixed HTTPS endpoint.
+            $url = 'https://newsapi.org/v2/everything?'.http_build_query($query + ['page' => $page], '', '&', PHP_QUERY_RFC3986);
+            $body = $this->http->get($url, ['X-Api-Key' => $key])->json();
+            if (($body['status'] ?? null) !== 'ok' || !is_array($body['articles'] ?? null)
+                || !array_is_list($body['articles']) || !is_int($body['totalResults'] ?? null)) {
+                throw new RuntimeException('Malformed NewsAPI article list.');
+            }
+            $total = $body['totalResults'];
+            foreach ($body['articles'] as $article) {
+                if (!is_array($article) || ($article['title'] ?? null) === '[Removed]') {
+                    continue;
+                }
+                $items[] = [
+                    'id' => $article['url'] ?? null,
+                    'url' => $article['url'] ?? null,
+                    'title' => $article['title'] ?? null,
+                    'published_at' => $article['publishedAt'] ?? null,
+                    'publisher_name' => $article['source']['name'] ?? null,
+                    'author' => $article['author'] ?? null,
+                ];
+            }
+            if (count($body['articles']) < 100 || $page * 100 >= $total) {
+                return ['items' => $items];
+            }
+        }
+
+        return ['items' => $items, 'warning' => sprintf('NewsAPI found %d matches and reached the %d-page limit.', $total, $maxPages)];
     }
 
     private function hackerNews(NewsSource $source): array
@@ -73,7 +125,7 @@ class Providers
                 $tags = [];
                 foreach ($node->xpath('./*[local-name()="category"]') ?: [] as $category) { $tags[] = (string) ($category['term'] ?? $category); }
                 $result[] = ['id' => $get('guid') ?: $get('id') ?: $url, 'title' => $get('title'), 'url' => $url,
-                    'published_at' => $get('pubDate') ?: $get('published') ?: $get('date'),
+                    'published_at' => $get('pubDate') ?: $get('published') ?: $get('date') ?: $get('updated'),
                     'description' => $get('description') ?: $get('summary'), 'author' => $author ?: null, 'tags' => $tags,
                     'content' => $includeContent ? ($contentField === 'description' ? $get('description') : ($get('encoded') ?: $get('content'))) : null];
             }

@@ -35,6 +35,7 @@
         <select id="event_type" name="event_type" required class="{{ $inputClass }}">
             <option value="holiday" @selected(old('event_type', $event->event_type ?? 'holiday') === 'holiday')>Full-day holiday</option>
             <option value="muhurat" @selected(old('event_type', $event->event_type ?? '') === 'muhurat')>Muhurat trading</option>
+            <option value="special_session" @selected(old('event_type', $event->event_type ?? '') === 'special_session')>Special trading session</option>
             <option value="weekend" @selected(old('event_type', $event->event_type ?? '') === 'weekend')>Weekend</option>
         </select>
         @error('event_type') <p class="mt-2 text-xs font-bold text-red-500">{{ $message }}</p> @enderror

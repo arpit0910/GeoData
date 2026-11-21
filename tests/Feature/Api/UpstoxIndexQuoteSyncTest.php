@@ -12,6 +12,46 @@ class UpstoxIndexQuoteSyncTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_catalog_pass_discovers_indices_for_the_next_live_refresh(): void
+    {
+        $this->keepConfiguredIndexCatalog();
+        config([
+            'market_data.upstox.analytics_token' => null,
+            'market_data.upstox.access_token' => 'test-access-token',
+        ]);
+        $key = 'BSE_INDEX|INDDEF';
+        DB::table('indices')->insert([
+            [
+                'index_code' => 'BSE_INDIA_DEFENCE',
+                'index_name' => 'BSE India Defence',
+                'exchange' => 'BSE',
+                'upstox_instrument_key' => $key,
+                'upstox_metadata' => json_encode(['instrument_key' => $key]),
+            ],
+            [
+                'index_code' => 'BSE_LEGACY',
+                'index_name' => 'Legacy',
+                'exchange' => 'BSE',
+                'upstox_instrument_key' => 'BSE_INDEX|Legacy',
+                'upstox_metadata' => null,
+            ],
+        ]);
+        Http::fake(function ($request) use ($key) {
+            $this->assertSame($key, $request['instrument_key']);
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['BSE_INDEX:INDDEF' => ['last_price' => 2500, 'cp' => 2400]],
+            ]);
+        });
+
+        $this->artisan('market:sync-upstox-index-quotes', ['--catalog-only' => true])->assertSuccessful();
+        $this->artisan('market:sync-upstox-index-quotes', ['--quoted-only' => true])->assertSuccessful();
+
+        $this->assertDatabaseHas('index_quotes', ['index_code' => 'BSE_INDIA_DEFENCE', 'price' => 2500]);
+        $this->assertDatabaseMissing('index_quotes', ['index_code' => 'BSE_LEGACY']);
+    }
+
     public function test_live_refresh_preserves_the_existing_oil_and_gas_key_owner(): void
     {
         config([

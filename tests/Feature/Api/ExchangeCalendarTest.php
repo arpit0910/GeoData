@@ -3,7 +3,9 @@
 namespace Tests\Feature\Api;
 
 use App\Models\ExchangeCalendarEvent;
+use App\Services\EquityTradingSession;
 use App\Services\ExchangeCalendarSyncService;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 use Throwable;
@@ -16,6 +18,34 @@ class ExchangeCalendarTest extends TestCase
         $this->withoutMiddleware();
         (require database_path('migrations/2026_09_17_000000_create_exchange_calendar_events_table.php'))->up();
         (require database_path('migrations/2026_09_17_010000_add_manual_override_to_exchange_calendar_events_table.php'))->up();
+    }
+
+    public function test_equity_session_observes_weekend_overrides_and_holidays(): void
+    {
+        $session = app(EquityTradingSession::class);
+        $sunday = CarbonImmutable::parse('2026-11-22 13:00:00', 'UTC');
+        $this->assertFalse($session->isOpen($sunday));
+
+        $event = ExchangeCalendarEvent::create([
+            'exchange' => ExchangeCalendarEvent::EXCHANGE_BOTH,
+            'event_date' => '2026-11-22',
+            'name' => 'Sunday trading',
+            'event_type' => ExchangeCalendarEvent::TYPE_SPECIAL_SESSION,
+            'session_start' => '18:30',
+            'session_end' => '19:30',
+            'source' => 'manual',
+            'source_url' => 'admin://manual',
+            'synced_at' => now(),
+        ]);
+
+        $this->assertTrue($session->isOpen($sunday));
+        $this->assertFalse($session->isOpen($sunday->subMinute()));
+        $this->assertFalse($session->isOpen($sunday->addMinutes(61)));
+
+        $monday = $sunday->addDay()->setTime(5, 0);
+        $this->assertTrue($session->isOpen($monday));
+        $event->update(['event_date' => '2026-11-23', 'event_type' => ExchangeCalendarEvent::TYPE_HOLIDAY]);
+        $this->assertFalse($session->isOpen($monday));
     }
 
     public function test_sync_combines_nse_and_bse_and_persists_weekends_idempotently(): void

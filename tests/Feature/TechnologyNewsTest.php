@@ -51,6 +51,51 @@ class TechnologyNewsTest extends TestCase
         Http::preventStrayRequests();
         Http::fake($responses);
     }
+
+    public function test_bulk_technology_discovery_fetches_multiple_pages_without_republishing_source_content(): void
+    {
+        config(['technology_news.newsapi.key' => 'fixture-key', 'technology_news.newsapi.max_pages' => 2]);
+        $this->artisan('news:install')->assertSuccessful();
+        $source = NewsSource::where('source_type', 'newsapi')->sole();
+        $this->assertFalse($source->rewritePermitted());
+
+        $rows = array_map(fn ($id) => [
+            'title' => 'Claude Code update '.$id,
+            'url' => 'https://publisher.example/technology/'.$id,
+            'publishedAt' => now('UTC')->subMinutes(10)->toIso8601String(),
+            'source' => ['name' => 'Example Publisher'],
+            'description' => 'Publisher excerpt',
+            'content' => 'Publisher article text',
+        ], range(1, 101));
+        $this->fake(function ($request) use ($rows) {
+            $this->assertTrue($request->hasHeader('X-Api-Key', 'fixture-key'));
+            $this->assertStringNotContainsString('fixture-key', $request->url());
+            parse_str(parse_url($request->url(), PHP_URL_QUERY), $query);
+            $this->assertSame('100', $query['pageSize']);
+
+            return Http::response([
+                'status' => 'ok',
+                'totalResults' => 101,
+                'articles' => $query['page'] === '1' ? array_slice($rows, 0, 100) : [$rows[100]],
+            ]);
+        });
+
+        $this->assertSame('success', $this->sync($source));
+        $this->assertSame('success', $this->sync($source));
+        Http::assertSentCount(4);
+        $this->assertSame(101, NewsArticle::count());
+        $this->assertSame(101, NewsArticle::where('publisher_name', 'Example Publisher')->whereNull('content')->whereNull('description')->count());
+        $this->assertSame(0, NewsArticle::published()->count());
+
+        $licensed = $this->source('rss');
+        $licensed->update(['allow_feed_content' => true, 'feed_content_field' => 'description']);
+        $date = now('UTC')->subMinutes(10)->toRfc2822String();
+        $xml = "<rss><channel><item><guid>publisher-1</guid><title>Claude Code update 1</title><link>https://publisher.example/technology/1</link><pubDate>{$date}</pubDate><description>Licensed full article.</description></item></channel></rss>";
+        $this->fake(['*' => Http::response($xml)]);
+        $this->assertSame('success', $this->sync($licensed));
+        $this->assertSame(101, NewsArticle::count());
+        $this->assertDatabaseHas('news_articles', ['source_id' => $licensed->id, 'content' => 'Licensed full article.']);
+    }
     public function test_api_sync_sanitizes_and_categorizes_without_importing_images(): void
     {
         $s = $this->source(); $this->fake(['*' => Http::response([$this->row()])]);
@@ -278,8 +323,8 @@ class TechnologyNewsTest extends TestCase
     }
     public function test_new_reviewed_sources_install_with_full_text_and_license_settings(): void
     {
-        $names = ['Fedora Magazine', 'Electronic Frontier Foundation', 'The Document Foundation'];
-        $this->assertSame(3, NewsSource::whereIn('name', $names)->count());
+        $names = ['Fedora Magazine', 'Electronic Frontier Foundation', 'The Document Foundation', 'Wikimedia Diff Technology'];
+        $this->assertSame(4, NewsSource::whereIn('name', $names)->count());
         foreach (NewsSource::whereIn('name', $names)->get() as $source) {
             $this->assertTrue($source->allow_ai_rewrite); $this->assertTrue($source->allow_feed_content);
             $this->assertNotNull($source->permissions_verified_at); $this->assertNotEmpty($source->license_name);
@@ -288,9 +333,26 @@ class TechnologyNewsTest extends TestCase
         $eff = NewsSource::where('name', 'Electronic Frontier Foundation')->firstOrFail();
         $this->assertSame('description', $eff->feed_content_field);
         $this->artisan('news:install')->assertExitCode(0);
-        $this->assertSame(3, NewsSource::whereIn('name', $names)->count());
+        $this->assertSame(4, NewsSource::whereIn('name', $names)->count());
         // setUp deactivated all sources; the installer must preserve that choice.
         $this->assertFalse($eff->fresh()->is_active);
+    }
+    public function test_official_release_feed_accepts_atom_update_date_and_keeps_metadata_only(): void
+    {
+        $source = NewsSource::where('name', 'Anthropic Claude Code Releases')->firstOrFail();
+        $source->update(['is_active' => true]);
+        $this->assertTrue($source->displayPermitted());
+        $this->assertFalse($source->rewritePermitted());
+        $xml = '<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>release-1</id><title>Claude Code 1.2.3</title><link rel="alternate" href="https://github.com/anthropics/claude-code/releases/tag/v1.2.3"/><updated>2026-11-16T10:00:00Z</updated><content type="html">Release notes</content></entry></feed>';
+        $this->fake(['*' => Http::response($xml)]);
+
+        $this->assertSame('success', $this->sync($source));
+        $this->assertSame('success', $this->sync($source));
+        $article = NewsArticle::sole();
+        $this->assertSame('Claude Code 1.2.3', $article->title);
+        $this->assertSame('2026-11-16', $article->published_at->toDateString());
+        $this->assertNull($article->content);
+        $this->assertSame(0, NewsArticle::published()->count());
     }
     public function test_description_full_text_format_is_explicit_and_deduplicated(): void
     {

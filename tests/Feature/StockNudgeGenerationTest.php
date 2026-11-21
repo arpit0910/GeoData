@@ -12,6 +12,34 @@ class StockNudgeGenerationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_eod_session_facts_are_generated_for_stocks_and_indices_without_duplicates(): void
+    {
+        $equity = Equity::create(['isin' => 'INE000000009', 'company_name' => 'Example Limited']);
+        $date = '2026-10-12';
+        $this->price($equity->id, $date, 100, 102, 97, 101, 1000);
+
+        foreach ([
+            ['REVERSAL', 102, 97, 99],
+            ['WIDE_RANGE', 103, 99, 100],
+            ['INVALID_RANGE', 103, 99, 105],
+        ] as [$code, $high, $low, $close]) {
+            DB::table('indices')->insert(['index_code' => $code, 'index_name' => $code, 'exchange' => 'NSE']);
+            DB::table('indices_prices')->insert([
+                'index_code' => $code, 'traded_date' => $date, 'high' => $high,
+                'low' => $low, 'close' => $close, 'prev_close' => 100,
+            ]);
+        }
+
+        $this->artisan('stock-nudges:generate', ['type' => 'eod', '--date' => $date])->assertSuccessful();
+        $this->artisan('stock-nudges:generate', ['type' => 'eod', '--date' => $date])->assertSuccessful();
+        $this->assertDatabaseHas('stock_nudges', ['isin' => $equity->isin, 'rule' => 'session_recovery']);
+        $this->assertDatabaseHas('stock_nudges', ['index_code' => 'REVERSAL', 'rule' => 'session_reversal']);
+        $this->assertDatabaseHas('stock_nudges', ['index_code' => 'WIDE_RANGE', 'rule' => 'wide_session_range']);
+        $this->assertSame(3, DB::table('stock_nudges')->whereIn('rule', [
+            'session_recovery', 'session_reversal', 'wide_session_range',
+        ])->count());
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();

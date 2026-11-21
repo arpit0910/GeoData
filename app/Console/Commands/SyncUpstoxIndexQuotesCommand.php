@@ -16,6 +16,7 @@ class SyncUpstoxIndexQuotesCommand extends Command
         {--batch-size=500 : Instruments per Upstox request}
         {--mode=ltp : ltp or full quote mode}
         {--quoted-only : Refresh only indices that have previously returned a valid quote}
+        {--catalog-only : Request only index keys imported from the Upstox instrument master}
         {--snapshot-eod : Upsert the final quotes into indices_prices}';
 
     protected $description = 'Fetch and store live NSE/BSE index quotes from Upstox';
@@ -39,11 +40,18 @@ class SyncUpstoxIndexQuotesCommand extends Command
             $this->error('The --mode value must be ltp or full.');
             return self::INVALID;
         }
+        $catalogOnly = (bool) $this->option('catalog-only');
+        $quotedOnly = (bool) $this->option('quoted-only');
+        if ($catalogOnly && $quotedOnly) {
+            $this->error('Use either --catalog-only or --quoted-only.');
+            return self::INVALID;
+        }
 
         // Keep newly configured sector indices eligible for their first live quote.
-        app(\App\Services\UpstoxInstrumentSyncService::class)->ensureIndexInstrumentKeys();
+        if (!$catalogOnly) {
+            app(\App\Services\UpstoxInstrumentSyncService::class)->ensureIndexInstrumentKeys();
+        }
 
-        $quotedOnly = (bool) $this->option('quoted-only');
         $hasQuotedIndices = Index::query()->whereHas('quote')->exists();
         if ($quotedOnly && ! $hasQuotedIndices) {
             $this->info('No previously quoted indices found; running the initial index bootstrap.');
@@ -51,7 +59,8 @@ class SyncUpstoxIndexQuotesCommand extends Command
 
         $indexQuery = Index::query()
             ->whereNotNull('upstox_instrument_key')
-            ->where('upstox_instrument_key', '<>', '');
+            ->where('upstox_instrument_key', '<>', '')
+            ->when($catalogOnly, fn ($query) => $query->whereNotNull('upstox_metadata'));
 
         if ($quotedOnly && $hasQuotedIndices) {
             $configuredBenchmarks = array_values(array_unique([
@@ -66,7 +75,7 @@ class SyncUpstoxIndexQuotesCommand extends Command
 
         $indices = $indexQuery->get(['index_code', 'upstox_instrument_key']);
 
-        if ($indices->isEmpty()) {
+        if ($indices->isEmpty() && !$catalogOnly) {
             $this->info('Initializing index instrument keys...');
             app(\App\Services\UpstoxInstrumentSyncService::class)->ensureIndexInstrumentKeys();
 
@@ -78,7 +87,9 @@ class SyncUpstoxIndexQuotesCommand extends Command
         }
 
         if ($indices->isEmpty()) {
-            $this->error('No indices have a market instrument key configured.');
+            $this->error($catalogOnly
+                ? 'No Upstox catalog index keys found. Run equities:sync-upstox-instruments first.'
+                : 'No indices have a market instrument key configured.');
             return self::FAILURE;
         }
 

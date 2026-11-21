@@ -34,8 +34,8 @@
         </label>
         <select name="category" class="rounded-xl border-gray-200 bg-transparent text-sm dark:border-white/10 dark:text-white">
             <option value="">All categories</option>
-            @foreach(['growth' => 'Growth', 'fall' => 'Fall', 'volume' => 'Volume', 'comparison' => 'Comparison'] as $value => $label)
-                <option value="{{ $value }}" @selected($category === $value)>{{ $label }}</option>
+            @foreach(array_keys(\App\Models\StockNudge::CATEGORY_RULES) as $value)
+                <option value="{{ $value }}" @selected($category === $value)>{{ ucfirst($value) }}</option>
             @endforeach
         </select>
         <input name="search" value="{{ request('search') }}" placeholder="Company, ISIN, index or title" class="rounded-xl border-gray-200 bg-transparent text-sm dark:border-white/10 dark:text-white">

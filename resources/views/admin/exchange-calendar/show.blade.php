@@ -18,7 +18,7 @@
             @foreach([
                 'Exchange' => $event->exchange === 'NSE_BSE' ? 'NSE & BSE' : $event->exchange,
                 'Segment' => ucfirst($event->segment),
-                'Event type' => $event->event_type === 'muhurat' ? 'Muhurat trading' : ($event->event_type === 'weekend' ? 'Weekend' : 'Full-day holiday'),
+                'Event type' => $event->event_type === 'muhurat' ? 'Muhurat trading' : ($event->hasSpecialSession() ? 'Special trading session' : ($event->event_type === 'weekend' ? 'Weekend' : 'Full-day holiday')),
                 'Date' => $event->event_date->toDateString(),
                 'Session starts' => $event->session_start ? substr($event->session_start, 0, 5).' IST' : 'Not specified',
                 'Session ends' => $event->session_end ? substr($event->session_end, 0, 5).' IST' : 'Not specified',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\StockNudge;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class StockNudgeController extends Controller
@@ -14,7 +15,7 @@ class StockNudgeController extends Controller
         $filters = $request->validate([
             'date_from' => 'nullable|date_format:Y-m-d',
             'date_to' => 'nullable|date_format:Y-m-d|after_or_equal:date_from',
-            'category' => 'nullable|in:growth,fall,volume,comparison',
+            'category' => ['nullable', Rule::in(array_keys(StockNudge::CATEGORY_RULES))],
             'search' => 'nullable|string|max:100',
         ]);
         $today = now('Asia/Kolkata')->toDateString();

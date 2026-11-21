@@ -364,7 +364,48 @@ class StockNudgeService
                 $rulePrice, ['previous_level' => $level, 'difference' => round($difference, 4), 'difference_percent' => round($differencePercent, 2), 'closing_price' => $price], $date, $observedAt, $expiresAt);
         }
 
+        if ($type === 'eod' && $previousClose !== null && $previousClose > 0
+            && $sessionLow !== null && $sessionHigh !== null
+            && $sessionLow > 0 && $sessionLow <= $price && $price <= $sessionHigh) {
+            $created += $this->sessionFact($stock, $exchange, $date, $observedAt, $price, $previousClose, $sessionLow, $sessionHigh);
+        }
+
         return $created;
+    }
+
+    private function sessionFact(object $instrument, string $exchange, Carbon $date, Carbon $observedAt, float $close, float $previousClose, float $low, float $high): int
+    {
+        $name = $this->name($instrument);
+        $lowChange = round(($low - $previousClose) / $previousClose * 100, 6);
+        $highChange = round(($high - $previousClose) / $previousClose * 100, 6);
+        $closeChange = round(($close - $previousClose) / $previousClose * 100, 6);
+        $range = ($high - $low) / $previousClose * 100;
+
+        if ($lowChange <= -1 && $closeChange >= 1) {
+            $rule = 'session_recovery';
+            $title = sprintf('%s recovered to close higher', $name);
+            $message = sprintf('%s fell %.2f%% below its previous close during the session and finished %.2f%% higher.', $name, abs($lowChange), $closeChange);
+        } elseif ($highChange >= 1 && $closeChange <= -1) {
+            $rule = 'session_reversal';
+            $title = sprintf('%s gave up its gains and closed lower', $name);
+            $message = sprintf('%s rose %.2f%% above its previous close during the session and finished %.2f%% lower.', $name, $highChange, abs($closeChange));
+        } elseif ($range >= 3) {
+            $rule = 'wide_session_range';
+            $title = sprintf('%s traded across a %.2f%% range', $name, $range);
+            $message = sprintf('The gap between the session high and low was %.2f%% of the previous close. %s finished %+.2f%% for the session.', $range, $name, $closeChange);
+        } else {
+            return 0;
+        }
+
+        return $this->store($instrument, $exchange, 'eod', $rule, 'notable', $title, $message, $close, [
+            'previous_close' => $previousClose,
+            'session_low' => $low,
+            'session_high' => $high,
+            'low_change_percent' => round($lowChange, 2),
+            'high_change_percent' => round($highChange, 2),
+            'change_percent' => round($closeChange, 2),
+            'range_percent' => round($range, 2),
+        ], $date, $observedAt, null);
     }
 
     private function recordRule(?object $history, string $exchange, float $price, string $side): ?array

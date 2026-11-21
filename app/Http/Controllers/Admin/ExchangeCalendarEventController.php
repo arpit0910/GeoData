@@ -16,7 +16,7 @@ class ExchangeCalendarEventController extends Controller
         $filters = $request->validate([
             'exchange' => ['nullable', Rule::in(['NSE', 'BSE', ExchangeCalendarEvent::EXCHANGE_BOTH])],
             'year' => ['nullable', 'integer', 'between:2000,2100'],
-            'type' => ['nullable', Rule::in(['holiday', 'muhurat', 'weekend'])],
+            'type' => ['nullable', Rule::in(ExchangeCalendarEvent::TYPES)],
             'search' => ['nullable', 'string', 'max:100'],
         ]);
 
@@ -119,9 +119,9 @@ class ExchangeCalendarEventController extends Controller
             'segment' => ['required', Rule::in(['equity'])],
             'event_date' => ['required', 'date_format:Y-m-d', $uniqueDate],
             'name' => ['required', 'string', 'max:255'],
-            'event_type' => ['required', Rule::in(['holiday', 'muhurat', 'weekend'])],
-            'session_start' => ['nullable', 'date_format:H:i'],
-            'session_end' => ['nullable', 'date_format:H:i', 'after:session_start'],
+            'event_type' => ['required', Rule::in(ExchangeCalendarEvent::TYPES)],
+            'session_start' => ['required_if:event_type,special_session', 'nullable', 'date_format:H:i'],
+            'session_end' => ['required_if:event_type,special_session', 'nullable', 'date_format:H:i', 'after:session_start'],
         ], [
             'event_date.unique' => 'An event already exists for this exchange, segment, and date.',
         ]);

@@ -14,6 +14,7 @@ class StockNudge extends Model
         'fall' => ['daily_drop', 'month_low', 'year_low'],
         'volume' => ['volume_spike'],
         'comparison' => ['index_outperformance', 'index_underperformance'],
+        'session' => ['session_recovery', 'session_reversal', 'wide_session_range'],
     ];
 
     protected $fillable = [

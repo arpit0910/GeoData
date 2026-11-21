@@ -1,5 +1,39 @@
 # Technology news operations
 
+## Hourly bulk discovery
+
+Set `TECH_NEWS_API_KEY` to a NewsAPI key that permits production use, refresh
+Laravel's configuration cache, and run `php artisan news:install`. The existing
+hourly `news:sync` job then includes **NewsAPI Technology Discovery**. The
+development plan has a 24-hour delay and is only suitable for local testing.
+
+Each run requests up to 10 pages of 100 results by default. Adjust
+`TECH_NEWS_API_MAX_PAGES` to match the provider quota and observed volume.
+The search overlaps the last successful run by 30 minutes, with a maximum
+one-day recovery window. The first run looks back 90 minutes. Sync logs flag
+runs that reach the page cap. Canonical URLs are deduplicated across runs and
+providers. The daily count depends on available matches and repeated URLs.
+
+Bulk records retain publisher, headline, author, publication time and link
+for internal editorial discovery. Public reports continue through the existing
+licensed full-text pipeline.
+
+## AI releases and defensive cybersecurity
+
+`php artisan news:install` installs four additional feeds and preserves existing
+source settings. The regular hourly `news:sync` job fetches them.
+
+| Source | What GeoData imports |
+| --- | --- |
+| [OpenAI Codex Releases](https://github.com/openai/codex/releases.atom) | Official release titles, timestamps and links |
+| [Anthropic Claude Code Releases](https://github.com/anthropics/claude-code/releases.atom) | Official release titles, timestamps and links |
+| [NIST Cybersecurity Insights](https://www.nist.gov/blogs/cybersecurity-insights/rss.xml) | Defensive cybersecurity headlines and links |
+| [Wikimedia Diff Technology](https://diff.wikimedia.org/category/technology/feed/) | Open-source technology reporting for the verified rewrite pipeline under CC BY-SA 4.0 |
+
+Codex, Claude Code and NIST entries are available for editorial monitoring in
+admin. Their source text is excluded from rewriting and public full reports.
+Atom feeds that supply only an update timestamp use that timestamp for sorting.
+
 ## Additional reviewed sources (17 November 2026)
 
 Three independent publishers have been added to the default source installer, expanding the permitted defaults from two to five:
